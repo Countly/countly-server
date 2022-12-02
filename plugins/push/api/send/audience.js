@@ -43,12 +43,7 @@ const common = require('../../../../api/utils/common'),
         else {
             return require('../../../pluginManager').getPluginsApis().geo;
         }
-    },
-
-    /**
-     * Cache of app objects for quick evented/cohorted/tx message mapping
-     */
-    APPS = {};
+    };
 
 /**
  * Class encapsulating user selection / queue / message scheduling logic
@@ -74,14 +69,9 @@ class Audience {
      */
     async getApp() {
         if (!this.app) {
-            if (APPS[this.message.app]) {
-                this.app = APPS[this.message.app];
-            }
-            else {
-                this.app = APPS[this.message.app] = await common.db.collection('apps').findOne({_id: this.message.app});
-                if (!this.app) {
-                    throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
-                }
+            this.app = await common.db.collection('apps').findOne({_id: this.message.app});
+            if (!this.app) {
+                throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
             }
         }
         return this.app;
@@ -391,11 +381,12 @@ class Mapper {
      * @param {object} user app_user object
      * @param {number} date notification date as ms timestamp
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset = 0) {
         let ret = {
-            _id: dbext.oidWithDate(date),
+            _id: dbext.oidWithDate(date + offset),
             a: this.message.app,
             m: this.message._id,
             p: this.p,
@@ -427,9 +418,10 @@ class PlainApiMapper extends Mapper {
      * @param {object} user app_user object
      * @param {Date} date notification date
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset = 0) {
         let d = date.getTime();
         if (this.trigger.tz) {
             let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
@@ -444,7 +436,7 @@ class PlainApiMapper extends Mapper {
                 }
             }
         }
-        return super.map(user, d, c);
+        return super.map(user, d, c, offset);
     }
 }
 
@@ -458,9 +450,10 @@ class CohortsEventsMapper extends Mapper {
      * @param {object} user app_user object
      * @param {Date} date reference date (cohort entry date, event date)
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset) {
         let d = date.getTime();
 
         // send in user's timezone
@@ -509,7 +502,7 @@ class CohortsEventsMapper extends Mapper {
             return null;
         }
 
-        return super.map(user, d, c);
+        return super.map(user, d, c, offset);
     }
 }
 
@@ -666,7 +659,11 @@ class Pusher extends PusherPopper {
             start = this.start || this.trigger.start,
             result = new Result(),
             updates = {},
-            virtuals = {};
+            virtuals = {},
+            offset = 0,
+            curPeriod = 0,
+            ratePeriod = (this.audience.app.plugins.push.rate || {}).period || 0,
+            rateNumber = (this.audience.app.plugins.push.rate || {}).rate || 0;
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -679,7 +676,14 @@ class Pusher extends PusherPopper {
                     continue;
                 }
 
-                let note = this.mappers[pf].map(user, start, this.contents);
+                if (ratePeriod && rateNumber) {
+                    if ((curPeriod + 1) % rateNumber === 0) {
+                        offset += ratePeriod * 1000;
+                    }
+                    curPeriod++;
+                }
+
+                let note = this.mappers[pf].map(user, start, this.contents, offset);
                 if (!note) {
                     continue;
                 }
