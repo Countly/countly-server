@@ -33,7 +33,8 @@ const virtuals = ['h'];
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
-        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        const token = qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token;
+        return [key, FIELDS['0'], token, util.hashInt(token)];
     }
 }
 

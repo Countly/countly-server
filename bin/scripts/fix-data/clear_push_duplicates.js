@@ -5,13 +5,15 @@ var Promise = require("bluebird");
 
 var app_list = [];//add app ids, if none added will run on all apps
 
-var dry_run = true;
+var args = process.argv.slice(2).join('').replace(/\s/g, '');
+var dry_run = args.indexOf('--dryrun=false') === -1;
 
 console.log("Script clears push tokens if same token is for mutiple users. Keeping only for user with highest value for lac or ls");
 console.log("Can be called multiple times. On each run checks current state in database");
 if (dry_run) {
     console.log("This is dry run");
     console.log("Nothing will be cleared");
+    console.log("Run with --dryrun=false in order to modify data in the database");
 }
 
 function clearing_out(options, callback) {
