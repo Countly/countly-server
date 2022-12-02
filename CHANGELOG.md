@@ -24,7 +24,6 @@ Fixes:
 Enterprise Fixes:
 - [active-users] active Users table date column formatting
 - [attribution] fixed error in attribution plugin
-- [cohorts] fixes for realtime cohort in case of multiple ORs
 - [concurrent_users] null check before registering labels in configuration view for concurrent users
 - [drill] fixed export downloads empty file, fixed period param for passing
 - [drill] fixed unescaped characters from chart's legend and querybuilder
