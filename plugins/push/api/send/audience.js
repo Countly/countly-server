@@ -160,7 +160,7 @@ class Audience {
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
-        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: true}));
+        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: {$exists: true}}));
         steps.push({$match: {$or: flds}});
     }
 
