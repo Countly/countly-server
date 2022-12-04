@@ -88,15 +88,33 @@
                 </div>'
     }));
 
+    var PersistentNotifications = {
+        template: '<div class="persistent-notifications">\
+            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :color="notification.color"></cly-notification>\
+        </div>',
+        computed: {
+            persistentNotifications: function() {
+                return this.$store.state.countlyCommon.persistentNotifications;
+            }
+        },
+        store: countlyVue.vuex.getGlobalStore(),
+    };
+
     //Every view has a single cly-main component which encapsulates all other components/dom elements
     //This component is a single column full width component
     //A main component can have multiple sections
     Vue.component("cly-main", countlyBaseComponent.extend({
         template: '<div class="cly-vue-main bu-columns bu-is-gapless bu-is-centered">\
                         <div class="bu-column bu-is-full" style="max-width: 1920px">\
+                            <PersistentNotifications></PersistentNotifications>\
+                        </div>\
+                        <div class="bu-column bu-is-full" style="max-width: 1920px">\
                             <slot></slot>\
                         </div>\
-                    </div>'
+                    </div>',
+        components: {
+            PersistentNotifications: PersistentNotifications
+        }
     }));
 
     //Each cly-section should mark a different component within the cly-main component
