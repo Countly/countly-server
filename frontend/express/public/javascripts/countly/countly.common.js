@@ -221,6 +221,21 @@
         };
 
         /**
+         * Adds a new notification to persistent notification list.
+         * @param {*} payload notification payload
+         * payload.color: color of the notification
+         * payload.text: text of the notification
+         */
+        countlyCommon.dispatchPersistentNotification = function(payload) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/onAddPersistentNotification", payload);
+                }
+            }
+        };
+
+        /**
          * Generates unique id string using unsigned integer array.
          * @returns {string} unique id
          */
