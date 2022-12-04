@@ -348,6 +348,7 @@
                     activeApp: null,
                     allApps: countlyGlobal.apps,
                     notificationToasts: [],
+                    persistentNotifications: [],
                     dialogs: []
                 },
                 getters: {
@@ -424,6 +425,15 @@
                             return item.id !== id;
                         });
                     },
+                    addPersistentNotification: function(state, payload) {
+                        payload.id = countlyCommon.generateId();
+                        state.persistentNotifications.unshift(payload);
+                    },
+                    removePersistentNotification: function(state, notificationId) {
+                        state.persistentNotifications = state.persistentNotifications.filter(function(item) {
+                            return item.id !== notificationId;
+                        });
+                    },
                     addDialog: function(state, payload) {
                         payload.id = countlyCommon.generateId();
                         state.dialogs.unshift(payload);
@@ -467,6 +477,12 @@
                     },
                     onRemoveNotificationToast: function(context, payload) {
                         context.commit('removeNotificationToast', payload);
+                    },
+                    onAddPersistentNotification: function(context, payload) {
+                        context.commit('addPersistentNotification', payload);
+                    },
+                    onRemovePersistentNotification: function(context, notificationId) {
+                        context.commit('removePersistentNotification', notificationId);
                     },
                     onAddDialog: function(context, payload) {
                         context.commit('addDialog', payload);
