@@ -6,7 +6,7 @@ const common = require('../../../api/utils/common'),
 module.exports.onTokenSession = async(dbAppUser, params) => {
     let stuff = extract(params.qstring);
     if (stuff) {
-        let [p, f, token] = stuff,
+        let [p, f, token, hash] = stuff,
             appusersField = field(p, f, true),
             pushField = field(p, f, false),
             pushCollection = common.db.collection(`push_${params.app_id}`),
@@ -16,13 +16,32 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
 
         let push = await pushCollection.findOne({_id: dbAppUser.uid}, {projection: {[field]: 1}});
         if (token && (!push || common.dot(push, pushField) !== token)) {
-            let $set = {[appusersField]: true};
-            // if (params.qstring.locale) {
-            //     $set[common.dbUserMap.locale] = params.qstring.locale;
-            //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
-            // }
-            appusersCollection.updateOne({_id: params.app_user_id}, {$set}, () => {}); // don't wait
+            appusersCollection.updateOne({_id: params.app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
             pushCollection.updateOne({_id: params.app_user.uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
+
+            appusersCollection.find({[appusersField]: hash, _id: {$ne: dbAppUser._id}}, {uid: 1}).toArray(function(err, docs) {
+                if (err) {
+                    log.e('Failed to look for same tokens', err);
+                }
+                else if (docs && docs.length) {
+                    log.d('Found %d hash duplicates for token %s', docs.length, token);
+                    // the hash is 32 bit, not enough randomness for strict decision to unset tokens, comparing actual token strings
+                    pushCollection.find({_id: {$in: docs.map(d => d.uid)}}, {[`tk.${p + f}`]: 1}).toArray(function(err2, pushes) {
+                        if (err2) {
+                            log.e('Failed to look for same tokens', err2);
+                        }
+                        else if (pushes && pushes.length) {
+                            pushes = pushes.filter(user => user._id !== dbAppUser.uid && user.tk[p + f] === token);
+                            if (pushes.length) {
+                                log.d('Unsetting same tokens (%s) for users %j', token, pushes.map(x => x._id));
+
+                                appusersCollection.updateMany({uid: {$in: pushes.map(x => x._id)}}, {$unset: {[appusersField]: 1}}, () => {});
+                                pushCollection.updateOne({_id: {$in: pushes.map(x => x._id)}}, {$unset: {[pushField]: 1}}, () => {});
+                            }
+                        }
+                    });
+                }
+            });
         }
         else {
             appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});

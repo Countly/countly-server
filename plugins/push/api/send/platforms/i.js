@@ -1,5 +1,5 @@
 const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = require('../data'),
-    { Base } = require('../std'),
+    { Base, util } = require('../std'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
     jwt = require('jsonwebtoken'),
@@ -21,7 +21,7 @@ const key = 'i';
  */
 function extractor(qstring) {
     if (qstring.ios_token !== undefined && qstring.test_mode in FIELDS) {
-        return [key, FIELDS[qstring.test_mode], qstring.ios_token];
+        return [key, FIELDS[qstring.test_mode], qstring.ios_token, util.hashInt(qstring.ios_token)];
     }
 }
 

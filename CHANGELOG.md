@@ -1,3 +1,36 @@
+## Version 22.09.5
+Fixes:
+- [compliance-hub] localization bugfix for compliance hub
+- [country] fixed handle undefined country data
+- [crashes] add log and return failed crash deletion
+- [crashes] clear selection after deletion or hiding
+- [crashes] multiple crash deletion fix
+- [crashes] remove crashgroup row click handler
+- [crashes] show alert for failed operations
+- [dashboards] unnecessary scrollbar on old widgets
+- [db] wrap bulkWrite operation for debug
+- [export] allow passing format to stream function for dates when exporting
+- [member-utility] prevent modify immutable field
+- [pdf] moved to pure puppeteer for pdf generation
+- [push] correct send now date for drafts
+- [push] remove device tokens on user removals and consents
+- [push] respecting rate limit
+- [push] switching to old request method because of outdated puppeteer monkey patching
+- [remote-config] fixed data passed to audit log
+- [remote-config] object check for json
+- [views] fix for views to return also value 'u' for period 'day' event if it matches uvalue
+- [views] fixed incorrect total view count for "this year" period
+
+Enterprise Fixes:
+- [active-users] active Users table date column formatting
+- [attribution] fixed error in attribution plugin
+- [concurrent_users] null check before registering labels in configuration view for concurrent users
+- [drill] fixed export downloads empty file, fixed period param for passing
+- [drill] fixed unescaped characters from chart's legend and querybuilder
+- [ldap] log error on ldap client error instead of throwing exception
+- [retention] cohort based breakdown in Retention doesn't show the cohort names
+- [retention] minor visual issues fixed in the Retention view
+- [user-management] make group names in user list clickable
 ## Version 22.09.4
 Fixes:
 - [api] respond 200 on ignore of device_id
