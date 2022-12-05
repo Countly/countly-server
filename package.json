@@ -14,7 +14,7 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "devDependencies": {
-    "grunt-eslint": "24.0.0",
+    "grunt-eslint": "24.0.1",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "grunt-contrib-watch": "1.1.0",
