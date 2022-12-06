@@ -16,7 +16,7 @@
                     <hr class="dashboard-more-options__divider">
                     <el-dropdown-item class="dashboard-more-options" command="add">{{i18n('notes.add-note')}}</el-dropdown-item>
                     <el-dropdown-item class="dashboard-more-options" command="manage">{{i18n('notes.manage-notes')}}</el-dropdown-item>
-                    <el-dropdown-item class="dashboard-more-options" command="show">{{notesVisibilityLabel ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" command="show">{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>
                     </div>    
                 </cly-more-options>
             </div>
