@@ -290,6 +290,7 @@
     * @deprecated 
     * @param {function=} msg.onClick - on click listener
     * @deprecated 
+    * @param {boolean=} msg.persistent - flag to determine if notification should be displayed persistently or as a toast
     * @example
     * CountlyHelpers.notify({
     *    message: "Main message text",
@@ -297,6 +298,7 @@
     */
     CountlyHelpers.notify = function(msg) {
         var payload = {};
+        var persistent = msg.persistent;
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
         var colorToUse;
@@ -327,7 +329,13 @@
             break;
         }
         payload.color = colorToUse;
-        countlyCommon.dispatchNotificationToast(payload);
+
+        if (persistent) {
+            countlyCommon.dispatchPersistentNotification(payload);
+        }
+        else {
+            countlyCommon.dispatchNotificationToast(payload);
+        }
     };
 
     /**
