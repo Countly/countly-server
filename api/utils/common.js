@@ -3186,4 +3186,21 @@ class DataTable {
 
 common.DataTable = DataTable;
 
+/**
+* Standard number formatter, taken from frontend's countly.common.js
+
+* @memberof countlyCommon
+* @param {number} x - number to format
+* @returns {string} formatted number
+* @example
+* //outputs 1,234,567
+* countlyCommon.formatNumber(1234567);
+*/
+common.formatNumber = function(x) {
+    x = parseFloat(parseFloat(x).toFixed(2));
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+};
+
 module.exports = common;
