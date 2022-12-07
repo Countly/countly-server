@@ -343,6 +343,7 @@
             countlyCommon: {
                 namespaced: true,
                 state: {
+                    areNotesHidden: false,
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
                     activeApp: null,
@@ -352,6 +353,9 @@
                     dialogs: []
                 },
                 getters: {
+                    getAreNotesHidden(state) {
+                        return state.areNotesHidden;
+                    },
                     period: function(state) {
                         return state.period;
                     },
@@ -381,6 +385,9 @@
                     },
                 },
                 mutations: {
+                    setAreNotesHidden: function(state, value) {
+                        state.areNotesHidden = value;
+                    },
                     setPeriod: function(state, period) {
                         state.period = period;
                     },
@@ -445,6 +452,9 @@
                     }
                 },
                 actions: {
+                    setAreNotesHidden: function(context, value) {
+                        context.commit('setAreNotesHidden', value);
+                    },
                     updatePeriod: function(context, obj) {
                         context.commit("setPeriod", obj.period);
                         context.commit("setPeriodLabel", obj.label);

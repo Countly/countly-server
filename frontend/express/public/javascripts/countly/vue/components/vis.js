@@ -944,10 +944,13 @@
 
                 return opt;
             },
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
+            }
         },
         methods: {
             dateChanged: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (!this.areNotesHidden) {
                     this.seriesOptions.markPoint.data = [];
                     var self = this;
                     setTimeout(() => {
@@ -1151,7 +1154,7 @@
                 return returnedObj;
             },
             getGraphNotes: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
+                if (!this.hideNotation && !this.areNotesHidden) {
                     var self = this;
                     var chartHeight = 300;
                     var yAxisHeight = '';
@@ -1207,14 +1210,15 @@
                                     symbolRotate: -20,
                                     symbolSize: note.indicator.length === 1 ? 30 : 40,
                                 });
+
                                 self.seriesOptions.markPoint.data[index].itemStyle = {
                                     color: note.times > 1 ? countlyGraphNotesCommon.COLOR_TAGS[0].label : countlyGraphNotesCommon.COLOR_TAGS.find(x=>x.value === note.color).label
                                 };
+                                self.seriesOptions.markPoint.emphasis.itemStyle = {
+                                    borderColor: "#c5c5c5",
+                                    borderWidth: 4
+                                };
                             });
-                            self.seriesOptions.markPoint.emphasis.itemStyle = {
-                                borderColor: "#c5c5c5",
-                                borderWidth: 4
-                            };
 
                             self.seriesOptions.markPoint.tooltip = {
                                 transitionDuration: 1,
@@ -1239,7 +1243,6 @@
                     var overlay = document.createElement("div");
                     overlay.setAttribute("class", "graph-overlay");
                     overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
-
                     var echarts = document.querySelectorAll('.echarts');
                     for (var i = 0; i < echarts.length; i++) {
                         if (typeof echarts[i] !== 'undefined') {
@@ -1282,6 +1285,9 @@
                 this.getGraphNotes();
             },
             category: function() {
+                this.getGraphNotes();
+            },
+            areNotesHidden: function() {
                 this.getGraphNotes();
             }
         },
@@ -1732,7 +1738,6 @@
     var AnnotationHandleCommand = {
         data: function() {
             return {
-                notesVisibilityLabel: true,
                 drawerSettingsForWidgets: {
                     createTitle: CV.i18n('notes.add-new-note'),
                     editTitle: CV.i18n('notes.edit-note'),
@@ -1742,9 +1747,14 @@
                 },
             };
         },
+        computed: {
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
+            }
+        },
         methods: {
             refreshNotes: function() {
-                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
+                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions.type === "line") {
                     this.$refs.echartRef.getGraphNotes();
                 }
             },
@@ -1764,51 +1774,12 @@
                 }
                 else if (event === "show") {
                     this.notesVisibility();
-                    if (!countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
-                        this.$refs.echartRef.seriesOptions.markPoint.data = [];
-                    }
-                    else {
-                        if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
-                            this.$refs.echartRef.getGraphNotes();
-                        }
-                    }
-                }
-            },
-            handleCommand(command) {
-                switch (command) {
-                case "add":
-                    this.openDrawer("annotation", {
-                        noteType: "private",
-                        ts: Date.now(),
-                        color: {value: 1, label: '#39C0C8'},
-                        emails: [],
-                        category: this.category
-                    });
-                    break;
-                case "manage":
-                    window.location.href = '#/analytics/graph-notes';
-                    break;
-                case "show":
-                    this.notesVisibility();
-                    break;
-                default:
-                    break;
                 }
             },
             notesVisibility: function() {
-                var persistData = {};
-                this.notesVisibilityLabel = !this.notesVisibilityLabel;
-                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = this.notesVisibilityLabel;
-                countlyCommon.setPersistentSettings(persistData);
-                this.$emit('notes-visibility-change');
+                this.$store.dispatch('countlyCommon/setAreNotesHidden', !this.areNotesHidden);
             },
-        },
-        created: function() {
-            if (typeof countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] === "undefined") {
-                countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = true;
-            }
-            this.notesVisibilityLabel = countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID];
-        },
+        }
     };
 
     countlyVue.mixins.graphNotesCommand = AnnotationHandleCommand;
@@ -1844,14 +1815,14 @@
         },
         template:
             '<div class="chart-type-annotation-wrapper">\
-                <el-dropdown trigger="click" @command="handleCommand($event)">\
+                <el-dropdown trigger="click" @command="graphNotesHandleCommand($event)">\
                     <el-button size="small">\
                         <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
                         <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
                         <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{notesVisibilityLabel ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
@@ -1974,7 +1945,7 @@
                         <div class="bu-level-right bu-mt-1">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
-                                <add-note :category="this.category" @refresh="refresh" @notes-visibility-change="notesVisibility"></add-note>\
+                                <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
                             <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
                                 <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
@@ -2366,7 +2337,6 @@
 
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
-
                 return opt;
             }
         },
@@ -2375,12 +2345,12 @@
                 if (this.seriesOptions.type !== "line") {
                     this.seriesOptions.markPoint.data = [];
                 }
-                else if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                else if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
             },
             notesVisibility: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
                 else {
@@ -2483,7 +2453,7 @@
 
                     var tickObj = {};
 
-                    if (period === "month" && !this.bucket) {
+                    if (period === "month" && this.category !== "active-users" && !this.bucket) {
                         tickObj = chartsCommon.getTickObj("monthly", false, true);
                     }
                     else {
@@ -2531,12 +2501,12 @@
                 if (this.seriesOptions.type !== "line") {
                     this.seriesOptions.markPoint.data = [];
                 }
-                else if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                else if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
             },
             notesVisibility: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
                 else {
