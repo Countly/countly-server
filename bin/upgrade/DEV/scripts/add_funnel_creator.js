@@ -1,60 +1,63 @@
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var ObjectId = require('mongodb').ObjectId;
 
 console.log("Assign creator to funnels from systemlogs");
 
-pluginManager.dbConnection().then((countlyDb) => {
+pluginManager.dbConnection().then(async(countlyDb) => {
+
     var requests = [];
 
-    function update(done) {
-        if (requests.length > 0) {
-            console.log("Flushing changes:" + requests.length);
-            countlyDb.collection('funnels').bulkWrite(requests, function(err) {
-                if (err) {
-                    console.error(err);
-                }
-                if (done) {
-                    console.log("Done");
-                    countlyDb.close();
+    async function update(funnel) {
+        try {
+            var log = await countlyDb.collection('systemlogs').findOne({ 'i._id': funnel._id, 'a': "funnel_added" });
+            requests.push({
+                'updateOne': {
+                    'filter': { '_id': funnel._id },
+                    'update': {
+                        '$set': {'creator': countlyDb.ObjectID(log.user_id), 'created': log.ts}
+                    }
                 }
             });
+            if (requests.length === 500) {
+                //Execute per 500 operations and re-init
+                console.log("Flushing changes:" + requests.length);
+                try {
+                    await countlyDb.collection('funnels').bulkWrite(requests);
+                }
+                catch (err) {
+                    console.error(err);
+                }
+                requests = [];
+            }
         }
-        else if (done) {
-            console.log("Done");
-            countlyDb.close();
-
+        catch (err) {
+            console.log(err);
         }
     }
 
-    countlyDb.collection('funnels').find({ $or: [{ 'creator': null }, { 'created': null }] }).toArray(function(err, funnels) {
-        if (funnels.length === 0) {
+    try {
+        var funnels = await countlyDb.collection('funnels').find({ $or: [{ 'creator': null }, { 'created': null }] }).toArray();
+        if (funnels.length == 0) {
             console.log("No changes");
             countlyDb.close();
         }
         else {
-            funnels.forEach(function(funnel, index) {
-                countlyDb.collection('systemlogs').findOne({ 'i._id': funnel._id, 'a': "funnel_added" }, function(err, log) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    requests.push({
-                        'updateOne': {
-                            'filter': { '_id': funnel._id },
-                            'update': {
-                                '$set': {'creator': ObjectId(log.user_id), 'created': log.ts}
-                            }
-                        }
-                    });
-                    if (requests.length === 500) {
-                        //Execute per 500 operations and re-init
-                        update(false);
-                        requests = [];
-                    }
-                    if (index === funnels.length - 1) {
-                        update(true);
-                    }
-                });
-            });
+            for (const funnel of funnels) {
+                await update(funnel);
+            }
+            if (requests.length > 0) {
+                console.log("Flushing changes:" + requests.length);
+                try {
+                    await countlyDb.collection('funnels').bulkWrite(requests);
+                    console.log("Assign creator to funnel DONE");
+                }
+                catch (err) {
+                    console.error(err);
+                }
+            }
+            countlyDb.close();
         }
-    });
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
