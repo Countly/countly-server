@@ -889,7 +889,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             if (req.session.notify) {
                 try {
                     notify = JSON.parse(req.session.notify);
-                    delete req.session.notify;
                 }
                 catch (e) {
                     log.e('Failed to parse notify', e);
