@@ -1,6 +1,7 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+/* global Vue, countlyCommon, countlyLocation, _merge, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
+// _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
 
@@ -335,13 +336,13 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
-     /**
+    /**
      * Merging default object into array of objects
      * @param {Object|Array} objValue The destination object
      * @param {Object|Array} srcValue The source object
      * @returns {Object|Array} merged object/array
-     */
-      function mergeWithCustomizer(objValue, srcValue) {
+    */
+    function mergeWithCustomizer(objValue, srcValue) {
         if (Array.isArray(srcValue) && typeof objValue === 'object') {
             srcValue.forEach(function(value, index) {
                 srcValue[index] = _mergeWith(objValue, value);
