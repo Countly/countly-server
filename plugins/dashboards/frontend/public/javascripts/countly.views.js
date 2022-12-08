@@ -410,9 +410,6 @@
             isWidgetDisabled: function(widget) {
                 var disabled = false;
 
-                if (widget.feature === "core") {
-                    return disabled;
-                }
                 if (widget.isPluginWidget) {
                     /**
                      * For all plugin widgets, feature name is the plugin name.

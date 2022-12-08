@@ -1184,9 +1184,12 @@ plugins.setConfigs("dashboards", {
                     ], function(error, results) {
                         var hasEditAccess = results[0];
                         var hasViewAccess = results[1];
-
+                        var unsetQuery = {};
+                        if (widget.feature === "core") {
+                            unsetQuery.$unset = {"isPluginWidget": ""};
+                        }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget}, {new: false}, function(er, result) {
+                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
                                 if (er || !result || !result.value) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
