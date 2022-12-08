@@ -85,6 +85,11 @@
 
                 if (widgetSettings) {
                     var defaultEmpty = widgetSettings.drawer.getEmpty();
+                    if (this.widgetId) {
+                        // it is create
+                        defaultEmpty._id = this.widgetId;
+                        defaultEmpty.__action = "edit";
+                    }
                     this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
                 }
             },
@@ -371,7 +376,6 @@
                  * All widgets can be resized.
                  */
                 var disabled = this.isWidgetDisabled(widget);
-
                 if (disabled) {
                     return true;
                 }
@@ -944,6 +948,7 @@
         data: function() {
             return {
                 grid: null,
+                widgetId: null
             };
         },
         computed: {
@@ -980,6 +985,7 @@
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     var settings = Object.assign({}, empty, d);
+                    this.widgetId = settings._id;
                     this.openDrawer("widgets", settings);
                     break;
 
