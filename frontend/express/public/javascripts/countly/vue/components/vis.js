@@ -335,6 +335,21 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
+     /**
+     * Merging default object into array of objects
+     * @param {Object|Array} objValue The destination object
+     * @param {Object|Array} srcValue The source object
+     * @returns {Object|Array} merged object/array
+     */
+      function mergeWithCustomizer(objValue, srcValue) {
+        if (Array.isArray(srcValue) && typeof objValue === 'object') {
+            srcValue.forEach(function(value, index) {
+                srcValue[index] = _mergeWith(objValue, value);
+            });
+            return srcValue;
+        }
+    }
+
     /**
      * Calculating width of text
      * @param {string} txt Text value to calculate width.
@@ -911,7 +926,7 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option, mergeWithCustomizer);
                 var series = opt.series || [];
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
