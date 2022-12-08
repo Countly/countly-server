@@ -38,7 +38,6 @@ pluginManager.dbConnection().then(async(countlyDb) => {
         var funnels = await countlyDb.collection('funnels').find({ $or: [{ 'creator': null }, { 'created': null }] }).toArray();
         if (funnels.length == 0) {
             console.log("No changes");
-            countlyDb.close();
         }
         else {
             for (const funnel of funnels) {
@@ -48,16 +47,18 @@ pluginManager.dbConnection().then(async(countlyDb) => {
                 console.log("Flushing changes:" + requests.length);
                 try {
                     await countlyDb.collection('funnels').bulkWrite(requests);
-                    console.log("Assign creator to funnel DONE");
                 }
                 catch (err) {
                     console.error(err);
                 }
+                console.log("Assign creator to funnel DONE");
             }
-            countlyDb.close();
         }
     }
     catch (err) {
         console.log(err);
+    }
+    finally {
+        countlyDb.close();
     }
 });
