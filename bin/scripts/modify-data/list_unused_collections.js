@@ -2,6 +2,7 @@
  * Script list collections that are not used by Countly
  * Server: countly server
  * Path: countly/bin/scripts/modify-data
+ * Command: node list_unused_collections.js
  */
 
 var pluginManager = require('./../../../plugins/pluginManager.js'),
