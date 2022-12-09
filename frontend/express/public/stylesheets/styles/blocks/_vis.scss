@@ -413,11 +413,51 @@
         }
     }
     &__body {
+        margin-top: 12px;
+
         .input-notes {
             word-break: break-word; 
             display: inline-block; 
             white-space: normal;
         }
+    }
+}
+
+.graph-notes-tooltip.minimize {
+    width: 180px;
+
+    .input-owner {
+        font-size: 12px;
+    }
+
+    &__header {
+        margin-top: 0px;
+    }
+
+    .input-notes {
+        font-size: 12px;
+    }
+
+    .input-minimizer {
+        margin-bottom: 10px;
+    }
+
+    .graph-notes-tooltip__body {
+        margin-top: 5px;
+    }
+
+    .name-wrapper {
+        margin-top: 0px;
+    }
+
+    .note-date {
+        font-size: 11px;
+    }
+
+    .note-type {
+        margin-top: 2px;
+        font-size: 11px;
+        margin-right: 4px;
     }
 }
 
