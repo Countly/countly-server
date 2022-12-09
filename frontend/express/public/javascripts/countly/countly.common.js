@@ -3309,17 +3309,22 @@
         * Get time from seconds timestamp
         * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @param {boolean} [showSeconds=false] - used to return seconds
         * @returns {string} formated time
         * @example
         * //outputs 13:54
         * countlyCommon.getTime(1484654066);
         */
-        countlyCommon.getTime = function(timestamp) {
+        countlyCommon.getTime = function(timestamp, showSeconds = false) {
             if (Math.round(timestamp).toString().length === 10) {
                 timestamp *= 1000;
             }
             var d = new Date(timestamp);
-            return leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            var formattedTime = leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            if (showSeconds) {
+                formattedTime += ":" + leadingZero(d.getSeconds());
+            }
+            return formattedTime;
         };
 
         /**
