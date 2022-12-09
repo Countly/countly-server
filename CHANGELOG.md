@@ -1,3 +1,17 @@
+## Version 22.09.6
+Fixes:
+- [crashes] there can be binaries with same name, but different addresses
+- [dashboards] fixed unable to change data type for analytics widget on EDIT
+- [dashboards] changed date picker placement to bottom end
+- [push] fixed wrong reset type handling
+
+Enterprise fixes:
+- [active_users] improved precision for MAU
+- [crash_symbolication] bump version if there is new binary_images model
+- [funnels] creator added to funnel and displayed with creation time and last updated
+- [funnels] removed last updated, added style, displayed special characters in funnel name
+- [users] display nested objects correctly
+
 ## Version 22.09.5
 Fixes:
 - [compliance-hub] localization bugfix for compliance hub
