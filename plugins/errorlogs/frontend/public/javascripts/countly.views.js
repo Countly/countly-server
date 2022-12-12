@@ -1,4 +1,4 @@
-/*globals $,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV,countlyAuth */
+/*globals $,countlyErrorLogs,countlyGlobal,jQuery,CountlyHelpers,app,countlyVue,CV,countlyAuth */
 (function() {
     var FEATURE_NAME = "errorlogs";
     var ErrorLogsView = countlyVue.views.create({
