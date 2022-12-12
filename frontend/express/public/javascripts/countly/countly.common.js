@@ -4196,6 +4196,56 @@
         };
 
         /**
+        * Returns a string with a language-sensitive representation of this number.
+        * @memberof countlyCommon
+        * @param {string} value - expected value to be formatted
+        * @param {number} currencyVal - expected currency to be formatted
+        * @returns {string} formatted value
+        */
+        countlyCommon.numberToLocaleString = function(value, currencyVal) {
+            if (!value) {
+                return 0;
+            }
+            if (typeof value !== 'number') {
+                value = countlyCommon.localeStringToNumber(value);
+            }
+
+            return value.toLocaleString('en-US', { currency: currencyVal || "USD" });
+        };
+
+        /**
+        * Formats and returns local string to number
+        * @memberof countlyCommon
+        * @param {string} localeString - expected value to be formatted
+        * @returns {number} formatted value
+        */
+        countlyCommon.localeStringToNumber = function(localeString) {
+            var number = null, fractionFloat;
+            if (localeString) {
+                var isContainDot = localeString.includes('.');
+
+                if (isContainDot) {
+                    if (localeString.split('.')[1].length) {
+                        var fractionString = localeString.split('.')[1];
+                        var fractionNumber = parseInt(fractionString);
+                        var pow = fractionString.length;
+                        fractionFloat = fractionNumber / Math.pow(10, pow);
+                    }
+                    else {
+                        fractionFloat = 0.00;
+                    }
+
+                    number = parseFloat(localeString.split('.')[0].replaceAll(',', '')) + fractionFloat;
+                }
+                else {
+                    number = parseInt(localeString.replaceAll(',', ''));
+                }
+            }
+
+            return number;
+        };
+
+        /**
         * Get timestamp range in format as [startTime, endTime] with period and base time
         * @memberof countlyCommon
         * @param {object} period - period has two format: array or string
