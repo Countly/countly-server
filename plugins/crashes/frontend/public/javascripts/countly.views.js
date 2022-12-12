@@ -1278,6 +1278,24 @@
         this.renderWhenReady(getOverviewView());
     });
 
+    app.route("/crashes/filter/*query", "crashes", function(rawQuery) {
+        var parsedQuery = null;
+
+        try {
+            parsedQuery = JSON.parse(rawQuery);
+        }
+        catch (err) {
+            // no need to do anything, default parsedQuery is null
+        }
+
+        var view = getOverviewView();
+        view.params = {
+            query: parsedQuery
+        };
+
+        this.renderWhenReady(view);
+    });
+
     app.route("/crashes/:group", "crashgroup", function(group) {
         groupId = group;
         this.renderWhenReady(getCrashgroupView());
