@@ -4221,7 +4221,7 @@
         */
         countlyCommon.localeStringToNumber = function(localeString) {
             var number = null, fractionFloat;
-            if (localeString) {
+            if (localeString && typeof localeString === "string") {
                 var isContainDot = localeString.includes('.');
 
                 if (isContainDot) {
@@ -4240,9 +4240,10 @@
                 else {
                     number = parseInt(localeString.replaceAll(',', ''));
                 }
-            }
 
-            return number;
+                return number;
+            }
+            return localeString;
         };
 
         /**
