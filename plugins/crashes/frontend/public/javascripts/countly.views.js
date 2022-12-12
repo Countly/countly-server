@@ -585,7 +585,17 @@
             }
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/overview/refresh");
+            var query = {};
+            if (this.$route.params && this.$route.params.query) {
+                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
+
+                this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
+                this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
+            }
+
+            return Promise.all([
+                this.$store.dispatch("countlyCrashes/overview/refresh")
+            ]);
         }
     });
 
