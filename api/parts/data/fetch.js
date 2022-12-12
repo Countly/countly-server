@@ -2026,7 +2026,7 @@ fetch.alljobs = async function(metric, params) {
     if (params.qstring.sSearch) {
         var rr;
         try {
-            rr = new RegExp(params.qstring.sSearch, "i")
+            rr = new RegExp(params.qstring.sSearch, "i");
             pipeline.unshift({
                 $match: { name: { $regex: rr } }
             });
