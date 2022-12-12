@@ -296,10 +296,10 @@
                             countlyTaskManager.del(id, function(res, error) {
                                 if (res.result === "Success") {
                                     self.refresh();
-                                } else  {
+                                }
+                                else {
                                     CountlyHelpers.alert(error, "red");
-                                } 
-                                
+                                }
                             });
                         }, [CV.i18n("common.no-dont-delete"), CV.i18n("taskmanager.yes-delete-report")], {title: CV.i18n("taskmanager.confirm-delete-title"), image: "delete-report"});
                     }
