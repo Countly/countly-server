@@ -173,7 +173,7 @@ const FEATURE_NAME = 'compliance_hub';
                                 params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                             }
                             catch {
-                                console.log('Could not use as regex: '+ params.qstring.sSearch);
+                                console.log('Could not use as regex: ' + params.qstring.sSearch);
                             }
                         }
 
