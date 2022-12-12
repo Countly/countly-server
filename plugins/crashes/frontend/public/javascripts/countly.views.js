@@ -446,6 +446,13 @@
                         query = countlyCrashes.modifyExistsQueries(newValue.query);
                     }
 
+                    if (newValue.query) {
+                        app.navigate("#/crashes/filter/" + JSON.stringify({ query: newValue.query }));
+                    }
+                    else {
+                        app.navigate("#/crashes", true);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
