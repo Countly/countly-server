@@ -73,7 +73,7 @@
     "method-override": "3.0.0",
     "moment": "2.29.4",
     "moment-timezone": "0.5.40",
-    "mongodb": "4.9.1",
+    "mongodb": "4.12.1",
     "nginx-conf": "2.1.0",
     "node-xlsx-stream": "0.1.8",
     "nodemailer": "6.8.0",
