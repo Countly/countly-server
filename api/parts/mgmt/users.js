@@ -538,7 +538,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
-                    usersApi.deleteUserNotes(params);
+                    usersApi.deleteUserNotes(user.value._id.toString());
                 }
             });
         }
@@ -924,7 +924,12 @@ usersApi.fetchNotes = async function(params) {
         if (!appIds || appIds.length === 0) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
-        filteredAppIds = appIds.filter((appId) => hasAdminAccess(params.member, appId));
+        filteredAppIds = appIds.filter((appId) => {
+            if (hasAdminAccess(params.member, appId)) {
+                return true;
+            }
+            return false;
+        });
     }
     catch (e) {
         log.e(' got error while paring query notes appIds request', e);
