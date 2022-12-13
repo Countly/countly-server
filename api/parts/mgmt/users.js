@@ -918,24 +918,19 @@ usersApi.fetchNotes = async function(params) {
     // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
     let appIds = [];
-    let filtedAppIds = [];
+    let filteredAppIds = [];
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
         if (!appIds || appIds.length === 0) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
-        filtedAppIds = appIds.filter((appId) => {
-            if (hasAdminAccess(params.member, appId)) {
-                return true;
-            }
-            return false;
-        });
+        filteredAppIds = appIds.filter((appId) => hasAdminAccess(params.member, appId));
     }
     catch (e) {
         log.e(' got error while paring query notes appIds request', e);
     }
     const query = {
-        'app_id': {$in: filtedAppIds},
+        'app_id': {$in: filteredAppIds},
         'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
         $or: [
             {'owner': params.member._id + ""},
@@ -943,6 +938,7 @@ usersApi.fetchNotes = async function(params) {
             {'emails': {'$in': [params.member.email] }},
         ],
     };
+
     if (params.qstring.category) {
         query.category = {$in: JSON.parse(params.qstring.category)};
     }

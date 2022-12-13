@@ -990,7 +990,7 @@ exports.validateDelete = function(params, feature, callback, callbackParam) {
 exports.hasAdminAccess = function(member, app_id) {
     var hasPermissionObject = typeof member.permission !== "undefined";
 
-    if (hasPermissionObject && member.permission._.a.includes(app_id)) {
+    if (hasPermissionObject && member.permission._ && member.permission._.a && member.permission._.a.includes(app_id)) {
         return true;
     }
 
