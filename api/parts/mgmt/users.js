@@ -869,7 +869,7 @@ usersApi.deleteNote = async function(params) {
 **/
 usersApi.deleteUserNotes = async function(params) {
     const query = {
-        'owner': params.member._id + "",
+        'owner': params,
     };
     common.db.collection('notes').remove(query, function(error) {
         if (error) {
