@@ -1067,7 +1067,14 @@ membersUtility.findMembers = async function(query = {}) {
 */
 membersUtility.updateMember = async function(query = {}, data = {}, upsert = true) {
     return new Promise((resolve, reject) => {
-        this.db.collection('members').update(query, { $set: data }, { upsert }, (err) => {
+        try {
+            var copy = JSON.parse(JSON.stringify(data));
+        }
+        catch (ex) {
+            return reject(ex);
+        }
+        delete copy._id; // update on the path '_id' would modify the immutable field '_id'
+        this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
             if (err) {
                 reject(err);
             }

@@ -165,11 +165,11 @@ module.exports.dashboard = async function(params) {
     platforms.forEach(p => {
         ptq.push({
             $or: fields([p], true).map(f => ({
-                [f]: true
+                [f]: {$exists: true}
             }))
         });
         any.$or.push(...fields([p], true).map(f => ({
-            [f]: true
+            [f]: {$exists: true}
         })));
     });
 

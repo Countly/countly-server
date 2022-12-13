@@ -1,21 +1,27 @@
 #!/bin/bash
 
 #git config
-git config --global user.email "next@count.ly"
-git config --global user.name "next"
+git config --global user.email "merge@count.ly"
+git config --global user.name "merge"
+
+#get all git data
+git fetch --all --no-tags
+
+#get latest from master
+git checkout master
+git pull origin master --allow-unrelated-histories
 
 #get latest from next
 git checkout next
+git pull origin next --allow-unrelated-histories
 BRANCH="$(git symbolic-ref --short HEAD)";
-
-echo "Checking branch $BRANCH"
 
 if [ "$BRANCH" == "next" ]; then
     #merge master into next
-    git merge master
+    git merge master --allow-unrelated-histories
 
     #push changes to next
-    #git push
+    git push
 else
     exit 1;
 fi

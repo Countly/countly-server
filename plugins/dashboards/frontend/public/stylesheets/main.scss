@@ -131,11 +131,6 @@
             background-repeat: no-repeat;
             background-size: auto 16px;
         }
-
-        &__wrapper {
-            position: absolute;
-            top: 44px;
-        }
     }
 
     .clyd-legend-period {
@@ -206,5 +201,14 @@
                 display:none;
             }
         }
+    }
+}
+
+.dashboard-more-options {
+    padding: 2px !important;
+
+    &__divider {
+        border: 0; 
+        border-top: 1px solid #ccc;
     }
 }

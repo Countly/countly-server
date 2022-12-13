@@ -3,23 +3,28 @@
         <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
             <clyd-widget-title class="bu-level-item" :title="title" :labels="metricLabels"></clyd-widget-title>
         </div>
-        <div class="bu-level-right" style="padding-right: 20px" v-if="isAllowed">
+        <div class="bu-level-right" v-if="isAllowed">
             <div class="bu-level-item">
                 <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
             </div>
             <div class="bu-level-item">
                <cly-more-options @command="onWidgetCommand">
-                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                    <el-dropdown-item  v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'" command="zoom">{{i18n('common.zoom-in')}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'" command="zoom">{{i18n('common.zoom-in')}}</el-dropdown-item>
+                    <div v-if="data.visualization === 'time-series'">
+                    <hr class="dashboard-more-options__divider">
+                    <el-dropdown-item class="dashboard-more-options" command="add">{{i18n('notes.add-note')}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" command="manage">{{i18n('notes.manage-notes')}}</el-dropdown-item>
+                    <el-dropdown-item class="dashboard-more-options" command="show">{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>
+                    </div>    
                 </cly-more-options>
             </div>
         </div>
     </div>
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
     <clyd-primary-legend :apps="data.apps" :showApps="data.visualization !== 'time-series'" :custom-period="data.custom_period"></clyd-primary-legend>
-
-	<div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
+    <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
 		<template v-if="!loading">
             <cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :sub-category="data.feature === 'events' ? data.events : []">
             </cly-chart-time>
@@ -55,7 +60,6 @@
             <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
         </template>
 	</div>
-
+    <drawer :settings="drawerSettingsForWidgets" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
     <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series'"></clyd-secondary-legend>
-
 </div>

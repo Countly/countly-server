@@ -342,3 +342,65 @@
         }
     }
 }
+
+.el-tiptap-editor {
+    border-radius: 4px;
+    .el-tiptap-editor__menu-bar {
+        border-color: #cfd6e4;
+    }
+    .el-tiptap-editor__menu-bar::before {
+        background-color: #cfd6e4;
+    }
+    >.el-tiptap-editor__content {
+        border: 1px solid #cfd6e4 !important;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+        pre {
+            code {
+                font-family : "Courier New"
+            }
+        }
+    }
+    .el-tiptap-editor__footer {
+        border-color: #cfd6e4;
+    }
+    .border-top-radius {
+        border-top-left-radius: 4px !important;
+        border-top-right-radius: 4px !important;
+    }
+    .border-bottom-radius {
+        border-bottom-left-radius: 4px !important;
+        border-bottom-right-radius: 4px !important;
+    }
+    .fa-icon {
+        fill: #333C48; 
+    }
+}
+
+.el-tiptap-editor__content {
+    overflow-x: unset !important;
+    > pre > code {
+        font-family : "Courier New" !important;
+    }
+    span > span {
+        background-color: inherit;
+    }
+    hr {
+        width: 100%
+    }
+}
+
+.el-dialog {
+    &.el-tiptap-edit-link-dialog {
+        .el-button {
+            &.is-round {
+                border-radius: 4px;
+            }
+            &.el-button--primary {
+                border-color: #12AF51;
+                background-color: #12AF51;
+            }
+
+        }
+    }
+}

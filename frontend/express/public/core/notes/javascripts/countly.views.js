@@ -58,6 +58,9 @@
                     });
                 }
             },
+            decodeHtml: function(str) {
+                return countlyCommon.unescapeHtml(str);
+            },
             handleCommand: function(command, data) {
                 switch (command) {
                 case "delete":
@@ -68,11 +71,21 @@
                 case 'edit':
                     data.color = {value: data.color};
                     this.drawerSettings.isEditMode = true;
+                    data.note = countlyCommon.unescapeHtml(data.note);
                     this.openDrawer("annotation", data);
                     break;
                 default:
                     break;
                 }
+            },
+            createNote: function() {
+                this.openDrawer("annotation", {
+                    noteType: "private",
+                    ts: Date.now(),
+                    color: {value: 1, label: '#39C0C8'},
+                    emails: [],
+                    category: this.category
+                });
             },
             submitDeleteForm: function() {
                 this.showDeleteDialog = false;

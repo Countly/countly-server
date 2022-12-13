@@ -1,3 +1,112 @@
+## Version 22.09.6
+Fixes:
+- [crashes] there can be binaries with same name, but different addresses
+- [dashboards] fixed unable to change data type for analytics widget on EDIT
+- [dashboards] changed date picker placement to bottom end
+- [push] fixed wrong reset type handling
+
+Enterprise fixes:
+- [active_users] improved precision for MAU
+- [crash_symbolication] bump version if there is new binary_images model
+- [funnels] creator added to funnel and displayed with creation time and last updated
+- [funnels] removed last updated, added style, displayed special characters in funnel name
+- [users] display nested objects correctly
+
+## Version 22.09.5
+Fixes:
+- [compliance-hub] localization bugfix for compliance hub
+- [country] fixed handle undefined country data
+- [crashes] add log and return failed crash deletion
+- [crashes] clear selection after deletion or hiding
+- [crashes] multiple crash deletion fix
+- [crashes] remove crashgroup row click handler
+- [crashes] show alert for failed operations
+- [dashboards] unnecessary scrollbar on old widgets
+- [db] wrap bulkWrite operation for debug
+- [export] allow passing format to stream function for dates when exporting
+- [member-utility] prevent modify immutable field
+- [pdf] moved to pure puppeteer for pdf generation
+- [push] correct send now date for drafts
+- [push] remove device tokens on user removals and consents
+- [push] respecting rate limit
+- [push] switching to old request method because of outdated puppeteer monkey patching
+- [remote-config] fixed data passed to audit log
+- [remote-config] object check for json
+- [views] fix for views to return also value 'u' for period 'day' event if it matches uvalue
+- [views] fixed incorrect total view count for "this year" period
+
+Enterprise Fixes:
+- [active-users] active Users table date column formatting
+- [attribution] fixed error in attribution plugin
+- [concurrent_users] null check before registering labels in configuration view for concurrent users
+- [drill] fixed export downloads empty file, fixed period param for passing
+- [drill] fixed unescaped characters from chart's legend and querybuilder
+- [ldap] log error on ldap client error instead of throwing exception
+- [retention] cohort based breakdown in Retention doesn't show the cohort names
+- [retention] minor visual issues fixed in the Retention view
+- [user-management] make group names in user list clickable
+## Version 22.09.4
+Fixes:
+- [api] respond 200 on ignore of device_id
+- [dashboards] change width for dashboard report
+- [dependencies] html-pdf replaced with pdf-puppeteer
+- [dependencies] replaced external ip module with icanhazip
+- [export] adding timeout in export to prevent stream closed, cannot push to
+- [menu] update Applications and Settings menu item position
+- [push] empty error message for expired iOS tokens
+- [push] leaving push history on push api-consent removal
+- [star-rating] added null check
+- [star-rating] changes for star-rating refresh issue
+- [star-rating] percentage fix
+- [ui] ui fixes not using :has operator
+
+Enterprise Fixes:
+- [cohorts] fixes for realtime cohort in case of multiple ORs
+- [cohorts] null check and validation on unexpected data from db
+- [dashboards] removed info about decimal points for fotmula widget
+- [dashboards] showing correct period for buckets week and month for drill and formula
+- [dashboards] showing values on widgets even if range is smaller than bucket for drill and formula
+- [data-manager] null check fix
+- [data-manager] reduces i18n call
+- [formulas] visual fix for formulas dashboard widget
+
+## Version 22.09.3
+
+Fixes:
+- [applications] admin of app should be able to change settings to app in app managament view
+- [dbviewer] allow filtering collections by apps
+- [compliance-hub] fixed compliance hub ecport/purge issue
+- [core] activate selectedMode option for custom legend component
+- [crashes] modify exists queries to get correct result from db
+- [crashes] set crashgroup name as proper link
+- [crashes] store javascript property too
+- [dashboards] fixed legend issue
+- [dashboards] increases z-index and always showing scrollbar
+- [data-manager] fixes event sort by category
+- [data-migration] exporting also eventTimeline collection in data migration
+- [export] fixed export custom filename issue
+- [longtasks] do not record failure to create operation id as error in taskmanager
+- [period] DST fix, where we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+- [render] revert puppeteer dependency as new one installs chromium in user folder, which is not always accessible
+- [scripts] script for deleting members, which have not logged in for some time
+- [star-rating] fixed data is loaded when rating widget selected
+- [star-rating] fixed undefined numbers
+- [upgrade] update batch size for merge apm query
+
+Enterprise fixes:
+- [attribution] attribution save default URL issue
+- [cohorts] bugfixes for realtime cohorts
+- [concurrent_users] upsert command fixed
+- [data-manager] fixes data manager->Segmentation sorting
+- [data-manager] transformations sorting
+- [drill] null checks for loading drill widget data
+- [formulas] added recalculation button + showing last time data was recalculated
+- [formulas] fixed issue with cases when more than one report created for single bucket
+- [formulas] some old widgets have dplaces stored as string. Workaround for it.
+- [formulas] some widget have invalid value for buckets. Catching those and calling correct report creation
+- [revenue] fixes in the dashboard widget
+- [revenue] sorting bugs field in revenue table
+
 ## Version 22.09.2
 
 Fixes:

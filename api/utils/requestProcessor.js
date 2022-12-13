@@ -3234,7 +3234,7 @@ const fetchAppUser = (params) => {
 const ignorePossibleDevices = (params) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
-        common.returnMessage(params, 400, 'Ignoring device_id');
+        common.returnMessage(params, 200, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
         params.cancelRequest = "Ignoring zero IDFA device_id";
         plugins.dispatch("/sdk/cancel", {params: params});

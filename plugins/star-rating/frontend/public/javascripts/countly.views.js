@@ -905,7 +905,7 @@
                     }
                 });
                 // set widget filter as current one
-                this.activeFilter.widget = this.widget._id;
+                this.activeFilter.widget = this.widget._id || this.$route.params.id;
                 if (force) {
                     this.isLoading = true;
                 }
@@ -982,7 +982,10 @@
                 ];
             },
             ratingRate: function() {
-                var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
+                var timesShown = this.widget.timesShown === 0 || !this.widget.timesShown ? 1 : this.widget.timesShown;
+                if (timesShown < this.count) {
+                    timesShown = this.count;
+                }
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             }
         },

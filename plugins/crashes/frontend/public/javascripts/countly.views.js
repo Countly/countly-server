@@ -521,9 +521,6 @@
                     this.$store.dispatch("countlyCrashes/overview/refresh")
                 ]);
             },
-            handleRowClick: function(row) {
-                window.location.href = window.location.href + "/" + row._id;
-            },
             handleSelectionChange: function(selectedRows) {
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
                     return row._id;
@@ -534,6 +531,7 @@
             },
             setSelectedAs: function(state) {
                 var promise;
+                var self = this;
 
                 if (state === "resolved") {
                     promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
@@ -555,11 +553,26 @@
                 }
 
                 if (typeof promise !== "undefined") {
-                    promise.finally(function() {
-                        CountlyHelpers.notify({
-                            title: jQuery.i18n.map["configs.changed"],
-                            message: jQuery.i18n.map["configs.saved"]
-                        });
+                    promise.then(function(response) {
+                        if (Array.isArray(response.result)) {
+                            var itemList = response.result.reduce(function(acc, curr) {
+                                acc += "<li>" + curr + "</li>";
+                                return acc;
+                            }, "");
+                            CountlyHelpers.alert("<ul>" + itemList + "</ul>", "red", { title: CV.i18n("crashes.alert-fails") });
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
+                        }
+                    }).finally(function() {
+                        // Reset selection if command is delete or hide
+                        if (["delete", "hide"].includes(state)) {
+                            self.selectedCrashgroups = [];
+                            self.$refs.dataTable.$refs.elTable.clearSelection();
+                        }
                     });
                 }
             }

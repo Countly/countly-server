@@ -1184,9 +1184,12 @@ plugins.setConfigs("dashboards", {
                     ], function(error, results) {
                         var hasEditAccess = results[0];
                         var hasViewAccess = results[1];
-
+                        var unsetQuery = {};
+                        if (widget.feature === "core") {
+                            unsetQuery.$unset = {"isPluginWidget": ""};
+                        }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget}, {new: false}, function(er, result) {
+                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
                                 if (er || !result || !result.value) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
@@ -1338,7 +1341,7 @@ plugins.setConfigs("dashboards", {
                                 options.report = report;
                                 options.view = "/dashboard?ssr=true#" + "/custom/" + report.dashboards; //Set ssr=true (server side rendering)
                                 options.savePath = path.resolve(__dirname, savePath);
-                                options.dimensions = {width: 750, padding: 100};
+                                options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
                                 options.timeout = 120000;

@@ -1432,6 +1432,10 @@
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
+                // overwrite date with now() for send-now drafts
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
                 model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
@@ -2188,7 +2192,7 @@
             }
             return ret;
         },
-        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
+        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty, appId) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
@@ -2200,7 +2204,7 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        app_id: appId || countlyCommon.ACTIVE_APP_ID,
                         method: "get_cohorts",
                         outputFormat: "full"
                     },
