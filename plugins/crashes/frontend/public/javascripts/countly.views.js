@@ -296,45 +296,45 @@
                     });
                 };
 
-                crashMeta.initialize().then(function() {
-                    if (window.countlyQueryBuilder) {
-                        filterProperties.push({
-                            id: "app_version",
-                            name: "App Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getAppVersions
-                        });
-                        filterProperties.push({
-                            id: "opengl",
-                            name: "OpenGL Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("opengl")
-                        });
-                        filterProperties.push({
-                            id: "orientation",
-                            name: "Orientation",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("orientation")
-                        });
-                        filterProperties.push({
-                            id: "os",
-                            name: "Platform",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("os")
-                        });
-                        filterProperties.push({
-                            id: "cpu",
-                            name: "CPU",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("cpu")
-                        });
-                    }
-                });
+                crashMeta.initialize();
+
+                if (window.countlyQueryBuilder) {
+                    filterProperties.push({
+                        id: "app_version",
+                        name: "App Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getAppVersions
+                    });
+                    filterProperties.push({
+                        id: "opengl",
+                        name: "OpenGL Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("opengl")
+                    });
+                    filterProperties.push({
+                        id: "orientation",
+                        name: "Orientation",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("orientation")
+                    });
+                    filterProperties.push({
+                        id: "os",
+                        name: "Platform",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("os")
+                    });
+                    filterProperties.push({
+                        id: "cpu",
+                        name: "CPU",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("cpu")
+                    });
+                }
             }
 
             return {
