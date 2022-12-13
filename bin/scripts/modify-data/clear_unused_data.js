@@ -12,14 +12,20 @@ var pluginManager = require('./../../../plugins/pluginManager.js'),
 var appIDs = [];
 console.log("This script will list collections not used by Countly");
 
-function checkEvents(countlyDb, collections, callback) {
+function checkEvents(countlyDb, collections, apps, callback) {
 
     countlyDb.collection("events").find({}, {"list": true}).toArray(function(err, eventsDb) {
         var hashMap = {};
-        for (let z = 0; z < eventsDb.length; z++) {
+        for (let z = 0; z < apps.length; z++) {
 
-            for (let i = 0; i < eventsDb[z].list.length; i++) {
-                hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": eventsDb[z].list[i]};
+            var event = eventsDb.find(function(e) {
+                return e._id + "" === apps[z] + "";
+            });
+
+            if (event) {
+                for (let i = 0; i < event.list.length; i++) {
+                    hashMap[crypto.createHash('sha1').update(event.list[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": event.list[i]};
+                }
             }
 
             var internalDrillEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
@@ -27,13 +33,13 @@ function checkEvents(countlyDb, collections, callback) {
 
             if (internalDrillEvents) {
                 for (let i = 0; i < internalDrillEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalDrillEvents[i]};
+                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": internalDrillEvents[i]};
                 }
             }
 
             if (internalEvents) {
                 for (let i = 0; i < internalEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalEvents[i]};
+                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": internalEvents[i]};
                 }
             }
         }
@@ -52,15 +58,21 @@ function checkEvents(countlyDb, collections, callback) {
     });
 }
 
-function checkDrillEvents(countlyDb, drillDb, callback) {
+function checkDrillEvents(countlyDb, drillDb, apps, callback) {
 
     drillDb.collections(function(error, collections) {
         countlyDb.collection("events").find({}, {"list": true}).toArray(function(err, eventsDb) {
             var hashMap = {};
-            for (let z = 0; z < eventsDb.length; z++) {
+            for (let z = 0; z < apps.length; z++) {
 
-                for (let i = 0; i < eventsDb[z].list.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": eventsDb[z].list[i]};
+                var event = eventsDb.find(function(e) {
+                    return e._id + "" === apps[z] + "";
+                });
+
+                if (event) {
+                    for (let i = 0; i < event.list.length; i++) {
+                        hashMap[crypto.createHash('sha1').update(event.list[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": event.list[i]};
+                    }
                 }
 
                 var internalDrillEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
@@ -68,13 +80,13 @@ function checkDrillEvents(countlyDb, drillDb, callback) {
 
                 if (internalDrillEvents) {
                     for (let i = 0; i < internalDrillEvents.length; i++) {
-                        hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalDrillEvents[i]};
+                        hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": internalDrillEvents[i]};
                     }
                 }
 
                 if (internalEvents) {
                     for (let i = 0; i < internalEvents.length; i++) {
-                        hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalEvents[i]};
+                        hashMap[crypto.createHash('sha1').update(internalEvents[i] + apps[z] + "").digest('hex')] = {"a": apps[z], "e": internalEvents[i]};
                     }
                 }
             }
@@ -163,8 +175,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             }
             console.log("App collections", JSON.stringify(toRemove, null, 2));
             checkViewsCollections(countlyDb, collections, function() {
-                checkEvents(countlyDb, collections, function() {
-                    checkDrillEvents(countlyDb, drillDb, function() {
+                checkEvents(countlyDb, collections, appIDs, function() {
+                    checkDrillEvents(countlyDb, drillDb, appIDs, function() {
                         countlyDb.close();
                         drillDb.close();
                     });
