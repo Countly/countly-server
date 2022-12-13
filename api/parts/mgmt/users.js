@@ -538,7 +538,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
-                    usersApi.deleteUserNotes(user.value._id.toString());
+                    usersApi.deleteUserNotes({member: {_id: user.value._id.toString()}});
                 }
             });
         }
@@ -869,7 +869,7 @@ usersApi.deleteNote = async function(params) {
 **/
 usersApi.deleteUserNotes = async function(params) {
     const query = {
-        'owner': params,
+        'owner': params.member._id + "",
     };
     common.db.collection('notes').remove(query, function(error) {
         if (error) {
