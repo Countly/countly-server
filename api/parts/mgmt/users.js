@@ -538,7 +538,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
-                    usersApi.deleteUserNotes(params);
+                    usersApi.deleteUserNotes({member: {_id: user.value._id.toString()}});
                 }
             });
         }
@@ -918,13 +918,13 @@ usersApi.fetchNotes = async function(params) {
     // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
     let appIds = [];
-    let filtedAppIds = [];
+    let filteredAppIds = [];
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
         if (!appIds || appIds.length === 0) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
-        filtedAppIds = appIds.filter((appId) => {
+        filteredAppIds = appIds.filter((appId) => {
             if (hasAdminAccess(params.member, appId)) {
                 return true;
             }
@@ -935,7 +935,7 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes appIds request', e);
     }
     const query = {
-        'app_id': {$in: filtedAppIds},
+        'app_id': {$in: filteredAppIds},
         'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
         $or: [
             {'owner': params.member._id + ""},
@@ -943,6 +943,7 @@ usersApi.fetchNotes = async function(params) {
             {'emails': {'$in': [params.member.email] }},
         ],
     };
+
     if (params.qstring.category) {
         query.category = {$in: JSON.parse(params.qstring.category)};
     }
