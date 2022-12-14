@@ -998,7 +998,7 @@ exports.hasAdminAccess = function(member, app_id) {
     if (hasPermissionObject) {
         var types = ["c", "r", "u", "d"];
         for (var i = 0; i < types.length; i++) {
-            if (typeof member.permission[types[i]] !== 'undefined' && typeof member.permission[types[i]][app_id] !== 'undefined' && !member.permission[types[i]][app_id].all) {
+            if (member.permission[types[i]] && member.permission[types[i]][app_id] && !member.permission[types[i]][app_id].all) {
                 isAdmin = false;
             }
         }
