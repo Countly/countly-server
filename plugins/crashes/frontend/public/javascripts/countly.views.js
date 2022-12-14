@@ -523,8 +523,13 @@
         },
         methods: {
             refresh: function() {
+                var query = {};
+                if (this.crashgroupsFilter.query) {
+                    query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                }
+
                 return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter.query)}),
+                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
                     this.$store.dispatch("countlyCrashes/overview/refresh")
                 ]);
             },
