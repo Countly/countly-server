@@ -9,9 +9,9 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     countlyCommon = require('../../../../api/lib/countly.common'),
     fetch = require("../../../../api/parts/data/fetch.js"),
     log = common.log('dashboards:api'),
-    plugins = require("../../../pluginManager.js");
-    var AsyncLock = require('async-lock');
-    var lock = new AsyncLock();
+    plugins = require("../../../pluginManager.js"),
+    AsyncLock = require('async-lock'),
+    lock = new AsyncLock();
 
 /** @lends module:api/parts/data/dashboard */
 var dashboard = {};
@@ -381,11 +381,11 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
                     var appId = widgetApps[i];
                     widgetData[appId] = await getAnalyticsSessionDataForApp(params, apps, appId, widget);
                 }
-    
+
                 dashData.isValid = true;
                 dashData.data = widgetData;
                 widget.dashData = dashData;
-            })
+            });
         }
         catch (e) {
             log.d("Error while fetching analytics widget data for - ", widget);
