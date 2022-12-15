@@ -866,7 +866,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            notify, licenseError;
+            licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -888,7 +888,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             if (req.session.notify) {
                 try {
-                    notify = JSON.parse(req.session.notify);
+                    licenseNotification = JSON.parse(req.session.notify);
                 }
                 catch (e) {
                     log.e('Failed to parse notify', e);
@@ -929,7 +929,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
-                notify,
+                licenseNotification,
                 licenseError,
                 ssr: serverSideRendering,
                 timezones: timezones,

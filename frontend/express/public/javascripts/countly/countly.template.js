@@ -1528,8 +1528,8 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
-            while (countlyGlobal.notify && countlyGlobal.notify.length) {
-                CountlyHelpers.notify(countlyGlobal.notify.shift());
+            while (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length) {
+                CountlyHelpers.notify(countlyGlobal.licenseNotification.shift());
             }
 
             $(document).on('DOMNodeInserted', '.cly-select', function() {
