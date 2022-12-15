@@ -2764,6 +2764,21 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/^\.+/, replacement);
 };
 
+/**
+ * Sanitizes html content by allowing only safe tags
+ * @param {string} html - html content to sanitize
+ * @returns {string} sanitizedHTML - sanitized html content
+ */
+common.sanitizeHTML = (html) => {
+    const allowedTags = ['p', 'b', 'strong', 'i', 'em', 'a']; // only allow these tags
+
+    var sanitizedHtml = html.replace(/<\/?([^>]+)>/gi, (match, tag) => {
+        return allowedTags.includes(tag) ? match : '';
+    });
+
+    return sanitizedHtml;
+};
+
 
 /**
  *  Merge 2 mongodb update queries
