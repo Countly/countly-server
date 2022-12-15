@@ -159,10 +159,10 @@
                     <img src="images/icons/search-result.svg"></img>
                 </template>
                 <template v-slot:title>
-                    <h3 class="bu-has-text-centered bu-mt-4">...hmm, there is no result found</h3>
+                    <h3 class="bu-has-text-centered bu-mt-4">{{i18n('configs.no-search-result')}}</h3>
                 </template>
                 <template v-slot:subTitle>
-                    <p class="text-medium cool-gray-50 bu-m-0 bu-mt-4 bu-has-text-centered">Try adjusting your search to find what you're looking for</p>
+                    <p class="text-medium cool-gray-50 bu-m-0 bu-mt-4 bu-has-text-centered">{{i18n('configs.no-search-result-description')}}</p>
                 </template>
             </cly-blank>
             <div v-else v-for="(config, configKey) in searchResultStructure" :configKey="configKey">
