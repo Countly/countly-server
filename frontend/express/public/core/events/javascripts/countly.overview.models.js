@@ -1,7 +1,16 @@
-/*global countlyVue, CV, countlyCommon, CountlyHelpers, Promise */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers */
 (function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
+        decode: function(str) {
+            if (typeof str === 'string') {
+                return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+            }
+            return str;
+        },
+        encode: function(str) {
+            return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
+        },
         getEventOverview: function(ob) {
             var eventsOverview = [];
             var totalEvents = {};
@@ -35,11 +44,13 @@
                 var data = ob.data;
                 for (var i = 0; i < ob.data.length; i++) {
                     var event = {};
-                    event.key = data[i].name;
-                    event.name = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
+                    var eventKey = countlyEventsOverview.helpers.decode(data[i].name);
+                    event.key = eventKey;
+                    event.name = countlyEventsOverview.helpers.getEventLongName(eventKey, map);
                     event.value = countlyCommon.formatNumber((data[i].count));
                     event.change = data[i].change;
                     event.trend = data[i].trend;
+                    event.tooltip = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
                     event.percentage = ob.totalCount === 0 ? 0 : ((data[i].count / ob.totalCount) * 100).toFixed(1);
                     topEvents.push(event);
                 }
@@ -48,24 +59,18 @@
         },
         getBarData: function(sparklines, eventProperty) {
             var obj = {};
-            var grid = {};
-            var yAxis = {};
-            var legend = {};
-            var tooltip = {};
+            var yAxis = {
+                show: true,
+                splitNumber: 1,
+                minInterval: 1,
+                position: "right"
+            };
             var series = [];
             var ob = {};
             ob.name = eventProperty;
             ob.data = sparklines;
             series.push(ob);
-            grid.height = "100px";
-            grid.top = "-25px";
-            yAxis.show = false;
-            legend.show = false;
-            tooltip.show = false;
-            obj.grid = grid;
             obj.yAxis = yAxis;
-            obj.legend = legend;
-            obj.tooltip = tooltip;
             obj.series = series;
             return obj;
         },
@@ -106,8 +111,15 @@
             if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var label;
+                        if (map[item] && map[item].name && typeof map[item].name === 'string') {
+                            label = countlyEventsOverview.helpers.decode(map[item].name);
+                        }
+                        if (item && typeof item === 'string') {
+                            item = countlyEventsOverview.helpers.decode(item);
+                        }
                         var obj = {
-                            "label": map[item] && map[item].name ? map[item].name : item,
+                            "label": map[item] && map[item].name ? label : item,
                             "value": item
                         };
                         allEvents.push(obj);
@@ -118,7 +130,7 @@
                 groupList.forEach(function(item) {
                     if (item.status) {
                         var obj = {
-                            "label": item.name,
+                            "label": countlyEventsOverview.helpers.decode(item.name),
                             "value": item._id
                         };
                         allEvents.push(obj);
@@ -207,13 +219,30 @@
             var tableRows = [];
             if (data && data.length > 0) {
                 data.forEach(function(item) {
-                    if (!map[item.name] || (map[item.name] && (map[item.name].is_visible || map[item.name].is_visible === undefined))) {
+                    var eventKey;
+                    if (map) {
+                        if (!map[item.name] || (map[item.name] && (map[item.name].is_visible || map[item.name].is_visible === undefined))) {
+                            eventKey = countlyEventsOverview.helpers.decode(item.name);
+                            if (map[item] && map[item].name && typeof map[item].name === 'string') {
+                                eventKey = countlyEventsOverview.helpers.decode(map[item].name);
+                            }
+                            tableRows.push({
+                                "count": item.count,
+                                "sum": item.sum,
+                                "duration": item.duration,
+                                "key": eventKey,
+                                "name": countlyEventsOverview.helpers.getEventLongName(eventKey, map)
+                            });
+                        }
+                    }
+                    else {
+                        eventKey = countlyEventsOverview.helpers.decode(item.name);
                         tableRows.push({
                             "count": item.count,
                             "sum": item.sum,
                             "duration": item.duration,
-                            "key": item.name,
-                            "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
+                            "key": eventKey,
+                            "name": countlyEventsOverview.helpers.getEventLongName(eventKey, map)
                         });
                     }
                 });
@@ -221,7 +250,7 @@
             return tableRows;
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
@@ -439,7 +468,7 @@
                             if (res && res.overview) {
                                 context.commit("setConfigureOverview", res.overview.slice());
                                 for (var i = 0; i < res.overview.length; i++) {
-                                    events.push(res.overview[i].eventKey);
+                                    events.push(countlyEventsOverview.helpers.decode(res.overview[i].eventKey));
                                 }
                             }
                             countlyEventsOverview.service.fetchGroupData(context)

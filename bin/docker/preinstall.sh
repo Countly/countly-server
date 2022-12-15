@@ -10,4 +10,6 @@ do
 	echo "done"
 done <   <(find /opt/countly/plugins -mindepth 1 -maxdepth 1 -type d -print0)
 
+node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"
+
 export CXX="" && export CC=""

@@ -1,4 +1,4 @@
-/*global $, countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers,_*/
 
 (function() {
     var FEATURE_NAME = 'dbviewer';
@@ -105,7 +105,9 @@
         },
         watch: {
             selectedCollection: function(newVal) {
-                window.location.hash = "#/manage/db/" + this.db + "/" + newVal;
+                this.collection = newVal;
+                app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
+                this.tableStore.dispatch("fetchDbviewerTable");
                 store.set('dbviewer_app_filter', this.appFilter);
             }
         },
@@ -178,13 +180,18 @@
                 this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
             },
             getExportQuery: function() {
+
+                var sort = "";
+                if (this.sortEnabled) {
+                    sort = JSON.stringify(this.preparedSortObject);
+                }
                 var apiQueryData = {
                     api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
-                    filename: "DBViewer" + moment().format("DD-MMM-YYYY"),
+                    //filename: "DBViewer" + moment().format("DD-MMM-YYYY"), - using passed filename from form
                     projection: JSON.stringify(this.preparedProjectionFields),
                     query: this.queryFilter,
-                    //sort: JSON.stringify(this.preparedSortObject),
+                    sort: sort,
                     collection: this.collection,
                     db: this.db,
                     url: "/o/export/db"
@@ -197,6 +204,19 @@
             },
             highlight: function(content) {
                 return hljs.highlightAuto(content).value;
+            },
+            handleTableRowClick: function(row, _col, event) {
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Elements like button or input field should not expand row when clicked
+                var targetIsOK = !event.target.closest('button');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return 'bu-is-clickable';
             }
         },
         computed: {
@@ -229,14 +249,18 @@
             },
             preparedProjectionFields: function() {
                 var ob = {};
-                for (var i = 0; i < this.projection.length; i++) {
-                    ob[this.projection[i]] = 1;
+                if (this.projection && Array.isArray(this.projection)) {
+                    for (var i = 0; i < this.projection.length; i++) {
+                        ob[this.projection[i]] = 1;
+                    }
                 }
                 return ob;
             },
             preparedSortObject: function() {
                 var ob = {};
-                ob[this.sort] = this.isDescentSort ? -1 : 1;
+                if (this.sort) {
+                    ob[this.sort] = this.isDescentSort ? -1 : 1;
+                }
                 return ob;
             }
         },
@@ -443,8 +467,6 @@
     });
 
 
-    $(document).ready(function() {
-        app.addMenu("management", {code: "db", permission: FEATURE_NAME, url: "#/manage/db", text: "dbviewer.title", priority: 120});
-    });
+    app.addMenu("management", {code: "db", permission: FEATURE_NAME, url: "#/manage/db", text: "dbviewer.title", priority: 120});
 
 })();

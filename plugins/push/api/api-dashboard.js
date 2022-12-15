@@ -15,6 +15,81 @@ function add(from, to) {
     });
 }
 
+/**
+ * Dashboard request handler
+ * 
+ * @param {object} params params object
+ * 
+ * @api {get} o/push/dashboard Get dashboard data
+ * @apiName dashboard
+ * @apiDescription Get push notification dashboard data
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} app_id application id
+ *
+ * @apiSuccess {Object} sent Sent notifications metrics
+ * @apiSuccess {Number} sent.total Total quantity of notifications sent
+ * @apiSuccess {Object} sent.weekly Weekly metrics for sent notifications
+ * @apiSuccess {String[]} sent.weekly.keys Metrics keys
+ * @apiSuccess {Number[]} sent.weekly.data Metrics values
+ * @apiSuccess {Object} sent.monthly Monthly metrics for sent notifications
+ * @apiSuccess {String[]} sent.monthly.keys Metrics keys
+ * @apiSuccess {Number[]} sent.monthly.data Metrics values
+ * @apiSuccess {Object} sent.platforms Sent metrics per platform (same structure as in sent: total, weekly, monthly)
+ * @apiSuccess {Object} sent_automated Sent notifications metrics for automated messages (same structure as in sent)
+ * @apiSuccess {Object} sent_tx Sent notifications metrics for API messages (same structure as in sent)
+ * @apiSuccess {Object} actions Actions metrics (same structure as in sent)
+ * @apiSuccess {Object} actions_automated Actions metrics for automated messages (same structure as in sent)
+ * @apiSuccess {Object} actions_tx Actions metrics for API messages (same structure as in sent)
+ * @apiSuccess {Object} enabled Number of push notification - enabled user profiles per platform
+ * @apiSuccess {Number} users Total number of user profiles
+ * @apiSuccess {Object} platforms Map of platform key to platform title for all supported platforms
+ * @apiSuccess {Object} tokens Map of token key to token title for all supported platforms / modes
+ *
+ * @apiSuccessExample {json} Success-Response
+ *     HTTP/1.1 200 OK
+ *     {
+ *          sent: {
+ *              total: 100,
+ *              weekly: {
+ *                  keys: ["W22", "W23", "W24"],
+ *                  data: [0, 10, 2]
+ *              },
+ *              monthly: {
+ *                  keys: ["2021 May", "2021 Jun", "2021 Jul"],
+ *                  data: [0, 10, 2]
+ *              },
+ *              platforms: {
+ *                  i: {total, weekly, monthly},
+ *                  a: {total, weekly, monthly}
+ *              }
+ *          },
+ *          sent_automated: { /* same as sent *\/ },
+ *          sent_tx:  { /* same as sent *\/ },
+ *          actions: { /* same as sent *\/ },
+ *          actions_automated:  { /* same as sent *\/ },
+ *          actions_tx:  { /* same as sent *\/ },
+ *          enabled: {
+ *              total: 100,
+ *              i: 40,
+ *              a: 60,
+ *              h: 20
+ *          },
+ *          users: 200,
+ *          platforms: {
+ *              a: "Android",
+ *              i: "iOS"
+ *          },
+ *          tokens: {
+ *              tkap: "FCM Token",
+ *              tkip: "APN Production Token",
+ *              tkid: "APN Development Token",
+ *              tkia: "APN AdHoc / TestFlight Token"
+ *          }
+ *      }
+ *
+ * @apiUse PushValidationError
+ */
 module.exports.dashboard = async function(params) {
     let app_id = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},

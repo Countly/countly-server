@@ -1,4 +1,4 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, $ */
 
 (function(countlyCrashes) {
     var _list = {};
@@ -457,6 +457,20 @@
             }
         };
 
+        _crashgroupSubmodule.getters.crashgroupUnsymbolicatedStacktrace = function(state) {
+            var crashId = state.crashgroup.lrid;
+
+            var crash = state.crashgroup.data.find(function(item) {
+                return item._id === crashId;
+            });
+
+            if (crash && crash.symbolicated) {
+                return crash.olderror;
+            }
+
+            return "";
+        };
+
         _crashgroupSubmodule.getters.crashes = function(state) {
             if ("data" in state.crashgroup) {
                 return state.crashgroup.data;
@@ -470,7 +484,7 @@
             if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
-                    occurrences: state.crashgroup.total,
+                    occurrences: state.crashgroup.reports,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version
@@ -690,20 +704,25 @@
                             }
 
                             if (typeof countlyCrashSymbols !== "undefined") {
+                                var latestCrash = crashgroupJson.data.find(function(item) {
+                                    return item._id === crashgroupJson.lrid;
+                                });
+
                                 var crashes = [{
                                     _id: crashgroupJson.lrid,
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
-                                    app_version: crashgroupJson.latest_version
+                                    app_version: crashgroupJson.latest_version,
+                                    build_uuid: latestCrash && latestCrash.build_uuid
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
 
                                 var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
                                 ajaxPromises.push(ajaxPromise);
-                                ajaxPromise.then(function(symbolIndexing) {
+                                ajaxPromise.then(function(fetchSymbolsResponse) {
                                     crashes.forEach(function(crash, crashIndex) {
-                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
                                         if (typeof symbol_id !== "undefined") {
                                             if (crashIndex === 0) {
                                                 crashgroupJson._symbol_id = symbol_id;
@@ -775,8 +794,8 @@
                     reject(null);
                 }
                 else {
-                    countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
-                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                    countlyCrashSymbols.fetchSymbols(false).then(function(fetchSymbolsResponse) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
                                 resolve(json);
@@ -1079,6 +1098,39 @@
             return _list[id];
         }
         return id;
+    };
+
+    countlyCrashes.modifyExistsQueries = function(inpQuery) {
+        var resultQuery = {};
+        var existsGroups = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (inpQuery[key].$exists) {
+                var prefix = key.split(".")[0];
+                var obj = {};
+                obj[key] = inpQuery[key];
+
+                if (existsGroups[prefix]) {
+                    existsGroups[prefix] = existsGroups[prefix].concat(obj);
+                }
+                else {
+                    existsGroups[prefix] = [obj];
+                }
+            }
+            else {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        Object.values(existsGroups).forEach(function(group, idx) {
+            if (idx === 0) {
+                resultQuery.$and = [];
+            }
+
+            resultQuery.$and.push({$or: group});
+        });
+
+        return resultQuery;
     };
 
 }(window.countlyCrashes = window.countlyCrashes || {}));

@@ -41,7 +41,12 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
     const parseData = function(obj) {
         let d = "";
         if (typeof obj === 'object') {
-            d = JSON.stringify(obj);
+            if (common.dbext.ObjectId.isValid(obj)) {
+                d = obj + "";
+            }
+            else {
+                d = JSON.stringify(obj);
+            }
         }
         else {
             d = obj;
@@ -69,7 +74,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
                 return jsonStr.replace(/"|\\"/g, '\\"');
             }
             props.forEach(prop => {
-                obj = obj[prop] || undefined;
+                obj = (obj && obj[prop]) || undefined;
             });
         }
         catch (e) {

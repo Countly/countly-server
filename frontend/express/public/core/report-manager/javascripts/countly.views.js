@@ -122,6 +122,9 @@
             canDeleteReport: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
             },
+            canStopReport: function() {
+                return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
+            },
             query: function() {
                 var q = {};
                 if (this.fixedOrigin) {
@@ -165,7 +168,7 @@
                     }
                     return {
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
                             query: JSON.stringify(queryObject)
                         }
@@ -231,6 +234,7 @@
                     "all": CV.i18n("report-manager.all-statuses"),
                     "running": CV.i18n("common.running"),
                     "rerunning": CV.i18n("taskmanager.rerunning"),
+                    "stopped": CV.i18n("common.stopped"),
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
@@ -264,6 +268,14 @@
                     return false;
                 }
             },
+            isStopable: function(row) {
+                if (row.status === "running" && row.op_id && row.comment_id) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
             isReadyForView: function(row) {
                 return row.view && row.hasData;
             },
@@ -272,6 +284,7 @@
             },
             handleCommand: function(command, row) {
                 var id = row._id,
+                    op_id = row.op_id,
                     self = this;
 
                 if (id) {
@@ -301,6 +314,23 @@
                                 }
                             });
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-task")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
+                    }
+                    else if (command === "stop-task") {
+                        CountlyHelpers.confirm(CV.i18n("taskmanager.confirm-stop"), "popStyleGreen", function(result) {
+                            if (!result) {
+                                return true;
+                            }
+                            self.refresh();
+                            countlyTaskManager.stop(id, op_id, function(res, error) {
+                                if (res.result === "Success") {
+                                    countlyTaskManager.monitor(id, true);
+                                    self.refresh();
+                                }
+                                else {
+                                    CountlyHelpers.alert(error, "red");
+                                }
+                            });
+                        }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-stop-task")], {title: CV.i18n("taskmanager.confirm-stop-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
                         self.$emit("view-task", row);
@@ -420,7 +450,7 @@
                     this.fetchingCount = true;
                     CV.$.ajax({
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
                             query: JSON.stringify(q)
                         }

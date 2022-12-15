@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, jQuery*/
+/*global countlyCommon, jQuery*/
 (function(countlyAssistant, $) {
 
     //Private Properties
@@ -23,7 +23,6 @@
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     display_loader: !isRefresh,
-                    api_key: countlyGlobal.member.api_key,
                     "preventRequestAbort": true
                 },
                 success: function(json) {

@@ -125,7 +125,7 @@
     var userDataResource = countlyVue.vuex.ServerDataTable("userDataResource", {
         columns: ['_id', 'd', 'av', 'consent', 'lac'],
         loadedData: {},
-        //eslint-disable-next-line 
+        //eslint-disable-next-line
         onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
@@ -162,11 +162,22 @@
     var exportHistoryDataResource = countlyVue.vuex.ServerDataTable("exportHistoryDataResource", {
         columns: ['u', 'ip', 'actions', 'ts'],
         loadedData: {},
-        //eslint-disable-next-line 
+        //eslint-disable-next-line
         onRequest: function(context) {
+            var action = context.getters.exportHistoryFilter;
+
+            var actionQuery;
+            if (action === "all") {
+                actionQuery = {"$in": ["export_app_user", "app_user_deleted", "export_app_user_deleted"]};
+            }
+            else {
+                actionQuery = action;
+            }
+
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                period: countlyCommon.getPeriodForAjax()
+                period: countlyCommon.getPeriodForAjax(),
+                query: JSON.stringify({a: actionQuery})
             };
 
             return {
@@ -205,7 +216,7 @@
     var consentHistoryResource = countlyVue.vuex.ServerDataTable("consentHistoryResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
         loadedData: {},
-        // eslint-disable-next-line 
+        // eslint-disable-next-line
         onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
@@ -245,7 +256,7 @@
 
     var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
-        // eslint-disable-next-line 
+        // eslint-disable-next-line
         onRequest: function(context, payload) {
             context.rootState.countlyConsentManager.isLoading = true;
             var data = {
@@ -289,6 +300,7 @@
                     _consentDP: {},
                     _exportDP: {},
                     _bigNumberData: {},
+                    exportHistoryFilter: "all",
                     isLoading: false,
                     uid: ''
                 };
@@ -319,6 +331,9 @@
         _consentManagerDbModule.getters._bigNumberData = function(state) {
             return state._bigNumberData;
         };
+        _consentManagerDbModule.getters.exportHistoryFilter = function(state) {
+            return state.exportHistoryFilter;
+        };
         _consentManagerDbModule.mutations._ePData = function(state, payload) {
             state._ePData = payload;
             state._ePData = Object.assign({}, state._ePData, {});
@@ -338,6 +353,9 @@
         _consentManagerDbModule.mutations._bigNumberData = function(state, payload) {
             state._bigNumberData = payload;
             state._bigNumberData = Object.assign({}, state._bigNumberData, {});
+        };
+        _consentManagerDbModule.mutations.exportHistoryFilter = function(state, value) {
+            state.exportHistoryFilter = value;
         };
         _consentManagerDbModule.mutations.uid = function(state, payload) {
             state.uid = payload;

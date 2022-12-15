@@ -11,26 +11,26 @@
             <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="false" :force-loading="isLoading">
+            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" width="226" prop="period" :label="i18n('slipping-away-users.table-period')">
+                    <el-table-column sortable="custom"  prop="period" :label="i18n('slipping-away-users.table-period')">
                     </el-table-column>
-                    <el-table-column sortable="custom" width="335" prop="count" :label="i18n('slipping-away-users.table-count')">
+                    <el-table-column sortable="custom"  prop="count" :label="i18n('slipping-away-users.table-count')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.count)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" width="290" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
+                    <el-table-column sortable="custom"  prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                         <template slot-scope="scope">
-                            <div class="bu-level-left" style="padding: 7px 28px 7px 8px;">
+                            <div class="bu-level-left" style="padding: 7px 28px 7px 0;">
                                 <div class="bu-level-item slipping-away-users-table__data-item">
-                                    <span>{{scope.row.percentage}} %</span>
+                                    <span>{{scope.row.percentage}}%</span>
                                 </div>
-                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" style="margin-left: -4px;"> </cly-progress-bar>
+                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor"> </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="timeStamp"  align="center">
+                    <el-table-column prop="timeStamp"  align="center" v-if="showViewUsers">
                         <template slot-scope="scope">
                             <div class="bu-level-right">
                                 <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}}</el-link>

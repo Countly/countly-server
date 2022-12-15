@@ -2,6 +2,7 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     automaticStateManager = require('./helpers/automaticStateManager'),
+    log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'logger';
@@ -46,7 +47,10 @@ plugins.setConfigs("logger", {
     };
 
     var processSDKRequest = function(params) {
+        log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
+        log.d("Logging config => ", requestLoggerConfiguration);
+        log.d("Should Log request? => ", shouldLogRequest(requestLoggerConfiguration));
         if (params.logging_is_allowed && shouldLogRequest(requestLoggerConfiguration)) {
             params.log_processed = true;
             var now = new Date().getTime();
@@ -251,6 +255,8 @@ plugins.setConfigs("logger", {
                 c: (params.cancelRequest) ? params.cancelRequest : false,
                 res: response
             };
+
+            log.d("problems found", problems);
 
             plugins.dispatch("/log", { params: params, insertData: insertData, problems: problems }, function() {
                 //Set problems after log event dispatched

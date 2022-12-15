@@ -18,7 +18,11 @@
                         <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <div class="crash-group-title has-ellipsis" v-html="col.row.name"></div>
+                                    <a
+                                        class="crash-group-title has-ellipsis"
+                                        :href="'#/crashes/' + col.row._id"
+                                        v-html="col.row.name">
+                                    </a>
                                     <div class="bu-mt-2 bu-is-flex">
                                         <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badgesFor(col.row)"></crash-badge>
                                     </div>
@@ -124,45 +128,45 @@
                     <div class="text-small text-uppercase bu-mx-3" style="color: #969FAD;">{{i18n("crashes.crash-filters")}}</div>
                     <cly-multi-select v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
                 </div>
-                <cly-section class="crashes-statistics-graph">
+                <div class="crashes-statistics-graph">
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>
                         <el-tab-pane name="total-occurrences" style="border-top-left-radius: 4px;">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.total')" :tooltip="i18n('crashes.help-total')" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.total')" :tooltip="i18n('crashes.help-total')" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cr')"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cr')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="unique-crashes">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.unique')" :tooltip="i18n('crashes.help-unique')" :data="dashboardData[{'both': 'cru', 'fatal': 'cruf', 'nonfatal': 'crunf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.unique')" :tooltip="i18n('crashes.help-unique')" :data="dashboardData[{'both': 'cru', 'fatal': 'cruf', 'nonfatal': 'crunf'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cru')"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cru')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashes-per-session">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.total-per-session')" :tooltip="i18n('crashes.help-frequency-short')" :data="dashboardData[{'both': 'cr-session', 'fatal': 'crtf', 'nonfatal': 'crtnf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.total-per-session')" :tooltip="i18n('crashes.help-frequency-short')" :data="dashboardData[{'both': 'cr-session', 'fatal': 'crtf', 'nonfatal': 'crtnf'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cr-session')"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('cr-session')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashfree-users">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.free-users')" :tooltip="i18n('crashes.help-free-users')" :data="dashboardData[{'both': 'crau', 'fatal': 'crauf', 'nonfatal': 'craunf'}[activeFilter.fatality]]" negateTrend>
+                                <crash-tab-label :title="i18n('crashes.free-users')" :tooltip="i18n('crashes.help-free-users')" :data="dashboardData[{'both': 'crau', 'fatal': 'crauf', 'nonfatal': 'craunf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crau')"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crau')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashfree-sessions" style="border-top-right-radius: 4px;">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]" negateTrend>
+                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crses')"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crses')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                     </el-tabs>
-                </cly-section>
+                </div>
             </cly-main>
         </el-tab-pane>
     </cly-tabs>

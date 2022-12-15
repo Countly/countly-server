@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS, Uint32Array*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -289,6 +289,15 @@
             var div = document.createElement('div');
             div.innerText = html;
             return div.innerHTML;
+        };
+
+        countlyCommon.unescapeHtml = function(htmlStr) {
+            htmlStr = htmlStr.replace(/&lt;/g, "<");
+            htmlStr = htmlStr.replace(/&gt;/g, ">");
+            htmlStr = htmlStr.replace(/&quot;/g, "\"");
+            htmlStr = htmlStr.replace(/&#39;/g, "\'");
+            htmlStr = htmlStr.replace(/&amp;/g, "&");
+            return htmlStr;
         };
 
         /**
@@ -1625,6 +1634,7 @@
                 currOrPrevious = _.pluck(dataProperties, "period"),
                 activeDate,
                 activeDateArr;
+            var previousDateArr = [];
 
             for (var j = 0; j < propertyNames.length; j++) {
                 if (currOrPrevious[j] === "previous") {
@@ -1637,6 +1647,24 @@
                         activeDate = countlyCommon.periodObj.previousPeriod;
                     }
                 }
+                else if (currOrPrevious[j] === "previousThisMonth") {
+                    //get first date of current month
+                    var date = new Date();
+                    var lastDay = new Date(date.getFullYear(), date.getMonth(), 1);
+
+                    // count of days of the current month
+                    var currentMonthCount = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+                    // get date of currenthMonthCount days ago
+                    var firstDay = new Date(lastDay.getTime());
+                    firstDay.setDate(lastDay.getDate() - currentMonthCount);
+
+                    // get an array between two date
+                    for (var arr = [], dt = new Date(firstDay); dt <= new Date(lastDay); dt.setDate(dt.getDate() + 1)) {
+                        arr.push(dt.getFullYear() + '.' + (dt.getMonth() + 1) + '.' + dt.getDate());
+                    }
+                    previousDateArr = arr;
+                }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
                         periodMin = 0;
@@ -1647,44 +1675,67 @@
                         activeDate = countlyCommon.periodObj.activePeriod;
                     }
                 }
-                for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
+                if (currOrPrevious[j] === "previousThisMonth") {
+                    for (var p = 0, counter_ = 0; p < previousDateArr.length - 1; p++, counter_++) {
+                        formattedDate = moment((previousDateArr[p]).replace(/\./g, "/"), "YYYY/MM/DD");
+                        dataObj = countlyCommon.getDescendantProp(db, previousDateArr[p] + metric);
+                        dataObj = clearFunction(dataObj);
 
-                    if (!countlyCommon.periodObj.isSpecialPeriod) {
-
-                        if (countlyCommon.periodObj.periodMin === 0) {
-                            formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                        if (!tableData[counter_]) {
+                            tableData[counter_] = {};
                         }
-                        else if (("" + activeDate).indexOf(".") === -1) {
-                            formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+
+                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        var propertyValue_ = "";
+                        if (propertyFunctions[j]) {
+                            propertyValue_ = propertyFunctions[j](dataObj);
                         }
                         else {
-                            formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                            propertyValue_ = dataObj[propertyNames[j]];
                         }
 
-                        dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        chartData[j].data[chartData[j].data.length] = [counter_, propertyValue_];
+                        tableData[counter_][propertyNames[j]] = propertyValue_;
                     }
-                    else {
-                        formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
-                        dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
-                    }
+                }
+                else {
+                    for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
+                        if (!countlyCommon.periodObj.isSpecialPeriod) {
+                            if (countlyCommon.periodObj.periodMin === 0) {
+                                formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                            }
+                            else if (("" + activeDate).indexOf(".") === -1) {
+                                formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+                            }
+                            else {
+                                formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                            }
 
-                    dataObj = clearFunction(dataObj);
+                            dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        }
+                        else {
+                            formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                            dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
+                        }
 
-                    if (!tableData[counter]) {
-                        tableData[counter] = {};
-                    }
+                        dataObj = clearFunction(dataObj);
 
-                    tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
-                    var propertyValue = "";
-                    if (propertyFunctions[j]) {
-                        propertyValue = propertyFunctions[j](dataObj);
-                    }
-                    else {
-                        propertyValue = dataObj[propertyNames[j]];
-                    }
+                        if (!tableData[counter]) {
+                            tableData[counter] = {};
+                        }
 
-                    chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
-                    tableData[counter][propertyNames[j]] = propertyValue;
+                        tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        var propertyValue = "";
+                        if (propertyFunctions[j]) {
+                            propertyValue = propertyFunctions[j](dataObj);
+                        }
+                        else {
+                            propertyValue = dataObj[propertyNames[j]];
+                        }
+
+                        chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                        tableData[counter][propertyNames[j]] = propertyValue;
+                    }
                 }
             }
 
@@ -2692,7 +2743,10 @@
                 else {
                     if (_period === "day") {
                         start.add(1, 'days');
-                        for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
+                        var now = new Date();
+                        // it will add the count of days of the current month to the x-axis label
+                        var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                        for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             start.add(1, 'days');
@@ -3591,7 +3645,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3620,7 +3674,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3722,7 +3776,7 @@
                     });
                 }
                 else {
-                    cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+                    cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
                     Object.assign(periodObject, {
                         dateString: "D MMM",
                         isSpecialPeriod: true
@@ -3829,8 +3883,8 @@
             Object.assign(periodObject, {
                 start: startTimestamp.valueOf(),
                 end: endTimestamp.valueOf(),
-                daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
-                numberOfDays: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+                daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), //due to daylight saving time we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+                numberOfDays: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
                 periodContainsToday: (startTimestamp <= currentTimestamp) && (currentTimestamp <= endTimestamp),
             });
 
@@ -4339,21 +4393,30 @@
             window.app.localize();
         };
 
-        countlyCommon.getGraphNotes = function(appIds, callBack) {
+        countlyCommon.getGraphNotes = function(appIds, filter, callBack) {
             if (!appIds) {
                 appIds = [];
+            }
+            var args = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "notes_apps": JSON.stringify(appIds),
+                "period": JSON.stringify([countlyCommon.periodObj.start, countlyCommon.periodObj.end]),
+                "method": "notes",
+                "dt": Date.now()
+            };
+            if (filter && filter.noteType) {
+                args.note_type = filter.noteType;
+            }
+            if (filter && filter.category) {
+                args.category = JSON.stringify(filter.category);
+            }
+            if (filter && filter.customPeriod) {
+                args.period = JSON.stringify(filter.customPeriod);
             }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "api_key": window.countlyGlobal.member.api_key,
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "category": "session",
-                    "notes_apps": JSON.stringify(appIds),
-                    "period": countlyCommon.getPeriod(),
-                    "method": "notes",
-                },
+                data: args,
                 success: function(json) {
                     var notes = json && json.aaData || [];
                     var noteSortByApp = {};

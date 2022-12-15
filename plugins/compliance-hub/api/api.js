@@ -150,7 +150,7 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
-                common.db.collection("consent_history" + params.qstring.app_id).find(query).count(function(err, total) {
+                common.db.collection("consent_history" + params.qstring.app_id).count(query, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
                     }

@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -20,6 +20,9 @@
         mixins: [],
         data: function() {
             return {
+                imageSource: '',
+                deleteLogo: false,
+                imageSrc: '',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -35,7 +38,7 @@
                     acceptedFiles: 'image/jpeg,image/png,image/gif',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/feedback/logo",
+                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
                     paramName: "logo",
                     params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
                 },
@@ -43,6 +46,14 @@
                 stamp: 0,
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
+        },
+        watch: {
+            imageSource: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.imageSrc = newValue;
+                }
+            },
         },
         methods: {
         // drawer event handlers
@@ -65,6 +76,10 @@
 
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
+                }
+
+                if (!this.imageSource) {
+                    submitted.logo = '';
                 }
 
                 if (this.cohortsEnabled) {
@@ -101,9 +116,28 @@
                     });
                 }
             },
-            onOpen: function() {},
-            onFileAdded: function() {
+            onOpen: function() {
                 var self = this;
+                var loadImage = new Image();
+                if (this.controls.initialEditedObject.logo) {
+                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                }
+                loadImage.onload = function() {
+                    self.imageSource = loadImage.src;
+                };
+            },
+            onFileRemoved: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
+            },
+            onFileAdded: function(file) {
+                this.deleteLogo = false;
+                var img = new FileReader();
+                var self = this;
+                img.onload = function() {
+                    self.imageSource = img.result;
+                };
+                img.readAsDataURL(file);
                 this.stamp = Date.now();
                 this.logoDropzoneOptions.params.identifier = this.stamp;
                 setTimeout(function() {
@@ -112,6 +146,10 @@
             },
             onComplete: function(res) {
                 this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+            },
+            remove: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
             }
         }
     });
@@ -126,6 +164,7 @@
             preparedRows: function() {
                 return this.comments.map(function(comment) {
                     comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     return comment;
                 });
             }
@@ -140,7 +179,16 @@
     var RatingsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
-            ratings: Array
+            ratings: Array,
+            loadingState: Boolean
+        },
+        computed: {
+            preparedRows: function() {
+                return this.ratings.map(function(rating) {
+                    rating.percentage = parseFloat(rating.percent) || 0;
+                    return rating;
+                });
+            }
         },
         data: function() {
             return {
@@ -270,7 +318,8 @@
                 comments: [],
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 widgetOptions: [{label: 'All Widgets', value: ''}],
-                versionOptions: [{label: 'All Versions', value: ''}]
+                versionOptions: [{label: 'All Versions', value: ''}],
+                isLoading: false
             };
         },
         methods: {
@@ -370,11 +419,15 @@
 
                 ratingArray.sort();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         self.widgets = starRatingPlugin.getFeedbackWidgetsData();
                         // set rating data for charts
@@ -436,7 +489,7 @@
             }
         },
         created: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -482,13 +535,13 @@
                     trigger_position: 'mleft',
                     trigger_size: 'm',
                     contact_enable: false,
-                    popup_email_callout: 'Contact me e-mail',
+                    popup_email_callout: 'Contact me via e-mail',
                     popup_comment_callout: 'Add comment',
                     comment_enable: false,
                     ratings_texts: [
-                        'Very dissatisfied',
-                        'Somewhat dissatisfied',
-                        'Neither satisfied Nor Dissatisfied',
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
                         'Somewhat Satisfied',
                         'Very Satisfied'
                     ],
@@ -656,7 +709,8 @@
                 },
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 versionOptions: [{label: 'All Versions', value: ''}],
-                platform_version: {}
+                platform_version: {},
+                isLoading: false
             };
         },
         methods: {
@@ -759,7 +813,42 @@
                         steps: null
                     };
                 }
+                if (!this.widget.rating_symbol) {
+                    this.widget.rating_symbol = "emojis";
+                }
+                if (!this.widget.ratings_texts) {
+                    this.widget.ratings_texts = [
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
+                        'Somewhat Satisfied',
+                        'Very Satisfied'
+                    ];
+                }
+                if (!this.widget.contact_enable) {
+                    this.widget.contact_enable = false;
+                }
+                if (!this.widget.comment_enable) {
+                    this.widget.comment_enable = false;
+                }
+                if (!this.widget.trigger_size) {
+                    this.widget.trigger_size = 'm';
+                }
+                if (!this.widget.status) {
+                    this.widget.status = true;
+                }
+                if (!this.widget.logo) {
+                    this.widget.logo = null;
+                }
+                if (!this.widget.targeting) {
+                    this.widget.targeting = {
+                        user_segmentation: null,
+                        steps: null
+                    };
+                }
                 this.widget.target_page = this.widget.target_page === "selected";
+                this.widget.comment_enable = (this.widget.comment_enable === 'true');
+                this.widget.contact_enable = (this.widget.contact_enable === 'true');
                 this.openDrawer('widget', this.widget);
             },
             handleCommand: function(command) {
@@ -803,7 +892,7 @@
             refresh: function() {
                 this.fetch();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
                 this.activeFilter.widget = this.$route.params.id;
 
@@ -817,9 +906,13 @@
                 });
                 // set widget filter as current one
                 this.activeFilter.widget = this.widget._id;
+                if (force) {
+                    this.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         // set rating data for charts
                         // calculate cumulative data for chart
@@ -890,11 +983,11 @@
             },
             ratingRate: function() {
                 var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
-                return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
+                return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             }
         },
         mounted: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -1138,16 +1231,14 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-    $(document).ready(function() {
-        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        app.addSubMenu("feedback", {
-            code: "star-rating",
-            permission: FEATURE_NAME,
-            url: "#/feedback/ratings",
-            text: "star.menu-title",
-            icon: '<div class="logo ion-android-star-half"></div>',
-            priority: 30
-        });
+    app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addSubMenu("feedback", {
+        code: "star-rating",
+        permission: FEATURE_NAME,
+        url: "#/feedback/ratings",
+        text: "star.menu-title",
+        icon: '<div class="logo ion-android-star-half"></div>',
+        priority: 30
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {

@@ -515,6 +515,10 @@
         padding-bottom: 12px;
         padding-left: 16px;
         padding-right: 16px;
+
+        .cly-vue-push-notification-drawer__input-label {
+            line-height: 26px;
+        }
     }
 
     &__review-header {

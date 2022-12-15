@@ -1,4 +1,4 @@
 <div class="bu-is-flex bu-is-flex-shrink-1" style="min-width: 0">
-    <h4 class="bu-is-flex-shrink-1 has-ellipsis" v-if="title">{{title}}</h4>
+    <h4 class="bu-is-flex-shrink-1 has-ellipsis" v-if="title" v-html="title"></h4>
     <clyd-title-labels v-if="labels && labels.length" :labels="labels"></clyd-title-labels>
 </div>

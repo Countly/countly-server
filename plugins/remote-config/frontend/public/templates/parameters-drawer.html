@@ -50,9 +50,9 @@
             {{i18n('remote-config.conditions')}}
           </div>
           <div>
-            <draggable 
+            <draggable
               :disabled="false"
-              handle=".drag-icon" 
+              handle=".drag-icon"
               v-model="conditions">
               <remote-config-add-condition
                 ref="addCondition"
@@ -72,6 +72,7 @@
               v-model="currentConditionValue"
               :options="conditionArray"
               :width="450"
+              :show-search="true"
               search-placeholder="Search in conditions">
               <template v-slot:trigger>
                 <el-button class="bg-light-blue-100 color-blue-100" size="small" type="text">

@@ -164,7 +164,7 @@ class Batcher extends DoFinish {
         }
 
         if (this.count >= this.size) {
-            this.log.d('flushing');
+            this.log.d('flushing %d', this.size);
             this.do_flush(callback);
         }
         else {

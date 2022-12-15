@@ -9,7 +9,7 @@
 
 <p align="center">
 
-![header2](https://count.ly/github/countly-editions.png?v2)
+![header2](https://count.ly/github/countly-editions.png?v3)
 
 </p>
 
@@ -50,7 +50,7 @@
 
 Countly tracks 1.5B+ unique identities on more than 16,000 applications and using over 2,000 servers worldwide, making it a world leading product analytics platform. It securely processes billions of data points every day in the cloud and on-premise,  giving you full control over your data.
 
-Countly relies on a wide diversity of SDKs for deployment and provides an extensive list of plugins and dozens of integrations, as well as features a clean and intuitive UI with an easy-to-use and customizable Dashboard. The plaform is available in [two different editions](https://count.ly/pricing#compare-editions): Enterprise Edition, which offers a wider range of plugins, customizable SLA, and direct support; while Community Edition, with essential plugins and a free-to-use, open source, non-commercial license, lets you contribute new features, bug fixes, and optimize repositories, giving you the power to improve the product for yourself as well as for others.
+Countly relies on a wide diversity of SDKs for deployment and provides an extensive list of plugins and dozens of integrations, as well as features a clean and intuitive UI with an easy-to-use and customizable Dashboard. The platform is available in [two different editions](https://count.ly/pricing#compare-editions): Enterprise Edition, which offers a wider range of plugins, customizable SLA, and direct support; while Community Edition, with essential plugins and a free-to-use, open source, non-commercial license, lets you contribute new features, bug fixes, and optimize repositories, giving you the power to improve the product for yourself as well as for others.
 
 And because data-flow security is critical, the Countly Dashboard enables you to not only access settings within your team but also provides a privacy-protection compliant environment, so you can focus on innovation with customer intelligence, without worrying about compliance.
 
@@ -60,7 +60,7 @@ With Countly, understand your digital customer journey across devices. Build bet
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
-[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png)](https://youtu.be/htKeh9bsZwA)
+[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png?v3)](https://youtu.be/htKeh9bsZwA)
 
 
 ## What is included?
@@ -76,7 +76,7 @@ This repository includes server-side part of Countly, with following features:
 * [Rich and interactive push notifications](https://count.ly/plugins/rich-push-notifications) for iOS & Android
 * Email reporting
 
-![content](https://count.ly/github/countly-highlights.png)
+![content](https://count.ly/github/countly-highlights.png?v3)
 
 ## What can Countly track?
 

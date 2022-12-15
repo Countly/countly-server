@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal, Promise */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal */
 
 (function(countlyDashboards) {
 
@@ -13,13 +13,14 @@
                     shared_user_groups_view: [],
                     share_with: "all-users",
                     theme: 0,
-                    is_owner: true
+                    is_owner: true,
+                    send_email_invitation: false,
                 };
             }
         },
         events: {
             getEventLongName: function(eventKey, eventMap) {
-                var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+                var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
                 if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                     return eventMap[mapKey].name;
                 }
@@ -84,6 +85,7 @@
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view) || [],
                         "copy_dash_id": settings.copyDashId,
                         "share_with": settings.share_with,
+                        "send_email_invitation": settings.send_email_invitation,
                         "theme": settings.theme
                     },
                     dataType: "json"
@@ -101,6 +103,7 @@
                         "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit),
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
                         "share_with": settings.share_with,
+                        "send_email_invitation": settings.send_email_invitation,
                         "theme": settings.theme
                     },
                     dataType: "json"
@@ -314,7 +317,16 @@
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
-
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
+                        if (Array.isArray(widget.settings.custom_period)) {
+                            if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
+                                widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
+                            }
+                            if (widget.settings.custom_period[1] && widget.settings.custom_period[1].toString().length === 13) {
+                                widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
+                            }
+                        }
+                    }
                     return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
                         return id;
                     }).catch(function(e) {
@@ -331,6 +343,16 @@
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
                     var settings = widget.settings;
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
+                        if (Array.isArray(widget.settings.custom_period)) {
+                            if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
+                                widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
+                            }
+                            if (widget.settings.custom_period[1] && widget.settings.custom_period[1].toString().length === 13) {
+                                widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
+                            }
+                        }
+                    }
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
                         return widgetId;

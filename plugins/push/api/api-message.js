@@ -2,7 +2,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
-    moment = require('moment-timezone');
+    moment = require('moment-timezone'),
+    { request } = require('./proxy');
 
 
 /**
@@ -12,6 +13,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
  * @param {boolean} draft true if we need to skip checking data for validity
  * @returns {PostMessageOptions} Message instance in case validation passed, array of error messages otherwise
  * @throws {ValidationError} in case of error
+ * @apiUse PushMessageBody
  */
 async function validate(args, draft = false) {
     let msg;
@@ -125,6 +127,26 @@ async function validate(args, draft = false) {
     return msg;
 }
 
+/**
+ * Send push notification to test users specified in application plugin configuration
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} i/push/message/test Message / test
+ * @apiName message/test
+ * @apiDescription Send push notification to test users specified in application plugin configuration
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} app_id application id
+ * @apiUse PushMessageBody
+ * @apiSuccess {Object} result Result of test run
+ * @apiSuccess {Number} result.total Total number of notifications scheduled
+ * @apiSuccess {Number} result.sent Total number of notifications sent
+ * @apiSuccess {Number} result.errored Total number of notification sending errors
+ * @apiSuccess {Object} result.errors Map of error code to number of notifications with a particular error
+ * @apiUse PushValidationError
+ * @apiUse PushError
+ */
 module.exports.test = async params => {
     let msg = await validate(params.qstring),
         cfg = params.app.plugins && params.app.plugins.push || {},
@@ -212,6 +234,23 @@ module.exports.test = async params => {
     }
 };
 
+/**
+ * Create push notification
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} i/push/message/create Message / create
+ * @apiName message/create
+ * @apiDescription Create push notification.
+ * Set status to "draft" to create a draft, leave it unspecified otherwise.
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} app_id application id
+ * @apiUse PushMessageBody
+ * @apiUse PushMessage
+ * @apiUse PushValidationError
+ * @apiUse PushError
+ */
 module.exports.create = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft),
         demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
@@ -237,6 +276,7 @@ module.exports.create = async params => {
         if (!demo) {
             await msg.schedule(log, params);
         }
+        log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
 
@@ -247,6 +287,22 @@ module.exports.create = async params => {
     common.returnOutput(params, msg.json);
 };
 
+/**
+ * Update push notification
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} i/push/message/update Message / update
+ * @apiName message/update
+ * @apiDescription Update push notification
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} app_id application id
+ * @apiUse PushMessageBody
+ * @apiUse PushMessage
+ * @apiUse PushValidationError
+ * @apiUse PushError
+ */
 module.exports.update = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg.info.updated = new Date();
@@ -274,23 +330,56 @@ module.exports.update = async params => {
         msg.info.rejectedBy = null;
         msg.info.rejectedByName = null;
 
-        if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
-            msg.status = Status.Created;
-            msg.state = State.Created;
-            await msg.save();
-            await msg.schedule(log, params);
-            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
+        if (msg.status === Status.Draft) {
+            if (params.qstring.status === Status.Created) {
+                msg.status = Status.Created;
+                msg.state = State.Created;
+                await msg.save();
+                await msg.schedule(log, params);
+                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
+            }
+            else {
+                await msg.save();
+                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
+            }
         }
         else {
             await msg.save();
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+                await msg.schedule(log, params);
+            }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
     }
 
+    log.i('Updated message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
 
     common.returnOutput(params, msg.json);
 };
 
+/**
+ * Remove push notification
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} i/push/message/remove Message / remove
+ * @apiName message/remove
+ * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} _id message id
+ * @apiSuccessExample {json} Success
+ *  {}
+ * @apiUse PushValidationError
+ * @apiError NotFound Message Not Found
+ *
+ * @apiErrorExample {json} NotFound
+ *      HTTP/1.1 404 Not Found
+ *      {
+ *          "errors": ["Message not found"]
+ *      }
+ * @apiUse PushError
+ */
 module.exports.remove = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
@@ -326,6 +415,46 @@ module.exports.remove = async params => {
 };
 
 
+/**
+ * Toggle automated message
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} i/push/message/toggle Message / API or Automated / toggle
+ * @apiName message/toggle
+ * @apiDescription Stop active or start inactive API or automated message
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} _id message ID
+ * @apiQuery {Boolean} active true to start the message, false to stop it
+ * @apiUse PushMessage
+ * @apiUse PushValidationError
+ * @apiError NotFound Message Not Found
+ * @apiErrorExample {json} NotFound
+ *      HTTP/1.1 404 Not Found
+ *      {
+ *          "errors": ["Message not found"]
+ *      }
+ * @apiError AlreadyActive The message is already active
+ * @apiErrorExample {json} AlreadyActive
+ *      HTTP/1.1 400 Bad Request
+ *      {
+ *          "errors": ["The The message is already active"]
+ *      }
+ * @apiError AlreadyInactive The message is already inactive
+ * @apiErrorExample {json} AlreadyInactive
+ *      HTTP/1.1 400 Bad Request
+ *      {
+ *          "errors": ["The message is already stopped"]
+ *      }
+ * @apiError NotAutomated The message is not automated
+ * @apiErrorExample {json} NotAutomated
+ *      HTTP/1.1 400 Bad Request
+ *      {
+ *          "errors": ["The message doesn't have Cohort or Event trigger"]
+ *      }
+ * @apiUse PushError
+ */
 module.exports.toggle = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
@@ -365,10 +494,46 @@ module.exports.toggle = async params => {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg.json});
     }
 
+    log.i('Toggled message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
+
     common.returnOutput(params, msg.json);
 };
 
-
+/**
+ * Estimate message audience
+ * 
+ * @param {object} params params object
+ * 
+ * @api {POST} o/push/message/estimate Message / estimate audience
+ * @apiName message/estimate
+ * @apiDescription Estimate message audience
+ * @apiGroup Push Notifications
+ *
+ * @apiBody {ObjectID} app Application ID
+ * @apiBody {String[]} platforms Array of platforms to send to
+ * @apiBody {Object} [filter] User profile filter to limit recipients of this message
+ * @apiBody {String} [filter.user] JSON with app_usersAPPID collection filter
+ * @apiBody {String} [filter.drill] Drill plugin filter in JSON format
+ * @apiBody {ObjectID[]} [filter.geos] Array of geo IDs
+ * @apiBody {String[]} [filter.cohorts] Array of cohort IDs
+ * 
+ * @apiSuccess {Number} count Estimated number of push notifications sent with the app / platform / filter specified
+ * @apiSuccess {Object} locales Locale distribution of push notifications, a map of ISO language code to number of recipients
+ * 
+ * @apiUse PushValidationError
+ * @apiError NoApp The app is not found
+ * @apiErrorExample {json} NoApp
+ *      HTTP/1.1 400 Bad Request
+ *      {
+ *          "errors": ["No such app"]
+ *      }
+ * @apiError NoCredentials No credentials for selected platform
+ * @apiErrorExample {json} NoCredentials
+ *      HTTP/1.1 400 Bad Request
+ *      {
+ *          "errors": ["No push credentials for Android platform"]
+ *      }
+ */
 module.exports.estimate = async params => {
     let data = common.validateArgs(params.qstring, {
         app: {type: 'ObjectID', required: true},
@@ -429,14 +594,40 @@ module.exports.estimate = async params => {
     common.returnOutput(params, {count, locales});
 };
 
+/**
+ * Get mime information of media URL
+ * 
+ * @param {object} params params object
+ * 
+ * @api {GET} o/push/message/mime Message / attachment MIME
+ * @apiName message/mime
+ * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {String} url URL to check
+ * 
+ * @apiSuccess {String} media End URL of the resource
+ * @apiSuccess {String} mediaMime MIME type of the resource
+ * @apiSuccess {Number} mediaSize Size of the resource in bytes
+ * 
+ * @apiUse PushValidationError
+ */
 module.exports.mime = async params => {
     try {
         let info = await mimeInfo(params.qstring.url);
+        if ((info.status === 301 || info.status === 302) && info.headers.location) {
+            log.d('Following redirect to', info.headers.location);
+            info = await mimeInfo(info.headers.location);
+
+            if (info.status !== 200) {
+                return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status} after a redirect`]}, null, true);
+            }
+        }
         if (info.status !== 200) {
-            common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
+            return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
         }
         else if (info.headers['content-type'] === undefined) {
-            common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
+            return common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
         }
         else if (info.headers['content-length'] === undefined) {
             info = await mimeInfo(params.qstring.url, 'GET');
@@ -470,6 +661,28 @@ module.exports.mime = async params => {
     }
 };
 
+/**
+ * Get one message
+ * 
+ * @param {object} params params object
+ * 
+ * @api {GET} o/push/message/GET Message / GET
+ * @apiName message/GET
+ * @apiDescription Get message by ID
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {ObjectID} _id Message ID
+ * 
+ * @apiUse PushMessage
+ * 
+ * @apiUse PushValidationError
+ * @apiError NotFound Message Not Found
+ * @apiErrorExample {json} NotFound
+ *      HTTP/1.1 404 Not Found
+ *      {
+ *          "errors": ["Message not found"]
+ *      }
+ */
 module.exports.one = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
@@ -497,6 +710,28 @@ module.exports.one = async params => {
  * 
  * @param {object} params params
  * @returns {Promise} resolves to true
+ * 
+ * @api {GET} o/push/user User notifications
+ * @apiName user
+ * @apiDescription Get notifications sent to a particular user.
+ * Makes a look up either by user id (uid) or did (device id). Returns ids of messages & dates, optionally returns corresponding message objects.
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {String} app_id Application ID
+ * @apiQuery {Boolean} messages Whether to return Message objects as well
+ * @apiQuery {String} [id] User ID (uid)
+ * @apiQuery {String} [did] User device ID (did)
+ * 
+ * @apiSuccess {Object} [notifications] Map of notification ID to array of epochs this message was sent to the user
+ * @apiSuccess {Object[]} [messages] Array of messages, returned if "messages" param is set to "true"
+ * 
+ * @apiUse PushValidationError
+ * @apiError NotFound Message Not Found
+ * @apiErrorExample {json} NotFound
+ *      HTTP/1.1 404 Not Found
+ *      {
+ *          "errors": ["User with the did specified is not found"]
+ *      }
  */
 module.exports.user = async params => {
     let data = common.validateArgs(params.qstring, {
@@ -554,17 +789,49 @@ module.exports.user = async params => {
     return true;
 };
 
+/**
+ * Get messages
+ * 
+ * @param {object} params params
+ * @returns {Promise} resolves to true
+ * 
+ * @api {GET} o/push/message/all Message / find
+ * @apiName message/all
+ * @apiDescription Get messages
+ * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {String} app_id Application ID
+ * @apiQuery {Boolean} auto Whether to return only automated messages
+ * @apiQuery {Boolean} api Whether to return only API messages
+ * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
+ * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
+ * @apiQuery {Number} [iDisplayStart] Skip this much messages
+ * @apiQuery {Number} [iDisplayLength] Return this much messages at most
+ * @apiQuery {String} [iSortCol_0] Sort by this column
+ * @apiQuery {String} [sSortDir_0] Direction of sorting
+ * @apiQuery {String} [sEcho] Echo paramater - value supplied is returned 
+ * 
+ * @apiSuccess {String} sEcho Echo value
+ * @apiSuccess {Number} iTotalRecords Total number of messages
+ * @apiSuccess {Number} iTotalDisplayRecords Number of messages returned
+ * @apiSuccess {Object[]} aaData Array of message objects
+ * 
+ * @apiUse PushValidationError
+ */
 module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
         iDisplayLength: {type: 'IntegerString', required: false},
         iSortCol_0: {type: 'String', required: false},
         sSortDir_0: {type: 'String', required: false, in: ['asc', 'desc']},
         sEcho: {type: 'String', required: false},
+        status: {type: 'String', required: false}
     }, true);
 
     if (data.result) {
@@ -574,6 +841,10 @@ module.exports.all = async params => {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
         };
+
+        if (data.removed) {
+            delete query.state;
+        }
 
         if (data.auto) {
             query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
@@ -585,68 +856,99 @@ module.exports.all = async params => {
             query['triggers.kind'] = TriggerKind.Plain;
         }
 
-        let total = await Message.count(query);
-
         if (data.sSearch) {
             query.$or = [
                 {'contents.message': data.sSearch},
                 {'contents.title': data.sSearch},
             ];
         }
-        let cursor = common.db.collection(Message.collection).find(query),
-            count = await cursor.count();
+        if (data.status) {
+            query.status = data.status;
+        }
 
-        if (data.iDisplayStart) {
-            cursor.skip(data.iDisplayStart);
-        }
-        if (data.iDisplayLength) {
-            cursor.limit(data.iDisplayLength);
-        }
+
+        var pipeline = [];
+        pipeline.push({"$match": query});
+
+        var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
+        var dataPipeline = [];
+
+        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'triggers.start'];
+        var sortcol = 'triggers.start';
         if (data.iSortCol_0 && data.sSortDir_0) {
-            cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
+            sortcol = columns[parseInt(data.iSortCol_0, 10)];
+        }
+
+        if (sortcol === 'info.title') { //sorting by title, so get right names now.
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
+            dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
         }
         else {
-            cursor.sort({'triggers.start': -1});
+            if (sortcol === 'triggers.start') {
+                //gets right trigger object
+                if (data.auto) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+                }
+                else if (data.api) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+                }
+                else {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                }
+
+                dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
+
+                dataPipeline.push({"$sort": {"info.isDraft": -1, "info.lastDate": data.sSortDir_0 === 'desc' ? 1 : -1}});//if not defined sort by -1;
+            }
+            else {
+                dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
+            }
         }
 
-        let items = await cursor.toArray();
-
-        // mongo sort doesn't work for selected array elements
-        if (!data.iSortCol_0 || data.iSortCol_0 === 'triggers.start') {
-            items.sort((a, b) => {
-                a = a.triggers.filter(t => {
-                    if (data.auto) {
-                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
-                    }
-                    else if (data.api) {
-                        return t.kind === TriggerKind.API;
-                    }
-                    else {
-                        return t.kind === TriggerKind.Plain;
-                    }
-                })[0];
-                b = b.triggers.filter(t => {
-                    if (data.auto) {
-                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
-                    }
-                    else if (data.api) {
-                        return t.kind === TriggerKind.API;
-                    }
-                    else {
-                        return t.kind === TriggerKind.Plain;
-                    }
-                })[0];
-
-                return new Date(b.start).getTime() - new Date(a.start).getTime();
-            });
+        if (data.iDisplayStart && parseInt(data.iDisplayStart, 10) !== 0) {
+            dataPipeline.push({"$skip": parseInt(data.iDisplayStart, 10)});
+        }
+        if (data.iDisplayLength && parseInt(data.iDisplayLength, 10) !== -1) {
+            dataPipeline.push({"$limit": parseInt(data.iDisplayLength, 10)});
         }
 
-        common.returnOutput(params, {
-            sEcho: data.sEcho,
-            iTotalRecords: total,
-            iTotalDisplayRecords: count,
-            aaData: items || []
-        }, true);
+        if (sortcol !== 'info.title') { //adding correct titles now after narrowing down data
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
+        }
+        if (sortcol !== 'triggers.start') { //add triggers start fields
+            if (data.auto) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+            }
+            else if (data.api) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+            }
+            else {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+            }
+            dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
+        }
+
+        pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
+        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
+            res = res || [];
+            res = res[0] || {};
+
+            var items = res.data || [];
+            var total = 0;
+            if (res.total && res.total[0] && res.total[0].cn) {
+                total = res.total[0].cn;
+            }
+
+            common.returnOutput(params, {
+                sEcho: data.sEcho,
+                iTotalRecords: total || items.length,
+                iTotalDisplayRecords: total || items.length,
+                aaData: items || []
+            }, true);
+
+        });
 
     }
     else {
@@ -667,7 +969,7 @@ async function generateDemoData(msg, demo) {
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.h._id': {$exists: false}}, {$set: {'plugins.push.h._id': 'demo'}});
 
     let app = await common.db.collection('apps').findOne({_id: msg.app}),
-        count = await common.db.collection('app_users' + msg.app).find().count(),
+        count = await common.db.collection('app_users' + msg.app).count(),
         events = [],
         result = msg.result || new Result();
 
@@ -857,124 +1159,50 @@ function mimeInfo(url, method = 'HEAD') {
     let conf = common.plugins.getConfig('push'),
         ok = common.validateArgs({url}, {
             url: {type: 'URLString', required: true},
-        }, true),
-        protocol = 'http';
+        }, true);
 
     if (ok.result) {
-        url = ok.obj.url;
-        protocol = url.protocol.substr(0, url.protocol.length - 1);
+        url = ok.obj.url.toString();
     }
     else {
         throw new ValidationError(ok.errors);
     }
 
-    log.d('Retrieving URL', url);
-
     return new Promise((resolve, reject) => {
-        if (conf && conf.proxyhost) {
-            let opts = {
-                host: conf.proxyhost,
-                method: 'CONNECT',
-                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80)),
-                rejectUnauthorized: !(conf.proxyunauthorized || false),
-            };
-            if (conf.proxyport) {
-                opts.port = conf.proxyport;
-            }
-            if (conf.proxyuser) {
-                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(conf.proxyuser + ':' + conf.proxypass).toString('base64')};
-            }
-            log.d('Connecting to proxy', opts);
+        let req = request(url.toString(), method, conf);
 
-            require('http')
-                .request(url, opts)
-                .on('connect', (res, socket) => {
-                    if (res.statusCode === 200) {
-                        opts = {
-                            method,
-                            agent: false,
-                            socket,
-                            rejectUnauthorized: !(conf.proxyunauthorized || false),
-                        };
+        req.once('response', res => {
+            let status = res.statusCode,
+                headers = res.headers,
+                data = 0;
+            if (method === 'HEAD') {
+                resolve({url: url.toString(), status, headers});
+            }
+            else {
+                res.on('data', dt => {
+                    if (typeof dt === 'string') {
+                        data += dt.length;
+                    }
+                    else if (Buffer.isBuffer(dt)) {
+                        data += dt.byteLength;
+                    }
+                });
+                res.on('end', () => {
+                    if (!headers['content-length']) {
+                        headers['content-length'] = data || 0;
+                    }
+                    resolve({url: url.toString(), status, headers});
+                });
+            }
+        });
 
-                        let req = require(protocol).request(url, opts, res2 => {
-                            let status = res2.statusCode,
-                                headers = res2.headers,
-                                data = 0;
-                            if (method === 'HEAD') {
-                                resolve({url: url.toString(), status, headers});
-                            }
-                            else {
-                                res2.on('data', dt => {
-                                    if (typeof dt === 'string') {
-                                        data += dt.length;
-                                    }
-                                    else if (Buffer.isBuffer(dt)) {
-                                        data += dt.byteLength;
-                                    }
-                                });
-                                res2.on('end', () => {
-                                    if (!headers['content-length']) {
-                                        headers['content-length'] = data || 0;
-                                    }
-                                    resolve({url: url.toString(), status, headers});
-                                });
-                            }
-                        });
-                        req.on('error', err => {
-                            log.e('error when HEADing ' + url, err);
-                            reject(new ValidationError('Cannot access proxied URL'));
-                        });
-                        req.end();
-                    }
-                    else {
-                        log.e('Cannot connect to proxy %j: %j / %j', opts, res.statusCode, res.statusMessage);
-                        reject(new ValidationError('Cannot access proxy server'));
-                    }
-                })
-                .on('error', err => {
-                    reject(new ValidationError('Cannot CONNECT to proxy server'));
-                    log.e('error when CONNECTing %j', opts, err);
-                })
-                .end();
-        }
-        else {
-            require(protocol)
-                .request(url, {method}, res => {
-                    if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
-                        mimeInfo(res.headers.location).then(resolve, reject);
-                    }
-                    else {
-                        let status = res.statusCode,
-                            headers = res.headers,
-                            data = 0;
-                        if (method === 'HEAD') {
-                            resolve({url: url.toString(), status, headers});
-                        }
-                        else {
-                            res.on('data', dt => {
-                                if (typeof dt === 'string') {
-                                    data += dt.length;
-                                }
-                                else if (Buffer.isBuffer(dt)) {
-                                    data += dt.byteLength;
-                                }
-                            });
-                            res.on('end', () => {
-                                if (!headers['content-length']) {
-                                    headers['content-length'] = data || 0;
-                                }
-                                resolve({url: url.toString(), status, headers});
-                            });
-                        }
-                    }
-                })
-                .on('error', err => {
-                    log.e('error when HEADing ' + url, err);
-                    reject(new ValidationError('Cannot access URL'));
-                })
-                .end();
-        }
+        req.on('error', err => {
+            log.e('error when HEADing ' + url, err);
+            reject(new ValidationError('Cannot access proxied URL'));
+        });
+
+        req.end();
+
     });
 }
 

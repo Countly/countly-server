@@ -31,6 +31,7 @@
 			position: absolute;
 			top:16px;
 			right:16px;
+            z-index: 2;
 		}
 	}
 }
@@ -176,10 +177,38 @@
                 }
             }
 
+            &--vis-table {
+                overflow: auto;
+                margin-top: 6px;
+
+                td {
+                    padding: 9px 0;
+                }
+            }
+
+            &__note {
+                width: 100%;
+                height: 100%;
+        
+                &--ellipsis {
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                }
+            }
+
             //Data table css
             .cly-vue-eldatatable__footer {
                 display:none;
             }
         }
+    }
+}
+
+.dashboard-more-options {
+    padding: 2px !important;
+
+    &__divider {
+        border: 0; 
+        border-top: 1px solid #ccc;
     }
 }

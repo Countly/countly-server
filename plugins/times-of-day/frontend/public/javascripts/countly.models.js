@@ -1,4 +1,4 @@
-/*global countlyCommon,CV,countlyVue,countlyEvent,Promise,moment */
+/*global countlyCommon,CV,countlyVue,countlyEvent,moment */
 (function(countlyTimesOfDay) {
 
     countlyTimesOfDay.service = {

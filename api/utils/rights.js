@@ -573,11 +573,16 @@ exports.dbLoadEventsData = dbLoadEventsData;
 * Check user has access to collection
 * @param {object} params - {@link params} object
 * @param {string} collection - collection will be checked for access
+* @param {string} app_id - app_id to which to restrict access
 * @param {function} callback - callback method includes boolean variable as argument  
 * @returns {function} returns callback
 **/
-exports.dbUserHasAccessToCollection = function(params, collection, callback) {
-    if (params.member.global_admin) {
+exports.dbUserHasAccessToCollection = function(params, collection, app_id, callback) {
+    if (typeof app_id === "function") {
+        callback = app_id;
+        app_id = null;
+    }
+    if (params.member.global_admin && !app_id) {
         //global admin without app_id restriction just has access to everything
         return callback(true);
     }
@@ -588,11 +593,14 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     apps = userApps || [];
     // also check for app based restrictions
     if (params.member.app_restrict) {
-        for (var app_id in params.member.app_restrict) {
-            if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
-                apps.splice(apps.indexOf(app_id), 1);
+        for (var appid in params.member.app_restrict) {
+            if (params.member.app_restrict[appid].indexOf("#/manage/db") !== -1 && apps.indexOf(appid) !== -1) {
+                apps.splice(apps.indexOf(appid), 1);
             }
         }
+    }
+    if (app_id) {
+        apps = apps.filter(id => id + "" === app_id + "");
     }
     var appList = [];
     if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {

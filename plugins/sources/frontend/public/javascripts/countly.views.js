@@ -1,4 +1,4 @@
-/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $, countlyGraphNotesCommon */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -155,6 +155,12 @@
                             self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
                         });
                 }
+            },
+            handleTableRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
             }
         },
         dateChange: function() {
@@ -310,7 +316,16 @@
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.customDashboards.widget,
+            countlyVue.mixins.customDashboards.apps,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 map: {
@@ -349,6 +364,11 @@
             },
             pieGraph: function() {
                 return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+            }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
             }
         }
     });
@@ -430,14 +450,6 @@
         },
         grid: {
             component: WidgetComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 2,
-                    height: 4
-                };
-            },
             onClick: function() {}
         }
     });
@@ -570,7 +582,7 @@
                         "name": values[k].name,
                         "value": countlyCommon.getShortNumber(values[k].t || 0),
                         "percent": percent,
-                        "percentText": percent + " % " + CV.i18n('common.of-total'),
+                        "percentText": percent + "% " + CV.i18n('common.of-total'),
                         "info": "some description",
                         "color": "#CDAD7A",
                         "value_": values[k].t
@@ -607,8 +619,6 @@
         component: KeywordsDashboardWidget
     });
 
-    $(document).ready(function() {
-        app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-    });
+    app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
 })();

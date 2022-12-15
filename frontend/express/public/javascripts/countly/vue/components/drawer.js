@@ -115,6 +115,14 @@
                 },
                 closeDrawer: function(name) {
                     this.drawers[name].isOpened = false;
+                },
+                hasOpenDrawer: function() {
+                    for (var drawer in this.drawers) {
+                        if (this.drawers[drawer].isOpened) {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
         };

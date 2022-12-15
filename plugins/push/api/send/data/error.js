@@ -217,17 +217,17 @@ class PushError extends Error {
         else {
             let e;
             if (data.name === 'SendError') {
-                e = new SendError(data.message, data.type)
+                e = new SendError(data.message, data.type, data.date)
                     .setAffected(data.affected, data.affectedBytes);
             }
             else if (data.name === 'ConnectionError') {
-                e = new ConnectionError(data.message, data.type)
+                e = new ConnectionError(data.message, data.type, data.date)
                     .setConnectionError(data.connectionErrorMessage, data.connectionErrorCode)
                     .setAffected(data.affected, data.affectedBytes)
                     .setLeft(data.left, data.leftBytes);
             }
             else {
-                e = new PushError(data.message, data.type || ERROR.EXCEPTION);
+                e = new PushError(data.message, data.type || ERROR.EXCEPTION, data.date);
             }
 
             e.stack = data.stack;
@@ -330,12 +330,17 @@ class ProcessingError extends PushError {
      * 
      * Affected pushes will be returned in a recoverable error. Once 3 ProcessingError happen in a row, sending will be terminated with the rest (left) removed from the queue.
      * 
-     * @param {string} id ID of push object which might not be sent due to this error
+     * @param {string|string[]} id ID of push object which might not be sent due to this error
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
      */
     addAffected(id, bytes) {
-        this.affected.push(id);
+        if (Array.isArray(id)) {
+            id.forEach(i => this.affected.push(i));
+        }
+        else {
+            this.affected.push(id);
+        }
         this.affectedBytes += bytes;
         return this;
     }
@@ -347,7 +352,7 @@ class ProcessingError extends PushError {
      * @returns {SendError} with affected from this instance
      */
     affectedError() {
-        let e = new SendError(this.message, this.type, this.date).setAffected(this.affected.map(p => p._id), this.affectedBytes);
+        let e = new SendError(this.message, this.type, this.date).setAffected(this.affected, this.affectedBytes);
         e.stack = this.stack;
         return e;
     }
@@ -379,12 +384,17 @@ class ProcessingError extends PushError {
     /**
      * Add left push object which was still in queue when unrecoverable error happened
      * 
-     * @param {string} id ID of push object which won't be sent because an unrecoverable error happened earlier
+     * @param {string|string[]} id ID of push object which won't be sent because an unrecoverable error happened earlier
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
      */
     addLeft(id, bytes) {
-        this.left.push(id);
+        if (Array.isArray(id)) {
+            id.forEach(i => this.left.push(i));
+        }
+        else {
+            this.left.push(id);
+        }
         this.leftBytes += bytes;
         return this;
     }

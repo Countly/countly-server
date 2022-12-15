@@ -5,10 +5,12 @@
             <slot name="action"></slot>
         </div>
     </div>
-	<div class="clyd-widget__content">
-        <div style="width: 100%; height: 100%;" class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center">
-            <div class="bu-pl-2 bu-pr-2" :style="widgetStyling">{{widgetText}}</div>
-            <p v-if="mylink" :style="linkStyling" class="bu-p-2"><a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
-        </div>
+	<div 
+		class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note" 
+		style="width: 100%; height: 100%"
+	>
+		<vue-scroll :ops="scrollNote">
+			<span class="bu-pl-2 bu-pr-5" v-html="widgetHTML"></span>
+		</vue-scroll>
 	</div>
 </div>

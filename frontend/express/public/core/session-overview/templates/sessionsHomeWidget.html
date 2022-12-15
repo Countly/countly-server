@@ -4,26 +4,26 @@
 		<el-tabs v-model="sessionGraphTab" type="card" stretch v-loading="isLoading">
 			<el-tab-pane :name="item.value" :key="idx" v-for="(item, idx) in chooseProperties" >
 				<div slot="label">
-					<div class="text-medium color-cool-gray-100 bu-mb-1 bu-p-5">
+					<div class="color-cool-gray-100 bu-p-5">
 						<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
-							<div>
-								<span class="text-medium">{{item.label}}</span>
+							<div class="text-medium">
+								<span>{{item.label}}</span>
 								<span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1"  v-tooltip.top-center="item.description"></span>
 							</div>
 						</div>
-						<div class="bu-is-flex bu-is-align-items-baseline number">
+						<div class="bu-is-flex bu-is-align-items-center number">
 							<h2>{{item.number}}</h2>
-							<div v-if="item.trend == 'u'" class="trend-up">
+							<div v-if="item.trend == 'u'" class="cly-trend-up">
 								<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{item.trendValue}}</span>
 							</div>
-							<div v-if="item.trend == 'd'" class="trend-down"> 
+							<div v-if="item.trend == 'd'" class="cly-trend-down">
 								<i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{item.trendValue}}</span>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="bu-pb-4" style="border-radius: 0 0px 4px 4px; background-color: #ffffff; border: 1px solid #ececec ">
-               <cly-chart-time :val-formatter="item.formatter" :option="chartData(item.value)"></cly-chart-time>
+               <cly-chart-time :val-formatter="item.formatter" :option="chartData(item.value)" category="sessionHomeWidget"></cly-chart-time>
 				</div>
 			</el-tab-pane>	              
         </el-tabs>			

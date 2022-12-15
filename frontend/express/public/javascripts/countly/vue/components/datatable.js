@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager, _merge */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -43,6 +43,10 @@
                     return { prop: '_id', order: 'asc' };
                 },
                 required: false
+            },
+            preventDefaultSort: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -301,12 +305,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-
-                if (this.defaultSort) {
+                if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
                         type: this.defaultSort.order === "ascending" ? "asc" : "desc"
                     }];
+                }
+                else {
+                    this.defaultSort = {};
                 }
 
                 if (!this.persistKey) {
@@ -588,7 +594,19 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            customExportFileName: {
+                type: Boolean,
+                default: true,
+                required: false
             }
+        },
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-date-change", function() {
+                self.exportFileName = self.getDefaultFileName();
+            });
+
         },
         data: function() {
             return {
@@ -599,7 +617,8 @@
                     {'name': '.JSON', value: 'json'},
                     {'name': '.XLSX', value: 'xlsx'}
                 ],
-                searchQuery: ''
+                searchQuery: '',
+                exportFileName: this.getDefaultFileName(),
             };
         },
         methods: {
@@ -608,20 +627,21 @@
                     type: this.selectedExportType
                 });
             },
-            getDefaultFileName: function(params) {
-                var name = "countly";
-                if (params.title) {
-                    name = params.title.replace(/[\r\n]+/g, "");
+            getDefaultFileName: function() {
+                var siteName = countlyGlobal.countlyTitle;
+                var sectionName = "";
+                var selectedMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                if (selectedMenuItem && selectedMenuItem.item && selectedMenuItem.item.title) {
+                    sectionName = this.i18n(selectedMenuItem.item.title);
                 }
-                if (params.timeDependent) {
-                    //include export range
-                    name += "_for_" + countlyCommon.getDateRange();
+                var appName = "";
+                if (this.$store.getters["countlyCommon/getActiveApp"]) {
+                    appName = this.$store.getters["countlyCommon/getActiveApp"].name;
                 }
-                else {
-                    //include export date
-                    name += "_on_" + moment().format("DD-MMM-YYYY");
-                }
-                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+                var date = countlyCommon.getDateRangeForCalendar();
+
+                var filename = siteName + " - " + appName + " - " + sectionName + " " + "(" + date + ")";
+                return filename;
             },
             getLocalExportContent: function() {
                 if (this.exportFormat) {
@@ -630,7 +650,6 @@
                 return this.rows;
             },
             initiateExport: function(params) {
-
                 var formData = null,
                     url = null;
 
@@ -638,10 +657,16 @@
                     formData = this.exportApi();
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                     url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables
@@ -666,7 +691,7 @@
                         type: params.type,
                         path: path,
                         prop: "aaData",
-                        filename: this.getDefaultFileName(params),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
                 }
@@ -675,9 +700,12 @@
                     formData = {
                         type: params.type,
                         data: JSON.stringify(this.getLocalExportContent()),
-                        filename: this.getDefaultFileName(params),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
+                }
+                if (!formData.filename) {
+                    formData.filename = this.exportFileName;
                 }
 
                 if (formData.url === "/o/export/requestQuery") {
@@ -714,7 +742,6 @@
                 }
                 else {
                     var form = $('<form method="POST" action="' + url + '">');
-
                     $.each(formData, function(k, v) {
                         if (CountlyHelpers.isJSON(v)) {
                             form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
@@ -821,7 +848,7 @@
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right',
                     'bottomline': 'bottomline'
-                }
+                },
             };
         },
         computed: {

@@ -27,11 +27,12 @@
     <div class="cly-vue-daterp">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
             <div v-if="allowCustomRange" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
+                :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
                 @click="handleCustomRangeClick">
                 {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
             </div>
             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"
-                :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value}"
+                :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value, 'cly-vue-daterp__shortcut--deactive': customRangeSelection}"
                 v-for="shortcut in shortcuts"
                 @click="handleShortcutClick(shortcut.value)">
                 {{shortcut.label}}

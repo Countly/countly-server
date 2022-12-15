@@ -5,10 +5,8 @@ name: CI
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master, next, feature/new-ui ]
   pull_request:
-    branches: [ master, next, feature/new-ui ]
+    branches: [ master, next ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -85,31 +83,3 @@ jobs:
           payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
-      - name: Enable command line
-        shell: bash
-        run: sudo bash ./bin/scripts/detect.init.sh
-        
-      - name: Installing dependencies
-        shell: bash
-        run: npm install
-     
-      - name: Deploy server
-        shell: bash
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: bash ./bin/scripts/deploy.sh
-
-      - name: Deploy documentation
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash ./bin/scripts/generateDocs.sh

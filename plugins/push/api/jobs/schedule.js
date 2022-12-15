@@ -60,6 +60,11 @@ class ScheduleJob extends J.Job {
             error = 'No plain trigger in the message';
         }
         else {
+            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$set: {state: State.Created | State.Streamable, status: Status.Scheduled}});
+            if (!res) {
+                error = 'Failed to update message';
+            }
+
             let trigger = this.message.triggerPlain(),
                 result = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
 
@@ -77,22 +82,15 @@ class ScheduleJob extends J.Job {
                     }
                 };
             }
-            else {
-                update = {
-                    $set: {
-                        'state': State.Created | State.Streamable,
-                        status: Status.Scheduled,
-                        result: result.json
-                    }
-                };
-            }
-
         }
 
         if (update) {
-            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, update);
+            let res = await this.message.update(update);
             if (!res) {
                 error = 'Failed to update message';
+            }
+            else {
+                log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
             }
         }
 

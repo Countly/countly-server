@@ -1,3 +1,495 @@
+## Version 22.09.3
+
+Fixes:
+- [applications] admin of app should be able to change settings to app in app managament view
+- [dbviewer] allow filtering collections by apps
+- [compliance-hub] fixed compliance hub ecport/purge issue
+- [core] activate selectedMode option for custom legend component
+- [crashes] modify exists queries to get correct result from db
+- [crashes] set crashgroup name as proper link
+- [crashes] store javascript property too
+- [dashboards] fixed legend issue
+- [dashboards] increases z-index and always showing scrollbar
+- [data-manager] fixes event sort by category
+- [data-migration] exporting also eventTimeline collection in data migration
+- [export] fixed export custom filename issue
+- [longtasks] do not record failure to create operation id as error in taskmanager
+- [period] DST fix, where we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+- [render] revert puppeteer dependency as new one installs chromium in user folder, which is not always accessible
+- [scripts] script for deleting members, which have not logged in for some time
+- [star-rating] fixed data is loaded when rating widget selected
+- [star-rating] fixed undefined numbers
+- [upgrade] update batch size for merge apm query
+
+Enterprise fixes:
+- [attribution] attribution save default URL issue
+- [cohorts] bugfixes for realtime cohorts
+- [concurrent_users] upsert command fixed
+- [data-manager] fixes data manager->Segmentation sorting
+- [data-manager] transformations sorting
+- [drill] null checks for loading drill widget data
+- [formulas] added recalculation button + showing last time data was recalculated
+- [formulas] fixed issue with cases when more than one report created for single bucket
+- [formulas] some old widgets have dplaces stored as string. Workaround for it.
+- [formulas] some widget have invalid value for buckets. Catching those and calling correct report creation
+- [revenue] fixes in the dashboard widget
+- [revenue] sorting bugs field in revenue table
+
+## Version 22.09.2
+
+Fixes:
+- [applications] cleaning up checksum_salt on update, showing value on fetch
+- [crashes] fixed negated trend handling of the crashes home widget
+- [dashboards] fixed too small graph widgets
+- [dashboards] overflow of text in notes fixed
+- [dashboards] show latest update date for report manager widgets
+- [data-manager] fixed description column
+- [device_list] added latest Apple devices
+- [devices] app version series legend was missing
+- [docker] dependencies for puppeteer
+- [export] fixed using export file name
+- [logger] convertToCap only when needed
+- [logger] Incoming Data Logs datatable sorting change
+- [overview] fixed ordering of home widgets doesn't work in CE
+- [remote-config] removed programmatic audit report
+- [report-manager] taskmanager calling directly using processRequest on task rerun
+- [settings] disable city data tracking when country is disabled
+- [slipping-away-users] hide user button in CE
+- [slipping-away-users] table width arranged
+- [star-rating] fixes sorting on rating table
+- [two-factor-auth] fix permission call in two factor auth
+- [views] fixed bounce rate average in graph
+
+
+Enterprise fixes:
+- [cohorts] query transformation and operation limit fixed
+- [crashes-jira] create jira button bugfix
+- [drill] add 'recalculate' button for drill widgets
+- [drill] fixes for dashboard widgets
+- [drill] fixes for event timeline
+- [drill] showing last updated on drill widgets
+- [formulas] bucket fixes for formulas
+- [formulas] fixes for dashboard widgets
+- [funnels] did not do first step user list
+- [revenue] dashboard widget for revenue
+- [revenue] fixed sorting columns
+
+## Version 22.09.1
+
+Fixes:
+- [2fa] fix permission call in two factor auth
+- [api] remove duplicate code and process device type correctly
+- [api] top events check fixes
+- [apps] app lock tooltip text fixed and localized
+- [apps] app management sidebar app icon margin alignment
+- [crashes] fixes new crash dispatch
+- [crashes] use common styles for the tab element
+- [dashboards] note in dashboards escaping fixed 
+- [device-list] add missing Apple devices
+- [events] check for existience of map key in overview
+- [hooks] fix app filter for new crashes
+- [hooks] fixes for data formatting
+- [members] update default profile image sprite
+- [push] fixing ampersand encoding in button URLs & on click URL
+- [scripts] fixes for expire scripts to do not drop indexes on ttl change, but rather modifly value
+- [server-stats] fixed issues with incorrectly calculated data points for periods: "month", "day"
+- [settings] country data tracking can be disabled
+- [ui] cly-vue-radio-block - use common trend styles
+- [ui] common styles for the tab element & trend up, down, neutral and negated states
+- [ui] fixes for datepickers, who uses second not milisecond format
+- [ui] prevent map zoom via scroll wheel
+- [ui] remove spaces before % throughout the dashboard
+- [ui] set drawer element z-index for it to be above the table loading mask
+- [ui] vertically center some no-data elements in Analytics > Technology
+- [upgrade] fix stopping on error
+- [upgrade] improvement for upgrade script to do parallel upgrade for collection
+
+Enterprise fixes:
+- [attribution] use common styles for the tab element & use correct trend values
+- [cohorts] in mongo update $pull And $push CANT be in same call!!
+- [cohorts] period selection fixes
+- [concurrent_users] online users home widget max numbers margin alignment
+- [data-manager] fix for status update not showing up
+- [data-manager] fix projections for data masking
+- [drill] fix time formatter
+- [drill] update duration on each session duration change
+- [formulas] pass [CLY]_session as default if none of events is set. To have duration in query builder after
+- [groups] check for empty group permission when creating permission set in drawer
+- [groups] fix groupID in group drawer
+- [retention] fix in case of undefined parameter
+- [revenue] use common styles for the tab element
+
+## Version 22.09
+
+Fixes:
+- [apps] app icon change doesn't take effect until clear cache
+- [apps] app management Reset & Delete buttons broken hover state
+- [apps] fix salt
+- [apps] fixed app icon file selection stays the same after switching to another app
+- [crashes] get app version from vuex correctly
+- [dashboards] fix for widgets with since time period
+- [logger] fixed header tab overflow
+- [push] fixing ampersand encoding in message URLs
+- [ui] datepicker fixes
+- [ui] search mixin fixes when value is not string
+- [views] fixed displaying users when period is whole year like 2022
+
+Improvements:
+- [data-manager] update localization add property name and type
+- [logger] collapsable json data
+- [plugins] removed plugin version column from feature management
+- [security] improved image valdiation
+- [security] remove api_keys from requests
+- [security] update dependencies
+
+Enterprise fixes:
+- [data-manager] fix export for data manager schema
+- [data-manager] remove data type tooltip from regenerate drawer
+- [data-manager] replace user properties column label with localization
+- [drill] localization key updated for View Segments
+- [flows] period editing bug fix. +added code to deal with messed up period fields
+- [flows] using $substrCP instead of $substr to do not run into problems with special characters
+- [retention_segments] breakdown tooltip removed
+
+Enterprise improvements:
+- [cohorts] added date control for custom datepicker in Cohort
+- [cohorts] real time optimzied cohort generation
+- [drill] meta regeneration improvements for speed and user properties
+- [performance-monitoring] merge all collections into single apme collection
+- [revenue] add currency field
+- [surveys] set a new endpoint for retrieving rating widget data
+- [users] make name exportable in user profiles
+
+## Version 22.08.6
+
+Fixes:
+- [2fa] permission fix
+- [apps] admin of APP should be able to edit image for app
+- [batcher] fix cases when data might still be read from cache even if the cache is disabled
+- [core] env variables in tests
+- [dbviewer] fixes in dbviewer aggregation pipeline
+- [events] fixed . usage in events for some cases
+- [logger] change display name of Request Logs to Incoming Data Logs 
+- [push] allowing editing created messages
+- [push] correct formatting for sent number in messages table
+- [push] fixes for user merging
+- [push] fixing clear job
+- [push] fixing errors on push data removals
+- [push] more message transferring logging
+- [push] removing double message update
+- [remote-config] changes to make remote-config params non editable if they are not completed in ab-test
+- [remote-config] fix expire for remote config
+- [ui] add margin top to settings override warning
+- [ui] in dropdowns the scroll bar is not shown by default
+- [ui] make app management delete/clear confirmation buttons red
+- [ui] multiple localization fixes
+
+Enterprise fixes:
+- [active-directory] azure AD multi tenancy support
+
+## Version 22.08.5
+
+Fixes:
+- [apps] admin of app should be able to edit image for app
+- [apps] fixed newly created app is locked
+- [user-management] fixed group name display if user group_id is not an array
+- [crashes] remove os from indexed props in query builder
+
+Enterprise fixes:
+- [ab-testing] changes for new endpoint in ab testing
+- [groups] added checking for user group_id, it has to be an array
+- [drill] added undefined check for _idv parameter
+
+## Version 22.08.4
+
+Fixes:
+- [config] fixed web configs for config extender
+- [core] fixed user picture condition check in user deletion
+- [core] prevent app user deletion if there is an error from other plugins
+- [db] fixed config variables for docker for different databases
+- [events] fixed encoding decoding issue in events
+- [linting] fixed codeql issues
+- [logger] add debug logs to request logs
+- [populator] add more demo pages with links
+- [push] reschedule on edits
+- [scripts] fixed one liner installer script
+- [star-rating] changes for ratings images in countlyFS
+- [ui] in dropdowns the scroll bar is not shown by default
+- [views] add support for handling SDK provided ids for views
+- [views] fixed heatmap top bar check mark
+
+Enterprise fixes:
+- [ab-testing] add link click handler for metric breakdown
+- [ab-testing] remove target blank from link in metric breakdown
+- [active-users] fixed to stop timeout on active users job exit
+- [active-users] fixed wrong active user/visitor data
+- [cognito] implement cognito authorization code flow
+- [concurrent_users] added isNaN control where max item is displayed
+- [crash_symbolication] call return connection test from dashboard
+- [crash_symbolication] enable platform and status filter
+- [crash_symbolication] fixed crashgroup symbol_id passing
+- [crash_symbolication] fixed symbol jobs
+- [ldap] expose configs in docker
+- [surveys] fixed bar colors on nps chart
+- [users] add backlink to index view header
+
+## Version 22.08.3
+
+Fixes:
+- [api] fix bug with new apps and salt, when requests are not rejected
+- [applciations] if there is an app key, a new one should not be produced
+- [applications] will not be able to edit any Application to have an empty name
+- [crashes] pass symbol id from crashgroup for symbolication
+- [dbviewer] refresh of all data when changing the collection
+- [events] fixes for encoding decoding issues in events overview and details page
+- [logger] showing if request is cancelled in logger
+- [populator] add multiple heatmap examples
+- [populator] cleanup duplicate code in populator
+- [populator] populator templates datatable's alignment issue
+- [ratings] backward compatibility fixes for emoticons
+
+Enterprise Fixes:
+- [block] fixed filtering rule saving issue
+- [cohorts] fixed home table alignment issue for Safari browser
+
+
+## Version 22.08.2
+Features:
+- [core] script to remove old permission properties
+- [crashes] Fix binary image symbol id check
+- [crashes] Fix build uuid check for latest crash
+- [crashes] Fix fetch symbols response
+- [crashes] Prefill symbol drawer called from binary page
+- [crashes] Unescape binary page crash name
+- [push] fixed arraybuffer crash
+- [push] Fixing wrong reporting of retriable errors
+- [push] Mark message as streamable before scheduling starts
+
+Enterprise features:
+- [crash_symbolication] Fixed symbol drawer
+- [crash_symbolication] Show uploaded file in symbol drawer
+- [crash_symbolication] Update symbol file validation
+- [surveys] removed usage of formatNumber when passing to metric cards as a prop
+- [users] Fixed bug with downloading user export if it went to report manager
+- [users] when loading user profile page, check data and show active "export download" button if there is existing export for this user
+
+## Version 22.08.1
+Fixes:
+- [crashes] Add crashgroup toggle symbolication switch
+- [crashes] Display threads in crashgroup view
+- [crashes] Fix crashgroup refresh action
+- [crashes] Fix crashgroup symbolicate action
+- [crashes] Fix show symbolication switch
+- [crashes] Improve crash group datatable expansion handler
+- [crashes] Move datatable row stacktrace actions to dropdown menu
+- [crashes] Move stacktrace actions to dropdown menu
+- [db] provide different configs for different databases through ENV variables
+- [populator] udpated data for populator
+- [report-manager] correctly handle case when admin permissions are not given
+- [star-rating] changes for adding time in excel for ratings
+- [star-rating] emojis backward compatibility fix for ratings
+- [star-rating] logo preview dimensions adjusted
+
+Enterprise fixes:
+- [crash_symbolication] Fix symbold build id checking
+- [crash_symbolication] Update symbolication switch text
+- [drill] use random function that is fully supported in nodejs 14
+- [oidc] additionally store check in coookie to fallback if session expires
+
+## Version 22.08
+
+Fixes:
+- [core] fix member image endpoint, replace session id with member id
+- [dashboards] fixed user overview shows same 'number' for total, returning and new.
+- [push] logging sender crashes
+- [push] removing EE dependencies from CE
+- [star-rating] fix for platform and app version
+- [ui] color mismatch is fixed between legend and chart line in multi-legends as chart data changes
+- [ui] improvement of selected tab on multiline select element
+
+Features:
+- [long-tasks] allowing to kill long tasks on DB side
+- [push] allowing on-event auto push in CE
+
+Enterprise fixes:
+- [ab-testing] improved detail page
+- [cohorts] fixing special period handling
+- [config-transfer] fixed dashboards export
+- [data-manager] Fix transform event drawer regex input
+- [funnels] changes for funnel datepicker
+- [gateway_processor] fixed processing on error
+- [gateway_processor] localization and menu fixes for new UI
+- [group] fixes for ui
+- [surveys] fixed total responses NaN
+- [users] refresh user details page
+
+Enterprise features:
+- [data-manager] data redacting for user properties
+- [oidc] work with new permissions
+- [retention_segments] breakdown by segments
+- [revenue] revenue widget for the custom dashboard
+- [users] breakdown of users by segments
+
+## Version 22.06.5
+
+Fixes:
+- [crashes] fix number of occurences on crash details page
+- [crashes] remove $natural sorting from app_crashes query
+- [date-picker] fixed the date constraint that does not include the last day
+- [docker] bundle lates geoip lite db with each image
+- [docker] install mongoexport for user exporting
+- [mongodb] Backwards compability for depricated .save()
+- [pre-login] add success notification
+- [push] Adding connection settings for push plugin
+- [push] fixes for push table
+- [push] Fixing styling issues
+- [push] Logging current configuration in the sender
+- [push] Safer pushes limit
+- [server-stats] Change text from Deleted app to not available
+- [star-rating] fixed displaying logo
+- [ui] Always show search in datatable column filter
+- [ui] Fix select x hidden header condition
+- [ui] Fix select x max items check
+- [user-management] do not validate member image flag
+- [user-management] Fix user global admin value in user drawer
+- [user-management] Fix user permission value in user drawer
+- [user-management] Make sure that groups in user drawer is an array
+
+## Version 22.06.4
+
+Fixes:
+- [core] disable select x options when max items is reached
+- [core] new eslint
+- [longtasks] added stopping feature for long running tasks
+- [plugins] handle install error differently
+- [push] Missing app_id parameter validation for tx messages
+- [push] change push messages table to server side table
+- [push] various fixes, back to safe mode
+- [times-of-day] fixed day names
+
+Enterprise fixes:
+- [ldap] added optional group DN in sample config
+
+## Version 22.06.3
+Rebuild of 22.06.2 with correct sync of repos
+
+## Version 22.06.2
+
+Fixes:
+- [core] remove select-x dropdown gradient if there is no tab or search
+- [docker] load cities and plugin list updates
+- [metrics] fix Linux Arch os reporting
+- [server-stats] fixed commandline reporting
+- [star-rating] fix texts
+- [star-rating] fixed checkbox bugs in rating
+
+Enterprise fixes:
+- [gateway] use parallel transform
+- [surveys] changes for exclusive options to deselect other if exclusive options are selected
+- [surveys] changes to remove all of above for radio button
+
+## Version 22.06.1
+
+Fixes:
+- [db] old option fixes for native_parser
+- [events] add tooltips to the monitored event charts
+- [push] Weird streaming issue
+- [push] Wrong data path for silent messages in Android
+- [push] proxy support
+- [slipping-away-users] fixing api call without query option
+- [ui] add searching for dropdown selectors
+- [user-management] fixed groupModel check
+
+Enterprise fixes:
+- [crash_symbolication] fix return_url for symoblication
+
+## Version 22.06
+
+Fixes:
+- [compare] correctly respond to core events
+- [dashboards] add more rows and columns
+- [dashboards] do not close dashboard sidebar if drawer is open
+- [dashboards] send emails on dashboard invites
+- [data-migration] make export path non mandatory field in data migration
+- [dbviewer] fixed for export with query
+- [jobs] back button doesn't work
+- [menu] stay on same view after page refresh
+- [mongodb] driver update
+- [push] fixing capping display
+- [push] following redirects for mime
+- [push] new proxy logic
+- [star-rating] fixed preview screen for ratings
+- [ui] 31 day month period is cut off in graphs
+- [ui] chart label orientation fixes
+- [user-management] fix reset filter button style
+
+Enterprise fixes:
+- [cognito] create config file on plugin install, if it does not exist
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [config-transfer] fix for blank names
+- [drill] drill widget should skip x-axis labels like other time series graphs
+- [funnels] Ability to duplicate funnels
+- [groups] manage user group assignment directly from group management
+- [retention_segments] add column sizes for 13 months and 30 days retention tables for dashboards
+- [retention_segments] fix retention table tooltips
+
+## Version 22.03.12
+
+Fixes:
+- [UI] Custom file name for export functionality in the datatable
+- [dashboards] Subheading and label prop in the select app component
+- [jobs] More rescheduling attempts
+- [push] Adding lastRuns
+- [push] Adding too late to send error
+- [push] Filtering messages by status
+- [push] Variables for API messages
+- [push] Waiting for connect promise to resolve
+- [systemlogs] Make sure we store correct MongoDB documents
+- [user-management] Apply filter when reset filter button is clicked
+- [user-management] Set filter dropdown width
+
+Enterprise fixes:
+- [cohorts] Cohort name is not editable after creation
+- [cohorts] Cohorts aren't sortable in "Current Users" column
+- [concurrent_users] Don't show period in online users widget
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [concurrent_users] x-Axis labels of this online users graph on dashboards horizontally
+- [config-transfer] Config transfer supports Fitlering rules
+- [drill] Make default visualization 'Bar Chart' if query contains BY in Drill
+- [drill] When exporting BY query table result in drill to excel file, key column is empty
+- [formulas] Expression value checks for copy formulas
+- [users] Decode event name in userprofile event timeline section
+
+## Version 22.03.11
+
+Fixes:
+- [applications] update application details values when dropdown is open
+- [compliance-hub] Full row click to open row
+- [data-manager] Add view regeneration to data manager regenerate drawer
+- [date] Correct period for ndays
+- [dbviewer] Full row click to open row
+- [device_list] updated device list from model to name
+- [geo] Correct user estimation for totals
+- [logger] Full row click to open row
+- [remote-config] Full row click to open row
+- [sessions] Display total users as unique sessions
+- [sources] Full row click to open row
+- [star-rating] Fix displaying chart data
+- [systemlogs] Full row click to open row
+- [ui] Added warning type to the dialog box
+- [ui] Localization fixes
+- [user-management] Added role/group filter
+- [user-management] Display group name in table
+- [user-management] Display group name in table
+
+Enterprise Fixes:
+- [cognito] Add attribution plugin to docker build
+- [drill] Passing period correctly if BYVAL + custom period
+- [drill] Regenerating views from granular data
+- [formulas] Bucket array check
+- [users] Fixed for general cohort based query in export users
+- [users] Fixed user table export only exports filtered users
+
 ## Version 22.03.10
 
 Fixes:

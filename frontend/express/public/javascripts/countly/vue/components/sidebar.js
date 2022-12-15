@@ -676,11 +676,11 @@
                         userImage.found = true;
                     }
                     else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
                         var name = member.full_name.split(" ");
 
                         userImage.found = false;
-                        userImage.url = "images/avatar-sprite.png";
+                        userImage.url = "images/avatar-sprite.png?v2";
                         userImage.position = defaultAvatarSelector;
                         userImage.initials = name[0][0] + name[name.length - 1][0];
                     }
@@ -780,7 +780,8 @@
                         this.$nextTick(function() {
                             setTimeout(function() {
                                 if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onMainMenu) {
+                                    if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                        0;
                                         /**
                                          * If not on the main menu, hide the main menu.
                                          */
@@ -812,7 +813,7 @@
                         this.$nextTick(function() {
                             setTimeout(function() {
                                 if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onOptionsMenu) {
+                                    if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
                                         /**
                                          * If not on the options menu, hide the main menu.
                                          */

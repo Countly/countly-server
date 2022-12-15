@@ -13,10 +13,11 @@
                     this.selectedApp = value;
                     this.$store.dispatch('countlyAppManagement/setSelectedAppId', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
-                    this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
+                    this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png?' + Date.now().toString() + '")';
                     this.unpatch();
                     app.onAppManagementSwitch(value, countlyGlobal.apps[value] && countlyGlobal.apps[value].type || "mobile");
                     app.navigate("#/manage/apps/" + value);
+                    this.showFileList = false;
                 }
             },
             isCode: function() {
@@ -24,6 +25,9 @@
             },
             hasGlobalAdminRights: function() {
                 return countlyAuth.validateGlobalAdmin();
+            },
+            hasAppAdminRights: function() {
+                return countlyAuth.validateAppAdmin();
             }
         },
         data: function() {
@@ -45,7 +49,7 @@
                 return a.label > b.label && 1 || -1;
             });
             var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
-                countlyGlobal.apps[id].image = "appimages/" + id + ".png";
+                countlyGlobal.apps[id].image = "appimages/" + id + ".png?" + Date.now().toString();
                 return {
                     label: countlyGlobal.apps[id].name,
                     value: id
@@ -61,6 +65,7 @@
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
             return {
+                showFileList: true,
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
                 formId: "app-management-form",
@@ -92,7 +97,9 @@
                     {value: "clear-2year", label: CV.i18n("management-applications.clear-2year-data")},
                     {value: "clear-all", label: CV.i18n("management-applications.clear-all-data")},
                     //{value: "clear", label: CV.i18n("management-applications.clear-data")},
+                    {},
                     {value: "reset", label: CV.i18n("management-applications.clear-reset-data"), divided: true},
+                    {},
                     {value: "delete", label: CV.i18n("management-applications.delete-an-app"), divided: true},
                 ],
                 loadingDetails: false,
@@ -240,7 +247,7 @@
                     if (period === "all") {
                         image = "clear-all-app-data";
                     }
-                    CountlyHelpers.confirm(helper_msg, "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(helper_msg, "red", function(result) {
                         if (!result) {
                             return true;
                         }
@@ -349,12 +356,11 @@
                             countlyGlobal.apps[data._id] = data;
                             countlyGlobal.admin_apps[data._id] = data;
                             Backbone.history.appIds.push(data._id + "");
-                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png";
+                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png?" + Date.now().toString();
                             self.appList.push({
                                 value: data._id + "",
                                 label: data.name
                             });
-                            self.selectedSearchBar = data._id + "";
                             self.$store.dispatch("countlyCommon/addToAllApps", data);
                             if (self.firstApp) {
                                 countlyCommon.ACTIVE_APP_ID = data._id + "";
@@ -363,6 +369,9 @@
                                 app.initSidebar();
                             }
                             self.firstApp = self.checkIfFirst();
+                            setTimeout(function() {
+                                self.selectedSearchBar = data._id + "";
+                            }, 1);
                         },
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
@@ -415,6 +424,7 @@
                                 break;
                             }
                         }
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]
@@ -488,7 +498,7 @@
             },
             deleteApp: function() {
                 var self = this;
-                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "red", function(result) {
 
                     if (!result) {
                         return true;
@@ -540,7 +550,7 @@
                                 self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
-                                self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
+                                self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png?' + Date.now().toString() + '")';
                                 app.navigate("#/manage/apps/" + self.selectedApp);
 
                                 if (countlyCommon.ACTIVE_APP_ID === app_id) {
@@ -693,6 +703,17 @@
                 var self = this;
                 this.$refs.configObserver.validate().then(function(isValid) {
                     if (isValid) {
+                        var appSettingKeys = Object.keys(app.appManagementViews);
+                        for (var i = 0; i < appSettingKeys.length; i++) {
+                            if (self.changes[appSettingKeys[i]]) {
+                                var subKeys = Object.keys(app.appManagementViews[appSettingKeys[i]].inputs);
+                                for (var j = 0; j < subKeys.length; j++) {
+                                    if (!self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]]) {
+                                        self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]] = app.appManagementViews[appSettingKeys[i]].inputs[subKeys[j]].value;
+                                    }
+                                }
+                            }
+                        }
                         $.ajax({
                             type: "POST",
                             url: countlyCommon.API_PARTS.apps.w + '/update/plugins',

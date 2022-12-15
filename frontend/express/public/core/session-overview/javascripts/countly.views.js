@@ -114,7 +114,7 @@ var SessionHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: 'session'})).then(function() {
             self.calculateAllData();
         });
     },
@@ -124,7 +124,7 @@ var SessionHomeWidget = countlyVue.views.create({
             if (force) {
                 this.isLoading = true;
             }
-            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: 'session'})).then(function() {
                 self.calculateAllData();
             });
         },
@@ -240,7 +240,7 @@ var SessionHomeWidget = countlyVue.views.create({
             var series = [];
             if (sessionDP && sessionDP.chartDP && sessionDP.chartDP[0] && sessionDP.chartDP[1]) {
                 series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
-                series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
+                series.push({"name": sessionDP.chartDP[0].label + " (" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
             }
             if (value === "d" || value === "d-avg") {
                 return {

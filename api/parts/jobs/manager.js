@@ -361,7 +361,7 @@ class Manager {
                 now = new Date(),
                 // for strict jobs we're going to repeat all missed tasks (100 tasks max) up to current date after restart
                 // for non-strict ones, we want to start from current date
-                next = later.schedule(schedule).next(2, strict ? new Date(job.next || now.getTime()) : now);
+                next = later.schedule(schedule).next(3, strict ? new Date(job.next || now.getTime()) : now);
 
             next = next.filter(d => d.getTime() !== job.next && (!job.next || d.getTime() > job.next) && d.getTime() !== now.getTime());
             if (typeof job.strict === 'number' && job.next) {

@@ -40,6 +40,9 @@
             },
             "Browser side":{
                 "href":"../browser/index.html"
+            },
+            "API Reference":{
+                "href":"../apidoc/index.html"
             }
         }
     }

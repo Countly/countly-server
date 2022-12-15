@@ -22,7 +22,7 @@
   },
   "homepage": "https://count.ly/",
   "dependencies": {
-    "moment-timezone": "0.5.31",
+    "moment-timezone": "0.5.35",
     "node-fetch": "2.6.7"
   }
 }

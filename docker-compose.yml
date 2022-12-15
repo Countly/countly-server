@@ -8,14 +8,14 @@ networks:
 
 services:
   mongodb:
-    image: 'bitnami/mongodb:4.4.6'
+    image: 'bitnami/mongodb:latest'
     volumes:
       - 'mongodb_data:/bitnami'
     networks:
       countly:
 
   countly-api:
-    image: 'countly/api:20.11.2'
+    image: 'countly/api:latest'
     # Enterprise Edition: image: 'gcr.io/countly-01/api:20.11.2'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
@@ -33,7 +33,7 @@ services:
       - mongodb
 
   countly-frontend:
-    image: 'countly/frontend:20.11.2'
+    image: 'countly/frontend:latest'
     # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.11.2'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate

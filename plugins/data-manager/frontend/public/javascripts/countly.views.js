@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
+/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
 
 (function() {
 
@@ -530,7 +530,7 @@
                         if (e.isSelected === undefined) {
                             e.isSelected = false;
                         }
-                        e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
+                        e.categoryName = self.categoriesMap[e.category] || CV.i18n('data-manager.uncategorized');
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
@@ -539,6 +539,12 @@
                         }
                         if (!e.e) {
                             e.e = e.key;
+                        }
+                        if (!e.name) {
+                            e.name = e.key;
+                        }
+                        if (!e.description) {
+                            e.description = '';
                         }
                         if (isEventCountAvailable) {
                             e.totalCount = eventCount[e.key] || 0;
@@ -1306,8 +1312,5 @@
         this.renderWhenReady(detailView);
     });
 
-    $(document).ready(function() {
-        app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
-    });
-
+    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

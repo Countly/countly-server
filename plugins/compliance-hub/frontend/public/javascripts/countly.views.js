@@ -1,4 +1,4 @@
-/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
+/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
 (function() {
     var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
@@ -193,6 +193,12 @@
 
                 });
             },
+            tableRowClickHandler: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            }
         }
 
     });
@@ -207,48 +213,16 @@
                         label: this.i18n("common.all")
                     },
                     {
-                        value: 'sessions',
-                        label: this.i18n("compliance_hub.Sessions")
+                        value: 'export_app_user',
+                        label: this.i18n("compliance_hub.export_app_user")
                     },
                     {
-                        value: "events",
-                        label: this.i18n('compliance_hub.Events')
+                        value: 'app_user_deleted',
+                        label: this.i18n("compliance_hub.app_user_deleted")
                     },
                     {
-                        value: 'views',
-                        label: this.i18n('compliance_hub.Views')
-                    },
-                    {
-                        value: 'scrolls',
-                        label: this.i18n('compliance_hub.Scrolls')
-                    },
-                    {
-                        value: 'clicks',
-                        label: this.i18n('compliance_hub.Clicks')
-                    },
-                    {
-                        value: 'forms',
-                        label: this.i18n('compliance_hub.Forms')
-                    },
-                    {
-                        value: 'crashes',
-                        label: this.i18n("compliance_hub.Crashes")
-                    },
-                    {
-                        value: 'push',
-                        label: this.i18n('compliance_hub.Push')
-                    },
-                    {
-                        value: 'attribution',
-                        label: this.i18n('compliance_hub.Attribution')
-                    },
-                    {
-                        value: 'users',
-                        label: this.i18n('compliance_hub.Users')
-                    },
-                    {
-                        value: 'star-rating',
-                        label: this.i18n('compliance_hub.Star-rating')
+                        value: 'export_app_user_deleted',
+                        label: this.i18n("compliance_hub.export_app_user_deleted")
                     }
                 ],
                 filter1: [
@@ -266,7 +240,7 @@
                     }
                 ],
                 selectedfilter1: 'all',
-                selectedfilter0: 'sessions',
+                selectedfilter0: 'all',
                 selectedfilterforConsent: 'i',
             };
         },
@@ -303,6 +277,7 @@
                     self.$store.dispatch("countlyConsentManager/_exportDP", payload);
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
+                    self.$store.commit("countlyConsentManager/exportHistoryFilter", self.selectedfilter0);
                     self.$store.dispatch("countlyConsentManager/fetchExportHistoryDataResource");
 
                 });
@@ -672,8 +647,6 @@
         renderedView.params = params;
         this.renderWhenReady(renderedView);
     });
-    $(document).ready(function() {
-        app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
-    });
+    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
 
 })();

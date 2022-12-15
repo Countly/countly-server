@@ -21,6 +21,11 @@ class InternalEventTrigger {
                 }
                 catch (e) {
                     log.e("[hooks internal_events] parsing originalInput", e);
+                    // Rethrow error if event is delete
+                    // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+                    if (data.eventType && data.eventType === '/i/app_users/delete') {
+                        throw e;
+                    }
                 }
                 return options.pipeline(data);
             };
@@ -94,7 +99,6 @@ class InternalEventTrigger {
         case "/i/users/create":
         case "/i/users/update":
         case "/i/users/delete":
-        case "/crashes/new":
         case "/master":
             utils.updateRuleTriggerTime(rule._id);
             this.pipeline({
@@ -102,6 +106,16 @@ class InternalEventTrigger {
                 rule: rule,
                 eventType,
             });
+            break;
+        case "/crashes/new":
+            if (rule.apps.indexOf(ob.data.app._id + '') > -1) {
+                utils.updateRuleTriggerTime(rule._id);
+                this.pipeline({
+                    params: {data: ob.data, eventType},
+                    rule: rule,
+                    eventType,
+                });
+            }
             break;
         case "/systemlogs":
             utils.updateRuleTriggerTime(rule._id);
@@ -151,6 +165,11 @@ class InternalEventTrigger {
                 }
                 catch (err) {
                     console.log(err, "[InternalEventTrigger]");
+                    // Rethrow error if event is delete
+                    // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+                    if (eventType === '/i/app_users/delete') {
+                        throw err;
+                    }
                 }
                 const userData = {user: user || {}};
                 if (ob.update) {
@@ -192,9 +211,8 @@ class InternalEventTrigger {
      */
     register() {
         InternalEvents.forEach((e) => {
-            plugins.register(e, (ob) => {
-                this.process(ob, e);
-                //console.log("mmmm", e);
+            plugins.register(e, async(ob) => {
+                await this.process(ob, e);
             });
         });
     }

@@ -28,9 +28,9 @@ var testUtils = function testUtils() {
     var isLoggedIn = false;
     var that = this;
     var props = {
-        APP_ID: "",
-        APP_KEY: "",
-        API_KEY_ADMIN: ""
+        APP_ID: process.env.COUNTLY_TEST_APP_ID || "",
+        APP_KEY: process.env.COUNTLY_TEST_APP_KEY || "",
+        API_KEY_ADMIN: process.env.COUNTLY_TEST_API_KEY_ADMIN || ""
     };
     var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 

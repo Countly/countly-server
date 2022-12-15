@@ -54,6 +54,7 @@ then
     nodejs "$CUR/scripts/remove_old_flows_collections.js"
     nodejs "$CUR/scripts/update_widgets_reports.js"
     nodejs "$CUR/scripts/clear_old_report_data.js"
+    nodejs "$CUR/scripts/mark_upgraded_custom_dashboards.js"
     
     #change config settings
     countly config "api.batch_on_master" null --force

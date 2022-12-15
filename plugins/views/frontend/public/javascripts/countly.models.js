@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app, countlyAuth */
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, CV, countlyVue, app, countlyAuth */
 
 (function(countlyViews) {
 
@@ -179,7 +179,7 @@
                     rows[k].scrCalc = 0;
                 }
 
-                rows[k].br = rows[k].br + " %";
+                rows[k].br = rows[k].br + "%";
                 //FOR ACTION MAPS
                 rows[k].actionLink = "unknown";
                 rows[k].useDropdown = true;
@@ -286,7 +286,22 @@
                     totals[key2] += (rr.chartData[z][key2] || 0);
                 }
             }
+            //fix value for u
+            var uvalue1 = 0;
+            var uvalue2 = 0;
+            var l = 0;
 
+            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                var ob = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodArr[l]) || {};
+                uvalue1 += ob.u || 0;
+            }
+
+            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                var ob2 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodCheckArr[l]) || {};
+                uvalue2 += ob2.u || 0;
+
+            }
+            totals.u = Math.min(totals.n, uvalue1, uvalue2);
             if (totals.t > 0) {
                 totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
                 var vv = parseFloat(totals.scr) / parseFloat(totals.t);
@@ -362,8 +377,12 @@
             if (metric === "br") {
                 takefrom = calculated.chartDP[3].data;
                 for (var k = 0; k < takefrom.length; k++) {
-
-                    data.push(Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1)));
+                    var bounceRate = Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1));
+                    //there may be cases where bounces are higher than landing. Cap br to 100 for these cases
+                    if (bounceRate > 100) {
+                        bounceRate = 100;
+                    }
+                    data.push(bounceRate);
                 }
             }
             else {

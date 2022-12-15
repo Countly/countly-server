@@ -1,7 +1,7 @@
 <div>
   <cly-header>
     <template v-slot:header-left>
-      <h2 class="cly-vue-remote-config__header"> {{i18n('remote-config.title')}} 
+      <h2 class="cly-vue-remote-config__header"> {{i18n('remote-config.title')}}
       </h2>
     </template>
     <template v-slot:header-right>
@@ -15,7 +15,7 @@
       <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
       </cly-notification>
     </div>
-    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table">
+    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table" ref="table" @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
       <template v-slot:default="scope">
         <el-table-column type="expand" min-width="50">
           <template v-slot="props">
@@ -57,9 +57,14 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column min-width="160" prop="abStatus" :label="i18n('remote-config.parameter.ab.status')">
+          <template v-slot:default="rowScope">
+            {{rowScope.row.abStatus || "-"}}
+          </template>
+        </el-table-column>
         <el-table-column min-width="160" v-if="hasUpdateRight || hasDeleteRight" type="options">
           <template v-slot="rowScope">
-            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+            <cly-more-options v-if="rowScope.row.hover && rowScope.row.editable" size="small" @command="handleCommand($event, scope, rowScope.row)">
               <el-dropdown-item v-if="hasUpdateRight" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
               <el-dropdown-item v-if="hasDeleteRight" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
@@ -67,7 +72,7 @@
         </el-table-column>
         <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
-            <div v-if="rowScope.row.hover">
+            <div v-if="rowScope.row.hover && rowScope.row.editable">
             <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.start')}}
             </el-button>
             <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.stop')}}

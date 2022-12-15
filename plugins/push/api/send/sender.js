@@ -38,8 +38,8 @@ class Sender {
                 retryFactor: 1000,
             },
             pool: {
-                pushes: 100000,
-                bytes: 100000,
+                pushes: 500,
+                bytes: 10000,
                 concurrency: 5,
                 pools: 10
             }
@@ -55,11 +55,59 @@ class Sender {
 
         if (plugins.push) {
             if (plugins.push.sendahead) {
-                try {
-                    cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
+                if (typeof plugins.push.sendahead === 'number') {
+                    cfg.sendAhead = plugins.push.sendahead;
                 }
-                catch (e) {
-                    this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
+                else {
+                    common.log(`push:send`).w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
+                }
+            }
+            if (plugins.push.connection_retries) {
+                if (typeof plugins.push.connection_retries === 'number') {
+                    cfg.connection.retries = plugins.push.connection_retries;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid connection_retries plugin configuration: %j', plugins.push.connection_retries);
+                }
+            }
+            if (plugins.push.connection_factor) {
+                if (typeof plugins.push.connection_factor === 'number') {
+                    cfg.connection.retryFactor = plugins.push.connection_factor;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid connection_factor plugin configuration: %j', plugins.push.connection_factor);
+                }
+            }
+            if (plugins.push.pool_pushes) {
+                if (typeof plugins.push.pool_pushes === 'number') {
+                    cfg.pool.pushes = plugins.push.pool_pushes;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid pool_pushes plugin configuration: %j', plugins.push.pool_pushes);
+                }
+            }
+            if (plugins.push.pool_bytes) {
+                if (typeof plugins.push.pool_bytes === 'number') {
+                    cfg.pool.bytes = plugins.push.pool_bytes;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid pool_bytes plugin configuration: %j', plugins.push.pool_bytes);
+                }
+            }
+            if (plugins.push.pool_concurrency) {
+                if (typeof plugins.push.pool_concurrency === 'number') {
+                    cfg.pool.concurrency = plugins.push.pool_concurrency;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid pool_concurrency plugin configuration: %j', plugins.push.pool_concurrency);
+                }
+            }
+            if (plugins.push.pool_pools) {
+                if (typeof plugins.push.pool_pools === 'number') {
+                    cfg.pool.pools = plugins.push.pool_pools;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid pool_pools plugin configuration: %j', plugins.push.pool_pools);
                 }
             }
             if (plugins.push.proxyhost && plugins.push.proxyport) {
@@ -70,22 +118,6 @@ class Sender {
                     pass: plugins.push.proxypass || undefined,
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
-            }
-            if (plugins.push.bytes) {
-                try {
-                    cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
-                }
-                catch (e) {
-                    this.log.w('Invalid bytes plugin configuration: %j', plugins.push.bytes);
-                }
-            }
-            if (plugins.push.concurrency) {
-                try {
-                    cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
-                }
-                catch (e) {
-                    this.log.w('Invalid concurrency plugin configuration: %j', plugins.push.concurrency);
-                }
             }
         }
 
@@ -129,7 +161,7 @@ class Sender {
      * - handle results
      */
     async send() {
-        this.log.i('>>>>>>>>>> sending');
+        this.log.i('>>>>>>>>>> sending, current configuration is %j', this.cfg);
 
         // data shared across multiple streams
         let state = new State(this.cfg),
@@ -146,19 +178,43 @@ class Sender {
                 promise = new Promise((res, rej) => {
                     resolve = res;
                     reject = rej;
-                });
+                }),
+                last = Date.now(),
+                /**
+                 * Periodic check to ensure mongo stream is closed once no more data is sent
+                 */
+                check = function() {
+                    if (last === null) {
+                        // do nothing, already closed
+                    }
+                    else if (last + 60 * 1000 < Date.now()) {
+                        last = null;
+                        connector.destroy(new PushError('Streaming timeout'));
+                    }
+                    else {
+                        setTimeout(check, 10000);
+                    }
+                };
+
+            pushes.on('close', () => {
+                last = null;
+                this.log.w('pushes close');
+            });
+            pushes.on('unpipe', () => {
+                last = null;
+                this.log.w('pushes unpipe');
+            });
+            connector.on('close', () => this.log.w('connector close'));
+            connector.on('unpipe', () => this.log.w('connector unpipe'));
+
+            connector.on('data', () => last = Date.now());
+            setTimeout(check, 10000);
 
             pushes
-                .pipe(connector, {end: false})
-                .pipe(batcher, {end: false})
+                .pipe(connector)
+                .pipe(batcher)
                 .pipe(resultor, {end: false});
 
-            pushes.once('close', () => {
-                connector.end();
-            });
-            connector.once('close', () => {
-                batcher.end();
-            });
             // batcher.once('close', () => {
             //     resultor.end(function() {
             //         resultor.destroy();

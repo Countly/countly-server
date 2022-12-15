@@ -184,8 +184,7 @@ function toDate(date) {
             return date;
         }
         else {
-            let { PushError } = require('./error');
-            throw new PushError(`Invalid date value: ${date}`);
+            require('../../../../../api/utils/common').log('push:const').e(`Invalid date value: ${date}`);
         }
     }
 }

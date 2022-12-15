@@ -47,7 +47,7 @@ class HPK extends Splitter {
      * @param {Credentials} creds HMS server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
      * @param {string} options.proxy.host proxy host
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
@@ -55,7 +55,6 @@ class HPK extends Splitter {
      * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`${threadId}-h`);
@@ -156,7 +155,7 @@ class HPK extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.message.token = pushes.map(p => p.t);
 

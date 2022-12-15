@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlySession,Promise*/
+/*global countlyVue,CV,countlySession*/
 (function(countlySessionFrequency) {
     countlySessionFrequency.service = {
 

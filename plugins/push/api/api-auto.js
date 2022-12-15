@@ -53,8 +53,8 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
                         logCohorts.d('processing %s %s, result: %j', typ, msg._id, result);
                         if (result.total) {
                             return msg.update({$inc: {'result.total': result.total}}, () => {
-                                result.total += result.total;
-                            }).then(() => Audience.resetQueue(result.next));
+                                msg.result.total += result.total;
+                            });
                         }
                     }).then(() => {
                         logCohorts.d('done processing %s %s', typ, msg._id);

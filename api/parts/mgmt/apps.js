@@ -86,6 +86,9 @@ appsApi.getAppsDetails = function(params) {
             return false;
         }
         params.app = app;
+        if (app.checksum_salt) {
+            app.salt = app.salt || app.checksum_salt;
+        }
         if (params.app.owner) {
             params.app.owner_id = params.app.owner;
             params.app.owner = common.db.ObjectID(params.app.owner + "");
@@ -168,6 +171,8 @@ const iconUpload = function(params) {
             return jimp.read(tmp_path, function(err, icon) {
                 if (err) {
                     log.e(err, err.stack);
+                    fs.unlink(tmp_path, function() {});
+                    return true;
                 }
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
@@ -256,7 +261,9 @@ appsApi.createApp = async function(params) {
         }
     }
     const appKey = common.sha1Hash(seed, true);
-    newApp.key = appKey;
+    if (!newApp.key) {
+        newApp.key = appKey;
+    }
 
     common.db.collection('apps').insert(newApp, function(err, app) {
         if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
@@ -272,7 +279,6 @@ appsApi.createApp = async function(params) {
                 expireAfterSeconds: 60 * 60 * 3,
                 background: true
             }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
             plugins.dispatch("/i/apps/create", {
@@ -327,7 +333,7 @@ appsApi.updateApp = function(params) {
                 'required': false,
                 'type': 'String'
             },
-            'checksum_salt': {
+            'salt': {
                 'required': false,
                 'type': 'String'
             },
@@ -341,6 +347,11 @@ appsApi.updateApp = function(params) {
     var updateAppValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedApp = updateAppValidation.obj)) {
         common.returnMessage(params, 400, 'Error: ' + updateAppValidation.errors);
+        return false;
+    }
+
+    if (updateAppValidation.obj.name === "") {
+        common.returnMessage(params, 400, 'Invalid app name');
         return false;
     }
 
@@ -362,6 +373,7 @@ appsApi.updateApp = function(params) {
     }
 
     updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
+    delete updatedApp.checksum_salt;
 
     common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, appBefore) {
         if (err || !appBefore) {
@@ -369,7 +381,7 @@ appsApi.updateApp = function(params) {
         }
         else {
             if (params.member && params.member.global_admin) {
-                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
                     plugins.dispatch("/i/apps/update", {
                         params: params,
                         appId: params.qstring.args.app_id,
@@ -384,7 +396,7 @@ appsApi.updateApp = function(params) {
             }
             else {
                 if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
                             appId: params.qstring.args.app_id,
@@ -504,8 +516,10 @@ appsApi.updateAppPlugins = function(params) {
                             common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                                 plugins.dispatch('/systemlogs', {
                                     params: params,
-                                    action: `plugin_${k}_config_updated`,
+                                    action: `app_config_updated`,
                                     data: {
+                                        config: k,
+                                        app_id: app._id + "",
                                         before: common.dot(app, `plugins.${k}` || {}),
                                         after: params.qstring.args[k]
                                     }
@@ -523,8 +537,10 @@ appsApi.updateAppPlugins = function(params) {
                     common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                         plugins.dispatch('/systemlogs', {
                             params: params,
-                            action: `plugin_${k}_config_updated`,
+                            action: `app_config_updated`,
                             data: {
+                                config: k,
+                                app_id: app._id + "",
                                 before: common.dot(app, `plugins.${k}` || {}),
                                 after: params.qstring.args[k]
                             }
@@ -778,7 +794,6 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {
             common.db.collection('metric_changes' + appId).drop(function() {
-                common.db.collection('metric_changes' + appId).ensureIndex({ts: -1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
             });

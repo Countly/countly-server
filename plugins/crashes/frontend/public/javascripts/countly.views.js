@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, Promise, countlyAuth */
+/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, countlyAuth */
 
 (function() {
     var groupId, crashId;
@@ -18,17 +18,11 @@
                     return "neutral";
                 }
                 else {
-                    return (typeof this.$props.data !== "undefined" && (this.$props.negateTrend ^ this.$props.data.trend === "u") ? "up" : "down");
+                    return (typeof this.$props.data !== "undefined" && (this.$props.data.trend === "u") ? "up" : "down");
                 }
             },
-            iconClass: function() {
-                if (typeof this.$props.data !== "undefined" && this.$props.data.trend === "n") {
-                    return "minus-round";
-                }
-                else {
-                    return ((typeof this.$props.data !== "undefined" && this.$props.data.trend === "u") ? "arrow-up-c" : "arrow-down-c");
-                }
-
+            negatedClass: function() {
+                return (this.$props.negateTrend === true) ? "negated" : "";
             }
         },
         template: countlyVue.T("/crashes/templates/tab-label.html")
@@ -293,6 +287,15 @@
                     };
                 };
 
+                var self = this;
+                var getAppVersions = function() {
+                    // Get app versions from vuex because drill meta is not always up to date
+                    return self.$store.getters["countlyCrashes/overview/appVersions"].map(function(version) {
+                        var properVersion = version.replace(/:/g, ".");
+                        return { name: properVersion, value: properVersion };
+                    });
+                };
+
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
                         filterProperties.push({
@@ -300,7 +303,7 @@
                             name: "App Version",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("app_version")
+                            getValueList: getAppVersions
                         });
                         filterProperties.push({
                             id: "opengl",
@@ -437,9 +440,15 @@
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
+                    var query = {};
+
+                    if (newValue.query) {
+                        query = countlyCrashes.modifyExistsQueries(newValue.query);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
-                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
                     ]);
                 },
                 get: function() {
@@ -609,7 +618,8 @@
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.container.dataMixin({
                 externalActionDropdownItems: "crashes/external/actionDropdownItems",
-                externalDialogs: "crashes/external/dialogs"
+                externalDialogs: "crashes/external/dialogs",
+                externalActions: "crashes/external/actionDropdownItems/actions"
             })
         ],
         data: function() {
@@ -628,7 +638,9 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                hasUserPermission: countlyAuth.validateRead('users')
+                hasUserPermission: countlyAuth.validateRead('users'),
+                showSymbolicated: false,
+                activeThreadPanels: []
             };
         },
         computed: {
@@ -637,6 +649,9 @@
             },
             crashgroupName: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
+            },
+            crashgroupUnsymbolicatedStacktrace: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/crashgroupUnsymbolicatedStacktrace"];
             },
             comments: function() {
                 return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
@@ -734,7 +749,14 @@
                 }
             },
             handleRowClick: function(row) {
-                this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Links should not expand row when clicked
+                var targetIsOK = !event.target.closest('a');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                }
             },
             generateEventLogs: function(cid) {
                 var self = this;
@@ -768,7 +790,8 @@
                         _id: this.crashgroup.lrid,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
-                        app_version: this.crashgroup.latest_version
+                        app_version: this.crashgroup.latest_version,
+                        symbol_id: this.crashgroup._symbol_id
                     };
                 }
 
@@ -942,10 +965,34 @@
                         }
                     });
                 }
+                else { //get commandhandler from container
+                    var action = this.externalActions.find(item => {
+                        return item.name === 'create-issue';
+                    });
+                    if (action) {
+                        action.handler(this);
+                    }
+
+                }
+            },
+            handleCrashgroupStacktraceCommand: function(command) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash('group');
+                }
+            },
+            handleCrashStacktraceCommand: function(command, crash) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash(crash);
+                }
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
+        },
+        mounted: function() {
+            if (this.symbolicationEnabled) {
+                this.showSymbolicated = true;
+            }
         }
     });
 
@@ -1020,10 +1067,10 @@
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
                         countlyCrashSymbols.fetchSymbols(true)
-                            .then(function(symbolIndexing) {
+                            .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
-                                var buildIdMaps = Object.values(symbolIndexing);
+                                var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
                                 buildIdMaps.forEach(function(buildIdMap) {
                                     Object.keys(buildIdMap).forEach(function(buildId) {
                                         self.symbols[buildId] = buildIdMap[buildId];
@@ -1040,11 +1087,14 @@
                 return Promise.all(promises);
             },
             hasSymbol: function(uuid) {
-                return uuid in this.symbols;
+                return uuid in this.symbols || uuid.toUpperCase() in this.symbols || uuid.toLowerCase() in this.symbols;
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
+        },
+        mounted: function() {
+            this.refresh();
         },
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
     });
@@ -1197,34 +1247,32 @@
         })
     });
 
-    jQuery(document).ready(function() {
-        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-        app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
-        if (app.configurationsView) {
-            app.configurationsView.registerInput("crashes.grouping_strategy", {
-                input: "el-select",
-                attrs: {},
-                list: [
-                    {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
-                    {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
-                ]
-            });
-        }
-
-        app.route("/crashes", "crashes", function() {
-            this.renderWhenReady(getOverviewView());
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.grouping_strategy", {
+            input: "el-select",
+            attrs: {},
+            list: [
+                {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+            ]
         });
+    }
 
-        app.route("/crashes/:group", "crashgroup", function(group) {
-            groupId = group;
-            this.renderWhenReady(getCrashgroupView());
-        });
+    app.route("/crashes", "crashes", function() {
+        this.renderWhenReady(getOverviewView());
+    });
 
-        app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
-            groupId = group;
-            crashId = crash;
-            this.renderWhenReady(getBinaryImagesView());
-        });
+    app.route("/crashes/:group", "crashgroup", function(group) {
+        groupId = group;
+        this.renderWhenReady(getCrashgroupView());
+    });
+
+    app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
+        groupId = group;
+        crashId = crash;
+        this.renderWhenReady(getBinaryImagesView());
     });
 })();

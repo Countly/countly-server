@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager, countlyGraphNotesCommon*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -377,7 +377,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -451,7 +451,15 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            formatChartValue: function(value) {
+                if (this.selectedProperty === "br") {
+                    return countlyCommon.getShortNumber(value) + '%';
+                }
+                return countlyCommon.getShortNumber(value);
             }
+
+
         },
         computed: {
             data: function() {
@@ -683,7 +691,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -796,7 +804,15 @@
 
     var GridComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.commonFormatters,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         computed: {
             title: function() {
                 if (this.data.title) {
@@ -850,7 +866,7 @@
                                 if (vv > 100) {
                                     vv = 100;
                                 }
-                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
+                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
@@ -858,7 +874,7 @@
                         }
                         else if (this.data.metrics[k] === "br") {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
-                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
+                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + "%";
                         }
                         else {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
@@ -869,8 +885,25 @@
                 }
                 return tableData;
             }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         }
-
     });
 
     var DrawerComponent = countlyVue.views.create({
@@ -956,45 +989,35 @@
             }
         },
         grid: {
-            component: GridComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 2,
-                    height: 4
-                };
-            }
+            component: GridComponent
         }
 
     });
 
-    $(document).ready(function() {
-        jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-        };
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    };
 
-        jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-        };
+        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    };
 
-        app.addAppSwitchCallback(function(appId) {
-            if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
-                countlyViews.loadList(appId);
-            }
-        });
-        app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
-
-        //check if configuration view exists
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("views", "views.title");
-            app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
+            countlyViews.loadList(appId);
         }
     });
+    app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
+
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("views", "views.title");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    }
 })();

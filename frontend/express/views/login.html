@@ -48,10 +48,10 @@
 			<div id="login-logo"></div>
 		</div>
 		<% if (message){ %>
-			<div class="cly-vue-notification__alert-box cly-vue-notification__alert-box__alert-text--light-destructive" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
+			<div class="cly-vue-notification__alert-box" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
 				<div style="display: flex;justify-content: space-between; margin:8px; overflow: hidden;">
 					<div style="display: flex;">
-						<img src="images/icons/notification-toast-destructive.svg" class="cly-vue-notification__alert-box-alert-image"/>
+						<img id="notification-image" class="cly-vue-notification__alert-box-alert-image"/>
 						<span style="margin-block: auto; margin-left: 16px; white-space:nowrap" id ="message">
 						</span>
 					</div>
@@ -113,11 +113,23 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.min.js"></script>
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
+		var resetResultMessage = "<%= message %>";
 		$(document).ready(function() {
-			<% if (message && message.length >0 ){ %>
+			<% if (message && message.length >0){ %>
 				$('.cly-vue-notification__alert-box').show();
 				$('#header').css("margin-top","18px");
-				showMessage("<%= message %>");
+				if (resetResultMessage.indexOf("reset.result") !== -1 && resetResultMessage.length === 12){
+					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-successful');
+					$('#notification-image').attr("src", "images/icons/notification-toast-successful.svg")
+				}
+				else{
+					if(resetResultMessage.indexOf("invalid") !== -1 || resetResultMessage.indexOf(",") !== -1){
+						resetResultMessage = "reset.invalid"
+					}
+					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-destructive');
+					$('#notification-image').attr("src", "images/icons/notification-toast-destructive.svg")
+				}
+				showMessage(resetResultMessage);
 			<% } 
 			else{ %>
 				$('#header').css("margin-top","72px");

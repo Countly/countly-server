@@ -9,8 +9,9 @@ var common = require("./common.js");
 var countlyConfig = require("../../frontend/express/config.js");
 var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
-var request = require("request");
 var plugins = require('../../plugins/pluginManager.js');
+
+
 const log = require('./log.js')('core:taskmanager');
 
 /**
@@ -64,10 +65,81 @@ taskmanager.longtask = function(options) {
     var exceeds = false;
     var start = new Date().getTime();
     var timeout;
+
+    var saveOpId = async function(comment_id, retryCount) {
+        common.db.admin().command({ currentOp: 1 }, async function(error, result) {
+            if (error) {
+                log.d(error);
+                return;
+            }
+            else {
+                if (result && result.inprog) {
+                    for (var i = 0; i < result.inprog.length; i++) {
+                        let op = result.inprog[i];
+                        if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
+                            continue;
+                        }
+                        if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
+                            if (retryCount < 3) {
+                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                                return;
+                            }
+                            else {
+                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
+                                break;
+                            }
+                        }
+
+                        let comment_position = op.command.$truncated.indexOf('$comment');
+                        if (comment_position === -1) {
+                            continue;
+                        }
+                        let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
+                        var comment_val = substr.match(/"(.*?)"/)[1];
+
+                        if (comment_val === comment_id) {
+                            var task_id = options.id;
+                            var op_id = op.opid;
+                            await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
+                            log.d(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
+                            break;
+                        }
+                        else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
+                            if (retryCount < 3) {
+                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                                break;
+                            }
+                            else {
+                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    if (options.comment_id) {
+        var retryCount = 0;
+        try {
+            saveOpId(options.comment_id, retryCount);
+        }
+        catch (err) {
+            if (retryCount < 3) {
+                setTimeout(() =>saveOpId(options.comment_id, ++retryCount), 500);
+            }
+            else {
+                console.log(err);
+            }
+        }
+    }
+
     /** switching to long task */
     function switchToLongTask() {
         timeout = null;
         exceeds = true;
+
         if (!options.request && options.params && options.params.qstring) {
             var json = options.params.qstring || {};
             json = JSON.parse(JSON.stringify(json));
@@ -139,7 +211,13 @@ taskmanager.longtask = function(options) {
                 else {
                     if (err1) {
                         options.errored = true;
-                        options.errormsg = err1;
+
+                        if (typeof err1 === "object") {
+                            options.error = err1;
+                        }
+                        else {
+                            options.errormsg = err1;
+                        }
                     }
                     taskmanager.saveResult(options, res1);
                 }
@@ -215,6 +293,9 @@ taskmanager.createTask = function(options, callback) {
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
     update.linked_to = options.linked_to;
+    if (options.comment_id) {
+        update.comment_id = options.comment_id;
+    }
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};
@@ -232,7 +313,7 @@ taskmanager.createTask = function(options, callback) {
     else {
         options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
         if (options.manually_create) {
-            plugins.dispatch("/systemlogs", {params: options.params, action: "task_manager_task_created", data: update});
+            plugins.dispatch("/systemlogs", {params: options.params, action: "task_manager_task_created", data: JSON.stringify(update)});
         }
     }
 };
@@ -263,10 +344,23 @@ taskmanager.saveResult = function(options, data, callback) {
         if (options.errormsg) {
             message = options.errormsg;
         }
+        else if (options.error && options.error.errormsg) {
+            message = options.error.errormsg;
+        }
+
         if (message.message) {
             message = message.message;
         }
-        update.status = "errored";
+
+        if ('error' in options) {
+            if (('code' in options.error) && options.error.code === 11601) {
+                update.status = "stopped";
+            }
+        }
+        else {
+            update.status = "errored";
+        }
+
         update.errormsg = message;
     }
     else {
@@ -288,7 +382,6 @@ taskmanager.saveResult = function(options, data, callback) {
         }
         options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
     }
-
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
         if (options.gridfs || (task && task.gridfs)) {
             //let's store it in gridfs
@@ -641,7 +734,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     catch (e) {
         log.e(' got error while process task request parse', e);
     }
-    const count = await options.db.collection("long_tasks").find(options.query, options.projection).count();
+    const count = await options.db.collection("long_tasks").count(options.query);
     return options.db.collection("long_tasks").find(options.query, options.projection).sort(sortBy).skip(skip).limit(limit).toArray((err, list) => {
         if (!err) {
             callback(null, {list, count});
@@ -733,93 +826,67 @@ taskmanager.rerunTask = function(options, callback) {
                 status: "rerunning",
                 start: new Date().getTime()
             }
-        }, function(err, res) {
+        }, function(err1) {
+            if (err1) {
+                log.e(err1);
+            }
+            reqData = reqData || {};
             log.d("calling request");
             log.d(JSON.stringify(reqData));
+            reqData.url = reqData.uri;
+            reqData.body = reqData.json;
 
-            request(reqData, function(error, response, body) {
-                //we got a redirect, we need to follow it
-                log.d("got response");
-                log.d(JSON.stringify(response));
-
-                if (response && response.statusCode) {
-                    log.d(" with status code: " + response.statusCode);
-                }
-                if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                    log.d("Redirecting to:" + response.headers.location);
-                    reqData.uri = response.headers.location;
-                    runTask(options1, reqData, function() {});
-                }
-
-                //we got response, if it contains task_id, then task is rerunning
-                //if it does not, then possibly task completed faster this time and we can get new result
-                else if (body) {
-                    if (!body.task_id) {
-                        var code = "";
-                        var msg = "";
-                        if (response && response.statusCode) {
-                            code = response.statusCode;
-                            msg = response.statusMessage || "";
-                            if (response.body && response.body !== '') {
-                                if (typeof response.body === 'string') {
-                                    try {
-                                        msg = JSON.parse(response.body);
-                                        if (msg.result) {
-                                            msg = msg.result;
-                                        }
-                                    }
-                                    catch (exp) {
-                                        log.e('Parse ' + response.body + ' JSON failed');
-                                        msg = response.body;
-                                    }
-                                }
-                                else {
-                                    if (response.body.result) {
-                                        msg = response.body.result;
-                                    }
-                                    else {
-                                        msg = JSON.stringify(response.body);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (code === 200) {
+            var params = {
+                no_checksum: true,
+                //providing data in request object
+                'req': reqData,
+                'APICallback': function(err, responseData, headers, returnCode) {
+                    //sending response to client
+                    responseData = responseData || {};
+                    log.d(JSON.stringify(responseData));
+                    log.d(err);
+                    if (err) {
+                        taskmanager.saveResult({
+                            db: options1.db,
+                            id: options1.id,
+                            subtask: options1.subtask,
+                            errormsg: err || responseData,
+                            errored: true,
+                            request: reqData
+                        }, responseData);
+                    }
+                    else if (!responseData.task_id) {
+                        log.d("returned result for this");
+                        log.d(JSON.stringify(responseData));
+                        var body = responseData;
+                        if (returnCode === 200) {
                             taskmanager.saveResult({
                                 db: options1.db,
                                 id: options1.id,
                                 subtask: options1.subtask,
-                                request: res.request
+                                request: reqData
                             }, body);
                         }
                         else {
+                            if (body.result) {
+                                body = body.result;
+                            }
                             taskmanager.saveResult({
                                 db: options1.db,
                                 id: options1.id,
                                 subtask: options1.subtask,
-                                errormsg: msg,
+                                errormsg: err || body,
                                 errored: true,
-                                request: res.request
+                                request: reqData
                             }, body);
 
                         }
                     }
-                    else {
-                        //we have task id. so it is running and will update itself
-                    }
                 }
-                else {
-                    //We don't have body. Something is definetly wrong. Try logging error
-                    taskmanager.saveResult({
-                        db: options1.db,
-                        id: options1.id,
-                        subtask: options1.subtask,
-                        errormsg: "Missing body. " + JSON.stringify(error || {}),
-                        errored: true,
-                        request: res.request
-                    }, body);
-                }
-            });
+            };
+            if (common.processRequest) {
+                common.processRequest(params);
+            }
             callback1(null, "Success");
         });
     }
@@ -836,6 +903,9 @@ taskmanager.rerunTask = function(options, callback) {
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
+                if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
+                    reqData.json.period = JSON.stringify(reqData.json.period);
+                }
                 options.subtask = res.subtask;
                 reqData.json.autoUpdate = options.autoUpdate || false;
                 if (!reqData.json.api_key && res.creator) {
@@ -872,6 +942,50 @@ taskmanager.rerunTask = function(options, callback) {
         }
         else {
             callback(null, "This task cannot be run again");
+        }
+    });
+};
+
+taskmanager.stopTask = function(options, callback) {
+    options.db = options.db || common.db;
+
+    /**
+    * Stop task
+    * @param {object} op_id - operation id for mongo process
+    * @param {object} options1.db - database connection
+    * @param {string} options1.id - id of the task result
+    * @param {object} reqData  -  request data
+    * @param {funciton} callback1 - callback for the result
+    */
+    function stopTask(op_id) {
+        common.db.admin().command({ killOp: 1, op: Number.parseInt(op_id) }, function(error, result) {
+            if (result.ok === 1) {
+                callback(null, "Success");
+            }
+            else {
+                callback(null, "Operation could not be stopped");
+            }
+        });
+    }
+
+    options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
+        if (res) {
+            if (res.creator) {
+                options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
+                    if (member) {
+                        stopTask(res.op_id);
+                    }
+                    else {
+                        callback(null, "No permission to stop this task");
+                    }
+                });
+            }
+            else {
+                stopTask(res.op_id);
+            }
+        }
+        else {
+            callback(null, "Task does not exist");
         }
     });
 };

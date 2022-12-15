@@ -181,7 +181,7 @@
         border-radius: 8px;
         display: inline-block;
         vertical-align: middle;
-        margin-right: 5px;
+        margin-right: 2px;
         animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
     }
     @keyframes blinker {
@@ -657,6 +657,12 @@
                 background: #F9F9F9;
                 border-radius: 4px;
                 color: map.get(c.$colors, "primary");
+            }
+
+            &--deactive {
+                background-color: transparent;
+                border-radius: 0;
+                color: rgb(51, 60, 72);
             }
 
             &--custom {
@@ -1399,6 +1405,9 @@
             .bu-column {
                 padding: 0px;
             }
+            .divider {
+                color:#A7AEB8;
+            }
         }
         &__value-row {
             border-radius: 4px;
@@ -1431,6 +1440,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #333c48;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
         }
         &__blur_container {
             position: absolute;
@@ -1555,7 +1568,7 @@
         right: 0;
         top: 0;
         background-color: transparent;
-        z-index: 2000;
+        z-index: 2001;
         width: 100%;
 
         /*
@@ -4005,5 +4018,11 @@
 
     &__subtitle {
         max-width: 500px;
+    }
+}
+
+.__vuescroll {
+    .__panel {
+        overscroll-behavior: contain;
     }
 }

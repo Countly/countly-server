@@ -432,6 +432,32 @@
                 }
 
                 this.configsData[this.selectedConfig][key] = value;
+                //when user disables country data tracking while city data tracking is enabled
+                if (key === "country_data" && value === false && this.configsData[this.selectedConfig].city_data === true) {
+                    //disable city data tracking 
+                    this.configsData[this.selectedConfig].city_data = false;
+                    //if city data tracking was originally enabled, note the change
+                    index = this.diff.indexOf("city_data");
+                    if (index > -1) {
+                        this.diff.splice(index, 1);
+                    }
+                    if (configsData[this.selectedConfig].city_data === true) {
+                        this.diff.push("city_data");
+                    }
+                }
+                //when user enables city data tracking while country data tracking is disabled
+                if (key === "city_data" && value === true && this.configsData[this.selectedConfig].country_data === false) {
+                    //enable country data tracking
+                    this.configsData[this.selectedConfig].country_data = true;
+                    //if country data tracking was originally disabled, note the change
+                    index = this.diff.indexOf("country_data");
+                    if (index > -1) {
+                        this.diff.splice(index, 1);
+                    }
+                    if (configsData[this.selectedConfig].country_data === false) {
+                        this.diff.push("country_data");
+                    }
+                }
 
                 if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
                     value.sort();
@@ -802,9 +828,9 @@
                     userImage.found = true;
                 }
                 else {
-                    var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
+                    var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
                     userImage.found = false;
-                    userImage.url = "images/avatar-sprite.png";
+                    userImage.url = "images/avatar-sprite.png?v2";
                     userImage.position = defaultAvatarSelector;
                     userImage.initials = this.initials;
                 }
@@ -837,8 +863,8 @@
                     return {'background-image': 'url("' + image + '?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"};
                 }
                 else {
-                    var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 100;
-                    return {'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
+                    var defaultAvatarSelector = (countlyGlobal.member.created_at || Date.now()) % 10 * -100;
+                    return {'background-image': 'url("images/avatar-sprite.png?v2")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
                 }
             },
             loadComponents: function() {
@@ -954,8 +980,6 @@
     }
     app.configurationsView.registerInput("apps.country", {input: "el-select", attrs: {}, list: countryList});
 
-    app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
-
     app.configurationsView.registerInput("logs.default", {
         input: "el-select",
         attrs: {},
@@ -1017,7 +1041,7 @@
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
-            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
+            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
         ]
     });
 
@@ -1094,6 +1118,7 @@
                 }
                 app.addAppManagementInput(key, jQuery.i18n.map['configs.' + key], inputs);
             }
+            app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
         });
     }
 
@@ -1107,24 +1132,22 @@
         this.renderWhenReady(view);
     });
 
-    $(document).ready(function() {
-        if (countlyAuth.validateGlobalAdmin()) {
-            if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
-            }
+    if (countlyAuth.validateGlobalAdmin()) {
+        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
+            app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
         }
-        if (countlyAuth.validateGlobalAdmin()) {
-            app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
+    }
+    if (countlyAuth.validateGlobalAdmin()) {
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
 
-            var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
-            var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;
-            if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
-                countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
-                    if (err) {
-                    // throw err
-                    }
-                });
-            }
+        var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
+        var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;
+        if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
+            countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
+                if (err) {
+                // throw err
+                }
+            });
         }
-    });
+    }
 })();

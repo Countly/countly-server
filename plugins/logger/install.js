@@ -14,12 +14,34 @@ pluginManager.dbConnection().then((countlyDb) => {
             function cb() {
                 done();
             }
-            countlyDb.command({"convertToCapped": 'logs' + app._id, size: 10000000, max: 1000}, function(err) {
+
+            countlyDb.command({ "listCollections": 1, "filter": { "name": "logs" + app._id } }, function(err, res) {
                 if (err) {
-                    countlyDb.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, cb);
+                    console.log(err);
+                    cb();
                 }
                 else {
-                    cb();
+                    //check if collection capped
+                    if (res && res.cursor && res.cursor.firstBatch && res.cursor.firstBatch.length > 0) {
+                        //collection exists
+                        if (!res.cursor.firstBatch[0].options.capped) {
+                            console.log("converting to the capped");
+                            countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 },
+                                function(err) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                    cb();
+                                });
+                        }
+                        else {
+                            cb();
+                        }
+                    }
+                    else { //collection does not exist
+                        console.log("collection does not exist");
+                        countlyDb.createCollection('logs' + app._id, { capped: true, size: 10000000, max: 1000 }, cb);
+                    }
                 }
             });
         }

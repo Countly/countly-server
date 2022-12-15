@@ -20,13 +20,15 @@
                                 </div>
                                 <div class="bu-column cly-vue-metric-breakdown__numbers">
                                     <a v-if="item.link" :href="item.link">
-                                        <span v-if="item.description">{{item.description}} | </span>
-                                        <span>{{item.percent}} % </span>
+                                        <span v-if="item.description">{{item.description}}</span>
+                                        <span class="divider"> | </span>
+                                        <span>{{item.percent}}%</span>
                                         <i class="fas fa-arrow-circle-right color-cool-gray-40"></i>
                                     </a>
                                     <div v-else>
-                                        <span v-if="item.description">{{item.description}} | </span>
-                                        <span>{{item.percent}} % </span>
+                                        <span v-if="item.description">{{item.description}}</span>
+                                        <span class="divider"> | </span>
+                                        <span>{{item.percent}}%</span>
                                     </div>
                                 </div>
                             </div>

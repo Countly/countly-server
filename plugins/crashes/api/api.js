@@ -88,7 +88,7 @@ plugins.setConfigs("crashes", {
                         if (Object.keys(updates).length) {
                             bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
                         }
-                        bulk.find({uid: oldUid, group: group}).remove();
+                        bulk.find({uid: oldUid, group: group}).delete();
                     }
                     bulk.execute(function(bulkerr) {
                         if (bulkerr) {
@@ -100,12 +100,14 @@ plugins.setConfigs("crashes", {
         }
     });
 
-    plugins.register("/i/app_users/delete", function(ob) {
+    plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
-            common.db.collection("app_crashes" + appId).remove({uid: {$in: uids}}, function() {});
-            common.db.collection("app_crashusers" + appId).remove({uid: {$in: uids}}, function() {});
+            // By using await and no callback, error in db operation will be thrown
+            // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+            await common.db.collection("app_crashes" + appId).remove({uid: {$in: uids}});
+            await common.db.collection("app_crashusers" + appId).remove({uid: {$in: uids}});
         }
     });
 
@@ -184,8 +186,8 @@ plugins.setConfigs("crashes", {
                                     }
                                 }
                                 if (shouldRecalculate) {
-                                    common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashErr, userCount) {
-                                        common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashUsersErr, fatalCount) {
+                                    common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashErr, userCount) {
+                                        common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashUsersErr, fatalCount) {
                                             var set = {};
                                             set.users = userCount;
                                             set.usersfatal = fatalCount;
@@ -340,6 +342,7 @@ plugins.setConfigs("crashes", {
                 "executable_name",
                 "load_address",
                 "native_cpp",
+                "javascript",
                 "plcrash",
                 "binary_crash_dump",
                 "unprocessed",
@@ -510,6 +513,10 @@ plugins.setConfigs("crashes", {
                                         groupSet.not_os_specific = true;
                                     }
 
+                                    if (report.javascript) {
+                                        groupSet.javascript = true;
+                                    }
+
                                     if (report.native_cpp) {
                                         groupSet.native_cpp = true;
                                     }
@@ -618,7 +625,6 @@ plugins.setConfigs("crashes", {
                                     if (Object.keys(groupMax).length > 0) {
                                         update.$max = groupMax;
                                     }
-                                    plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser}});
 
                                     update.$addToSet = {groups: hash};
 
@@ -664,7 +670,7 @@ plugins.setConfigs("crashes", {
                                         }
 
                                         if (isNew) {
-                                            plugins.dispatch("/crashes/new", {crash: crashGroup, user: dbAppUser});
+                                            plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser, app: params.app}});
                                         }
 
                                         //update meta document
@@ -705,7 +711,7 @@ plugins.setConfigs("crashes", {
                                             common.db.collection("app_crashsymbols" + params.app_id).findOne({build: report.build_uuid || report.app_version}, function(symbolFindError, crashSymbol) {
                                                 if (!symbolFindError && crashSymbol) {
                                                     var dispatchParams = {
-                                                        params: {app: params.app, app_id: params.app_id, qstring: {report_id: report._id.toString(), symbol_id: crashSymbol._id.toString(), return_url: plugins.getConfig("api").domain}},
+                                                        params: {app: params.app, app_id: params.app_id, qstring: {report_id: report._id.toString(), symbol_id: crashSymbol._id.toString(), return_url: plugins.getConfig("api").domain + "/i/crash_symbols/symbolicatation_result"}},
                                                         paths: [null, "i", "crash_symbols", "symbolicate"],
                                                         automated: true
                                                     };
@@ -803,7 +809,7 @@ plugins.setConfigs("crashes", {
                                             }
                                         }
                                     }
-                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ $natural: -1 });
+                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ ts: -1 });
                                     cursor.limit(plugins.getConfig("crashes").report_limit);
                                     cursor.toArray(function(cursorErr, res) {
                                         if (res && res.length) {
@@ -996,6 +1002,7 @@ plugins.setConfigs("crashes", {
                             session: 1,
                             is_resolving: 1,
                             native_cpp: 1,
+                            javascript: 1,
                             plcrash: 1
                         });
                         cursor.count(function(errCursor, count) {
@@ -1569,8 +1576,8 @@ plugins.setConfigs("crashes", {
                             });
                         }, function() {
                             //recalculate users
-                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashUsersErr, userCount) {
-                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashGroupsErr, fatalCount) {
+                            common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashUsersErr, userCount) {
+                                common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashGroupsErr, fatalCount) {
                                     var update = {};
                                     update.$set = {};
                                     update.$set.users = userCount;
@@ -1599,7 +1606,7 @@ plugins.setConfigs("crashes", {
 
     plugins.register("/i/apps/create", function(ob) {
         var appId = ob.appId;
-        common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+        common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});
@@ -1611,7 +1618,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "uid": 1}, {background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "crashes": 1, "fatal": 1}, {sparse: true, background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
-        common.db.collection('app_crashes' + appId).ensureIndex({"group": 1}, {background: true}, function() {});
+        common.db.collection('app_crashes' + appId).ensureIndex({"group": 1, ts: -1}, {background: true}, function() {});
         common.db.collection('app_crashes' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
         common.db.collection('app_crashes' + appId).ensureIndex({"name": "text"}, { background: true }, function() {});
     });
@@ -1641,7 +1648,7 @@ plugins.setConfigs("crashes", {
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('app_crashes' + appId).drop(function() {
-            common.db.collection('app_crashes' + appId).ensureIndex({"group": 1}, {background: true}, function() {});
+            common.db.collection('app_crashes' + appId).ensureIndex({"group": 1, ts: -1}, {background: true}, function() {});
             common.db.collection('app_crashes' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
             common.db.collection('app_crashes' + appId).ensureIndex({"name": "text"}, { background: true }, function() {});
         });
@@ -1651,7 +1658,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
-            common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+            common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});
@@ -1671,7 +1678,7 @@ plugins.setConfigs("crashes", {
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('app_crashes' + appId).drop(function() {
-            common.db.collection('app_crashes' + appId).ensureIndex({"group": 1}, {background: true}, function() {});
+            common.db.collection('app_crashes' + appId).ensureIndex({"group": 1, ts: -1}, {background: true}, function() {});
             common.db.collection('app_crashes' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
             common.db.collection('app_crashes' + appId).ensureIndex({"name": "text"}, { background: true }, function() {});
         });
@@ -1681,7 +1688,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
-            common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+            common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});

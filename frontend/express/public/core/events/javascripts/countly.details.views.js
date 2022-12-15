@@ -86,6 +86,12 @@
                 this.$store.dispatch('countlyAllEvents/setTableLoading', true);
                 this.$store.dispatch('countlyAllEvents/setChartLoading', true);
                 this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            },
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                }
+                return str;
             }
         },
         computed: {
@@ -151,6 +157,10 @@
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
+                var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];
+                if (eventName) {
+                    this.graphNotesCategory = 'events ' + eventName;
+                }
                 return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
             groupData: function() {
@@ -199,7 +209,10 @@
 
         },
         data: function() {
-            return {description: CV.i18n('events.all.title.new') };
+            return {
+                description: CV.i18n('events.all.title.new'),
+                graphNotesCategory: ''
+            };
         },
         beforeCreate: function() {
             var self = this;

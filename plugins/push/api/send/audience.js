@@ -563,6 +563,11 @@ class PusherPopper {
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);
 
+        // Increase parallelism by ensuring similar messages go next to each other
+        steps.push({
+            $sort: {la: 1}
+        });
+
         // Lookup for tokens & msgs
         steps.push({
             $lookup: {
@@ -678,6 +683,9 @@ class Pusher extends PusherPopper {
                 if (!note) {
                     continue;
                 }
+                for (let k in (this.variables || {})) {
+                    note.pr[k] = this.variables[k];
+                }
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
@@ -700,7 +708,7 @@ class Pusher extends PusherPopper {
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
                 if (PLATFORM[p].parent) {
-                    rp = result.sub(PLATFORM[p].parent),
+                    rp = result.sub(PLATFORM[p].parent);
                     rpl = rp.sub(la);
                     rp.total++;
                     rpl.total++;
@@ -709,7 +717,7 @@ class Pusher extends PusherPopper {
                     updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
                 }
 
-                note.h = util.hash(note.pr);
+                note.h = util.hash(note.pr, note.c ? util.hash(note.c) : undefined);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
@@ -724,7 +732,7 @@ class Pusher extends PusherPopper {
                 update.$set = virtuals;
             }
             await this.audience.message.update(update, () => {});
-            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            this.audience.log.d('inserting final batch of %d, %d records total, message update %j', batch.length, batch.total, update);
             await batch.flush([11000]);
         }
 
@@ -751,26 +759,28 @@ class Popper extends PusherPopper {
     async clear() {
         let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
             let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
-            return res.deletedCount;
+            return {p, deleted: res.deletedCount};
         }));
         let update;
-        for (let p in deleted) {
+        for (let obj of deleted) {
             if (!update) {
                 update = {$inc: {}};
             }
-            update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + deleted[p];
-            update.$inc[`result.errors.${p}.cancelled`] = (update.$inc[`result.errors.${p}.cancelled`] || 0) + deleted[p];
+            update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + obj.deleted;
+            update.$inc['result.errored'] = (update.$inc['result.errored'] || 0) + obj.deleted;
+            update.$inc[`result.errors.${obj.p}.cancelled`] = (update.$inc[`result.errors.${obj.p}.cancelled`] || 0) + obj.deleted;
         }
         if (update) {
             await this.audience.message.update(update, () => {
-                for (let p in deleted) {
-                    this.audience.message.result.processed += deleted[p];
-                    this.audience.message.result.recordError('cancelled', deleted[p]);
-                    this.audience.message.result.sub(p).recordError('cancelled', deleted[p]);
+                for (let obj of deleted) {
+                    this.audience.message.result.processed += obj.deleted;
+                    this.audience.message.result.errored += obj.deleted;
+                    this.audience.message.result.recordError('cancelled', obj.deleted);
+                    this.audience.message.result.sub(obj.p).recordError('cancelled', obj.deleted);
                 }
             });
         }
-        return Object.values(deleted).reduce((a, b) => a + b, 0);
+        return Object.values(deleted).reduce((a, b) => a.deleted + b.deleted, 0);
     }
 
     /**

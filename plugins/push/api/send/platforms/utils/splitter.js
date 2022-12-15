@@ -1,7 +1,8 @@
-const { Template, Message, PushError, ERROR } = require('../../data'),
+const { Template, Message, PushError, SendError, ERROR } = require('../../data'),
     { Base } = require('../../std'),
-    { ProxyAgent } = require('./agent'),
+    { proxyAgent } = require('../../../proxy'),
     { Agent } = require('https'),
+    // { ProxyAgent } = require('./agent'),
     https = require('https');
 const { FRAME } = require('../../proto');
 
@@ -18,7 +19,7 @@ class Splitter extends Base {
      * @param {Credentials} creds server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly overwritten to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly overwritten to 500
      * @param {string} options.proxy.host proxy hostname
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy username
@@ -28,35 +29,16 @@ class Splitter extends Base {
         super(log, type, creds, messages, options);
 
         if (options.proxy) {
-            this.agent = new ProxyAgent(options);
+            let ProxyAgent = proxyAgent('https://example.com', options.proxy);
+            this.agent = new ProxyAgent();
+            // this.agent = new ProxyAgent(options);
         }
         else {
             this.agent = new Agent();
         }
 
-        this.agent.maxSockets = 1;
         this.templates = {};
         this.results = [];
-        this.opts = {
-            agent: this.agent,
-            hostname: 'fcm.googleapis.com',
-            port: 443,
-            path: '/fcm/send',
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `key=${creds._data.key}`,
-            },
-        };
-        // this.onSocket = socket => {
-        //     this.socket = socket;
-        // };
-
-        // this.onError = error => {
-        //     this.log.e('socket error', error);
-        //     this.rejectAndClose(error);
-        // };
     }
 
     /**
@@ -102,11 +84,11 @@ class Splitter extends Base {
                     res.reply += d;
                 });
                 res.on('end', () => handler(res));
-                res.on('close', () => handler(res));
+                // res.on('close', () => handler(res));
             });
-            req.on('socket', socket => {
-                this.socket = socket;
-            });
+            // req.on('socket', socket => {
+            //     this.socket = socket;
+            // });
             req.on('error', error => reject([0, error]));
             req.end(content);
         });
@@ -132,36 +114,53 @@ class Splitter extends Base {
                 continue;
             }
 
-            if (payload.length === 1) {
-                await this.send(payload, length);
-                this.log.d('do_writev sent one', i, frame);
-            }
-            else {
-                let p,
-                    one = Math.floor(length / payload.length),
-                    sent = 0,
-                    first = 0,
-                    hash = payload[0].h,
-                    mid = payload[0].m;
+            try {
+                if (payload.length === 1) {
+                    await this.send(payload, length);
+                    this.log.d('do_writev sent one', i, frame);
+                }
+                else {
+                    let p,
+                        one = Math.floor(length / payload.length),
+                        sent = 0,
+                        first = 0,
+                        hash = payload[0].h,
+                        mid = payload[0].m;
 
-                for (p = first + 1; p < payload.length; p++) {
-                    if (!mid || payload[p].m !== mid || payload[p].h !== hash) {
-                        let len = p === payload.length - 1 ? length - sent : (p - first) * one;
-                        await this.send(payload.slice(first, p), len);
-                        this.log.d('do_writev sent', i, frame);
-                        // total += len;
-                        sent += len;
+                    for (p = first + 1; p < payload.length; p++) {
+                        if (!mid || payload[p].m !== mid || payload[p].h !== hash) {
+                            let len = p === payload.length - 1 ? length - sent : (p - first) * one;
+                            await this.send(payload.slice(first, p), len);
+                            this.log.d('do_writev sent', i, frame);
+                            // total += len;
+                            sent += len;
 
-                        first = p;
-                        hash = payload[p].h;
-                        mid = payload[p].m;
+                            first = p;
+                            hash = payload[p].h;
+                            mid = payload[p].m;
+                        }
+                    }
+
+                    if (first < payload.length - 1) {
+                        await this.send(payload.slice(first, payload.length), length - sent);
+                        // total += length - sent;
                     }
                 }
-
-                if (first < payload.length - 1) {
-                    await this.send(payload.slice(first, payload.length), length - sent);
-                    // total += length - sent;
+            }
+            catch (error) { // catch adds the rest of chunks to the error, the chunk itself must be handled within try
+                this.log.w('Error in splitter', error);
+                if (error instanceof SendError) {
+                    for (let j = i + 1; j < chunks.length; j++) {
+                        if (chunks[j].frame & FRAME.SEND) {
+                            this.log.w('Adding chunk with %d pushes to left', chunks[j].payload.length);
+                            error.addLeft(chunks[j].payload.map(p => p._id), length);
+                        }
+                        else if (chunks[j].frame & FRAME.CMD) {
+                            this.push(chunks[j]);
+                        }
+                    }
                 }
+                throw error; // rethrow
             }
         }
     }

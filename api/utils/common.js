@@ -85,11 +85,11 @@ common.escape_html = function(string, more) {
 * @returns {string} escaped string
 **/
 common.decode_html = function(string) {
-    string = string.replace(/&amp;/g, '&');
     string = string.replace(/&#39;/g, "'");
     string = string.replace(/&quot;/g, '"');
     string = string.replace(/&lt;/g, '<');
     string = string.replace(/&gt;/g, '>');
+    string = string.replace(/&amp;/g, '&');
     return string;
 };
 
@@ -298,7 +298,8 @@ common.os_mapping = {
     "debian": "d",
     "nokia": "n",
     "firefox": "f",
-    "tizen": "t"
+    "tizen": "t",
+    "arch": "l"
 };
 
 /**
@@ -2416,15 +2417,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && typeof user.did === "undefined") {
-            if (!update.$set) {
-                update.$set = {};
-            }
-            if (!update.$set.did) {
-                update.$set.did = params.qstring.device_id;
-            }
-        }
-
         //store device type and mark users as know by custome device id
         if (params.qstring.t && typeof user.t !== params.qstring.t) {
             if (!update.$set) {
@@ -2433,7 +2425,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (!update.$set.t) {
                 update.$set.t = params.qstring.t;
             }
-            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+            if (params.qstring.t + "" === "0" && !user.hasInfo) {
                 update.$set.hasInfo = true;
             }
         }

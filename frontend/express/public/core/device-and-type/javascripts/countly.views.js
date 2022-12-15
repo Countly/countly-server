@@ -1,4 +1,4 @@
-/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
+/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal, countlyGraphNotesCommon*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -369,7 +369,10 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+    components: {
+        "drawer": countlyGraphNotesCommon.drawer
+    },
     data: function() {
         return {
             showBuckets: false,
@@ -422,6 +425,11 @@ var GridComponent = countlyVue.views.create({
         },
         pieGraph: function() {
             return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+        }
+    },
+    methods: {
+        refresh: function() {
+            this.refreshNotes();
         }
     }
 });
@@ -519,15 +527,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         }
     },
     grid: {
-        component: GridComponent,
-        dimensions: function() {
-            return {
-                minWidth: 2,
-                minHeight: 4,
-                width: 2,
-                height: 4
-            };
-        }
+        component: GridComponent
     }
 
 });

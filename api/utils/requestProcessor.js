@@ -22,6 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
+const request = require('request');
 
 var loaded_configs_time = 0;
 
@@ -636,7 +637,7 @@ const processRequest = (params) => {
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
+                        validateAppAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
                         validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
@@ -691,6 +692,17 @@ const processRequest = (params) => {
                         taskmanager.rerunTask({
                             db: common.db,
                             id: params.qstring.task_id
+                        }, (err, res) => {
+                            common.returnMessage(params, 200, res);
+                        });
+                    });
+                    break;
+                case 'stop':
+                    validateUserForWrite(params, () => {
+                        taskmanager.stopTask({
+                            db: common.db,
+                            id: params.qstring.task_id,
+                            op_id: params.qstring.op_id
                         }, (err, res) => {
                             common.returnMessage(params, 200, res);
                         });
@@ -1425,29 +1437,45 @@ const processRequest = (params) => {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
-                            var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
-                            countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, size) {
-                                if (error) {
-                                    common.returnMessage(params, 400, error);
+                            new Promise(function(resolve) {
+                                if (filename[0].startsWith("appUser_")) {
+                                    filename[0] = filename[0] + '.tar.gz';
+                                    resolve();
                                 }
-                                else if (parseInt(size) === 0) {
-                                    common.returnMessage(params, 400, "Export doesn't exist");
-                                }
-                                else {
-                                    countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(err, stream) {
-                                        if (err) {
-                                            common.returnMessage(params, 400, "Export doesn't exist");
+                                else { //we have task result. Try getting from there
+                                    taskmanager.getResult({id: filename[0]}, function(err, res) {
+                                        if (res && res.data) {
+                                            filename[0] = res.data;
+                                            filename[0] = filename[0].replace(/\"/g, '');
                                         }
-                                        else {
-                                            params.res.writeHead(200, {
-                                                'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size,
-                                                'Content-Disposition': 'inline; filename="' + filename[0] + '.tar.gz"'
-                                            });
-                                            stream.pipe(params.res);
-                                        }
+                                        resolve();
                                     });
                                 }
+                            }).then(function() {
+                                var myfile = '../../export/AppUser/' + filename[0];
+                                countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0]}, function(error, size) {
+                                    if (error) {
+                                        common.returnMessage(params, 400, error);
+                                    }
+                                    else if (parseInt(size) === 0) {
+                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                    }
+                                    else {
+                                        countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
+                                            if (err) {
+                                                common.returnMessage(params, 400, "Export doesn't exist");
+                                            }
+                                            else {
+                                                params.res.writeHead(200, {
+                                                    'Content-Type': 'application/x-gzip',
+                                                    'Content-Length': size,
+                                                    'Content-Disposition': 'inline; filename="' + filename[0]
+                                                });
+                                                stream.pipe(params.res);
+                                            }
+                                        });
+                                    }
+                                });
                             });
                         });
                     }
@@ -2316,6 +2344,14 @@ const processRequest = (params) => {
                 case 'carriers':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     break;
+                case 'countries':
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).country_data !== false) {
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                    }
+                    else {
+                        common.returnOutput(params, {});
+                    }
+                    break;
                 case 'cities':
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
                         validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
@@ -2732,6 +2768,7 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {Function} - done or boolean value
  */
 const checksumSaltVerification = (params) => {
+    params.app.checksum_salt = params.app.salt || params.app.checksum_salt;//checksum_salt - old UI, .salt    - new UI.
     if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
         payloads.push(params.href.substr(params.fullPath.length + 1));
@@ -2776,6 +2813,82 @@ const checksumSaltVerification = (params) => {
 
     return true;
 };
+
+
+//Function check if there is app redirect set
+//In that case redirect data and sets up params to know that request is getting redirected
+/**
+ * @param  {object} ob - params object
+ * @returns {Boolean} - false if redirected
+ */
+function validateRedirect(ob) {
+    var params = ob.params,
+        app = ob.app;
+    if (!params.cancelRequest && app.redirect_url && app.redirect_url !== '') {
+        var newPath = params.urlParts.path;
+
+        //check if we have query part
+        if (newPath.indexOf('?') === -1) {
+            newPath += "?";
+        }
+
+        var opts = {
+            uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
+            method: 'GET'
+        };
+
+        //should we send post request
+        if (params.req.method.toLowerCase() === 'post') {
+            opts.method = "POST";
+            //check if we have body from post method
+            if (params.req.body) {
+                opts.json = true;
+                opts.body = params.req.body;
+            }
+        }
+
+        request(opts, function(error, response, body) {
+            var code = 400;
+            var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+            if (response && response.statusCode) {
+                code = response.statusCode;
+            }
+
+
+            if (response && response.body) {
+                try {
+                    var resp = JSON.parse(response.body);
+                    message = resp.result || resp;
+                }
+                catch (e) {
+                    if (response.result) {
+                        message = response.result;
+                    }
+                    else {
+                        message = response.body;
+                    }
+                }
+            }
+            if (error) { //error
+                log.e("Redirect error", error, body, opts, app, params);
+            }
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                common.returnMessage(params, code, message);
+            }
+        });
+        params.cancelRequest = "Redirected: " + app.redirect_url;
+        params.waitForResponse = false;
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            params.waitForResponse = true;
+        }
+        return false;
+    }
+    else {
+        return true;
+    }
+}
 
 
 /**
@@ -2870,37 +2983,53 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                 }
             }
-
             plugins.dispatch("/sdk/pre", {
                 params: params,
                 app: app
             }, () => {
-                plugins.dispatch("/sdk", {
-                    params: params,
-                    app: app
-                }, () => {
+                var processMe = validateRedirect({params: params, app: app});
+                /*
+					Keeping option open to add some request cancelation on /sdk for different cases than redirect.
+					(That is why duplicate code)
+				*/
+                if (!processMe) {
                     plugins.dispatch("/sdk/log", {params: params});
-                    if (!params.cancelRequest) {
-                        processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
-                            if (userErr) {
-                                if (!params.res.finished) {
-                                    common.returnMessage(params, 400, userErr);
+                    //params.cancelRequest is true
+                    if (!params.res.finished && !params.waitForResponse) {
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    return done ? done() : false;
+                }
+                else {
+                    plugins.dispatch("/sdk", {
+                        params: params,
+                        app: app
+                    }, () => {
+                        plugins.dispatch("/sdk/log", {params: params});
+                        if (!params.cancelRequest) {
+                            processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                                if (userErr) {
+                                    if (!params.res.finished) {
+                                        common.returnMessage(params, 400, userErr);
+                                    }
                                 }
-                            }
-                            else {
-                                processRequestData(params, app, done);
-                            }
-                        });
-                    }
-                    else {
-                        if (!params.res.finished && !params.waitForResponse) {
-                            common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
-                            //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                                else {
+                                    processRequestData(params, app, done);
+                                }
+                            });
                         }
-                        common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                        return done ? done() : false;
-                    }
-                });
+                        else {
+                            if (!params.res.finished && !params.waitForResponse) {
+                                common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                                //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                            }
+                            common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                            return done ? done() : false;
+                        }
+                    });
+                }
             });
         });
     });

@@ -58,7 +58,7 @@ class FCM extends Splitter {
      * @param {Credentials} creds FCM server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
      * @param {string} options.proxy.host proxy host
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
@@ -66,7 +66,6 @@ class FCM extends Splitter {
      * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`${threadId}-a`);
@@ -97,7 +96,7 @@ class FCM extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
             this.log.d('sending to %j', content.registration_ids);
@@ -132,7 +131,8 @@ class FCM extends Splitter {
                                 errors[err] = new SendError(message, code);
                             }
                             return errors[err];
-                        };
+                        },
+                        printBody = false;
 
                     resp.results.forEach((r, i) => {
                         if (r.message_id) {
@@ -153,12 +153,15 @@ class FCM extends Splitter {
                             error(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, '' + r.error).addAffected(pushes[i]._id, one);
                         }
                         else {
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                     });
@@ -170,24 +173,37 @@ class FCM extends Splitter {
                     if (oks.length) {
                         this.send_results(oks, bytes - errored);
                     }
+                    if (printBody) {
+                        this.log.e('Provider returned error %j for %j', resp, content);
+                    }
                 }
 
             }, ([code, error]) => {
                 this.log.w('FCM error %d / %j', code, error);
                 if (code === 0) {
-                    throw PushError.deserialize(error);
+                    if (error.message === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT' ||
+                        error.code === 'ECONNREFUSED' || error.code === 'ECONNABORTED' || error.code === 'EHOSTUNREACH' ||
+                        error.code === 'EAI_AGAIN') {
+                        this.log.w('FCM error %d / %j', bytes, pushes.map(p => p._id));
+                        throw new ConnectionError(`FCM ${error.code}`, ERROR.CONNECTION_PROVIDER)
+                            .setConnectionError(error.code, `${error.errno} ${error.code} ${error.syscall}`)
+                            .addAffected(pushes.map(p => p._id), bytes);
+                    }
+                    let pe = PushError.deserialize(error);
+                    pe.addAffected(pushes.map(p => p._id), bytes);
+                    throw pe;
                 }
                 else if (code >= 500) {
-                    throw new ConnectionError(`FCM Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
+                    throw new ConnectionError(`FCM Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else if (code === 401) {
-                    throw new ConnectionError(`FCM Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS);
+                    throw new ConnectionError(`FCM Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else if (code === 400) {
-                    throw new ConnectionError(`FCM Bad message: ${code}`, ERROR.DATA_PROVIDER);
+                    throw new ConnectionError(`FCM Bad message: ${code}`, ERROR.DATA_PROVIDER).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else {
-                    throw new ConnectionError(`FCM Bad response code: ${code}`, ERROR.EXCEPTION);
+                    throw new ConnectionError(`FCM Bad response code: ${code}`, ERROR.EXCEPTION).addAffected(pushes.map(p => p._id), bytes);
                 }
             });
         });
@@ -213,7 +229,7 @@ function empty(msg) {
  */
 function finish(data) {
     if (!data.data.message && !data.data.sound) {
-        data.data.data['c.s'] = 'true';
+        data.data['c.s'] = 'true';
     }
     return data;
 }

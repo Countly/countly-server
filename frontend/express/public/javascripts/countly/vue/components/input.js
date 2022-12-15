@@ -1,4 +1,4 @@
-/* global Vue, CV, _, Promise */
+/* global Vue, CV, _ */
 
 (function(countlyVue) {
 
@@ -127,7 +127,7 @@
             },
             handleHover: function() {
                 this.focused = true;
-            }
+            },
         },
         data: function() {
             return {
@@ -139,13 +139,15 @@
                         scrollingX: false
                     },
                     rail: {
-                        gutterOfSide: "0px"
+                        gutterOfSide: "0px",
+                        keepShow: true,
                     },
                     bar: {
                         background: "#A7AEB8",
                         size: "6px",
                         specifyBorderRadius: "3px",
-                        keepShow: false
+                        keepShow: true,
+                        onlyShowBarOnScroll: true
                     }
                 }
             };
@@ -227,7 +229,8 @@
                         return false;
                     }
                     var compareTo = option.label || option.value || "";
-                    return compareTo.toLowerCase().indexOf(query) > -1;
+                    // option label or value is not always a string
+                    return compareTo.toString().toLowerCase().indexOf(query) > -1;
                 });
             }
         }
@@ -246,7 +249,7 @@
         },
         template: '<div\
                     style="height: 100%"\
-                    class="cly-vue-listbox"\
+                    class="cly-vue-listbox scroll-keep-show"\
                     tabindex="0"\
                     :class="topClasses"\
                     @mouseenter="handleHover"\
@@ -313,6 +316,10 @@
                 }
             },
             sortable: {
+                type: Boolean,
+                default: false
+            },
+            disableNonSelected: {
                 type: Boolean,
                 default: false
             }
@@ -406,7 +413,7 @@
         },
         template: '<div\
                     style="height: 100%"\
-                    class="cly-vue-listbox"\
+                    class="cly-vue-listbox scroll-keep-show"\
                     tabindex="0"\
                     :class="topClasses"\
                     @mouseenter="handleHover"\
@@ -428,8 +435,8 @@
                                     class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
-                                    <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -457,7 +464,8 @@
         },
         data: function() {
             return {
-                activeTabId: null
+                activeTabId: null,
+                initialOptionsCount: 0
             };
         },
         computed: {
@@ -648,7 +656,9 @@
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
-                        self.activeTabId = self.val2tab[self.value];
+                        if (self.val2tab[self.value] !== "__selected") {
+                            self.activeTabId = self.val2tab[self.value];
+                        }
                     }
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
@@ -675,6 +685,10 @@
                 this.determineActiveTabId();
             },
             'flatOptions.length': function(newVal) {
+                if (this.initialOptionsCount === 0) {
+                    this.initialOptionsCount = newVal;
+                }
+
                 if (!newVal && this.hasSelectedOptionsTab) {
                     this.activeTabId = "__selected";
                 }
@@ -745,7 +759,9 @@
             },
             //
             remote: {type: Boolean, default: false},
-            remoteMethod: {type: Function, required: false}
+            remoteMethod: {type: Function, required: false},
+            showSearch: {type: Boolean, default: false},
+            popperAppendToBody: {type: Boolean, default: true}
         },
         data: function() {
             return {
@@ -760,7 +776,8 @@
                 return {
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
-                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs
+                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs,
+                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header && !this.$scopedSlots.action && !this.title && !this.showSelectedCount
                 };
             },
             currentTab: function() {
@@ -811,6 +828,24 @@
                     return true;
                 }
                 return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
+            },
+            isSearchShown: function() {
+                if (this.searchable) {
+                    if (this.remote && this.initialOptionsCount > 10) {
+                        return true;
+                    }
+                    else if (this.showSearch) {
+                        return true;
+                    }
+                    else if (this.flatOptions.length > 10) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            disableNonSelected: function() {
+                return this.innerValue && this.innerValue.length === this.maxItems;
             }
         },
         mounted: function() {
@@ -832,6 +867,15 @@
             handleDropdownShow: function() {
                 this.$forceUpdate();
                 this.focusOnSearch();
+                document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                    item.style.width = '0px';
+                });
+
+                setTimeout(function() {
+                    document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                        item.style.width = '100%';
+                    });
+                }, 100);
             },
             focusOnSearch: function() {
                 var self = this;
@@ -881,6 +925,15 @@
                     this.innerValue = this.currentTab.options[0].value;
                     this.doCommit();
                 }
+                document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                    item.style.width = '0px';
+                });
+
+                setTimeout(function() {
+                    document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                        item.style.width = '100%';
+                    });
+                }, 100);
             },
             value: function(newVal) {
                 if (!this.onlySelectedOptionsTab && this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
@@ -1031,12 +1084,12 @@
                                             <div class="box"></div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                                 <div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\
-                                                <div class="bu-is-flex bu-is-align-items-baseline number">\
+                                                <div class="bu-is-flex bu-is-align-items-center number">\
                                                     <h2>{{item.number}}</h2>\
-                                                    <div v-if="item.trend == \'u\'" class="trend-up bu-ml-2">\
+                                                    <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2">\
                                                         <i class="cly-trend-up-icon ion-android-arrow-up"></i><span>{{item.trendValue}}</span>\
                                                     </div>\
-                                                    <div v-if="item.trend == \'d\'" class="trend-down bu-ml-2">\
+                                                    <div v-if="item.trend == \'d\'" class="cly-trend-down bu-ml-2">\
                                                         <i class="cly-trend-down-icon ion-android-arrow-down"></i><span>{{item.trendValue}}</span>\
                                                     </div>\
                                                 </div>\

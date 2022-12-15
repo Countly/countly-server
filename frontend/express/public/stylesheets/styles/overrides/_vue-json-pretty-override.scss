@@ -1,0 +1,15 @@
+.vjs-tree {
+  padding: 10px;
+}
+
+.vjs-value-boolean, .vjs-value-number {
+  color: #31ACB4;
+}
+
+.vjs-value-string {
+  color: #6C47FF;
+}
+
+.vjs-tree-node.is-highlight, .vjs-tree-node:hover {
+  background-color: #E6F0FB;
+}

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon*/
 
 (function() {
 
@@ -1173,6 +1173,7 @@
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyPushNotificationMain", "pushTable"),
                 platformFilters: platformFilterOptions,
                 platformFilterLabels: {
                     oneTime: CV.i18n('push-notification.platform-filter-label-one-time'),
@@ -1218,15 +1219,6 @@
             },
             isUserCommandLoading: function() {
                 return this.$store.getters['countlyPushNotificationMain/isLoading'];
-            },
-            pushNotificationRows: function() {
-                var self = this;
-                if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
-                    return this.$store.state.countlyPushNotificationMain.rows;
-                }
-                return this.$store.state.countlyPushNotificationMain.rows.filter(function(rowItem) {
-                    return rowItem.status === self.selectedStatusFilter;
-                });
             },
             pushNotificationOptions: function() {
                 return {
@@ -1284,6 +1276,12 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotificationMain/onSetStatusFilter", value);
+                    this.applyFilter();
+                }
+            },
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyPushNotificationMain/isLoadingTable"];
                 }
             },
             selectedPlatformFilter: {
@@ -1314,7 +1312,10 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotificationMain/fetchAll', false);
+                //this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
+            },
+            applyFilter: function() {
+                this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
             },
             formatPercentage: function(value, decimalPlaces) {
                 return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
@@ -1401,7 +1402,7 @@
                 return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.CREATED) && this.canUserUpdate;
             },
             shouldShowStartUserCommand: function(status) {
                 if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
@@ -1463,7 +1464,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+            this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
         }
     });
 
@@ -1487,7 +1488,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyPushNotificationMain/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+                    this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
                 }
             },
             isDrawerOpen: function() {
@@ -2635,7 +2636,10 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -2735,6 +2739,24 @@
                 return labels;
             }
         },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
+        },
     });
 
 
@@ -2816,15 +2838,7 @@
                 beforeSaveFn: function() {}
             },
             grid: {
-                component: PushNotificationWidgetComponent,
-                dimensions: function() {
-                    return {
-                        minWidth: 2,
-                        minHeight: 4,
-                        width: 2,
-                        height: 4
-                    };
-                }
+                component: PushNotificationWidgetComponent
             }
 
         });
@@ -2835,16 +2849,14 @@
 
 
     //countly.view global management settings
-    $(document).ready(function() {
-        app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-        addWidgetToCustomDashboard();
+    app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+    addWidgetToCustomDashboard();
 
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("push", "push-notification.title");
-            app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
-            app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
-            app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
-            app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
-        }
-    });
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("push", "push-notification.title");
+        app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
+        app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
+        app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
+        app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
+    }
 }());

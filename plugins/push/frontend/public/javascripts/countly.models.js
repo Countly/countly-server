@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -219,6 +219,9 @@
         },
         getInitialBaseModel: function() {
             return {
+                isEe: typeof countlySegmentation !== 'undefined',
+                isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
                 name: "",
@@ -298,7 +301,7 @@
                     hours: 0
                 },
                 deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-                trigger: TriggerEnum.COHORT_ENTRY,
+                trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
                 cohorts: [],
@@ -549,7 +552,39 @@
             return key !== CV.i18n(key);
         }
     };
-
+    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
+        onRequest: function(context) {
+            context.rootState.countlyPushNotificationMain.isLoadingTable = true;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
+            };
+            var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            var status = context.rootState.countlyPushNotificationMain.statusFilter;
+            var params = countlyPushNotification.service.getFetchAllParameters(type, status);
+            for (var key in params) {
+                data[key] = params[key];
+            }
+            return {
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data
+            };
+        },
+        onReady: function(context, rows) {
+            rows = countlyPushNotification.mapper.incoming.mapRows({"aaData": rows});
+            context.rootState.countlyPushNotificationMain.isLoadingTable = false;
+            return rows;
+        },
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) {
+                    console.log(error);
+                }
+            }
+        }
+    });
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
@@ -739,6 +774,9 @@
             });
         },
         findAllUserProperties: function() {
+            if (typeof countlySegmentation === 'undefined') {
+                return Promise.resolve({});
+            }
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
@@ -816,7 +854,12 @@
                     return;
                 }
                 Object.keys(userPropertiesDto).forEach(function(key) {
-                    userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    if (userPropertiesDto[key].t === UserPropertyTypeEnum.API) {
+                        userPropertiesDto[key].l = userPropertiesDto[key].k;
+                    }
+                    else {
+                        userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    }
                 });
             },
             getUserPropertyElement: function(index, userProperty) {
@@ -841,6 +884,20 @@
             isAdjacentIndex: function(previousIndex, currentIndex) {
                 return (parseInt(currentIndex) - 1) === parseInt(previousIndex);
             },
+            decodeHtml: function(str) {
+                var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'",
+                    '&#39;': "'"
+                };
+                return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
+                    return map[m];
+                });
+            },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
                 if (!message) {
@@ -849,7 +906,35 @@
                 if (!userPropertiesDto) {
                     return message;
                 }
-                var messageInHTMLString = message;
+                // var html = '',
+                //     keys = this.sortUserProperties(userPropertiesDto),
+                //     ranges = [-1]
+                //         .concat(keys.map(function(k) {
+                //             return parseInt(k);
+                //         }))
+                //         .concat([-1]);
+
+                // ranges.forEach(function(start, idx) {
+                //     if (idx === ranges.length - 1) {
+                //         return;
+                //     }
+
+                //     var end = ranges[idx + 1];
+                //     if (end === 0) { // prop at index 0
+                //         return;
+                //     }
+                //     else if (start === -1) { // first range
+                //         html += message.substr(0, end) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                //     else if (end === -1) { // last range
+                //         html += message.substr(start);
+                //     }
+                //     else {
+                //         html += message.substr(start, end - start) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                // });
+                // return html;
+                var messageInHTMLString = this.decodeHtml(message);
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
@@ -990,13 +1075,13 @@
                             date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
-                        sentDateTime: {
-                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
-                        },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
+                        lastDate: {
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                        },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
@@ -1065,8 +1150,8 @@
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
-                    onClickURL: androidSettingsDto && androidSettingsDto.url || '',
-                    mediaURL: androidSettingsDto && androidSettingsDto.media || '',
+                    onClickURL: androidSettingsDto && androidSettingsDto.url ? countlyCommon.decodeHtml(androidSettingsDto.url) : '',
+                    mediaURL: androidSettingsDto && androidSettingsDto.media ? countlyCommon.decodeHtml(androidSettingsDto.media) : '',
                     mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
             },
@@ -1078,8 +1163,8 @@
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
-                    onClickURL: iosSettingsDto && iosSettingsDto.url || '',
-                    mediaURL: iosSettingsDto && iosSettingsDto.media || '',
+                    onClickURL: iosSettingsDto && iosSettingsDto.url ? countlyCommon.decodeHtml(iosSettingsDto.url) : '',
+                    mediaURL: iosSettingsDto && iosSettingsDto.media ? countlyCommon.decodeHtml(iosSettingsDto.media) : '',
                     mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
             },
@@ -1146,7 +1231,7 @@
                 result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
                 var defaultLocale = this.findDefaultLocaleItem(dto.contents);
                 result[PlatformEnum.ALL] = {};
-                result[PlatformEnum.ALL].mediaURL = defaultLocale.media || "";
+                result[PlatformEnum.ALL].mediaURL = defaultLocale.media ? countlyCommon.decodeHtml(defaultLocale.media) : "";
                 result[PlatformEnum.ALL].mediaMime = defaultLocale.mediaMime || "";
                 return result;
             },
@@ -1170,7 +1255,7 @@
             mapMessageLocalizationButtons: function(buttonsDto) {
                 var buttons = [];
                 buttonsDto.map(function(buttonDtoItem) {
-                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url});
+                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url ? countlyCommon.decodeHtml(buttonDtoItem.url) : buttonDtoItem.url});
                 });
                 return buttons;
             },
@@ -1368,7 +1453,7 @@
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
-                    capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
                 };
                 if (triggerDto.time) {
@@ -1625,7 +1710,7 @@
                         buttonDto.title = localizedButton.label;
                     }
                     if (localizedButton.url) {
-                        buttonDto.url = localizedButton.url;
+                        buttonDto.url = countlyCommon.decodeHtml(localizedButton.url);
                     }
                     result.push(buttonDto);
                 });
@@ -1661,13 +1746,13 @@
                     result.extras = iosSettings.userData;
                 }
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = iosSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
                     result.specific = [{subtitle: iosSettings.subtitle}];
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.IOS].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
                 return result;
@@ -1692,13 +1777,13 @@
                     result.extras = androidSettings.userData;
                 }
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = androidSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(androidSettings.onClickURL);
                 }
                 if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
                     result.specific = [{large_icon: androidSettings.icon}];
                 }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.ANDROID].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
                 }
                 return result;
@@ -1891,7 +1976,7 @@
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
                 if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL && pushNotificationModel.messageType === MessageTypeEnum.CONTENT) {
                     var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
-                    defaultLocale.media = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
+                    defaultLocale.media = countlyCommon.decodeHtml(pushNotificationModel.settings[PlatformEnum.ALL].mediaURL);
                     defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;
                 }
                 var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel, options);
@@ -2090,17 +2175,24 @@
         hasApproverPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver;
         },
-        getTypeUrlParameter: function(type) {
+        getFetchAllParameters: function(type, status) {
+            var ret = {};
             if (type === this.TypeEnum.AUTOMATIC) {
-                return {auto: true};
+                ret.auto = true;
             }
             if (type === this.TypeEnum.TRANSACTIONAL) {
-                return {api: true};
+                ret.api = true;
             }
-            return {};
+            if (status !== ALL_FILTER_OPTION_VALUE) {
+                ret.status = status;
+            }
+            return ret;
         },
         fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyCohorts === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -2139,6 +2231,9 @@
         },
         fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyLocationTargetComponent === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -2192,10 +2287,10 @@
                     });
             });
         },
-        fetchAll: function(type) {
+        fetchAll: function(type, status) {
             var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findAll(self.getTypeUrlParameter(type))
+                countlyPushNotification.api.findAll(self.getFetchAllParameters(type, status))
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapRows(response));
@@ -2690,22 +2785,13 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            isLoadingTable: true,
         };
     };
 
     var mainActions = {
-        fetchAll: function(context, useLoader) {
-            if (useLoader) {
-                context.dispatch('onSetAreRowsLoading', true);
-            }
-            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
-                .then(function(response) {
-                    context.commit('setRows', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetAreRowsLoading', false);
-                });
+        fetchAll: function(context) {
+            context.dispatch('fetchPushTable');
         },
         onDelete: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
@@ -2806,11 +2892,17 @@
 
     countlyPushNotification.main = {};
     countlyPushNotification.main.getVuexModule = function() {
+        var getters = {
+            isLoadingTable: function(state) {
+                return state.isLoadingTable;
+            },
+        };
         return countlyVue.vuex.Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            getters: getters,
+            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };
 

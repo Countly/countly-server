@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,countlyGlobal,countlySession,Promise */
+/*global countlyVue,CV,countlyCommon,countlySession */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -72,8 +72,7 @@
         fetchUserActivity: function(filters) {
             var self = this;
             var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID
             };
             if (filters) {
                 data.query = JSON.stringify(filters);

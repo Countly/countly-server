@@ -243,7 +243,7 @@ var spawn = require('child_process').spawn,
                             var db = { name: name, collections: {} };
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
-                                    dbUserHasAccessToCollection(params, col.collectionName, function(hasAccess) {
+                                    dbUserHasAccessToCollection(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
                                         if (hasAccess) {
                                             ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;

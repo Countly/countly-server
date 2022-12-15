@@ -7,47 +7,6 @@
 		margin-bottom: 0 !important;
 	}
 
-	.crashes-trend {
-		margin-top: auto;
-		margin-left: 0.5rem;
-		margin-bottom: 0.15rem;
-
-		i {
-			border: 0px solid;
-			border-radius: 100%;
-			text-align: center;
-			vertical-align: middle;
-			width: 14px;
-			height: 14px;
-			padding: 2px;
-			margin-top: -4px;
-		}
-
-		&--up {
-			color: map.get(c.$colors, "red-100");
-
-			i {
-				background-color: map.get(c.$colors, "red-10");
-			}
-		}
-
-		&--down {
-			color: map.get(c.$colors, "green-80");
-
-			i {
-				background-color: map.get(c.$colors, "green-10");
-			}
-		}
-
-		&--neutral {
-			color: map.get(c.$colors, "cool-gray-50");
-
-			i {
-				background-color: map.get(c.$colors, "cool-gray-20");
-			}
-		}
-	}
-
 	.crashes-tile {
 		flex-grow: 1;
 		align-items: center;
@@ -100,45 +59,15 @@
 	}
 
 	.crashes-statistics-graph {
-		.cly-vue-section__content {
-			border-bottom-width: 1px !important;
-			border-radius: 4px;
-		}
-
-		.el-tabs {
-			&--card > .el-tabs__header {
-				border-bottom: 2px solid #ECECEC;
-			}
-
-			&--card > .el-tabs__header .el-tabs__item {
-				border-bottom-width: 2px !important;
-				background-color: #FCFCFC;
-			}
-
-			&--card > .el-tabs__header .el-tabs__nav {
-				border: none;
-			}
-
-			&__header .el-tabs__item.is-active {
-				border-bottom-color: #0166D6;
-				border-bottom-width: 2px;
-				background-color: #ffffff;
-			}
-
-			&__item {
-				border-left: 1px solid #ECECEC !important;
-				height: auto;
-			}
-
-			&__item:last-of-type {
-				border-right: 1px solid #ECECEC;
-			}
+		.el-tabs__content {
+			background-color: #FFF;
+			border: 1px solid #ececec;
 		}
 	}
 
 	.crashgroup-mobile-diagnostics {
 		&__tiles-container {
- 			height: 170px;
+      height: 170px;
 			box-shadow: 0px 2px 0px #EAECEF;
 		}
 
@@ -155,8 +84,8 @@
 
 	.crashgroup-mobile-metrics {
 		&__tiles-container {
- 			height: 104px;
-			box-shadow: 0px 2px 0px #EAECEF; 
+      height: 104px;
+			box-shadow: 0px 2px 0px #EAECEF;
 		}
 	}
 
@@ -164,6 +93,15 @@
 		.el-tabs__nav {
 			border-top: 0;
 		}
+
+		.el-collapse-item__arrow {
+		  margin-right: 16px;
+		}
+	}
+
+	.crashgroup-thread-content {
+		margin: 0;
+		white-space: pre-wrap;
 	}
 
 	.crash-stacktrace {
@@ -210,7 +148,7 @@
 
 	.crashgroup-common-metrics {
 		&__tiles-container {
- 			height: 104px;
+      		height: 104px;
 		}
 		box-shadow: 0px 1px 0px #EAECEF;
 	}

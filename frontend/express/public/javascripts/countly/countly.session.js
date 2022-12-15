@@ -12,10 +12,13 @@
             countlyLocation.initialize();
         }
     };
-    countlySession.getSessionData = function() {
+    countlySession.getSessionData = function(sessionModel) {
+        if (!sessionModel) {
+            sessionModel = countlySession.getDb();
+        }
         var map = {t: "total-sessions", n: "new-users", u: "total-users", d: "total-duration", e: "events", p: "paying-users", m: "messaging-users"};
         var ret = {};
-        var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject);
+        var data = countlyCommon.getDashboardData(sessionModel, ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject);
 
         for (var i in data) {
             ret[map[i]] = data[i];
@@ -67,7 +70,7 @@
         ret["avg-events"]["prev-total"] = ret["avg-events"]["prev-total"].toFixed(1);
 
         //get sparkleLine data
-        var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
+        var sparkLines = countlyCommon.getSparklineData(sessionModel, {
             "total-sessions": "t",
             "new-users": "n",
             "total-users": "u",
@@ -118,7 +121,7 @@
                     func: function(dataObj) {
                         return dataObj.t;
                     },
-                    period: "previous"
+                    period: countlyCommon.getPeriod() === 'day' ? "previousThisMonth" : "previous"
                 },
                 { name: "t" }
             ];

@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyVue, CV, app */
+/*global countlyCommon, countlyVue, CV, app, countlyGlobal */
 
 (function(countlyRemoteConfig) {
     countlyRemoteConfig.factory = {
@@ -39,6 +39,17 @@
                 dataType: "json"
             }).then(function(res) {
                 return res || {};
+            });
+        },
+        getAb: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "ab-testing"
+                },
+                dataType: "json",
             });
         },
         createParameter: function(parameter) {
@@ -115,15 +126,40 @@
         var actions = {
             initialize: function(context) {
                 return countlyRemoteConfig.service.initialize().then(function(res) {
-                    var parameters = res.parameters || [];
-                    var conditions = res.conditions || [];
-                    parameters.forEach(function(parameter) {
-                        if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
-                            parameter.status = "Expired";
-                        }
-                    });
-                    context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
-                    context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                    if (res && countlyGlobal.plugins.indexOf("ab-testing") > -1) {
+                        countlyRemoteConfig.service.getAb().then(function(resp) {
+                            if (resp) {
+                                var parameters = res.parameters || [];
+                                var conditions = res.conditions || [];
+                                parameters.forEach(function(parameter) {
+                                    parameter.editable = true;
+                                    resp.experiments.forEach(function(experiment) {
+                                        if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0 && experiment.variants[0].parameters.length && experiment.variants[0].parameters.length > 0 && experiment.variants[0].parameters[0].name === parameter.parameter_key) {
+                                            parameter.abStatus = experiment.status;
+                                            parameter.editable = false;
+                                        }
+                                    });
+                                    if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                                        parameter.status = "Expired";
+                                    }
+                                });
+                                context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
+                                context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                            }
+                        });
+                    }
+                    else {
+                        var parameters = res.parameters || [];
+                        var conditions = res.conditions || [];
+                        parameters.forEach(function(parameter) {
+                            if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                                parameter.status = "Expired";
+                            }
+                            parameter.editable = true;
+                        });
+                        context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
+                        context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                    }
                 });
             }
         };
@@ -201,6 +237,8 @@
                     delete updateParameter.value_list;
                     delete updateParameter._id;
                     delete updateParameter.hover;
+                    delete updateParameter.editable;
+                    delete updateParameter.abStatus;
                     return countlyRemoteConfig.service.updateParameter(id, updateParameter);
                 },
                 remove: function(context, parameter) {

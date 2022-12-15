@@ -8,5 +8,5 @@
 
     app.configurationsView.registerLabel("consolidate", jQuery.i18n.map["consolidate.app"]);
 
-    app.addAppManagementInput("consolidate", jQuery.i18n.map["consolidate.plugin-title"], {"consolidate": {input: "el-select", attrs: {multiple: true}, list: appList, defaultValue: []}});
+    app.addAppManagementInput("consolidate", jQuery.i18n.map["consolidate.plugin-title"], {"consolidate": {input: "cly-select-x", attrs: {mode: "multi-check", placement: "bottom-end"}, list: appList, defaultValue: []}});
 })();

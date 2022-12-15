@@ -24,21 +24,21 @@
             label: countlyVue.i18n("taskmanager.last-7days"),
             value: "7days",
             getRange: function() {
-                return [moment().startOf("day").subtract(7, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(6, "d"), moment().endOf("day")];
             }
         },
         "30days": {
             label: countlyVue.i18n("taskmanager.last-30days"),
             value: "30days",
             getRange: function() {
-                return [moment().startOf("day").subtract(30, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(29, "d"), moment().endOf("day")];
             }
         },
         "60days": {
             label: countlyVue.i18n("taskmanager.last-60days"),
             value: "60days",
             getRange: function() {
-                return [moment().startOf("day").subtract(60, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(59, "d"), moment().endOf("day")];
             }
         },
         "day": {
@@ -735,6 +735,7 @@
             var data = getInitialState(this);
             data.isVisible = false;
             data.commitTooltip = {};
+            data.exceptionOffset = false;
             return data;
         },
         watch: {
@@ -797,8 +798,10 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
+
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -809,7 +812,10 @@
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
+
+
                     state.maxDate = now;
                     state.sinceInput = {
                         raw: {
@@ -820,7 +826,9 @@
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+
                     state.maxDate = state.minDate;
                     state.onmInput = {
                         raw: {
@@ -905,6 +913,20 @@
 
                 var newValue = value;
 
+                if (this.exceptionOffset) {
+                    if (mode === "output") {
+                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
+                    }
+                    else {
+                        if (this.timestampFormat === "s") {
+                            return newValue * 1000;
+                        }
+                        else {
+                            return newValue;
+                        }
+                    }
+                }
+
                 if (this.timestampFormat === "s") {
                     if (mode === "output") {
                         newValue = Math.floor(value / 1000);
@@ -935,11 +957,25 @@
                 );
             },
             handleConfirmClick: function() {
+                if (this.rangeMode === 'inBetween') {
+                    var _minDate = new Date(this.minDate);
+                    var _maxDate = new Date(this.maxDate);
+
+                    // case of custom range is selected by same day
+                    if (_maxDate.getTime() - _minDate.getTime() <= 86400000) {
+                        this.exceptionOffset = false;
+                    }
+                    else {
+                        this.exceptionOffset = true;
+                        var currentDate = new Date(_maxDate.getTime());
+                        currentDate.setDate(_maxDate.getDate() - 1);
+                    }
+                }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
-                        this.fixTimestamp(this.maxDate.valueOf(), "output")
+                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
                     ], false);
                 }
                 else if (this.rangeMode === 'since') {
@@ -984,7 +1020,7 @@
             doCommit: function(value, isShortcut) {
                 if (value) {
                     if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
-                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0], this.rangeLimits.maxLength[1]);
+                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0] + 1, this.rangeLimits.maxLength[1]);
                         if (allowedMax < moment(this.maxDate)) {
                             return this.triggerCommitWarning('maxLength');
                         }

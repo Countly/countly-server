@@ -18,7 +18,7 @@
                     :searchable="true"
                     v-model="selectedSearchBar">
                         <template v-slot:option-prefix="option">
-                            <div class="cly-vue-sidebar__app-image bu-mt-2" :style="{backgroundImage: 'url(' + apps[option.value].image + ')'}"></div>
+                            <div class="cly-vue-sidebar__app-image bu-mt-1 bu-mr-1" :style="{backgroundImage: 'url(' + apps[option.value].image + ')'}"></div>
                         </template>
                     </cly-listbox>
             </div>
@@ -30,7 +30,7 @@
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div :class="{'bu-column':true, 'bu-is-6':firstApp, 'bu-is-9':!firstApp}">
                 <cly-more-options v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
-                    <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
+                    <el-dropdown-item :disabled="isDisabled()" :class="{'el-dropdown-menu__item--divided__fix-broken':item.divided, 'add-border':!item.value}" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>
@@ -40,7 +40,8 @@
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
                     @change="setAppLock"
                     class="bu-is-pulled-right bu-mr-4 bu-mt-1"
-                    v-tooltip.top-start="{content: 'App is Locked. Unlock it to allow changes.'}">
+                    v-tooltip.top-start="apps[selectedApp].locked ? {content: i18n('management-applications.application-tooltip-locked-text')} 
+                    : {content: i18n('management-applications.application-tooltip-unlocked-text')}">
                 </el-switch>
                 <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
                 <cly-section>
@@ -61,9 +62,9 @@
                                                 {{formScope.editedObject.name}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.application-name')" prop="name">
-                                                <el-input 
+                                                <el-input
                                                     :disabled="isDisabled()"
-                                                    :placeholder="i18n('management-applications.application-name')" 
+                                                    :placeholder="i18n('management-applications.application-name')"
                                                     v-model="formScope.editedObject.name">
                                                 </el-input>
                                             </cly-inline-form-field>
@@ -73,9 +74,9 @@
                                                 {{formScope.editedObject.type}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')" prop="type">
-                                                <el-select 
+                                                <el-select
                                                     :disabled="isDisabled()"
-                                                    :placeholder="i18n('management-applications.type')" 
+                                                    :placeholder="i18n('management-applications.type')"
                                                     v-model="formScope.editedObject.type">
                                                     <el-option :key="type" :value="type" :label="i18n('management-applications.types.' + type)" v-for="(item, type) in types"></el-option>
                                                 </el-select>
@@ -86,23 +87,23 @@
                                                 {{formScope.editedObject.country}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else rules="required" :label="i18n('countries.table.country')" prop="country" :help="i18n('management-applications.country.hint')">
-                                                <cly-select-x 
+                                                <cly-select-x
                                                     :disabled="isDisabled()"
-                                                    :placeholder="i18n('countries.table.country')" 
-                                                    v-model="formScope.editedObject.country" 
+                                                    :placeholder="i18n('countries.table.country')"
+                                                    v-model="formScope.editedObject.country"
                                                     :options="countries">
                                                 </cly-select-x>
                                             </cly-inline-form-field>
-                                        </div> 
+                                        </div>
                                         <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.time-zone')" :help="i18n('management-applications.time-zone.hint')">
                                                 {{formScope.editedObject.timezone}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.time-zone')" prop="timezone"  :help="i18n('management-applications.time-zone.hint')">
-                                                <cly-select-x 
+                                                <cly-select-x
                                                     :disabled="isDisabled()"
-                                                    :placeholder="i18n('management-applications.time-zone')" 
-                                                    v-model="formScope.editedObject.timezone" 
+                                                    :placeholder="i18n('management-applications.time-zone')"
+                                                    v-model="formScope.editedObject.timezone"
                                                     :options="timezones">
                                                 </cly-select-x>
                                             </cly-inline-form-field>
@@ -112,22 +113,22 @@
                                                 {{formScope.editedObject.salt}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else :label="i18n('management-applications.checksum-salt')" prop="salt"  :help="i18n('management-applications.checksum-salt.hint')">
-                                                <el-input 
+                                                <el-input
                                                     :disabled="isDisabled()"
-                                                    :placeholder="i18n('management-applications.checksum-salt')" 
+                                                    :placeholder="i18n('management-applications.checksum-salt')"
                                                     v-model="formScope.editedObject.salt">
                                                 </el-input>
                                             </cly-inline-form-field>
-                                        </div>  
+                                        </div>
                                         <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')">
                                                 {{formScope.editedObject._id}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-if="!newApp && !edited" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')">
-                                                <el-input 
-                                                    readonly 
+                                                <el-input
+                                                    readonly
                                                     onclick="select()"
-                                                    :placeholder="i18n('management-applications.app-id')" 
+                                                    :placeholder="i18n('management-applications.app-id')"
                                                     v-model="formScope.editedObject._id">
                                                 </el-input>
                                             </cly-inline-form-field>
@@ -137,10 +138,10 @@
                                                 {{formScope.editedObject.key}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
-                                                <el-input 
+                                                <el-input
                                                     :readonly="isDisabled()"
                                                     onclick="select()"
-                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
+                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')"
                                                     v-model="formScope.editedObject.key">
                                                 </el-input>
                                             </cly-inline-form-field>
@@ -150,23 +151,23 @@
                                                 {{formScope.editedObject.redirect_url}}
 											</cly-inline-form-field>
 											<cly-inline-form-field v-else rules="" :label="i18n('management-applications.redirect_url')" prop="redirect_url" :help="i18n('management-applications.redirect_url.help')">
-												<el-switch 
+												<el-switch
 													:active-value="apps[selectedApp].redirect_url"
 													inactive-value=" "
 													:active-text = "apps[selectedApp].redirect_url"
 													v-model="formScope.editedObject.redirect_url">
 												</el-switch>
-                                            </cly-inline-form-field> 
+                                            </cly-inline-form-field>
                                         </div>
                                     </cly-form-step>
                                     <div v-if="newApp" class="bu-has-text-right" @mouseenter="formScope.validate()">
-                                        <el-button 
-                                            :disabled="isDisabled() || !formScope.isSubmissionAllowed" 
-                                            @click="formScope.submit()" 
+                                        <el-button
+                                            :disabled="isDisabled() || !formScope.isSubmissionAllowed"
+                                            @click="formScope.submit()"
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
                                         </el-button>
                                     </div>
-                                    <cly-diff-helper v-if="!edited" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
+                                    <cly-diff-helper v-if="!edited && formScope.editedObject.name" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
                                 </template>
                             </cly-form>
                         </div>
@@ -178,11 +179,11 @@
                                 </div>
                                 <p>&nbsp;</p>
                                     <el-upload
-                                    v-if="!isDisabled() && isGlobalAdmin"
-                                    action="apps/icon" 
+                                    v-if="!isDisabled() && (isGlobalAdmin || isAppAdmin)"
+                                    action="apps/icon"
                                     :on-success="handleUploadSuccess"
                                     :data="uploadData"
-                                    :show-file-list="true"
+                                    :show-file-list="showFileList"
                                     :limit="1"
                                     name="app_image"
                                     accept="image/png, image/jpeg, image/gif">
@@ -225,54 +226,61 @@
                         </el-collapse-item>
                     </el-collapse>
                 </cly-section>
-                <h3 class="bu-mb-2" v-if="!newApp && hasGlobalAdminRights">{{i18n('management-applications.plugins')}}</h3>
-                <cly-section v-if="!newApp && hasGlobalAdminRights" >
-                    <validation-observer ref="configObserver" v-slot="v">                        
+                <h3 class="bu-mb-2" v-if="!newApp && hasAppAdminRights">{{i18n('management-applications.plugins')}}</h3>
+                <cly-section v-if="!newApp && hasAppAdminRights" >
+                    <validation-observer ref="configObserver" v-slot="v">
                         <el-collapse class="app-management-details">
                             <el-collapse-item :title="value.title" :name="id" :key="id" v-for="(value, id) in appSettings">
                                 <component v-if="value.component" v-bind:is="value.component" @change="onChange"></component>
                                 <cly-inline-form-field v-else :key="key" :label="getLabelName(key)" v-for="(conf, key) in value.inputs">
                                         <el-input
-                                            v-if="conf.input === 'el-input'" 
+                                            v-if="conf.input === 'el-input'"
                                             @input="onChange(key, $event)"
                                             :value="conf.value"
                                             v-bind="conf.attrs"
                                             >
                                         </el-input>
-                                        <el-select 
-                                            v-else-if="conf.input === 'el-select'" 
+                                        <el-select
+                                            v-else-if="conf.input === 'el-select'"
                                             @change="onChange(key, $event)"
                                             :value="conf.value"
                                             v-bind="conf.attrs">
                                             <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in conf.list"></el-option>
                                         </el-select>
-                                        <el-slider 
-                                            v-else-if="conf.input === 'el-slider'" 
+                                        <cly-select-x
+                                            v-else-if="conf.input === 'cly-select-x'"
+                                            @change="onChange(key, $event)"
+                                            :value="conf.value"
+                                            :options="conf.list"
+                                            v-bind="conf.attrs">
+                                        </cly-select-x>
+                                        <el-slider
+                                            v-else-if="conf.input === 'el-slider'"
                                             @change="onChange(key, $event)"
                                             :value="conf.value"
                                             v-bind="conf.attrs">
                                         </el-slider>
                                         <el-button
-                                            v-else-if="conf.input === 'el-button'" 
+                                            v-else-if="conf.input === 'el-button'"
                                             @click="conf.click()"
                                             v-bind="conf.attrs">
                                             {{conf.label}}
                                         </el-button>
-                                        <el-switch 
+                                        <el-switch
                                             v-else-if="conf.input === 'el-switch'"
                                             @change="onChange(key, $event)"
                                             :value="conf.value"
                                             v-bind="conf.attrs">
                                         </el-switch>
-                                        <el-input-number 
-                                            v-else-if="conf.input === 'el-input-number'" 
+                                        <el-input-number
+                                            v-else-if="conf.input === 'el-input-number'"
                                             @change="onChange(key, $event)"
-                                            :max='2147483647' 
-                                            :min='0' 
+                                            :max='2147483647'
+                                            :min='0'
                                             :value="conf.value"
                                             v-bind="conf.attrs">
                                         </el-input-number>
-                                        <el-input 
+                                        <el-input
                                             v-else
                                             @input="onChange(key, $event)"
                                             :value="conf.value">

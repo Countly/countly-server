@@ -2,7 +2,7 @@
 
 const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:clear'),
-    N = require('../parts/note.js'),
+    { State } = require('../send/data'),
     retry = require('../../../../api/parts/jobs/retry.js');
 /** clear job class */
 class ClearJob extends job.Job {
@@ -38,7 +38,7 @@ class ClearJob extends job.Job {
                     log.d('Nothing to clear - no message %j', this.data.mid);
                     done();
                 }
-                else if ((msg.result.status & N.Status.Created) === 0) {
+                else if ((msg.result.state & State.Created) === 0) {
                     db.collection('messages').deleteOne({_id: db.ObjectID(this.data.mid)}, () => {
                         done();
                     });

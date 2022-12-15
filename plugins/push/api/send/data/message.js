@@ -353,7 +353,19 @@ class Message extends Mongoable {
      * @returns {Content[]} array of contents which are applicable for this p/l case
      */
     filterContents(p, la) {
-        return (this._data.contents || []).filter(c => (!p || (!c.p || c.p === p)) && (!la || (!c.la || c.la === la)));
+        return Message.filterContents(this._data.contents, p, la);
+    }
+
+    /**
+     * Filter contents for given lang-platform combination
+     * 
+     * @param {Content[]|object[]} contents array of contents to filter
+     * @param {string} p platform key
+     * @param {string} la language key
+     * @returns {Content[]} array of contents which are applicable for this p/l case
+     */
+    static filterContents(contents, p, la) {
+        return (contents || []).filter(c => (!p || (!c.p || c.p === p)) && (!la || (!c.la || c.la === la)));
     }
 
     /**
@@ -608,9 +620,20 @@ class Message extends Mongoable {
             await this.stop(log);
         }
         let plain = this.triggerPlain();
-        if (plain && !this.is(State.Streamable)) {
-            if (this.is(State.Stopped)) {
-                await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created, status: Status.Created}});
+        if (plain) {
+            if (this.is(State.Cleared) && !this.triggerAutoOrApi()) {
+                // reset message state removing all errors set by .stop() above
+                await this.updateAtomically({_id: this._id, state: this.state}, {
+                    $set: {
+                        state: State.Created,
+                        status: Status.Created,
+                        'result.errored': 0,
+                        'result.processed': 0,
+                        'result.total': 0,
+                        'result.errors': {},
+                        'result.subs': {}
+                    }
+                });
             }
             let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);

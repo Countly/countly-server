@@ -265,6 +265,34 @@
 }
 
 .el-tabs--card>.el-tabs__header {
+    margin: 0;
+
+    .el-tabs__nav-wrap {
+        margin-bottom: -2px;
+
+        &.is-scrollable {
+            border-bottom: none;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+        }
+
+        .el-tabs__nav-next {
+            background: linear-gradient(90deg,rgb(255 255 255 / 0%) 0,rgb(255 255 255 / 70%) 50%,rgb(255 255 255 / 85%) 100%);
+        }
+
+        .el-tabs__nav-prev {
+            background: linear-gradient(270deg,rgb(255 255 255 / 0%) 0,rgb(255 255 255 / 70%) 50%,rgb(255 255 255 / 85%) 100%);
+        }
+
+        .el-tabs__nav-next, .el-tabs__nav-prev {
+            opacity: 0.85;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
 	.el-tabs__item:first-child {
 		border-top-left-radius: 3px;
 	}
@@ -274,15 +302,18 @@
 	
 	.el-tabs__item {
 		background-color:#fcfcfc;
-		padding: 0px;
+		padding: 0;
+        height: auto;
+        text-align: left;
+        line-height: 32px;
+        border-bottom: 2px solid #ececec;
 	}
 	.el-tabs__item:nth-child(2){
-		padding: 0px;
+		padding: 0;
 	}
 	
 	.el-tabs__item.is-active {
 		border-bottom-color: #0166d6;
-		border-bottom-width: 2px;
 		background-color:#ffffff;
 	}
 }
@@ -299,6 +330,59 @@
             &__inner {
                 width: 100%;
             }
+        }
+    }
+}
+
+.el-select-dropdown {
+    .el-scrollbar {
+        &__bar{
+            opacity: 1 !important;
+            right: 0;
+        }
+    }
+}
+
+.el-tiptap-editor {
+    border-radius: 4px;
+    .el-tiptap-editor__menu-bar {
+        border-color: #cfd6e4;
+    }
+    .el-tiptap-editor__menu-bar::before {
+        background-color: #cfd6e4;
+    }
+    >.el-tiptap-editor__content {
+        border: 1px solid #cfd6e4 !important;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+    }
+    .el-tiptap-editor__footer {
+        border-color: #cfd6e4;
+    }
+    .border-top-radius {
+        border-top-left-radius: 4px !important;
+        border-top-right-radius: 4px !important;
+    }
+    .border-bottom-radius {
+        border-bottom-left-radius: 4px !important;
+        border-bottom-right-radius: 4px !important;
+    }
+    .fa-icon {
+        fill: #333C48; 
+    }
+}
+
+.el-dialog {
+    &.el-tiptap-edit-link-dialog {
+        .el-button {
+            &.is-round {
+                border-radius: 4px;
+            }
+            &.el-button--primary {
+                border-color: #12AF51;
+                background-color: #12AF51;
+            }
+
         }
     }
 }

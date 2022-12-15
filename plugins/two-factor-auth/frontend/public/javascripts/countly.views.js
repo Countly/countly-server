@@ -1,14 +1,12 @@
 /* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $ */
 
-$(document).ready(function() {
-    // if configuration view exists
-    if (app.configurationsView) {
-        // registerLabel for two-factor-auth and two-factor-auth-global_enable
-        // http://resources.count.ly/docs/shared-configurations#section-customizing-web-ui-labels
-        app.configurationsView.registerLabel("two-factor-auth", "two-factor-auth.two-factor-authentication");
-        app.configurationsView.registerLabel("two-factor-auth-globally_enabled", "two-factor-auth.globally_enabled");
-    }
-});
+// if configuration view exists
+if (app.configurationsView) {
+    // registerLabel for two-factor-auth and two-factor-auth-global_enable
+    // http://resources.count.ly/docs/shared-configurations#section-customizing-web-ui-labels
+    app.configurationsView.registerLabel("two-factor-auth", "two-factor-auth.two-factor-authentication");
+    app.configurationsView.registerLabel("two-factor-auth-globally_enabled", "two-factor-auth.globally_enabled");
+}
 
 var TwoFAUser = countlyVue.views.create({
     template: countlyVue.T("/two-factor-auth/templates/setup2fa_modal.html"),
@@ -43,7 +41,9 @@ var TwoFAUser = countlyVue.views.create({
                         $.ajax({
                             type: "GET",
                             url: countlyGlobal.path + "/i/two-factor-auth",
-                            data: {method: "disable"},
+                            data: {
+                                method: "disable"
+                            },
                             success: function() {
                                 CountlyHelpers.notify({
                                     title: $.i18n.map["two-factor-auth.disable_title"],

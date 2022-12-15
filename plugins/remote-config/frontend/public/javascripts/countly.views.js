@@ -1,4 +1,4 @@
-/*global $, _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
+/*global _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
 
 (function() {
     var FEATURE_NAME = "remote_config";
@@ -412,7 +412,7 @@
             },
             createFilter: function(queryString) {
                 return function(value) {
-                    return value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
+                    return typeof value === 'string' && value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
                 };
             },
             querySearchForCondition: function(queryStringForCondition, cb) {
@@ -433,8 +433,11 @@
                 };
             },
             onSubmit: function(doc) {
-                if (doc.expiry_dttm) {
-                    doc.expiry_dttm = doc.expiry_dttm - this.getOffset() * 60 * 1000;
+                if (doc.expiry_dttm && doc.showExpirationDate) {
+                    doc.expiry_dttm = doc.expiry_dttm + new Date().getTimezoneOffset() * 60 * 1000;
+                }
+                if (!doc.showExpirationDate) {
+                    doc.expiry_dttm = null;
                 }
                 var self = this;
                 doc.conditions = [];
@@ -466,6 +469,9 @@
             },
             onCopy: function(doc) {
                 if (doc._id) {
+                    if (doc.expiry_dttm) {
+                        doc.expiry_dttm = doc.expiry_dttm - new Date().getTimezoneOffset() * 60 * 1000;
+                    }
                     this.showExpirationDate = false;
                     this.defaultValue = doc.default_value;
 
@@ -755,6 +761,15 @@
             },
             onSubmit: function() {
                 this.$store.dispatch("countlyRemoteConfig/initialize");
+            },
+            handleTableRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return "bu-is-clickable";
             }
         }
     });
@@ -910,8 +925,5 @@
         mainView.params = params;
         this.renderWhenReady(mainView);
     });
-    $(document).ready(function() {
-        //We shouldn't be using $ (jquery)
-        app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
-    });
+    app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
 })();

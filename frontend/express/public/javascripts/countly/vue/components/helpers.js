@@ -1,10 +1,12 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin*/
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    Vue.component("vue-json-pretty", VueJsonPretty.default);
+    Vue.use(ElementTiptapPlugin);
     Vue.component("cly-back-link", countlyBaseComponent.extend(
         // @vue/component
         {
@@ -205,7 +207,7 @@
 
                 if (this.formatting === 'auto') {
                     if (this.isPercentage) {
-                        return this.number + " %";
+                        return this.number + "%";
                     }
                     else if (Math.abs(this.number) >= 10000) {
                         return this.getShortNumber(this.number);

@@ -12,7 +12,7 @@ var pluginOb = {},
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -219,11 +219,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
     });
 
-    plugins.register("/i/app_users/delete", function(ob) {
+    plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
-            common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}}, function(/*err*/) {});
+            // By using await and no callback, error in db operation will be thrown
+            // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+            await common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}});
         }
     });
 
@@ -387,6 +389,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     groupBy1.uvalue = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
+                    groupBy1.u = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
                 }
             }
             pipeline.push({$group: groupBy1});
@@ -407,6 +410,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.u = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
                 }
             }
             pipeline.push({$group: groupBy0});
@@ -692,7 +696,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else {
             var qq = settings.count_query || {};
-            common.db.collection("app_viewsmeta" + app_id).find(qq).count(function(err, total) {
+            common.db.collection("app_viewsmeta" + app_id).count(qq, function(err, total) {
                 common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err1, res) {
                     if (err1) {
                         log.e(err1);
@@ -1714,7 +1718,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                                 updateMultiViewParams[k] = results[p].segmentation[k];
                                             }
                                             if (Object.keys(updateMultiViewParams).length > 0 || results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias});
+                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _ivd: results[p].segmentation._idv});
                                             }
                                         }
                                         //geting all segment info
