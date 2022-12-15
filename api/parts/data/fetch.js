@@ -2024,9 +2024,16 @@ fetch.alljobs = async function(metric, params) {
         }
     ];
     if (params.qstring.sSearch) {
-        pipeline.unshift({
-            $match: { name: { $regex: new RegExp(params.qstring.sSearch, "i") } }
-        });
+        var rr;
+        try {
+            rr = new RegExp(params.qstring.sSearch, "i");
+            pipeline.unshift({
+                $match: { name: { $regex: rr } }
+            });
+        }
+        catch (e) {
+            console.log('Could not use as regex:' + params.qstring.sSearch);
+        }
     }
     const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;

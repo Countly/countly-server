@@ -114,7 +114,7 @@ var SessionHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: 'session'})).then(function() {
+        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
             self.calculateAllData();
         });
     },
@@ -124,7 +124,7 @@ var SessionHomeWidget = countlyVue.views.create({
             if (force) {
                 this.isLoading = true;
             }
-            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: 'session'})).then(function() {
+            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
                 self.calculateAllData();
             });
         },
