@@ -291,16 +291,18 @@
         },
         data: function() {
             return {
-                back: false,
+                back: this.$route.params.namespace === "search",
                 configsData: {},
                 configsList: [],
                 coreDefaults: ['api', 'frontend', 'logs', 'security'],
                 diff: [],
                 selectedConfig: this.$route.params.namespace || "api",
-                searchPlaceholder: CV.i18n("common.search"),
+                searchPlaceholder: CV.i18n("configs.search-settings"),
                 predefinedLabels: app.configurationsView.predefinedLabels,
                 predefinedInputs: app.configurationsView.predefinedInputs,
-                predefinedStructure: app.configurationsView.predefinedStructure
+                predefinedStructure: app.configurationsView.predefinedStructure,
+                searchQuery: "",
+                searchResultStructure: {},
             };
         },
         beforeCreate: function() {
@@ -404,6 +406,9 @@
                     });
                 });
         },
+        updated: function() {
+            this.scrollToSection();
+        },
         methods: {
             removeNonGlobalConfigs: function(configData) {
                 Object.keys(configData).forEach(function(configKey) {
@@ -419,10 +424,8 @@
                     }
                 });
             },
-            goBack: function() {
-                app.back();
-            },
-            onChange: function(key, value) {
+            onChange: function(key, value, config) {
+                config = config || this.selectedConfig;
                 var configsData = countlyPlugins.getConfigsData();
 
                 //delete value from diff if it already exists
@@ -431,43 +434,43 @@
                     this.diff.splice(index, 1);
                 }
 
-                this.configsData[this.selectedConfig][key] = value;
+                this.configsData[config][key] = value;
                 //when user disables country data tracking while city data tracking is enabled
-                if (key === "country_data" && value === false && this.configsData[this.selectedConfig].city_data === true) {
+                if (key === "country_data" && value === false && this.configsData[config].city_data === true) {
                     //disable city data tracking 
-                    this.configsData[this.selectedConfig].city_data = false;
+                    this.configsData[config].city_data = false;
                     //if city data tracking was originally enabled, note the change
                     index = this.diff.indexOf("city_data");
                     if (index > -1) {
                         this.diff.splice(index, 1);
                     }
-                    if (configsData[this.selectedConfig].city_data === true) {
+                    if (configsData[config].city_data === true) {
                         this.diff.push("city_data");
                     }
                 }
                 //when user enables city data tracking while country data tracking is disabled
-                if (key === "city_data" && value === true && this.configsData[this.selectedConfig].country_data === false) {
+                if (key === "city_data" && value === true && this.configsData[config].country_data === false) {
                     //enable country data tracking
-                    this.configsData[this.selectedConfig].country_data = true;
+                    this.configsData[config].country_data = true;
                     //if country data tracking was originally disabled, note the change
                     index = this.diff.indexOf("country_data");
                     if (index > -1) {
                         this.diff.splice(index, 1);
                     }
-                    if (configsData[this.selectedConfig].country_data === false) {
+                    if (configsData[config].country_data === false) {
                         this.diff.push("country_data");
                     }
                 }
 
-                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                if (Array.isArray(value) && Array.isArray(configsData[config][key])) {
                     value.sort();
-                    configsData[this.selectedConfig][key].sort();
+                    configsData[config][key].sort();
 
-                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[config][key])) {
                         this.diff.push(key);
                     }
                 }
-                else if (configsData[this.selectedConfig][key] !== value) {
+                else if (configsData[config][key] !== value) {
                     this.diff.push(key);
                 }
             },
@@ -484,28 +487,33 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                return app.configurationsView.getInputLabel((ns || this.selectedConfig) + "." + id);
+                return app.configurationsView.getInputLabel(ns + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
                 return app.configurationsView.getHelperLabel(id, ns);
             },
-            getInputType: function(id) {
-                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
+            getInputType: function(id, configId) {
+                configId = configId || this.selectedConfig;
+                return app.configurationsView.getInputType(configId + "." + id);
             },
-            checkIfOverwritten: function(id) {
+            getConfigType: function(id) {
+                return this.coreDefaults.includes(id) ? "Core" : "Plugins";
+            },
+            checkIfOverwritten: function(id, ns) {
+                ns = ns || this.selectedConfig;
                 var configsData = countlyPlugins.getConfigsData();
                 var plugs = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins;
                 //check if value can be overwritten on user level
-                if (configsData[this.selectedConfig]._user && configsData[this.selectedConfig]._user[id]) {
+                if (configsData[ns]._user && configsData[ns]._user[id]) {
                     //check if value is overwritten on user level
                     var sets = countlyGlobal.member.settings;
-                    if (sets && sets[this.selectedConfig] && typeof sets[this.selectedConfig][id] !== "undefined") {
+                    if (sets && sets[ns] && typeof sets[ns][id] !== "undefined") {
                         return {label: jQuery.i18n.map["configs.overwritten.user"], href: "#/account-settings"};
                     }
                 }
                 //check if config overwritten on app level
-                else if (plugs && plugs[this.selectedConfig] && typeof plugs[this.selectedConfig][id] !== "undefined") {
+                else if (plugs && plugs[ns] && typeof plugs[ns][id] !== "undefined") {
                     return {label: jQuery.i18n.map["configs.overwritten.app"], href: "#/manage/apps"};
                 }
             },
@@ -561,6 +569,65 @@
                         window.location.reload(true);
                     }
                 });
+            },
+            onFocus: function() {
+                this.back = true;
+                app.navigate("#/manage/configurations/search");
+            },
+            onEnterSearch: function() {
+                var self = this;
+                this.unpatch();
+                var res = {};
+                self.searchQuery = self.searchQuery.toLowerCase();
+                for (var config in self.predefinedStructure) {
+                    if (config.toLowerCase().includes(self.searchQuery)) {
+                        res[config] = this.predefinedStructure[config];
+                    }
+                    else {
+                        let groups = [];
+                        // eslint-disable-next-line no-loop-func
+                        this.predefinedStructure[config].groups.map(function(group) {
+                            if (group.label && group.label.toLowerCase().includes(self.searchQuery)) {
+                                groups.push(group);
+                            }
+                            else {
+                                let list = group.list.filter(function(item) {
+                                    let label = self.getLabelName(item, config) || "";
+                                    let helper = self.getHelperLabel(item, config) || "";
+                                    return label.toLowerCase().includes(self.searchQuery)
+                                    || helper.toLowerCase().includes(self.searchQuery);
+                                });
+                                if (list.length > 0) {
+                                    let tmp = group;
+                                    tmp.list = list;
+                                    groups.push(tmp);
+                                }
+                            }
+                        });
+                        if (groups.length > 0) {
+                            res[config] = {groups};
+                        }
+                    }
+                }
+                if (Object.keys(res).length === 0) {
+                    res.empty = true;
+                }
+                this.searchResultStructure = res;
+                //console.log(res);
+            },
+            redirectToConfig: function(config, section) {
+                return section ? "#/manage/configurations/" + config + "#" + section : "#/manage/configurations/" + config + "";
+            },
+            scrollToSection() {
+                var section = this.$route.params.section;
+                if (section) {
+                    let element = document.getElementById(section);
+                    element.scrollIntoView({behavior: "smooth"});
+                }
+            },
+            clearSearch: function() {
+                this.searchQuery = "";
+                //this.searchResultStructure = {};
             }
         }
     });
@@ -1089,6 +1156,12 @@
                 view.params = {namespace: namespace, success: true};
                 this.renderWhenReady(view);
             }
+        });
+
+        app.route('/manage/configurations/:namespace#:section', 'configurations_namespace', function(namespace, section) {
+            var view = getConfigView();
+            view.params = {namespace: namespace, section: section, success: true};
+            this.renderWhenReady(view);
         });
 
         countlyPlugins.initializeConfigs().always(function() {
