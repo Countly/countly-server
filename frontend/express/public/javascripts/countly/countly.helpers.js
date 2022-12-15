@@ -301,6 +301,7 @@
         var persistent = msg.persistent;
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
+        payload.id = msg.id;
         var colorToUse;
 
         if (countlyGlobal.ssr) {

@@ -433,7 +433,9 @@
                         });
                     },
                     addPersistentNotification: function(state, payload) {
-                        payload.id = countlyCommon.generateId();
+                        if (!payload.id) {
+                            payload.id = countlyCommon.generateId();
+                        }
                         state.persistentNotifications.unshift(payload);
                     },
                     removePersistentNotification: function(state, notificationId) {
