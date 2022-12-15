@@ -80,7 +80,7 @@ function output(message) {
 
 //Custom merge function in cases we need to group some events.
 //It should be rewritten specifically for each case if needed
-function mergeData(data) {
+/*function mergeData(data) {
     //we are assuming. 4. item is device id
     var dataMerged = {};
     for (var z = 0; z < data.data.length; z++) {
@@ -101,7 +101,7 @@ function mergeData(data) {
         arr.push({"e": key, "data": dataMerged[key]});
     }
     data.data = arr;
-}
+}*/
 
 
 function outputData(options, data) {
@@ -314,7 +314,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                         }
                         else {
                             //merge data if needed
-                           // mergeData(res);
+                            // mergeData(res);
                             outputData({app: app}, res);
                         }
                         resolve();
