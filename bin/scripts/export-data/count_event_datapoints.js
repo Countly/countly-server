@@ -101,8 +101,8 @@ function output(message) {
         arr.push({"e": key, "data": dataMerged[key]});
     }
     data.data = arr;
-}
-*/
+}*/
+
 
 function outputData(options, data) {
     var order = [];
@@ -314,7 +314,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                         }
                         else {
                             //merge data if needed
-                           // mergeData(res);
+                            // mergeData(res);
                             outputData({app: app}, res);
                         }
                         resolve();
