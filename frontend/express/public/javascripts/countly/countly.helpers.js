@@ -340,6 +340,14 @@
     };
 
     /**
+     * Removes a notification from persistent notification list based on id.
+     * @param {string} notificationId notification id
+     */
+    CountlyHelpers.removePersistentNotification = function(notificationId) {
+        countlyCommon.removePersistentNotification(notificationId);
+    };
+
+    /**
      * 
      * @param {object} options includes from, title and url properties. from property 
      * indicates the origin of view. url indicates the new url to navigate to and 

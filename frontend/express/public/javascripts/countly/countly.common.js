@@ -236,6 +236,19 @@
         };
 
         /**
+         * Removes a notification from persistent notification list based on id.
+         * @param {string} notificationId notification id
+         */
+        countlyCommon.removePersistentNotification = function(notificationId) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/onRemovePersistentNotification", notificationId);
+                }
+            }
+        };
+
+        /**
          * Generates unique id string using unsigned integer array.
          * @returns {string} unique id
          */
