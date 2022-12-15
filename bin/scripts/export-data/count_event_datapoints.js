@@ -80,7 +80,7 @@ function output(message) {
 
 //Custom merge function in cases we need to group some events.
 //It should be rewritten specifically for each case if needed
-function mergeData(data) {
+/*function mergeData(data) {
     //we are assuming. 4. item is device id
     var dataMerged = {};
     for (var z = 0; z < data.data.length; z++) {
@@ -102,7 +102,7 @@ function mergeData(data) {
     }
     data.data = arr;
 }
-
+*/
 
 function outputData(options, data) {
     var order = [];
