@@ -343,7 +343,7 @@
     function mergeWithCustomizer(objValue, srcValue) {
         if (Array.isArray(srcValue) && typeof objValue === 'object') {
             srcValue.forEach(function(value, index) {
-                srcValue[index] = _mergeWith(objValue, value);
+                srcValue[index] = _mergeWith({}, objValue, value);
             });
             return srcValue;
         }
