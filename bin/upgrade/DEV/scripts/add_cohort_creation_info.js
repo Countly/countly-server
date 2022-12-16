@@ -13,7 +13,7 @@ pluginManager.dbConnection().then(async(countlyDb) => {
                 'updateOne': {
                     'filter': { '_id': cohort._id },
                     'update': {
-                        '$set': {'creator': countlyDb.ObjectID(log.user_id), 'created_at': log.ts}
+                        '$set': {'creator': log.user_id, 'created_at': log.ts}
                     }
                 }
             });
