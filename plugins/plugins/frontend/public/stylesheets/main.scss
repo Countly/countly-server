@@ -67,5 +67,8 @@
 
     a {
         color: #32659D;
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }

@@ -155,13 +155,23 @@
         </div>
         <div v-else>
             <cly-empty-view
+                v-if="Object.keys(searchResultStructure).length === 0"
+                style="opacity:1"
+                :title="i18n('configs.start-search')"
+                :subTitle="i18n('configs.start-search-description')"
+            >
+                <template v-slot:icon>
+                    <img src="images/icons/start-search.svg"></img>
+                </template>
+            </cly-empty-view>
+            <cly-empty-view
                 v-if="searchResultStructure.empty"
                 style="opacity:1"
                 :title="i18n('configs.no-search-result')"
                 :subTitle="i18n('configs.no-search-result-description')"
             >
                 <template v-slot:icon>
-                    <img src="images/icons/search-result.svg"></img>
+                    <img src="images/icons/no-search-result.svg"></img>
                 </template>
             </cly-empty-view>
             <div v-else v-for="(config, configKey) in searchResultStructure" :configKey="configKey">

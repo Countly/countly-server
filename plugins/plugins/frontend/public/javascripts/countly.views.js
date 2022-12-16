@@ -578,42 +578,43 @@
                 var self = this;
                 this.unpatch();
                 var res = {};
-                self.searchQuery = self.searchQuery.toLowerCase();
-                for (var config in self.predefinedStructure) {
-                    if (config.toLowerCase().includes(self.searchQuery)) {
-                        res[config] = this.predefinedStructure[config];
-                    }
-                    else {
-                        let groups = [];
-                        // eslint-disable-next-line no-loop-func
-                        this.predefinedStructure[config].groups.map(function(group) {
-                            if (group.label && group.label.toLowerCase().includes(self.searchQuery)) {
-                                groups.push(group);
-                            }
-                            else {
-                                let list = group.list.filter(function(item) {
-                                    let label = self.getLabelName(item, config) || "";
-                                    let helper = self.getHelperLabel(item, config) || "";
-                                    return label.toLowerCase().includes(self.searchQuery)
-                                    || helper.toLowerCase().includes(self.searchQuery);
-                                });
-                                if (list.length > 0) {
-                                    let tmp = group;
-                                    tmp.list = list;
-                                    groups.push(tmp);
+                if (self.searchQuery && self.searchQuery !== "") {
+                    self.searchQuery = self.searchQuery.toLowerCase();
+                    for (var config in self.predefinedStructure) {
+                        if (config.toLowerCase().includes(self.searchQuery)) {
+                            res[config] = this.predefinedStructure[config];
+                        }
+                        else {
+                            let groups = [];
+                            // eslint-disable-next-line no-loop-func
+                            this.predefinedStructure[config].groups.map(function(group) {
+                                if (group.label && group.label.toLowerCase().includes(self.searchQuery)) {
+                                    groups.push(group);
                                 }
+                                else {
+                                    let list = group.list.filter(function(item) {
+                                        let label = self.getLabelName(item, config) || "";
+                                        let helper = self.getHelperLabel(item, config) || "";
+                                        return label.toLowerCase().includes(self.searchQuery)
+                                        || helper.toLowerCase().includes(self.searchQuery);
+                                    });
+                                    if (list.length > 0) {
+                                        let tmp = group;
+                                        tmp.list = list;
+                                        groups.push(tmp);
+                                    }
+                                }
+                            });
+                            if (groups.length > 0) {
+                                res[config] = {groups};
                             }
-                        });
-                        if (groups.length > 0) {
-                            res[config] = {groups};
                         }
                     }
+                    if (Object.keys(res).length === 0) {
+                        res.empty = true;
+                    }
+                    this.searchResultStructure = res;
                 }
-                if (Object.keys(res).length === 0) {
-                    res.empty = true;
-                }
-                this.searchResultStructure = res;
-                //console.log(res);
             },
             redirectToConfig: function(config, section) {
                 return section ? "#/manage/configurations/" + config + "#" + section : "#/manage/configurations/" + config + "";
