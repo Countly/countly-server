@@ -30,6 +30,7 @@ Enterprise fixes:
 - [cohorts] fixed case when user coming in/out of saame cohort in single iteration
 - [cohorts] fixed code to properly deal with definition for user properties nested under $and, $or
 - [cohorts] optimize realtime cohort update queries for sharded cluster
+- [cohorts] remove favorite number
 - [crash_symbolication] convert binary images to new format before sending
 - [crash_symbolication] fixed symbol file uploader
 - [crash_symbolication] symbolicate javascript stack trace types
