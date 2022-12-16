@@ -35,6 +35,7 @@ Enterprise fixes:
 - [crash_symbolication] fixed symbol file uploader
 - [crash_symbolication] symbolicate javascript stack trace types
 - [users] display date type based on meta type and nested values based on timeline
+- [users] fixed for user property data type change
 - [users] fixed segment not loaded after refresh
 - [users] number formatting in user profile
 
