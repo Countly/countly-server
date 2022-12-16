@@ -290,7 +290,7 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                     update.$set = {};
                     for (let k in ou.tk) {
                         update.$set['tk.' + k] = ou.tk[k];
-                        newUser['tk' + k] = true;
+                        newUser['tk' + k] = oldUser['tk' + k];
                     }
                 }
                 if (ou.msgs && ou.msgs.length) {
@@ -314,7 +314,7 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                 opts.upsert = true;
                 delete update.$set._id;
                 for (let k in ou.tk) {
-                    newUser['tk' + k] = true;
+                    newUser['tk' + k] = oldUser['tk' + k];
                 }
             }
             else if (ou && Object.keys(ou).length === 1 && !nu) {

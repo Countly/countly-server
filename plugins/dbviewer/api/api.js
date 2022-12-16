@@ -162,6 +162,9 @@ var spawn = require('child_process').spawn,
             catch (SyntaxError) {
                 projection = {};
             }
+            if (typeof filter !== 'object' || Array.isArray(filter)) {
+                filter = {};
+            }
 
             if (dbs[dbNameOnParam]) {
                 var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
