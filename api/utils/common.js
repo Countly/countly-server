@@ -2770,14 +2770,42 @@ common.sanitizeFilename = (filename, replacement = "") => {
  * @returns {string} sanitizedHTML - sanitized html content
  */
 common.sanitizeHTML = (html) => {
-    const allowedTags = ['p', 'b', 'strong', 'i', 'em', 'a']; // only allow these tags
 
-    var sanitizedHtml = html.replace(/<\/?([^>]+)>/gi, (match, tag) => {
-        return allowedTags.includes(tag) ? match : '';
+    const allowedTags = ['p', 'b', 'strong', 'i', 'em', 'a']; // only allow these tags
+    const allowedAttributes = ['class'];
+
+    const allowedTagsSet = new Set(allowedTags);
+    const allowedAttributesSet = new Set(allowedAttributes);
+
+    return html.replace(/<\/?([^>]+)>/gi, (tag) => {
+        const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
+        console.log(`tagname: ${tagName} tag: ${tag}`);
+
+        if (!allowedTagsSet.has(tagName)) {
+            return "";
+        }
+
+        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+
+        let matches;
+        let filteredAttributes = [];
+        while ((matches = attributesRegex.exec(tag)) !== null) {
+            let attributeName = matches[1];
+            let attributeValue = matches[2];
+            if (allowedAttributesSet.has(attributeName)) {
+                filteredAttributes.push(`${attributeName}="${attributeValue}"`);
+            }
+        }
+        console.log("attributes", filteredAttributes);
+        if (filteredAttributes.length <= 0) {
+            return tag;
+        }
+
+        return `<${tagName} ${filteredAttributes.join(" ")}>`;
     });
 
-    return sanitizedHtml;
 };
+
 
 
 /**
