@@ -322,11 +322,22 @@
             disableNonSelected: {
                 type: Boolean,
                 default: false
+            },
+            persistColumnOrderKey: {
+                type: String,
+                default: null
             }
         },
         data: function() {
+            var savedSortMap = null;
+            if (this.persistColumnOrderKey && countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistColumnOrderKey] && countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap) {
+                savedSortMap = countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap;
+                Object.keys(savedSortMap).forEach(function(key) {
+                    savedSortMap[key] = parseInt(savedSortMap[key]);
+                });
+            }
             return {
-                sortMap: null
+                sortMap: savedSortMap
             };
         },
         watch: {
@@ -347,11 +358,7 @@
                 if (!this.sortable || !this.sortMap) {
                     return this.options;
                 }
-                var savedSortMap;
-                if (this.persistColumnOrderKey && countlyGlobal.member.ColumnOrder) {
-                    savedSortMap = countlyGlobal.member.ColumnOrder[this.persistColumnOrderKey];
-                }
-                var sortMap = savedSortMap || this.sortMap,
+                var sortMap = this.sortMap,
                     wrapped = this.options.map(function(opt, idx) {
                         return { opt: opt, idx: idx, ord: sortMap[opt.value] || 0 };
                     });
@@ -380,8 +387,8 @@
                     type: "POST",
                     url: countlyGlobal.path + "/user/settings/column-order",
                     data: {
-                        "sortMap": sortMap,
-                        "ColumnOrderKey": this.persistColumnOrderKey,
+                        "reorderSortMap": sortMap,
+                        "columnOrderKey": this.persistColumnOrderKey,
                         _csrf: countlyGlobal.csrf_token
                     },
                     success: function() { }
