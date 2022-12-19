@@ -606,6 +606,11 @@
                 required: false
             }
         },
+        watch: {
+            customFileName: function(newVal) {
+                this.exportFileName = newVal;
+            }
+        },
         mounted: function() {
             var self = this;
             this.$root.$on("cly-date-change", function() {
