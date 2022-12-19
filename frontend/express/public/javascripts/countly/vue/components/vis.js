@@ -614,14 +614,13 @@
                         },
                         formatter: function(params) {
                             var template = "";
-                            let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
+                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -643,26 +642,13 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
-                                    if (params[i].seriesName.toLowerCase() === 'duration') {
-                                        formatter = countlyCommon.formatSecond;
-                                    }
-                                    else {
-                                        formatter = self.valFormatter;
-                                    }
-                                    var valToFormat;
-                                    if (typeof params[i].value === 'object') {
-                                        valToFormat = params[i].value[1] || 0;
-                                    }
-                                    else {
-                                        valToFormat = params[i].value || 0;
-                                    }
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small">' + params[i].seriesName + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + formatter(valToFormat) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -1969,7 +1955,7 @@
                                 <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
-							<slot name="chart-header-left-input"></slot>\
+                            <slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right bu-mt-1">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
@@ -2312,7 +2298,7 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
+                            <div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
                                 <vue-scroll :ops="scrollOptions" >\
                                     <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{\'min-width\':\'100%\',height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
                                             <echarts\
@@ -2330,7 +2316,7 @@
                                         </div>\
                                     </div>\
                                 </vue-scroll>\
-							</div>\
+                            </div>\
                         </div>\
                         <custom-legend\
                             ref="legend"\
@@ -2697,13 +2683,13 @@
                                     v-if="pieLegendOptions.show && !isChartEmpty && !hasAllEmptyValues"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
-								<div v-if="!isChartEmpty && hasAllEmptyValues" :class="classes" class="shadow-container">\
-									<div class="cly-vue-chart-legend__secondary" >\
-										<div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">\
-											<div class="bu-p-4">{{i18n("common.bar.no-data")}}</div>\
-										</div>\
-									</div>\
-								</div>\
+                                <div v-if="!isChartEmpty && hasAllEmptyValues" :class="classes" class="shadow-container">\
+                                    <div class="cly-vue-chart-legend__secondary" >\
+                                        <div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">\
+                                            <div class="bu-p-4">{{i18n("common.bar.no-data")}}</div>\
+                                        </div>\
+                                    </div>\
+                                </div>\
                                 <div class="bu-column bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
