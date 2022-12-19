@@ -595,16 +595,26 @@
                 default: true,
                 required: false
             },
+            customFileName: {
+                type: String,
+                default: null,
+                required: false
+            },
             customExportFileName: {
                 type: Boolean,
                 default: true,
                 required: false
             }
         },
+        watch: {
+            customFileName: function(newVal) {
+                this.exportFileName = newVal;
+            }
+        },
         mounted: function() {
             var self = this;
             this.$root.$on("cly-date-change", function() {
-                self.exportFileName = self.getDefaultFileName();
+                self.exportFileName = this.customFileName || self.getDefaultFileName();
             });
 
         },
@@ -618,7 +628,7 @@
                     {'name': '.XLSX', value: 'xlsx'}
                 ],
                 searchQuery: '',
-                exportFileName: this.getDefaultFileName(),
+                exportFileName: this.customFileName || this.getDefaultFileName(),
             };
         },
         methods: {
