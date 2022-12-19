@@ -2863,7 +2863,6 @@ common.sanitizeHTML = (html) => {
 
     return html.replace(/<\/?([^>]+)>/gi, (tag) => {
         const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
-        console.log(`tagname: ${tagName} tag: ${tag}`);
 
         if (!Object.getOwnPropertyDescriptor(whiteList, tagName)) {
             return "";
@@ -2879,8 +2878,6 @@ common.sanitizeHTML = (html) => {
             tagHasAttributes = true;
             let attributeName = matches[1];
             let attributeValue = matches[2];
-            console.log("allowedattributes:", allowedAttributes);
-            console.log("attributeName:", attributeName);
             if (allowedAttributes.indexOf(attributeName) > -1) {
                 filteredAttributes.push(`${attributeName}="${attributeValue}"`);
             }
