@@ -236,6 +236,19 @@
         };
 
         /**
+         * Removes a notification from persistent notification list based on id.
+         * @param {string} notificationId notification id
+         */
+        countlyCommon.removePersistentNotification = function(notificationId) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/onRemovePersistentNotification", notificationId);
+                }
+            }
+        };
+
+        /**
          * Generates unique id string using unsigned integer array.
          * @returns {string} unique id
          */
@@ -3309,17 +3322,22 @@
         * Get time from seconds timestamp
         * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @param {boolean} [showSeconds=false] - used to return seconds
         * @returns {string} formated time
         * @example
         * //outputs 13:54
         * countlyCommon.getTime(1484654066);
         */
-        countlyCommon.getTime = function(timestamp) {
+        countlyCommon.getTime = function(timestamp, showSeconds = false) {
             if (Math.round(timestamp).toString().length === 10) {
                 timestamp *= 1000;
             }
             var d = new Date(timestamp);
-            return leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            var formattedTime = leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            if (showSeconds) {
+                formattedTime += ":" + leadingZero(d.getSeconds());
+            }
+            return formattedTime;
         };
 
         /**
@@ -4235,6 +4253,57 @@
                 tmpAvgVal = 0;
             }
             return tmpAvgVal.toFixed(2);
+        };
+
+        /**
+        * Returns a string with a language-sensitive representation of this number.
+        * @memberof countlyCommon
+        * @param {string} value - expected value to be formatted
+        * @param {number} currencyVal - expected currency to be formatted
+        * @returns {string} formatted value
+        */
+        countlyCommon.numberToLocaleString = function(value, currencyVal) {
+            if (!value) {
+                return 0;
+            }
+            if (typeof value !== 'number') {
+                value = countlyCommon.localeStringToNumber(value);
+            }
+
+            return value.toLocaleString('en-US', { currency: currencyVal || "USD" });
+        };
+
+        /**
+        * Formats and returns local string to number
+        * @memberof countlyCommon
+        * @param {string} localeString - expected value to be formatted
+        * @returns {number} formatted value
+        */
+        countlyCommon.localeStringToNumber = function(localeString) {
+            var number = null, fractionFloat;
+            if (localeString && typeof localeString === "string") {
+                var isContainDot = localeString.includes('.');
+
+                if (isContainDot) {
+                    if (localeString.split('.')[1].length) {
+                        var fractionString = localeString.split('.')[1];
+                        var fractionNumber = parseInt(fractionString);
+                        var pow = fractionString.length;
+                        fractionFloat = fractionNumber / Math.pow(10, pow);
+                    }
+                    else {
+                        fractionFloat = 0.00;
+                    }
+
+                    number = parseFloat(localeString.split('.')[0].replaceAll(',', '')) + fractionFloat;
+                }
+                else {
+                    number = parseInt(localeString.replaceAll(',', ''));
+                }
+
+                return number;
+            }
+            return localeString;
         };
 
         /**

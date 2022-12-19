@@ -301,6 +301,7 @@
         var persistent = msg.persistent;
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
+        payload.id = msg.id;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
@@ -336,6 +337,14 @@
         else {
             countlyCommon.dispatchNotificationToast(payload);
         }
+    };
+
+    /**
+     * Removes a notification from persistent notification list based on id.
+     * @param {string} notificationId notification id
+     */
+    CountlyHelpers.removePersistentNotification = function(notificationId) {
+        countlyCommon.removePersistentNotification(notificationId);
     };
 
     /**

@@ -194,6 +194,7 @@ plugins.register("/i/hook/save", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            hookConfig = sanitizeConfig(hookConfig);
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 200, 'Not enough args');
                 return true;
@@ -259,6 +260,23 @@ function getVisibilityQuery(query, params) {
         {apps: {$in: rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []}}
     ];
     return newQuery;
+}
+/**
+ * 
+ * @param {hookConfig} hookConfig - hook config
+ * @returns {sanitizedHookConfig} - sanitized hook config
+ */
+function sanitizeConfig(hookConfig) {
+    if (hookConfig && hookConfig.effects) {
+        let emailEffectIndex = hookConfig.effects.findIndex(item => item.type === "EmailEffect");
+        if (emailEffectIndex > -1) {
+            let emailEffect = hookConfig.effects[emailEffectIndex];
+            let sanitizedTemplate = common.sanitizeHTML(emailEffect.configuration.emailTemplate);
+            emailEffect.configuration.emailTemplate = sanitizedTemplate;
+        }
+    }
+    return hookConfig;
+
 }
 
 
@@ -436,6 +454,7 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {

@@ -1,3 +1,58 @@
+## Version 22.09.7
+Fixes:
+- [api] added try catch block to regex
+- [core] increasing runners timeouts + bug fixes
+- [countries] fixed data display on tooltip
+- [countries] Home > Countries data is missing after navigation
+- [crashes] format binary images in new way
+- [crashes] show binary image name from new format
+- [dashboars] added required libraries for puppeteer
+- [dbviewer] preventing crash if array passed as filter to dbviewer
+- [hooks] error handling fixes
+- [longtask] error message added for delete button
+- [plugins] remove plugin upload
+- [prelogin] filter error messages
+- [push] correct app id when fetching test users cohorts
+- [push] missing indexes for token hashes
+- [ui] replaces merge with mergeWith for every chart
+- [users] added a check for application admin to have correct rights
+- [views] fixed u value estimation when viewing 'selected views' table in analytics/views
+
+Enterprise fixes:
+- [ab-testing] update python shell version
+- [active-users] fixed the issue where the data was broken if the selected period time was yesterday or yesterday
+- [cohorts] added "my cohorts" option and changed filtering to a dropdown
+- [cohorts] added cohort update on incoming user properties
+- [cohorts] added Recalculate cohort button in cohort view
+- [cohorts] added trigger to swich states for cohorts dependant on other cohorts
+- [cohorts] code optimisation and more tests
+- [cohorts] fixed bug with hashes not clearing out on cohort deletion
+- [cohorts] fixed case when user coming in/out of saame cohort in single iteration
+- [cohorts] fixed code to properly deal with definition for user properties nested under $and, $or
+- [cohorts] optimize realtime cohort update queries for sharded cluster
+- [cohorts] remove favorite number
+- [crash_symbolication] convert binary images to new format before sending
+- [crash_symbolication] fixed symbol file uploader
+- [crash_symbolication] symbolicate javascript stack trace types
+- [users] display date type based on meta type and nested values based on timeline
+- [users] fixed for user property data type change
+- [users] fixed segment not loaded after refresh
+- [users] number formatting in user profile
+
+## Version 22.09.6
+Fixes:
+- [crashes] there can be binaries with same name, but different addresses
+- [dashboards] fixed unable to change data type for analytics widget on EDIT
+- [dashboards] changed date picker placement to bottom end
+- [push] fixed wrong reset type handling
+
+Enterprise fixes:
+- [active_users] improved precision for MAU
+- [crash_symbolication] bump version if there is new binary_images model
+- [funnels] creator added to funnel and displayed with creation time and last updated
+- [funnels] removed last updated, added style, displayed special characters in funnel name
+- [users] display nested objects correctly
+
 ## Version 22.09.5
 Fixes:
 - [compliance-hub] localization bugfix for compliance hub

@@ -387,6 +387,20 @@ plugins.setConfigs("crashes", {
                     report.cd = new Date();
                     if (report.binary_images && typeof report.binary_images === "object") {
                         report.binary_images = JSON.stringify(report.binary_images);
+                        var needs_regeneration = false;
+                        for (let k in report.binary_images) {
+                            if (!report.binary_images[k].bi) {
+                                report.binary_images[k].bi = k;
+                                needs_regeneration = true;
+                            }
+                        }
+                        if (needs_regeneration) {
+                            var newObj = {};
+                            for (let k in report.binary_images) {
+                                newObj[report.binary_images[k].bi + "-" + report.binary_images[k].la] = report.binary_images[k];
+                            }
+                            report.binary_images = newObj;
+                        }
                     }
                     report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
                     report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;

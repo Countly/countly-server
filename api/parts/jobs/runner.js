@@ -3,12 +3,12 @@ const cluster = require('cluster'),
     config = require('../../config'),
     log = common.log('core:runners'),
 
-    ERROR_COOLDOWN = config.runners && config.runners.error_cooldown || 10000, // ms to cooldown on error
-    PERIODICITY = config.runners && config.runners.periodicity || 3000, // ms between "I'm alive" updates
-    MAX_LAST_SEEN = config.runners && config.runners.max_last_seen || 10000, // max ms for leader last seen date before considering it dead
+    ERROR_COOLDOWN = config.runners && config.runners.error_cooldown || 60000, // 1min to cooldown on error
+    PERIODICITY = config.runners && config.runners.periodicity || 30000, // 1min between "I'm alive" updates
+    MAX_LAST_SEEN = config.runners && config.runners.max_last_seen || 1800000, // 10min for leader last seen date before considering it dead
 
     FORCE_UNLOCK = 60 * 60 * 1000, // ms to forcefully unlock runners
-    UNLOCK_ATTEMPTS = 20, // how many times to try to unlock before terminating the process
+    UNLOCK_ATTEMPTS = 100, // how many times to try to unlock before terminating the process
 
     COLLECTION = 'runners';
 
@@ -27,10 +27,6 @@ function setup() {
             if (err) {
                 log.d('collection exists');
                 collection = common.db.collection(COLLECTION);
-                setImmediate(periodic);
-            }
-            else {
-                collection = col;
                 collection.deleteMany({ls: {$lt: Date.now() - 10 * MAX_LAST_SEEN}}, e => {
                     if (e) {
                         collection = undefined;
@@ -42,6 +38,10 @@ function setup() {
                         setImmediate(periodic);
                     }
                 });
+            }
+            else {
+                collection = col;
+                setImmediate(periodic);
             }
         });
     }
@@ -212,6 +212,9 @@ function imAlive(callback) {
                             if (locking) {
                                 log.d('updated leader ls (%j), calling runners', leader);
                                 callback((clb) => {
+                                    if (!leader) {
+                                        return clb(false);
+                                    }
                                     collection.findOneAndUpdate({_id: 'leader', runner: me._id, ls: leader.ls}, {$unset: {lock: 1}}, {returnDocument: 'after'}, (error, ret) => {
                                         if (error) {
                                             clb(false);

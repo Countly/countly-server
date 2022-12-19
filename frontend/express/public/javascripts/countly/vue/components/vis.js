@@ -1,6 +1,5 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
-
-// _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+// _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
 
@@ -41,7 +40,7 @@
         },
         computed: {
             legendOptions: function() {
-                var options = _merge({}, this.calculatedLegend, this.legend || {});
+                var options = _mergeWith({}, this.calculatedLegend, this.legend || {});
 
                 delete options.data;
 
@@ -313,7 +312,7 @@
                         this.getGraphNotes(); // when chart updated (date change etc.)
                     }
                 }, 0);
-                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+                return _mergeWith({}, this.internalUpdateOptions, this.updateOptions || {});
             }
         }
     };
@@ -334,6 +333,21 @@
     };
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
+
+    /**
+     * Merging default object into array of objects
+     * @param {Object|Array} objValue The destination object
+     * @param {Object|Array} srcValue The source object
+     * @returns {Object|Array} merged object/array
+    */
+    function mergeWithCustomizer(objValue, srcValue) {
+        if (Array.isArray(srcValue) && typeof objValue === 'object') {
+            srcValue.forEach(function(value, index) {
+                srcValue[index] = _mergeWith({}, objValue, value);
+            });
+            return srcValue;
+        }
+    }
 
     /**
      * Calculating width of text
@@ -375,7 +389,7 @@
                     h: this.chartHeight
                 });
                 if (xAxisOverflowPatch) {
-                    opt = _merge(opt, xAxisOverflowPatch);
+                    opt = _mergeWith(opt, xAxisOverflowPatch);
                 }
                 return opt;
             },
@@ -794,7 +808,7 @@
                     return false;
                 }
                 var isEmpty = true;
-                var options = _merge({}, this.option);
+                var options = _mergeWith({}, this.option);
 
                 if (options.series) {
                     for (var i = 0; i < options.series.length; i++) {
@@ -925,10 +939,10 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option, mergeWithCustomizer);
                 var series = opt.series || [];
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
                 this.setCalculatedLegendData(opt, series);
 
@@ -1061,8 +1075,23 @@
                 return notes;
             },
             graphNotesTooltipFormatter: function(arr, params) {
-                var template = "";
                 var filteredNotes = arr.filter(x=>x.dateStr === params.data.note.dateStr && x.times > 1);
+                var minimizeTooltip = false;
+                var template = "";
+                var conditionalClassName = "graph-notes-tooltip";
+
+                if ((this.$refs && this.$refs.echarts) && (this.$refs.echarts.getHeight() < 200 || this.$refs.echarts.getWidth() < 500)) {
+                    minimizeTooltip = true;
+                }
+
+
+                if (minimizeTooltip) {
+                    conditionalClassName = 'graph-notes-tooltip minimize';
+                }
+                else if (!minimizeTooltip && filteredNotes.length > 0) {
+                    conditionalClassName = 'graph-notes-tooltip bu-mb-4 bu-mx-2';
+                }
+
                 if (filteredNotes.length > 0) {
                     for (var i = 0; i < filteredNotes.length; i++) {
                         if (i === 0) {
@@ -1073,18 +1102,18 @@
                                         </div>\
                                         <div class="graph-tooltip-wrapper__container">';
                         }
-                        template += '<div class="graph-notes-tooltip bu-mb-4 bu-mx-2">\
+                        template += '<div class="' + conditionalClassName + '">\
                                         <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
                                                 <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
-                                                <div class="text-small color-cool-gray-50">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                                <div class="text-small color-cool-gray-50 note-date">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                                <span class="text-small color-cool-gray-50 bu-is-capitalized">' + filteredNotes[i].noteType + '</span>\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1092,11 +1121,11 @@
                     }
                 }
                 else {
-                    template = '<div class="graph-notes-tooltip">\
+                    template += '<div class="' + conditionalClassName + '">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
                                             <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
-                                            <div class="text-small color-cool-gray-50">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                            <div class="text-small color-cool-gray-50 note-date">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
@@ -1105,7 +1134,7 @@
                                             <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
                                         </div>\
                                     </div>\
-                                    <div class="bu-mt-3 graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
                                 </div>';
                 }
                 return template;
@@ -1238,7 +1267,7 @@
                     this.seriesOptions.markPoint.data = [];
                 }
             },
-            onClick() {
+            onClick: function() {
                 if (!document.querySelectorAll(".graph-overlay").length) {
                     var overlay = document.createElement("div");
                     overlay.setAttribute("class", "graph-overlay");
@@ -1356,11 +1385,11 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
                 this.setCalculatedLegendData(opt, series);
@@ -1453,7 +1482,7 @@
                 return true;
             },
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -1463,7 +1492,7 @@
                     seriesArr = [];
                     sumOfOthers = 0;
 
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
 
                     series[i].data = series[i].data.filter(function(el) {
                         return el.value > 0;
@@ -2201,7 +2230,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.option);
                 opt = this.patchChart(opt);
                 return opt;
             }
@@ -2266,7 +2295,7 @@
         },
         computed: {
             chartOptions: function() {
-                var ops = _merge({}, this.baseOptions, this.option);
+                var ops = _mergeWith({}, this.baseOptions, this.option);
                 delete ops.grid;
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
@@ -2333,7 +2362,7 @@
                         delete this.mergedOptions.series[index].markPoint;
                     }
                 }
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
@@ -2436,7 +2465,7 @@
                         delete this.mergedOptions.series[index].markPoint;
                     }
                 }
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 var xAxisData = [];
                 if (!opt.xAxis.data) {
@@ -2561,7 +2590,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
                 return opt;
@@ -2612,7 +2641,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
                 return opt;
             },
@@ -2631,7 +2660,7 @@
                 return classes;
             },
             pieLegendOptions: function() {
-                var opt = _merge({}, this.legendOptions);
+                var opt = _mergeWith({}, this.legendOptions);
                 opt.type = "secondary";
 
                 if (opt.position === "bottom") {
