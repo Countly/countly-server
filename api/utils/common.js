@@ -2882,7 +2882,7 @@ common.sanitizeHTML = (html) => {
                 filteredAttributes.push(`${attributeName}="${attributeValue}"`);
             }
         }
-        console.log("attributes", filteredAttributes);
+        
         if (!tagHasAttributes) { //closing tag or tag without any attributes
             return tag;
         }
