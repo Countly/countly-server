@@ -1719,8 +1719,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             columnOrder: {}
         };
 
-        if (req.body.ColumnOrderKey && req.body.sortMap) {
-            updatedColumnOrder.columnOrder[req.body.ColumnOrderKey] = req.body.sortMap;
+        if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
+            let obj = {};
+            if (req.body.tableSortMap) {
+                obj.tableSortMap = req.body.tableSortMap;
+            }
+            if (req.body.reorderSortMap) {
+                obj.reorderSortMap = req.body.reorderSortMap;
+            }
+
+            updatedColumnOrder.columnOrder[req.body.columnOrderKey] = obj;
 
             countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, { '$set': updatedColumnOrder }, { safe: true, upsert: true }, function(err, member) {
                 if (member && !err) {
