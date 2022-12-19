@@ -2770,14 +2770,132 @@ common.sanitizeFilename = (filename, replacement = "") => {
  * @returns {string} sanitizedHTML - sanitized html content
  */
 common.sanitizeHTML = (html) => {
-    const allowedTags = ['p', 'b', 'strong', 'i', 'em', 'a']; // only allow these tags
 
-    var sanitizedHtml = html.replace(/<\/?([^>]+)>/gi, (match, tag) => {
-        return allowedTags.includes(tag) ? match : '';
+    const whiteList = {
+        a: ["target", "title"],
+        abbr: ["title"],
+        address: [],
+        area: ["shape", "coords", "href", "alt"],
+        article: [],
+        aside: [],
+        audio: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "preload",
+            "src",
+        ],
+        b: [],
+        bdi: ["dir"],
+        bdo: ["dir"],
+        big: [],
+        blockquote: ["cite"],
+        br: [],
+        caption: [],
+        center: [],
+        cite: [],
+        code: [],
+        col: ["align", "valign", "span", "width"],
+        colgroup: ["align", "valign", "span", "width"],
+        dd: [],
+        del: ["datetime"],
+        details: ["open"],
+        div: [],
+        dl: [],
+        dt: [],
+        em: [],
+        figcaption: [],
+        figure: [],
+        font: ["color", "size", "face"],
+        footer: [],
+        h1: [],
+        h2: [],
+        h3: [],
+        h4: [],
+        h5: [],
+        h6: [],
+        header: [],
+        hr: [],
+        i: [],
+        img: ["src", "alt", "title", "width", "height"],
+        ins: ["datetime"],
+        li: [],
+        mark: [],
+        nav: [],
+        ol: [],
+        p: [],
+        pre: [],
+        s: [],
+        section: [],
+        small: [],
+        span: [],
+        sub: [],
+        summary: [],
+        sup: [],
+        strong: [],
+        strike: [],
+        table: ["width", "border", "align", "valign"],
+        tbody: ["align", "valign"],
+        td: ["width", "rowspan", "colspan", "align", "valign"],
+        tfoot: ["align", "valign"],
+        th: ["width", "rowspan", "colspan", "align", "valign"],
+        thead: ["align", "valign"],
+        tr: ["rowspan", "align", "valign"],
+        tt: [],
+        u: [],
+        ul: [],
+        video: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "playsinline",
+            "poster",
+            "preload",
+            "src",
+            "height",
+            "width",
+        ],
+    };
+
+    return html.replace(/<\/?([^>]+)>/gi, (tag) => {
+        const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
+
+        if (!Object.getOwnPropertyDescriptor(whiteList, tagName)) {
+            return "";
+        }
+
+        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+
+        let matches;
+        let filteredAttributes = [];
+        let allowedAttributes = Object.getOwnPropertyDescriptor(whiteList, tagName).value;
+        let tagHasAttributes = false;
+        while ((matches = attributesRegex.exec(tag)) !== null) {
+            tagHasAttributes = true;
+            let attributeName = matches[1];
+            let attributeValue = matches[2];
+            if (allowedAttributes.indexOf(attributeName) > -1) {
+                filteredAttributes.push(`${attributeName}="${attributeValue}"`);
+            }
+        }
+        console.log("attributes", filteredAttributes);
+        if (!tagHasAttributes) { //closing tag or tag without any attributes
+            return tag;
+        }
+        if (filteredAttributes.length <= 0) { //tag had attributes but none of them on whilelist
+            return `<${tagName}>`;
+        }
+
+        return `<${tagName} ${filteredAttributes.join(" ")}>`;
+
     });
 
-    return sanitizedHtml;
 };
+
 
 
 /**
