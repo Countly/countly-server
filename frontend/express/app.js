@@ -1715,22 +1715,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             return false;
         }
 
-        var updatedColumnOrder = {
-            columnOrder: {}
-        };
-
         if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
-            let obj = {};
-            if (req.body.tableSortMap) {
-                obj.tableSortMap = req.body.tableSortMap;
+            let reorderSortMapKey = `columnOrder.${req.body.columnOrderKey}.reorderSortMap`;
+            let tableSortMapKey = `columnOrder.${req.body.columnOrderKey}.tableSortMap`;
+
+            if (!req.body.tableSortMap) {
+                tableSortMapKey = undefined;
             }
-            if (req.body.reorderSortMap) {
-                obj.reorderSortMap = req.body.reorderSortMap;
+            if (!req.body.reorderSortMap) {
+                reorderSortMapKey = undefined;
             }
 
-            updatedColumnOrder.columnOrder[req.body.columnOrderKey] = obj;
-
-            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, { '$set': updatedColumnOrder }, { safe: true, upsert: true }, function(err, member) {
+            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, {
+                '$set': {
+                    [reorderSortMapKey]: req.body.reorderSortMap,
+                    [tableSortMapKey]: req.body.tableSortMap
+                }
+            }, { safe: true, upsert: true }, function(err, member) {
                 if (member && !err) {
                     res.send(true);
                 }
@@ -1743,7 +1744,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.send(false);
             return false;
         }
-
     });
 
     app.post(countlyConfig.path + '/users/check/email', function(req, res) {
