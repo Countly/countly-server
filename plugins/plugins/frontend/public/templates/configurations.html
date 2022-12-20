@@ -39,7 +39,7 @@
                 <form>
                     <h2 class="bu-mb-4"> {{selectedConfigName}} </h2>
                     <div v-if="predefinedStructure[selectedConfig].description" class="bu-mb-4 text-medium">{{i18n(predefinedStructure[selectedConfig].description)}}</div>
-                    <div :id="group.label" :key="group.label" v-for="group in predefinedStructure[selectedConfig].groups">
+                    <div :id="group.label" :key="index" v-for="(group, index) in predefinedStructure[selectedConfig].groups">
                         <h3 v-if="predefinedStructure[selectedConfig].groups.length > 1 || group.label" class="bu-my-4"> 
                             {{group.label && i18n(group.label)}}
                             <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
@@ -174,7 +174,7 @@
                     <img src="images/icons/no-search-result.svg"></img>
                 </template>
             </cly-empty-view>
-            <div v-else v-for="(config, configKey) in searchResultStructure" :configKey="configKey">
+            <div v-else v-for="(config, configKey) in searchResultStructure" :key="configKey">
                 <h2 class="bu-mb-4 bu-mt-4 bu-has-text-weight-medium"> 
                     <a :href="redirectToConfig(configKey)">
                         {{getConfigType(configKey)}}
@@ -182,7 +182,7 @@
                         {{getLabel(configKey)}} 
                     </a>
                 </h2>
-                <div v-for="group in config.groups">
+                <div v-for="(group, index) in config.groups" :key="index">
                     <h3 v-if="config.groups.length > 1 || group.label" class="bu-my-4"> 
                         <a :href="redirectToConfig(configKey, group.label)">
                             {{group.label && i18n(group.label)}}

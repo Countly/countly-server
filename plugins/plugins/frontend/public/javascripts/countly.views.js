@@ -406,8 +406,17 @@
                     });
                 });
         },
+        created: function() {
+            if (this.$route.params.searchQuery && this.$route.params.searchQuery !== "") {
+                this.searchQuery = this.$route.params.searchQuery;
+                this.onEnterSearch();
+                window.scrollTo({top: 0, behavior: "smooth"});
+            }
+        },
         updated: function() {
-            this.scrollToSection();
+            if (this.$route.params.section) {
+                this.scrollToSection(this.$route.params.section);
+            }
         },
         methods: {
             removeNonGlobalConfigs: function(configData) {
@@ -588,7 +597,7 @@
                             let groups = [];
                             // eslint-disable-next-line no-loop-func
                             this.predefinedStructure[config].groups.map(function(group) {
-                                if (group.label && group.label.toLowerCase().includes(self.searchQuery)) {
+                                if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
                                     groups.push(group);
                                 }
                                 else {
@@ -614,17 +623,21 @@
                         res.empty = true;
                     }
                     this.searchResultStructure = res;
+                    app.navigate("#/manage/configurations/search");
+                    app.navigate("#/manage/configurations/search/" + this.searchQuery);
+                }
+                else {
+                    this.searchResultStructure = {};
                 }
             },
             redirectToConfig: function(config, section) {
-                return section ? "#/manage/configurations/" + config + "#" + section : "#/manage/configurations/" + config + "";
+                return section
+                    ? "#/manage/configurations/" + config + "#" + section + ""
+                    : "#/manage/configurations/" + config + "";
             },
-            scrollToSection() {
-                var section = this.$route.params.section;
-                if (section) {
-                    let element = document.getElementById(section);
-                    element.scrollIntoView({behavior: "smooth"});
-                }
+            scrollToSection: function(id) {
+                let element = document.getElementById(id);
+                element.scrollIntoView({behavior: "smooth"});
             },
             clearSearch: function() {
                 this.searchQuery = "";
@@ -1152,9 +1165,15 @@
         });
 
         app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
+            var view;
             if (status === "success") {
-                var view = getConfigView();
+                view = getConfigView();
                 view.params = {namespace: namespace, success: true};
+                this.renderWhenReady(view);
+            }
+            if (namespace === "search") {
+                view = getConfigView();
+                view.params = {namespace: namespace, success: true, searchQuery: status};
                 this.renderWhenReady(view);
             }
         });
