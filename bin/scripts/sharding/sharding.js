@@ -2,7 +2,7 @@
 *  Sharding Countly collections
 *  Server: mongodb
 *  Path: any
-*  Command: mongo < sharding.js
+*  Command: mongosh < sharding.js
 */
 
 /* global Mongo, print, printjson */

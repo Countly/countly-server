@@ -99,7 +99,7 @@ bash "$DIR/scripts/mongodb.install.sh"
 if [ "$INSIDE_DOCKER" == "1" ]
 then
 	bash "$DIR/commands/docker/mongodb.sh" &
-    until mongo --eval "db.stats()" | grep "collections"
+    until mongosh --eval "db.stats()" | grep "collections"
     do
         echo
         echo "waiting for MongoDB to allocate files..."

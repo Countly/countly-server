@@ -37,7 +37,7 @@ jobs:
         
       - name: Mongo version
         shell: bash
-        run: mongo --version
+        run: mongosh --version
         
       - name: Enable all plugins
         shell: bash
