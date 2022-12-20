@@ -649,20 +649,13 @@
                                     else {
                                         formatter = self.valFormatter;
                                     }
-                                    var valToFormat;
-                                    if (typeof params[i].value === 'object') {
-                                        valToFormat = params[i].value[1] || 0;
-                                    }
-                                    else {
-                                        valToFormat = params[i].value || 0;
-                                    }
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small">' + params[i].seriesName + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + formatter(valToFormat) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
