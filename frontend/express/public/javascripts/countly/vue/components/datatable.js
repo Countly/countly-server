@@ -657,7 +657,24 @@
                 if (this.exportFormat) {
                     return this.exportFormat(this.rows);
                 }
-                return this.rows;
+                else {
+                    return this.formatExportFunction();
+                }
+                // return this.rows;
+            },
+            formatExportFunction: function() {
+                if (this.rows && this.rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                    var table = [];
+                    var columns = this.$refs.elTable.columns;
+                    for (var r = 0; r < this.rows.length; r++) {
+                        var item = {};
+                        for (var c = 0; c < columns.length; c++) {
+                            item[columns[c].label] = this.rows[r][columns[c].property];
+                        }
+                        table.push(item);
+                    }
+                    return table;
+                }
             },
             initiateExport: function(params) {
                 var formData = null,
