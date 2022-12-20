@@ -77,7 +77,7 @@ yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcompo
 yum update nss -y
 
 #install nodejs
-curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+curl -sL https://rpm.nodesource.com/setup_18.x | bash -
 yum install -y nodejs
 
 set +e
