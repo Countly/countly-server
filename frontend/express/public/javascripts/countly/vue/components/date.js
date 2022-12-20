@@ -883,9 +883,9 @@
                 if (this.customRangeSelection) {
                     var self = this;
                     this.$nextTick(function() {
-						if(self.$refs && self.$refs['dropdown'] && self.$refs['dropdown'].$refs && self.$refs['dropdown'].$refs['popper'] && self.$refs['dropdown'].$refs['popper'].$el) {
-							self.$refs['dropdown'].$refs['popper'].$el.style='';
-						}
+                        if (self.$refs && self.$refs.dropdown && self.$refs.dropdown.$refs && self.$refs.dropdown.$refs.popper && self.$refs.dropdown.$refs.popper.$el) {
+                            self.$refs.dropdown.$refs.popper.$el.style = '';
+                        }
                         self.broadcast('ElSelectDropdown', 'updatePopper');
                         self.$forceUpdate();
                         self.scrollTo(self.minDate);
@@ -898,11 +898,11 @@
             },
             handleCustomRangeClick: function() {
                 if (this.allowCustomRange) {
-					if(!this.customRangeSelection) {
-						this.customRangeSelection = true;
-						this.refreshCalendarDOM();
-					}
-					/*else {
+                    if (!this.customRangeSelection) {
+                        this.customRangeSelection = true;
+                        this.refreshCalendarDOM();
+                    }
+                    /*else {
 						this.customRangeSelection = false; //in case we decide to hide it on click someday
 					}
 					*/
