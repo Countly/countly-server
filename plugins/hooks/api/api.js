@@ -17,6 +17,9 @@ plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
     pipelineInterval: 1000, // milliseconds to batch process pipeline
+    requestLimit: 1000, //maximum request that can be handled in given time frame
+    timeWindowForRequestLimit: 1000, //time window for request limits in milliseconds
+    triggerRequestCount: []
 });
 
 /**
@@ -125,7 +128,19 @@ class Hooks {
                 }
                 else {
                     const rule = item.rule;
+
+                    //rate limiter
+                    if (checkRateLimitReached(rule)) {
+                        log.e("[call limit reached]", `call limit reached for ${rule._id}`);
+                        utils.addErrorRecord(rule._id, `call limit reached for ${rule._id}`);
+                        if (callback) {
+                            callback();
+                        }
+                        return;
+                    }
+
                     for (let i = 0; i < rule.effects.length; i++) {
+
                         item.effect = rule.effects[i];
                         item.effectStep = i;
                         item._originalInput = rule._originalInput;
@@ -155,6 +170,50 @@ class Hooks {
         }, plugins.getConfig("hooks").pipelineInterval);
     }
 }
+const checkRateLimitReached = function(rule) {
+    console.log("global.triggerRequestCount:", plugins.getConfig("hooks").triggerRequestCount);
+    if (plugins.getConfig("hooks").requestLimit === 0) {
+        console.log("request limit is 0", plugins.getConfig("hooks").requestLimit);
+        return false;
+    }
+
+    let requestCount = plugins.getConfig("hooks").triggerRequestCount.find(item=> {
+        return item.ruleId.toString() === rule._id.toString();
+    });
+
+    if (!requestCount) { //no record in time interval
+        console.log("no record found for time interval", rule._id);
+        addInitialRequestCounter(rule); //add initial record for time window frame
+        return false;
+    }
+
+    return incrementRequestCounter(rule);
+
+
+};
+
+const addInitialRequestCounter = function(rule) {
+    let startTime = Date.now();
+    let endTime = startTime + plugins.getConfig("hooks").timeWindowForRequestLimit;
+    plugins.getConfig("hooks").triggerRequestCount.push({ruleId: rule._id.toString(), startTime: startTime, endTime: endTime, counter: 1});
+};
+
+const incrementRequestCounter = function(rule) {
+    //delete records which are not in time frame
+    const currentTimestamp = Date.now();
+    plugins.getConfig("hooks").triggerRequestCount = plugins.getConfig("hooks").triggerRequestCount.filter(item => {
+        return currentTimestamp >= item.startTime && currentTimestamp <= item.endTime;
+    }); //we didn't check the rule id. if timeframe is passed counter is also not valid for other rules
+
+    let counterIndex = plugins.getConfig("hooks").triggerRequestCount.findIndex({ruleId: rule._id.toString()});
+    plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter++;
+
+    console.log("counter:", plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter);
+
+    return plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter >= plugins.getConfig("hooks").requestLimit;
+
+};
+
 
 const CheckHookProperties = function(hookConfig) {
     const rules = {
@@ -194,6 +253,7 @@ plugins.register("/i/hook/save", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            hookConfig = sanitizeConfig(hookConfig);
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 200, 'Not enough args');
                 return true;
@@ -259,6 +319,24 @@ function getVisibilityQuery(query, params) {
         {apps: {$in: rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []}}
     ];
     return newQuery;
+}
+/**
+ * 
+ * @param {hookConfig} hookConfig - hook config
+ * @returns {sanitizedHookConfig} - sanitized hook config
+ */
+function sanitizeConfig(hookConfig) {
+    if (hookConfig && hookConfig.effects) {
+        let emailEffectIndex = hookConfig.effects.findIndex(item => item.type === "EmailEffect");
+        if (emailEffectIndex > -1) {
+            let emailEffect = hookConfig.effects[emailEffectIndex];
+            let sanitizedTemplate = common.sanitizeHTML(emailEffect.configuration.emailTemplate);
+            console.log(sanitizedTemplate);
+            emailEffect.configuration.emailTemplate = sanitizedTemplate;
+        }
+    }
+    return hookConfig;
+
 }
 
 
@@ -436,6 +514,7 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
