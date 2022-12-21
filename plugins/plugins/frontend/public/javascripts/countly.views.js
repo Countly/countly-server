@@ -407,7 +407,7 @@
                         });
                     });
                     if (self.searchQuery !== "") {
-                        self.onEnterSearch(false);
+                        self.onEnterSearch();
                         window.scrollTo({top: 0, behavior: "smooth"});
                     }
                 });
@@ -591,7 +591,12 @@
                         });
                     }
                     else {
-                        //location.hash = "#/manage/configurations/" + self.selectedConfig + "/success";
+                        if (self.back) {
+                            location.hash += "/success";
+                        }
+                        else {
+                            location.hash = "#/manage/configurations/" + self.selectedConfig + "/success";
+                        }
                         window.location.reload(true);
                     }
                 });
@@ -600,7 +605,7 @@
                 this.back = true;
                 app.navigate("#/manage/configurations/search");
             },
-            onEnterSearch: function(navigate) {
+            onEnterSearch: function() {
                 var self = this;
                 self.unpatch();
                 var res = {};
@@ -640,9 +645,7 @@
                         res.empty = true;
                     }
                     self.searchResultStructure = res;
-                    if (navigate) {
-                        app.navigate("#/manage/configurations/search/" + self.searchQuery);
-                    }
+                    app.navigate("#/manage/configurations/search/" + self.searchQuery);
                 }
                 else {
                     self.searchResultStructure = {};
@@ -1186,11 +1189,20 @@
             var view = getConfigView();
             if (status === "success" && namespace !== "search") {
                 view.params = {namespace: namespace, success: true};
+                this.renderWhenReady(view);
             }
             if (namespace === "search") {
-                view.params = {namespace: namespace, success: false, searchQuery: status};
+                view.params = {namespace, success: false, searchQuery: status};
+                this.renderWhenReady(view);
             }
-            this.renderWhenReady(view);
+        });
+
+        app.route('/manage/configurations/:namespace/:status/:success', 'configurations_namespace', function(namespace, status, success) {
+            if (success === "success" && namespace === "search" && status !== "") {
+                var view = getConfigView();
+                view.params = {namespace, success: true, searchQuery: status};
+                this.renderWhenReady(view);
+            }
         });
 
         app.route('/manage/configurations/:namespace#:section', 'configurations_namespace', function(namespace, section) {
