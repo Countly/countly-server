@@ -17,8 +17,8 @@ plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
     pipelineInterval: 1000, // milliseconds to batch process pipeline
-    requestLimit: 5, //maximum request that can be handled in given time frame
-    timeWindowForRequestLimit: 150000, //time window for request limits in milliseconds
+    requestLimit: 0, //maximum request that can be handled in given time frame. 0 means no rate limit applied
+    timeWindowForRequestLimit: 60000, //time window for request limits in milliseconds
 });
 
 global.triggerRequestCount = [];
@@ -172,9 +172,8 @@ class Hooks {
     }
 }
 const checkRateLimitReached = function(rule) {
-    console.log("global.triggerRequestCount:", global.triggerRequestCount);
+
     if (plugins.getConfig("hooks").requestLimit === 0) {
-        console.log("request limit is 0", plugins.getConfig("hooks").requestLimit);
         return false;
     }
 
@@ -183,7 +182,6 @@ const checkRateLimitReached = function(rule) {
     });
 
     if (!requestCount) { //no record in time interval
-        console.log("no record found for time interval", rule._id);
         addInitialRequestCounter(rule); //add initial record for time window frame
         return false;
     }
@@ -206,12 +204,12 @@ const incrementRequestCounter = function(rule) {
         return currentTimestamp >= item.startTime && currentTimestamp <= item.endTime;
     }); //we don't need to check the rule id. if timeframe is passed counter is also not valid for other rules
 
-    let counterIndex = global.triggerRequestCount.findIndex({ruleId: rule._id.toString()});
+    let counterIndex = global.triggerRequestCount.findIndex(item => {
+        return item.ruleId.toString() === rule._id.toString();
+    });
     global.triggerRequestCount[counterIndex].counter++;
 
-    console.log("counter:", global.triggerRequestCount[counterIndex].counter);
-
-    return global.triggerRequestCount[counterIndex].counter >= plugins.getConfig("hooks").requestLimit;
+    return global.triggerRequestCount[counterIndex].counter > plugins.getConfig("hooks").requestLimit;
 
 };
 
@@ -332,7 +330,6 @@ function sanitizeConfig(hookConfig) {
         if (emailEffectIndex > -1) {
             let emailEffect = hookConfig.effects[emailEffectIndex];
             let sanitizedTemplate = common.sanitizeHTML(emailEffect.configuration.emailTemplate);
-            console.log(sanitizedTemplate);
             emailEffect.configuration.emailTemplate = sanitizedTemplate;
         }
     }
