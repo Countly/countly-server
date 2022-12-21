@@ -207,6 +207,10 @@ const incrementRequestCounter = function(rule) {
     let counterIndex = global.triggerRequestCount.findIndex(item => {
         return item.ruleId.toString() === rule._id.toString();
     });
+    if (counterIndex < 0) {
+        return false;
+    }
+
     global.triggerRequestCount[counterIndex].counter++;
 
     return global.triggerRequestCount[counterIndex].counter > plugins.getConfig("hooks").requestLimit;
