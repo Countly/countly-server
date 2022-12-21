@@ -17,10 +17,11 @@ plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
     pipelineInterval: 1000, // milliseconds to batch process pipeline
-    requestLimit: 1000, //maximum request that can be handled in given time frame
-    timeWindowForRequestLimit: 1000, //time window for request limits in milliseconds
-    triggerRequestCount: []
+    requestLimit: 5, //maximum request that can be handled in given time frame
+    timeWindowForRequestLimit: 150000, //time window for request limits in milliseconds
 });
+
+global.triggerRequestCount = [];
 
 /**
 * Hooks Class definition 
@@ -171,13 +172,13 @@ class Hooks {
     }
 }
 const checkRateLimitReached = function(rule) {
-    console.log("global.triggerRequestCount:", plugins.getConfig("hooks").triggerRequestCount);
+    console.log("global.triggerRequestCount:", global.triggerRequestCount);
     if (plugins.getConfig("hooks").requestLimit === 0) {
         console.log("request limit is 0", plugins.getConfig("hooks").requestLimit);
         return false;
     }
 
-    let requestCount = plugins.getConfig("hooks").triggerRequestCount.find(item=> {
+    let requestCount = global.triggerRequestCount.find(item=> {
         return item.ruleId.toString() === rule._id.toString();
     });
 
@@ -195,22 +196,22 @@ const checkRateLimitReached = function(rule) {
 const addInitialRequestCounter = function(rule) {
     let startTime = Date.now();
     let endTime = startTime + plugins.getConfig("hooks").timeWindowForRequestLimit;
-    plugins.getConfig("hooks").triggerRequestCount.push({ruleId: rule._id.toString(), startTime: startTime, endTime: endTime, counter: 1});
+    global.triggerRequestCount.push({ruleId: rule._id.toString(), startTime: startTime, endTime: endTime, counter: 1});
 };
 
 const incrementRequestCounter = function(rule) {
     //delete records which are not in time frame
     const currentTimestamp = Date.now();
-    plugins.getConfig("hooks").triggerRequestCount = plugins.getConfig("hooks").triggerRequestCount.filter(item => {
+    global.triggerRequestCount = global.triggerRequestCount.filter(item => {
         return currentTimestamp >= item.startTime && currentTimestamp <= item.endTime;
-    }); //we didn't check the rule id. if timeframe is passed counter is also not valid for other rules
+    }); //we don't need to check the rule id. if timeframe is passed counter is also not valid for other rules
 
-    let counterIndex = plugins.getConfig("hooks").triggerRequestCount.findIndex({ruleId: rule._id.toString()});
-    plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter++;
+    let counterIndex = global.triggerRequestCount.findIndex({ruleId: rule._id.toString()});
+    global.triggerRequestCount[counterIndex].counter++;
 
-    console.log("counter:", plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter);
+    console.log("counter:", global.triggerRequestCount[counterIndex].counter);
 
-    return plugins.getConfig("hooks").triggerRequestCount[counterIndex].counter >= plugins.getConfig("hooks").requestLimit;
+    return global.triggerRequestCount[counterIndex].counter >= plugins.getConfig("hooks").requestLimit;
 
 };
 
