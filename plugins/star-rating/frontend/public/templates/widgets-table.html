@@ -3,6 +3,7 @@
     :rows="widgets"
     :persist-key="persistKey"
     :available-dynamic-cols="tableDynamicCols"
+    :custom-export-field-names="{ratingScore: 'rating_score', ratingsCount: 'responses'}"
     width="100%">
       <template v-slot="scope">
           <el-table-column width="100" fixed type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
@@ -14,7 +15,7 @@
                 </el-switch>
               </template>
           </el-table-column>
-          <el-table-column min-width="300" fixed :label="i18n('feedback.ratings-widget-name')">
+          <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
               <div @click="goWidgetDetail(rowScope.row._id)" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">
                   {{rowScope.row.popup_header_text}}

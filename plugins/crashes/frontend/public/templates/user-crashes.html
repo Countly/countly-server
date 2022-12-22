@@ -2,7 +2,7 @@
   <div class="text-big font-weight-bold bu-my-4 bu-pt-4">
     {{i18n('crashes.unresolved-crashes')}}
   </div>
-  <cly-datatable-n :rows="userCrashesData">
+  <cly-datatable-n :rows="userCrashesData" :custom-export-field-names="{group: 'name', last: 'time'}">
     <template v-slot="scope">
       <el-table-column prop="name" :label="i18n('crashes.error')" min-width="360">
         <template v-slot="rowScope">

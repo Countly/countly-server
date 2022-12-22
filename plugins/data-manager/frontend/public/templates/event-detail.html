@@ -97,6 +97,7 @@
         </template>
         <cly-datatable-n 
         :keyFn="function(row) {return row.name}"
+        :custom-export-field-names="{auditDate: 'auditTs'}"
         :hasDynamicCols="false" 
         :rows="segments"
         >

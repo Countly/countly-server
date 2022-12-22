@@ -9,7 +9,7 @@
     </cly-header>
     <cly-main>
         <cly-section>
-            <cly-datatable-n :rows="tableData">
+            <cly-datatable-n :rows="tableData" :custom-export-field-names="{ttlDate: 'ends'}">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="purpose" :label="i18n('token_manager.table.purpose')">
                         <template slot-scope="scope">
