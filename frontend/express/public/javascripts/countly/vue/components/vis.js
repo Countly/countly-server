@@ -1170,6 +1170,12 @@
                         customPeriodEndDate = this.weekCountToDate(xAxisLabels[xAxisLabels.length - 1].split(' ')[1], xAxisLabels[xAxisLabels.length - 1].split(' ')[0].split('W')[1], 7);
                         filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
                     }
+                    else if (this.$parent.data.bucket === "monthly") {
+                        customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        customPeriodEndDate = moment(customPeriodEndDate).endOf('month')._d.valueOf();
+                        filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
+                    }
                 }
                 returnedObj.appIds = appIds;
                 returnedObj.customPeriod = filter;
