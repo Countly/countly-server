@@ -1310,7 +1310,11 @@
         },
         watch: {
             notationSelectedBucket: function() {
-                this.getGraphNotes();
+                this.seriesOptions.markPoint.data = [];
+                var self = this;
+                setTimeout(() => {
+                    self.getGraphNotes();
+                }, 0);
             },
             category: function() {
                 this.getGraphNotes();
