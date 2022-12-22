@@ -3217,6 +3217,22 @@
         };
 
         /**
+        * Format timestamp to D MMM YYYY, HH:mm
+        * @memberof countlyCommon
+        * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @returns {string} formated time and date
+        * @example
+        * //outputs 16 Dec 2022, 12:16
+        * countlyCommon.formatTimeAndDateShort(1484654066);
+        */
+        countlyCommon.formatTimeAndDateShort = function(timestamp) {
+            if (Math.round(timestamp).toString().length === 10) {
+                timestamp *= 1000;
+            }
+            return moment(new Date(timestamp)).format("D MMM YYYY, HH:mm");
+        };
+
+        /**
         * Format duration to units of how much time have passed
         * @memberof countlyCommon
         * @param {number} timestamp - amount in seconds passed since some reference point
