@@ -360,7 +360,7 @@ appsApi.updateApp = function(params) {
     }
 
     if (params.qstring.args.key && updateAppValidation.obj.key === "") {
-        common.returnMessage(params, 400, 'App key is required');
+        common.returnMessage(params, 400, 'Invalid app key');
         return false;
     }
 
@@ -1052,8 +1052,8 @@ function checkUniqueKey(params, callback) {
         callback();
     }
     else {
-        common.db.collection('apps').findOne({app_id: {$ne: params.qstring.args.app_id}, key: params.qstring.args.key}, function(error, keyExists) {
-            if (keyExists || !error) {
+        common.db.collection('apps').findOne({_id: {$ne: common.db.ObjectID(params.qstring.args.app_id + "")}, key: params.qstring.args.key + ""}, function(error, keyExists) {
+            if (keyExists) {
                 common.returnMessage(params, 400, 'App key already in use');
                 return false;
             }
