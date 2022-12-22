@@ -322,7 +322,7 @@ appsApi.updateApp = function(params) {
                 'type': 'String'
             },
             'key': {
-                'required': false,
+                'required': true,
                 'type': 'String'
             },
             'timezone': {
@@ -380,39 +380,48 @@ appsApi.updateApp = function(params) {
             common.returnMessage(params, 404, 'App not found');
         }
         else {
-            if (params.member && params.member.global_admin) {
-                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
-                    plugins.dispatch("/i/apps/update", {
-                        params: params,
-                        appId: params.qstring.args.app_id,
-                        data: {
-                            app: appBefore,
-                            update: updatedApp
-                        }
-                    });
-                    iconUpload(params);
-                    common.returnOutput(params, updatedApp);
-                });
-            }
-            else {
-                if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
-                        plugins.dispatch("/i/apps/update", {
-                            params: params,
-                            appId: params.qstring.args.app_id,
-                            data: {
-                                app: appBefore,
-                                update: updatedApp
-                            }
-                        });
-                        iconUpload(params);
-                        common.returnOutput(params, updatedApp);
-                    });
+            //check if new App Key is already in use
+            common.db.collection('apps').findOne({app_id: {$ne: params.qstring.args.app_id}, key: params.qstring.args.key}, function(error, keyExists) {
+                if (keyExists || !error) {
+                    common.returnMessage(params, 400, 'App key already in use');
+                    return false;
                 }
                 else {
-                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                    if (params.member && params.member.global_admin) {
+                        common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
+                            plugins.dispatch("/i/apps/update", {
+                                params: params,
+                                appId: params.qstring.args.app_id,
+                                data: {
+                                    app: appBefore,
+                                    update: updatedApp
+                                }
+                            });
+                            iconUpload(params);
+                            common.returnOutput(params, updatedApp);
+                        });
+                    }
+                    else {
+                        if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                            common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
+                                plugins.dispatch("/i/apps/update", {
+                                    params: params,
+                                    appId: params.qstring.args.app_id,
+                                    data: {
+                                        app: appBefore,
+                                        update: updatedApp
+                                    }
+                                });
+                                iconUpload(params);
+                                common.returnOutput(params, updatedApp);
+                            });
+                        }
+                        else {
+                            common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                        }
+                    }
                 }
-            }
+            });
         }
     });
 
