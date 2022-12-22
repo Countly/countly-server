@@ -267,6 +267,7 @@
                 set: function(value) {
                     this.selectedConfig = value;
                     this.diff = [];
+                    this.diff_ = {};
                     try {
                         this.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
                     }
@@ -291,16 +292,19 @@
         },
         data: function() {
             return {
-                back: false,
+                back: this.$route.params.namespace === "search",
                 configsData: {},
                 configsList: [],
                 coreDefaults: ['api', 'frontend', 'logs', 'security'],
                 diff: [],
+                diff_: {},
                 selectedConfig: this.$route.params.namespace || "api",
-                searchPlaceholder: CV.i18n("common.search"),
+                searchPlaceholder: CV.i18n("configs.search-settings"),
                 predefinedLabels: app.configurationsView.predefinedLabels,
                 predefinedInputs: app.configurationsView.predefinedInputs,
-                predefinedStructure: app.configurationsView.predefinedStructure
+                predefinedStructure: app.configurationsView.predefinedStructure,
+                searchQuery: this.$route.params.searchQuery || "",
+                searchResultStructure: {},
             };
         },
         beforeCreate: function() {
@@ -402,7 +406,16 @@
                             "value": k
                         });
                     });
+                    if (self.searchQuery !== "") {
+                        self.onEnterSearch();
+                        window.scrollTo({top: 0, behavior: "smooth"});
+                    }
                 });
+        },
+        updated: function() {
+            if (this.$route.params.section) {
+                this.scrollToSection(this.$route.params.section);
+            }
         },
         methods: {
             removeNonGlobalConfigs: function(configData) {
@@ -419,56 +432,68 @@
                     }
                 });
             },
-            goBack: function() {
-                app.back();
-            },
-            onChange: function(key, value) {
+            onChange: function(key, value, config) {
                 var configsData = countlyPlugins.getConfigsData();
+
+                config = config || this.selectedConfig;
+                if (!this.diff_[config]) {
+                    this.diff_[config] = [];
+                }
 
                 //delete value from diff if it already exists
                 var index = this.diff.indexOf(key);
                 if (index > -1) {
                     this.diff.splice(index, 1);
+                    index = this.diff_[config].indexOf(key);
+                    this.diff_[config].splice(index, 1);
                 }
 
-                this.configsData[this.selectedConfig][key] = value;
+                this.configsData[config][key] = value;
                 //when user disables country data tracking while city data tracking is enabled
-                if (key === "country_data" && value === false && this.configsData[this.selectedConfig].city_data === true) {
+                if (key === "country_data" && value === false && this.configsData[config].city_data === true) {
                     //disable city data tracking 
-                    this.configsData[this.selectedConfig].city_data = false;
+                    this.configsData[config].city_data = false;
                     //if city data tracking was originally enabled, note the change
                     index = this.diff.indexOf("city_data");
                     if (index > -1) {
                         this.diff.splice(index, 1);
+                        index = this.diff_[config].indexOf("city_data");
+                        this.diff_[config].splice(index, 1);
                     }
-                    if (configsData[this.selectedConfig].city_data === true) {
+                    if (configsData[config].city_data === true) {
                         this.diff.push("city_data");
+                        this.diff_[config].push("city_data");
                     }
                 }
                 //when user enables city data tracking while country data tracking is disabled
-                if (key === "city_data" && value === true && this.configsData[this.selectedConfig].country_data === false) {
+                if (key === "city_data" && value === true && this.configsData[config].country_data === false) {
                     //enable country data tracking
-                    this.configsData[this.selectedConfig].country_data = true;
+                    this.configsData[config].country_data = true;
                     //if country data tracking was originally disabled, note the change
                     index = this.diff.indexOf("country_data");
                     if (index > -1) {
                         this.diff.splice(index, 1);
+                        index = this.diff_[config].indexOf("country_data");
+                        this.diff_[config].splice(index, 1);
                     }
-                    if (configsData[this.selectedConfig].country_data === false) {
+                    if (configsData[config].country_data === false) {
                         this.diff.push("country_data");
+                        this.diff_[config].push("country_data");
                     }
                 }
 
-                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                if (Array.isArray(value) && Array.isArray(configsData[config][key])) {
                     value.sort();
-                    configsData[this.selectedConfig][key].sort();
+                    configsData[config][key].sort();
 
-                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[config][key])) {
                         this.diff.push(key);
+                        this.diff_[config].push(key);
                     }
                 }
-                else if (configsData[this.selectedConfig][key] !== value) {
+                else if (configsData[config][key] !== value) {
                     this.diff.push(key);
+                    this.diff_[config].push(key);
                 }
             },
             getLabel: function(id) {
@@ -484,28 +509,33 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                return app.configurationsView.getInputLabel((ns || this.selectedConfig) + "." + id);
+                return app.configurationsView.getInputLabel(ns + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
                 return app.configurationsView.getHelperLabel(id, ns);
             },
-            getInputType: function(id) {
-                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
+            getInputType: function(id, configId) {
+                configId = configId || this.selectedConfig;
+                return app.configurationsView.getInputType(configId + "." + id);
             },
-            checkIfOverwritten: function(id) {
+            getConfigType: function(id) {
+                return this.coreDefaults.includes(id) ? "Core" : "Plugins";
+            },
+            checkIfOverwritten: function(id, ns) {
+                ns = ns || this.selectedConfig;
                 var configsData = countlyPlugins.getConfigsData();
                 var plugs = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins;
                 //check if value can be overwritten on user level
-                if (configsData[this.selectedConfig]._user && configsData[this.selectedConfig]._user[id]) {
+                if (configsData[ns]._user && configsData[ns]._user[id]) {
                     //check if value is overwritten on user level
                     var sets = countlyGlobal.member.settings;
-                    if (sets && sets[this.selectedConfig] && typeof sets[this.selectedConfig][id] !== "undefined") {
+                    if (sets && sets[ns] && typeof sets[ns][id] !== "undefined") {
                         return {label: jQuery.i18n.map["configs.overwritten.user"], href: "#/account-settings"};
                     }
                 }
                 //check if config overwritten on app level
-                else if (plugs && plugs[this.selectedConfig] && typeof plugs[this.selectedConfig][id] !== "undefined") {
+                else if (plugs && plugs[ns] && typeof plugs[ns][id] !== "undefined") {
                     return {label: jQuery.i18n.map["configs.overwritten.app"], href: "#/manage/apps"};
                 }
             },
@@ -517,6 +547,7 @@
                     this.configsData = {};
                 }
                 this.diff = [];
+                this.diff_ = {};
                 if (this.configsData.frontend && this.configsData.frontend._user) {
                     this.configsData.frontend.__user = [];
                     for (var userProp in this.configsData.frontend._user) {
@@ -528,26 +559,29 @@
             },
             save: function() {
                 var changes = {};
-                changes[this.selectedConfig] = {};
-                for (var i = 0; i < this.diff.length; i++) {
-                    if (this.diff[i] === "__user") {
-                        if (!changes[this.selectedConfig]._user) {
-                            changes[this.selectedConfig]._user = {};
-                        }
-                        for (var userProp in this.configsData[this.selectedConfig]._user) {
-                            if (this.configsData[this.selectedConfig][this.diff[i]].indexOf(userProp) === -1) {
-                                changes[this.selectedConfig]._user[userProp] = false;
+                var self = this;
+                for (var i = 0; i < Object.keys(self.diff_).length; i++) {
+                    var config = Object.keys(self.diff_)[i];
+                    changes[config] = {};
+                    for (var j = 0; j < self.diff_[config].length; j++) {
+                        if (self.diff_[config][j] === "__user") {
+                            if (!changes[config]._user) {
+                                changes[config]._user = {};
                             }
-                            else {
-                                changes[this.selectedConfig]._user[userProp] = true;
+                            for (var userProp in self.configsData[config]._user) {
+                                if (self.configsData[config][self.diff_[config][j]].indexOf(userProp) === -1) {
+                                    changes[config]._user[userProp] = false;
+                                }
+                                else {
+                                    changes[config]._user[userProp] = true;
+                                }
                             }
                         }
-                    }
-                    else {
-                        changes[this.selectedConfig][this.diff[i]] = this.configsData[this.selectedConfig][this.diff[i]];
+                        else {
+                            changes[config][self.diff_[config][j]] = self.configsData[config][self.diff_[config][j]];
+                        }
                     }
                 }
-                var self = this;
                 countlyPlugins.updateConfigs(changes, function(err) {
                     if (err) {
                         CountlyHelpers.notify({
@@ -557,10 +591,78 @@
                         });
                     }
                     else {
-                        location.hash = "#/manage/configurations/" + self.selectedConfig + "/success";
+                        if (self.back) {
+                            location.hash += "/success";
+                        }
+                        else {
+                            location.hash = "#/manage/configurations/" + self.selectedConfig + "/success";
+                        }
                         window.location.reload(true);
                     }
                 });
+            },
+            onFocus: function() {
+                this.back = true;
+                app.navigate("#/manage/configurations/search");
+            },
+            onEnterSearch: function() {
+                var self = this;
+                self.unpatch();
+                var res = {};
+                if (self.searchQuery && self.searchQuery !== "") {
+                    self.searchQuery = self.searchQuery.toLowerCase();
+                    for (var config in self.predefinedStructure) {
+                        if (config.toLowerCase().includes(self.searchQuery)) {
+                            res[config] = self.predefinedStructure[config];
+                        }
+                        else {
+                            let groups = [];
+                            // eslint-disable-next-line no-loop-func
+                            self.predefinedStructure[config].groups.map(function(group) {
+                                if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
+                                    groups.push(group);
+                                }
+                                else {
+                                    let list = group.list.filter(function(item) {
+                                        let label = self.getLabelName(item, config) || "";
+                                        let helper = self.getHelperLabel(item, config) || "";
+                                        return label.toLowerCase().includes(self.searchQuery)
+                                        || helper.toLowerCase().includes(self.searchQuery);
+                                    });
+                                    if (list.length > 0) {
+                                        let tmp = group;
+                                        tmp.list = list;
+                                        groups.push(tmp);
+                                    }
+                                }
+                            });
+                            if (groups.length > 0) {
+                                res[config] = {groups};
+                            }
+                        }
+                    }
+                    if (Object.keys(res).length === 0) {
+                        res.empty = true;
+                    }
+                    self.searchResultStructure = res;
+                    app.navigate("#/manage/configurations/search/" + self.searchQuery);
+                }
+                else {
+                    self.searchResultStructure = {};
+                }
+            },
+            redirectToConfig: function(config, section) {
+                return section
+                    ? "#/manage/configurations/" + config + "#" + section + ""
+                    : "#/manage/configurations/" + config + "";
+            },
+            scrollToSection: function(id) {
+                let element = document.getElementById(id);
+                element.scrollIntoView({behavior: "smooth"});
+            },
+            clearSearch: function() {
+                this.searchQuery = "";
+                //this.searchResultStructure = {};
             }
         }
     });
@@ -1084,11 +1186,29 @@
         });
 
         app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
-            if (status === "success") {
-                var view = getConfigView();
+            var view = getConfigView();
+            if (status === "success" && namespace !== "search") {
                 view.params = {namespace: namespace, success: true};
                 this.renderWhenReady(view);
             }
+            if (namespace === "search") {
+                view.params = {namespace, success: false, searchQuery: status};
+                this.renderWhenReady(view);
+            }
+        });
+
+        app.route('/manage/configurations/:namespace/:status/:success', 'configurations_namespace', function(namespace, status, success) {
+            if (success === "success" && namespace === "search" && status !== "") {
+                var view = getConfigView();
+                view.params = {namespace, success: true, searchQuery: status};
+                this.renderWhenReady(view);
+            }
+        });
+
+        app.route('/manage/configurations/:namespace#:section', 'configurations_namespace', function(namespace, section) {
+            var view = getConfigView();
+            view.params = {namespace: namespace, section: section, success: false};
+            this.renderWhenReady(view);
         });
 
         countlyPlugins.initializeConfigs().always(function() {
