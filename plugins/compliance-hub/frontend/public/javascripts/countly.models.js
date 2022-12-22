@@ -263,12 +263,14 @@
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
             if (payload.uid) {
-                return {
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.data.r + '/consent/search' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&query=' + JSON.stringify({ uid: payload.uid }),
-                    data: data
-                };
+                data.query = JSON.stringify({ uid: payload.uid });
             }
+            return {
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + '/consent/search',
+                data: data
+            };
+
         },
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
