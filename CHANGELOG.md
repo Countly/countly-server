@@ -1,3 +1,25 @@
+## Version 22.09.8
+Fixes:
+- [dashboards] date picker doesn't fit into the view in dashboards
+- [dashboards] fixed date formats for monthly selection in widgets
+- [dashboards] provided chart refresh after changing time bucket for specific widgets
+- [hooks] configurable rate limiter for hooks implemented
+- [hooks] sanitize email HTML input
+- [push] streaming timeouts handling
+- [render] added configurationsView checks not to break server side rendering
+- [settings] search in settings
+
+Enterprise fixes:
+- [cohorts] improved speed for loading cohort widgets in dashboards
+- [data-manager] fixed for missing data type in user props
+- [data-manager] fixed user properties sort 
+- [drill] adding stringified Drill query to the export file name
+- [funnels] fixed for false error ouptut in logs if funnels dashboard widget does not have filter query
+- [push_approver] correct members query
+- [revenue] fixed revenue widgets metric selection
+- [users] fixed user profiles consent table export exports ALL users, not only this one
+- [users] change format for numbers in user profiles
+
 ## Version 22.09.7
 Fixes:
 - [api] added try catch block to regex
