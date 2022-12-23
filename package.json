@@ -65,7 +65,7 @@
     "jimp": "0.16.2",
     "jsdoc": "4.0.0",
     "json2csv": "5.0.7",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "9.0.0",
     "later": "1.2.0",
     "lodash": "4.17.21",
     "lru-cache": "7.14.1",
