@@ -12,9 +12,8 @@ Promise.all(
         try {
             let apps = await countlyDB.collection('apps').find({}).project({_id: 1}).toArray();
             for (const appId of apps.map(a => a._id)) {
-                await countlyDrillDB.collection("drill_meta" + appId).findAndModify(
+                await countlyDrillDB.collection("drill_meta" + appId).updateOne(
                     {_id: 'meta_up'},
-                    {},
                     {
                         $unset: {
                             "up.ingested": "",
