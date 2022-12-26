@@ -11,7 +11,7 @@
             <cly-chart-bar :option="sessionFrequencyOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" :custom-export-field-names="{numberOfSessions: 'numberOfSessions', percentage: 'numberOfSessions'}" :force-loading="isLoading">
+            <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column :sortable="true" prop="frequency" :label="i18n('session-frequency.table.frequency')" :sort-method="sortFrequencyBuckets">
                     </el-table-column>
@@ -20,7 +20,7 @@
                             {{formatNumber(scope.row.numberOfSessions)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.percent')">
+                    <el-table-column sortable="custom" prop="numberOfSessions" column-key="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
                                 <div class="bu-level-item slipping-away-users-table-data-item">

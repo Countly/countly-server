@@ -666,32 +666,17 @@
                     return this.formatExportFunction();
                 }
             },
-            makeValuesUppercase: function(obj) {
-                for (let key in obj) {
-                    if (typeof obj[key] === 'string') {
-                        obj[key] = obj[key].toUpperCase();
-                    }
-                }
-                return obj;
-            },
             formatExportFunction: function() {
                 if (this.rows && this.rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
                     var table = [];
                     var columns = this.$refs.elTable.columns;
                     columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
-                    var customFieldKeys = null;
-                    var customFieldIndex = 0;
 
-                    if (this.customExportFieldNames && Object.values(this.customExportFieldNames).length > 0) {
-                        customFieldKeys = this.makeValuesUppercase(this.customExportFieldNames);
-                    }
                     for (var r = 0; r < this.rows.length; r++) {
                         var item = {};
-                        customFieldIndex = 0;
                         for (var c = 0; c < columns.length; c++) {
-                            if (customFieldKeys && Object.values(customFieldKeys).includes(columns[c].property.toUpperCase())) {
-                                item[columns[c].label.toUpperCase()] = this.rows[r][Object.keys(this.customExportFieldNames)[customFieldIndex]];
-                                customFieldIndex++;
+                            if (columns[c].columnKey && columns[c].columnKey.length) {
+                                item[columns[c].label.toUpperCase()] = this.rows[r][columns[c].columnKey];
                             }
                             else {
                                 item[columns[c].label.toUpperCase()] = this.rows[r][columns[c].property];

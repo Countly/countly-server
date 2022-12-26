@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n :rows="eventsTableRows" :custom-export-field-names="{date: 'dateVal'}" :force-loading="isTableLoading">
+    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
@@ -10,7 +10,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-else sortable="true" prop="dateVal" :label="i18n('common.date')">
+        <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :label="i18n('common.date')">
           <template
           date v-slot="rowScope">
             <div>

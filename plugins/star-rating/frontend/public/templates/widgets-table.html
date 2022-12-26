@@ -3,7 +3,6 @@
     :rows="widgets"
     :persist-key="persistKey"
     :available-dynamic-cols="tableDynamicCols"
-    :custom-export-field-names="{ratingScore: 'rating_score', ratingsCount: 'responses'}"
     width="100%">
       <template v-slot="scope">
           <el-table-column width="100" fixed type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
@@ -32,14 +31,14 @@
               </cly-cohort-targeting>
             </template>
           </el-table-column>
-          <el-table-column min-width="150" sortable="true" prop="rating_score" :label="i18n('feedback.rating-score')">
+          <el-table-column min-width="150" sortable="true" prop="rating_score" column-key="ratingScore" :label="i18n('feedback.rating-score')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
                 <span class="bu-is-size-4">
                   {{ rowScope.row.ratingScore }}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column min-width="130" sortable="true" prop="responses" :label="i18n('feedback.responses')">
+          <el-table-column min-width="130" sortable="true" prop="responses" column-key="ratingsCount" :label="i18n('feedback.responses')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
               <span class="text-medium">
                 {{ rowScope.row.ratingsCount }}

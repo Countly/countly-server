@@ -1,5 +1,5 @@
 <div>
-  <cly-datatable-n class="bu-mx-5" :rows="list" :persist-key="exportsTablePersistKey" :custom-export-field-names="{time: 'created'}">
+  <cly-datatable-n class="bu-mx-5" :rows="list" :persist-key="exportsTablePersistKey">
       <template v-slot="scope">
           <el-table-column sortable="true" prop="app_names" :label="i18n('data-migration.applications')">
               <template v-slot="rowScope">
@@ -23,7 +23,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="created" :label="i18n('data-migration.table.last-update')">
+          <el-table-column sortable="true" prop="created" column-key="time" :label="i18n('data-migration.table.last-update')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{ rowScope.row.time }}

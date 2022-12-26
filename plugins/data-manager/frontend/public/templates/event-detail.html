@@ -97,7 +97,6 @@
         </template>
         <cly-datatable-n 
         :keyFn="function(row) {return row.name}"
-        :custom-export-field-names="{auditDate: 'auditTs'}"
         :hasDynamicCols="false" 
         :rows="segments"
         >
@@ -122,7 +121,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="i18n('data-manager.last-modified')" prop="auditTs" sortable="custom">
+                <el-table-column :label="i18n('data-manager.last-modified')" column-key="auditDate" prop="auditTs" sortable="custom">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
                             <div>{{rowScope.row.auditDate}}</div>
