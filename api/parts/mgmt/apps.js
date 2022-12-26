@@ -269,34 +269,36 @@ appsApi.createApp = async function(params) {
         newApp.key = appKey;
     }
 
-    common.db.collection('apps').insert(newApp, function(err, app) {
-        if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
-            newApp._id = app.ops[0]._id;
+    checkUniqueKey(params, function() {
+        common.db.collection('apps').insert(newApp, function(err, app) {
+            if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
+                newApp._id = app.ops[0]._id;
 
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-            common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
-                expireAfterSeconds: 60 * 60 * 3,
-                background: true
-            }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
-            plugins.dispatch("/i/apps/create", {
-                params: params,
-                appId: app.ops[0]._id,
-                data: newApp
-            });
-            iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
-            common.returnOutput(params, newApp);
-        }
-        else {
-            common.returnMessage(params, 500, "Error creating App: " + err);
-        }
-    });
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
+                common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
+                    expireAfterSeconds: 60 * 60 * 3,
+                    background: true
+                }, function() {});
+                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
+                plugins.dispatch("/i/apps/create", {
+                    params: params,
+                    appId: app.ops[0]._id,
+                    data: newApp
+                });
+                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
+                common.returnOutput(params, newApp);
+            }
+            else {
+                common.returnMessage(params, 500, "Error creating App: " + err);
+            }
+        });
+    }, false);
 };
 
 /**
@@ -407,7 +409,7 @@ appsApi.updateApp = function(params) {
                 else {
                     common.returnMessage(params, 401, 'User does not have admin rights for this app');
                 }
-            });
+            }, true);
         }
     });
 
@@ -1046,13 +1048,18 @@ function isValidCountry(country) {
 * Check if APP KEY is unique before updating app
 * @param {params} params - params object 
 * @param {function} callback - callback to update app
+* @param {boolean} update - true when updating app, false when creating new app
 **/
-function checkUniqueKey(params, callback) {
+function checkUniqueKey(params, callback, update) {
     if (!params.qstring.args.key) {
         callback();
     }
     else {
-        common.db.collection('apps').findOne({_id: {$ne: common.db.ObjectID(params.qstring.args.app_id + "")}, key: params.qstring.args.key + ""}, function(error, keyExists) {
+        var query = {key: params.qstring.args.key};
+        if (update) {
+            query._id = {$ne: common.db.ObjectID(params.qstring.args.app_id + "")};
+        }
+        common.db.collection('apps').findOne(query, function(error, keyExists) {
             if (keyExists) {
                 common.returnMessage(params, 400, 'App key already in use');
                 return false;
