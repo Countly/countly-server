@@ -115,7 +115,7 @@
             inTheLastInput: {
                 raw: {
                     text: '1',
-                    level: 'months'
+                    level: 'days'
                 },
                 parsed: [minDate, maxDate]
             },
@@ -392,18 +392,23 @@
             },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
-
                 switch (this.rangeMode) {
                 case 'inBetween':
+                    this.tableType = "date";
                     inputObj = this.inBetweenInput.parsed;
                     break;
                 case 'since':
+                    this.tableType = "date";
                     inputObj = this.sinceInput.parsed;
                     break;
                 case 'onm':
+                    this.tableType = "date";
                     inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
+                    if (this.inTheLastInput.raw.level === "months") {
+                        this.tableType = "month";
+                    }
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 default:
@@ -470,11 +475,24 @@
                 deep: true,
                 handler: function(newVal) {
                     var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
+
+                    if ((newVal.text === "1" || newVal.text === 1) && newVal.level === "days") {
+                        parsed = moment().startOf("day");
+                    }
                     if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed && parsed.isValid()) {
                             this.inTheLastInput.parsed[0] = parsed.toDate();
                             this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
                         }
+                    }
+                    if (newVal.level === "months") {
+                        this.tableType = "month";
+                    }
+                    else if (newVal.level === "weeks") {
+                        this.tableType = "week";
+                    }
+                    else if (newVal.level === "days") {
+                        this.tableType = "date";
                     }
                 }
             },
@@ -488,7 +506,7 @@
             },
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
-                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm";
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast";
 
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
@@ -522,7 +540,22 @@
                         maxDate = minDate;
                         this.setCurrentOnm(minDate, maxDate);
                     }
+                    else if (this.rangeMode === 'inTheLast') {
+                        maxDate = moment().toDate();
 
+                        if (this.tableType === "week") {
+                            var diffInMilliseconds = moment().diff(moment(val.minDate));
+                            var diffInWeeks = moment.duration(diffInMilliseconds).asWeeks();
+                            minDate = moment().subtract(Math.round(diffInWeeks), 'weeks').toDate();
+                        }
+                        else if (this.tableType === "month") {
+                            minDate = moment(val.minDate).add(moment().date() - 1, 'days').toDate();
+                        }
+                        else {
+                            maxDate = moment().toDate();
+                            this.setCurrentSince(minDate, maxDate);
+                        }
+                    }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
@@ -668,7 +701,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['date', 'daterange', 'month', 'monthrange'].includes(value);
+                    return ['date', 'daterange', 'month', 'monthrange', "week"].includes(value);
                 }
             },
             displayShortcuts: {
@@ -808,7 +841,6 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
-
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
 
@@ -879,6 +911,7 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
+                this.tableType = "date";
                 this.abortPicking();
                 this.clearCommitWarning(true);
                 if (aborted) {
@@ -992,6 +1025,7 @@
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    effectiveMinDate.setHours(23, 59);
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
@@ -1046,6 +1080,7 @@
                     }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    effectiveMinDate.setHours(23, 59);
                     this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [

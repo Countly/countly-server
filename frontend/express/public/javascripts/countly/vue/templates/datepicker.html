@@ -79,8 +79,8 @@
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
                             <el-select size="small" v-model="inTheLastInput.raw.level">
-                                <el-option v-if="tableType === 'date'" :label="i18n('common.buckets.days')" value="days"></el-option>
-                                <el-option v-if="tableType === 'date'" :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
+                                <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
+                                <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                                 <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
                             </el-select>
                         </div>
