@@ -30,8 +30,8 @@ then
     countly update sdk-web
 
     #install dependencies, process files and restart countly
+    countly plugin enable license;
     if [ "$1" != "combined" ]; then
-        countly plugin enable license;
         countly upgrade;
     else
         countly task dist-all;
