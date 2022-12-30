@@ -130,19 +130,30 @@
                 if (this.fixedOrigin) {
                     q.type = this.fixedOrigin;
                 }
-                else if (this.selectedOrigin && this.selectedOrigin !== "all") {
-                    q.type = this.selectedOrigin;
+                else if (this.currentFilter.selectedOrigin && this.currentFilter.selectedOrigin !== "all") {
+                    q.type = this.currentFilter.selectedOrigin;
                 }
-                if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
-                    q.autoRefresh = this.selectedRunTimeType === "auto-refresh";
+                if (this.currentFilter.selectedRunTimeType && this.currentFilter.selectedRunTimeType !== "all") {
+                    q.autoRefresh = this.currentFilter.selectedRunTimeType === "auto-refresh";
                 }
-                if (this.selectedState && this.selectedState !== "all") {
-                    q.status = this.selectedState;
+                if (this.currentFilter.selectedState && this.currentFilter.selectedState !== "all") {
+                    q.status = this.currentFilter.selectedState;
                 }
                 return q;
             },
             remoteOpId: function() {
                 return this.$store.state.countlyTaskManager.opId;
+            },
+            filterSummary: function() {
+                let filters = [];
+                if (!this.fixedOrigin) {
+                    filters.push(this.availableOrigins[this.currentFilter.selectedOrigin]);
+                }
+                filters.push(this.availableStates[this.currentFilter.selectedState]);
+                if (this.isManual) {
+                    filters.push(this.availableRunTimeTypes[this.currentFilter.selectedRunTimeType]);
+                }
+                return filters.join(", ");
             }
         },
         watch: {
@@ -238,9 +249,11 @@
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
-                selectedOrigin: "all",
-                selectedRunTimeType: "all",
-                selectedState: "all",
+                currentFilter: {
+                    selectedOrigin: "all",
+                    selectedRunTimeType: "all",
+                    selectedState: "all"
+                },
                 lastRequestPayload: {}
             };
         },
@@ -261,7 +274,7 @@
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
             },
             isDownloadable: function(row) {
-                if (row.type === "views" || row.type === "tableExport") {
+                if (["views", "dbviewer", "tableExport"].includes(row.type)) {
                     return true;
                 }
                 else {
@@ -375,6 +388,24 @@
                     prop: ['aaData']
                 };
                 return apiQueryData;
+            },
+            handleSubmitFilter: function(newFilter) {
+                this.currentFilter = newFilter;
+                this.$refs.filterDropdown.doClose();
+            },
+            handleReloadFilter: function() {
+                //this.$refs.filterDropdown.reload();
+            },
+            handleResetFilter: function() {
+                this.currentFilter = {
+                    selectedOrigin: "all",
+                    selectedRunTimeType: "all",
+                    selectedState: "all"
+                };
+            },
+            handleCancelFilter: function() {
+                this.$refs.filterDropdown.doClose();
+                //this.handleReloadFilter();
             }
         }
     }));

@@ -1613,18 +1613,15 @@ const processRequest = (params) => {
                                 params.qstring.query = {};
                             }
                         }
+                        params.qstring.query.$and = [
+                            {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]},
+                            {"$or": [{"app_id": params.qstring.app_id}, {"name": { $regex: "Aggregation-*" }}]}
+                        ];
                         if (params.qstring.query.$or) {
-                            params.qstring.query.$and = [
-                                {"$or": Object.assign([], params.qstring.query.$or) },
-                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
-                            ];
+                            params.qstring.query.$and.push({"$or": Object.assign([], params.qstring.query.$or) });
                             delete params.qstring.query.$or;
                         }
-                        else {
-                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
-                        }
                         params.qstring.query.subtask = {$exists: false};
-                        params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
