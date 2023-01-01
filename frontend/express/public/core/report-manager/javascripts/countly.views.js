@@ -139,21 +139,43 @@
                 if (this.currentFilter.selectedState && this.currentFilter.selectedState !== "all") {
                     q.status = this.currentFilter.selectedState;
                 }
+                if (this.currentFilter.selectedOwner && this.currentFilter.selectedOwner !== "all") {
+                    q.creator = countlyGlobal.member._id;
+                }
                 return q;
             },
             remoteOpId: function() {
                 return this.$store.state.countlyTaskManager.opId;
             },
             filterSummary: function() {
-                let filters = [];
+                let filters = [
+                    this.availableStates[this.currentFilter.selectedState],
+                    this.availableOwners[this.currentFilter.selectedOwner],
+                    this.availableDataSources[this.currentFilter.selectedDataSource]
+                ];
                 if (!this.fixedOrigin) {
-                    filters.push(this.availableOrigins[this.currentFilter.selectedOrigin]);
+                    filters.splice(0, 0, this.availableOrigins[this.currentFilter.selectedOrigin]);
                 }
-                filters.push(this.availableStates[this.currentFilter.selectedState]);
                 if (this.isManual) {
                     filters.push(this.availableRunTimeTypes[this.currentFilter.selectedRunTimeType]);
                 }
                 return filters.join(", ");
+            },
+            availableDataSources: function() {
+                var obj = {
+                    "all": CV.i18n("report-manager.app-independent")
+                };
+                if (countlyGlobal.apps && Object.keys(countlyGlobal.apps).length !== 0) {
+                    for (var app in countlyGlobal.apps) {
+                        obj[app] = countlyGlobal.apps[app].name;
+                    }
+                }
+                return obj;
+            },
+            selectedAppId: function() {
+                return (this.currentFilter.selectedDataSource && this.currentFilter.selectedDataSource !== "all")
+                    ? this.currentFilter.selectedDataSource
+                    : null;
             }
         },
         watch: {
@@ -179,9 +201,10 @@
                     }
                     return {
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/list",
                         data: {
-                            query: JSON.stringify(queryObject)
+                            app_id: self.selectedAppId,
+                            query: JSON.stringify(queryObject),
                         }
                     };
                 },
@@ -249,10 +272,16 @@
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
+                availableOwners: {
+                    "all": CV.i18n("report-manager.all-owners"),
+                    "me": CV.i18n("report-manager.my-reports")
+                },
                 currentFilter: {
                     selectedOrigin: "all",
                     selectedRunTimeType: "all",
-                    selectedState: "all"
+                    selectedState: "all",
+                    selectedOwner: "all",
+                    selectedDataSource: "all"
                 },
                 lastRequestPayload: {}
             };
@@ -400,7 +429,9 @@
                 this.currentFilter = {
                     selectedOrigin: "all",
                     selectedRunTimeType: "all",
-                    selectedState: "all"
+                    selectedState: "all",
+                    selectedOwner: "all",
+                    selectedDataSource: "all"
                 };
             },
             handleCancelFilter: function() {

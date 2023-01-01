@@ -1613,10 +1613,16 @@ const processRequest = (params) => {
                                 params.qstring.query = {};
                             }
                         }
-                        params.qstring.query.$and = [
-                            {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]},
-                            {"$or": [{"app_id": params.qstring.app_id}, {"name": { $regex: "Aggregation-*" }}]}
-                        ];
+                        params.qstring.query.$and = [];
+                        if (params.qstring.query.creator && params.qstring.query.creator === params.member._id) {
+                            params.qstring.query.$and.push({"creator": params.member._id + ""});
+                        }
+                        else {
+                            params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
+                        }
+                        if (params.qstring.app_id) {
+                            params.qstring.query.$and.push({"app_id": params.qstring.app_id});
+                        }
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and.push({"$or": Object.assign([], params.qstring.query.$or) });
                             delete params.qstring.query.$or;

@@ -26,28 +26,38 @@
                                 <div class="bu-level">
                                     <div class="bu-level-left">
                                         <div class="bu-level-item">
-                                            <h4>Report filters</h4>
+                                            <h4>{{i18n('report-manager.filters')}}</h4>
                                         </div>
                                     </div>
                                     <div class="bu-level-right">
                                         <div class="bu-level-item">
                                             <el-button type="text" class="cly-multi-select__reset" @click="handleResetFilter">
-                                                Reset filters
+                                                {{i18n('report-manager.reset-filters')}}
                                             </el-button>
                                         </div>
                                     </div>
                                 </div>
-                                <cly-form-field label="Origin" v-if="!fixedOrigin">
-                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedOrigin"  :placeholder="i18n('taskmanager.select-origin')">
+                                <cly-form-field :label="i18n('report-manager.origin')" v-if="!fixedOrigin">
+                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedOrigin"  :placeholder="i18n('report-manager.select-origin')">
                                         <el-option :key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
-                                <cly-form-field label="Status">
+                                <cly-form-field :label="i18n('report-manager.status')">
                                     <el-select  v-model="formScope.editedObject.selectedState" :placeholder="i18n('common.select-status')">
                                         <el-option :key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
-                                <cly-form-field label="Runtime type" v-if="isManual">
+                                <cly-form-field :label="i18n('report-manager.owner')">
+                                    <el-select  v-model="formScope.editedObject.selectedOwner" :placeholder="i18n('common.select-owner')">
+                                        <el-option :key="value" v-for="(label, value) in availableOwners" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.data-source')">
+                                    <el-select  v-model="formScope.editedObject.selectedDataSource" :placeholder="i18n('report-manager.select-data-source')">
+                                        <el-option :key="value" v-for="(label, value) in availableDataSources" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.runtime-type')" v-if="isManual">
                                     <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedRunTimeType"
                                         :placeholder="i18n('common.select-type')">
                                         <el-option :key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
