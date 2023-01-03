@@ -117,8 +117,8 @@
                     text: '1',
                     level: 'days'
                 },
-                parsed: [minDate, maxDate]
-            },
+                parsed: [moment().startOf("days").toDate(), moment().endOf("days").toDate()]
+            }
         };
         state.label = getRangeLabel(state, this.type);
         return state;
@@ -480,10 +480,11 @@
                     if ((newVal.text === "1" || newVal.text === 1) && newVal.level === "days") {
                         parsed = moment().startOf("day");
                     }
-                    if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
-                        if (parsed && parsed.isValid()) {
+                    if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
+                        if (parsed.isValid()) {
                             this.inTheLastInput.parsed[0] = parsed.toDate();
-                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
+                            this.inTheLastInput.parsed[1] = moment().endOf("day").toDate();
+                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0], this.inTheLastInput.parsed[1]);
                         }
                     }
                     if (newVal.level === "months") {
@@ -544,17 +545,28 @@
                     }
                     else if (this.rangeMode === 'inTheLast') {
                         maxDate = moment().toDate();
+                        var diffInMilliseconds = moment().diff(moment(val.minDate));
 
                         if (this.tableType === "week") {
-                            var diffInMilliseconds = moment().diff(moment(val.minDate));
                             var diffInWeeks = moment.duration(diffInMilliseconds).asWeeks();
-                            minDate = moment().subtract(Math.round(diffInWeeks), 'weeks').toDate();
+                            if (!Math.round(diffInWeeks)) {
+                                minDate = moment().subtract(1, 'weeks').toDate();
+                            }
+                            else {
+                                minDate = moment().subtract(Math.round(diffInWeeks), 'weeks').toDate();
+                            }
                         }
                         else if (this.tableType === "month") {
-                            minDate = moment(val.minDate).add(moment().date() - 1, 'days').toDate();
+                            var diffInMonths = moment.duration(diffInMilliseconds).asMonths();
+                            if (!parseInt(diffInMonths)) {
+                                minDate = moment(val.minDate).startOf("month").toDate();
+                            }
+                            else {
+                                minDate = moment(val.minDate).add(moment().date() - 1, 'days').toDate();
+                            }
                         }
                         else {
-                            maxDate = moment().toDate();
+                            maxDate = moment().endOf("day").toDate();
                             this.setCurrentSince(minDate, maxDate);
                         }
                     }
@@ -562,6 +574,10 @@
                 }
                 else {
                     if (this.tableType === "date") {
+                        minDate = moment(val.minDate).startOf("day").toDate();
+                        maxDate = moment(val.maxDate).endOf("day").toDate();
+                    }
+                    else if (this.tableType === "week") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.maxDate).endOf("day").toDate();
                     }
@@ -1027,7 +1043,6 @@
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
-                    effectiveMinDate.setHours(23, 59);
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
