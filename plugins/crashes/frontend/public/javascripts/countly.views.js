@@ -1053,7 +1053,7 @@
                             var binaryProps = binaryImagesMap[binaryName];
 
                             return {
-                                name: binaryProps.bi || binaryName,
+                                name: binaryProps.bn || binaryName,
                                 loadAddress: binaryProps.la,
                                 uuid: binaryProps.id
                             };
