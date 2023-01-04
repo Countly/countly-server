@@ -1043,6 +1043,9 @@
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    if (this.type === "date" && !this.selectTime) {
+                        effectiveMinDate.setHours(23, 59);
+                    }
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
