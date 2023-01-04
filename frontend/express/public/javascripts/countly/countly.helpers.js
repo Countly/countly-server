@@ -3365,6 +3365,20 @@
     * CountlyHelpers.generatePassword(10, true);
     */
     CountlyHelpers.generatePassword = function(length, no_special) {
+        debugger
+        var passwordCharset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var specials = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
+        if(!no_special) {
+            passwordCharset = passwordCharset + specials;
+        }
+        const randomValues = self.crypto.getRandomValues(new Uint8Array(length));
+
+        let password = '';
+        for (let i = 0; i < passwordLength; i++) {
+            password += passwordCharset[randomValues[i] % passwordCharset.length];
+        }
+        return password;
+/*
         var text = [];
         var chars = "abcdefghijklmnopqrstuvwxyz";
         var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -3399,7 +3413,7 @@
             text[j] = x;
         }
 
-        return text.join("");
+        return text.join("");*/
     };
 
     /**
