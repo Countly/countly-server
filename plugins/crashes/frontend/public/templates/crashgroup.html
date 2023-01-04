@@ -391,7 +391,7 @@
                         <el-table-column prop="device" :label="i18n('crashes.device')" sortable></el-table-column>
                         <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable>
                         </el-table-column>
-                        <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')" prop="user.name">
+                        <el-table-column v-if="hasUserPermission" prop="user.name" column-key="user.name" :label="i18n('crashes.user')">
                             <template slot-scope="col">
                                 {{col.row.user && col.row.user.name || col.row.uid}}
                                 <a class="crash-user-profile-link" :href="'/#/users/' + col.row.uid"><i

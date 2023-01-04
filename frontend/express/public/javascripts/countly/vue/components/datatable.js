@@ -671,16 +671,27 @@
                     var table = [];
                     var columns = this.$refs.elTable.columns;
                     columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
-
                     for (var r = 0; r < this.rows.length; r++) {
                         var item = {};
                         for (var c = 0; c < columns.length; c++) {
+                            var property;
                             if (columns[c].columnKey && columns[c].columnKey.length) {
-                                item[columns[c].label.toUpperCase()] = this.rows[r][columns[c].columnKey];
+                                var columnKey = columns[c].columnKey;
+                                if (columnKey.includes(".")) {
+                                    property = this.rows[r];
+                                    var dotSplittedArr = columnKey.split(".");
+                                    for (var i = 0; i < dotSplittedArr.length; i++) {
+                                        property = property[dotSplittedArr[i]];
+                                    }
+                                }
+                                else {
+                                    property = this.rows[r][columnKey];
+                                }
                             }
                             else {
-                                item[columns[c].label.toUpperCase()] = this.rows[r][columns[c].property];
+                                property = this.rows[r][columns[c].property];
                             }
+                            item[columns[c].label.toUpperCase()] = property;
                         }
                         table.push(item);
                     }
