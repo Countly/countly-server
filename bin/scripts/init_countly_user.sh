@@ -14,7 +14,7 @@ else
     echo "Countly user already exist."
 fi
 
-cp -r "$DIR/../../../countly" "/home/countly/countly"
+cp -r "$DIR/../../." "/home/countly/countly"
 
 #change permission of countly directory
 sudo chown -R countly:countly "/home/countly/countly"

@@ -86,7 +86,7 @@ sudo apt-get -y install numactl
 sudo apt-get -y install sendmail
 
 #install npm modules
-npm config set prefix '~/.local/'
+npm config set prefix "$HOME/.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
