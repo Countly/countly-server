@@ -5,7 +5,6 @@ totalm=$(free -m | awk '/^Mem:/{print $2}')
 
 sudo bash "$DIR/scripts/init_countly_user.sh"
 DIR="/home/countly/countly/bin"
-sudo su countly -c "cd $DIR"
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"

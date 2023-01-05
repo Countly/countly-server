@@ -111,7 +111,7 @@ sudo yum install numactl -y
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
 
-sudo cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
+cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 sudo sed -e "s/Defaults requiretty/#Defaults requiretty/" /etc/sudoers | sudo tee /etc/sudoers2
 sudo cp /etc/sudoers /etc/sudoers.bak

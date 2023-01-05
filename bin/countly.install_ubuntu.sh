@@ -54,7 +54,7 @@ sudo apt-get update
 sudo apt-get -y install curl gnupg2 ca-certificates lsb-release
 echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
-sudo curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
+curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
 sudo apt-get update
 sudo apt-get -y install nginx
 
@@ -71,7 +71,6 @@ fi
 #if npm is not installed, install it too
 if ! (command -v npm >/dev/null) then
     sudo apt-get -y install npm
-    npm config set prefix '~/.local/'
 fi
 
 #install supervisor
@@ -118,16 +117,16 @@ then
         sudo /etc/init.d/nginx restart
 fi
 
-sudo cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
+cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 #create api configuration file from sample
-sudo cp -n "$DIR/../api/config.sample.js" "$DIR/../api/config.js"
+cp -n "$DIR/../api/config.sample.js" "$DIR/../api/config.js"
 
 #create app configuration file from sample
-sudo cp -n "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.js"
+cp -n "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.js"
 
 if [ ! -f "$DIR/../plugins/plugins.json" ]; then
-        sudo cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
+        cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
 fi
 
 if [ ! -f "/etc/timezone" ]; then
@@ -135,11 +134,10 @@ if [ ! -f "/etc/timezone" ]; then
 fi
 
 #install plugins
-sudo bash "$DIR/scripts/countly.install.plugins.sh"
+bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
-
 
 #get web sdk
 sudo countly update sdk-web
