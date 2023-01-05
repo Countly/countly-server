@@ -883,12 +883,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
             }
 
-            if (req.session.license) {
-                licenseError = req.session.license;
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
             }
-            if (req.session.notify) {
+            if (req.session.licenseNotification) {
                 try {
-                    licenseNotification = JSON.parse(req.session.notify);
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
                 }
                 catch (e) {
                     log.e('Failed to parse notify', e);
