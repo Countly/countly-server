@@ -40,10 +40,12 @@ jobs:
         run: mongo --version
         
       - name: Enable all plugins
+        working-directory: /home/countly/countly
         shell: bash
         run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh
         
       - name: Reinstall plugins
+        working-directory: /home/countly/countly
         shell: bash
         run: sudo bash ./bin/scripts/countly.install.plugins.sh
         
@@ -52,6 +54,7 @@ jobs:
         run: countly shellcheck
         
       - name: ESLint
+        working-directory: /home/countly/countly
         shell: bash
         run: npx eslint .
         
@@ -64,14 +67,17 @@ jobs:
         run: sudo countly test
 
       - name: Output API Logs
+        working-directory: /home/countly/countly
         if: ${{ always() }}
         run: cat log/countly-api.log
         
       - name: Output Dashboard Logs
+        working-directory: /home/countly/countly
         if: ${{ always() }}
         run: cat log/countly-dashboard.log
         
       - name: Output MongoDB Logs
+        working-directory: /home/countly/countly
         if: ${{ always() }}
         run: sudo cat /var/log/mongodb/mongod.log
         
