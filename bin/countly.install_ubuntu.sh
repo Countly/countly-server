@@ -2,11 +2,6 @@
 
 set -e
 
-#if [[ $EUID -ne 0 ]]; then
-#   echo "Please execute Countly installation script with a superuser..." 1>&2
-#   exit 1
-#fi
-
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
 if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" ]]; then

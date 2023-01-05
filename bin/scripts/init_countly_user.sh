@@ -20,4 +20,3 @@ cp -r "$DIR/../../../countly" "/home/countly/countly"
 
 #change permission of countly directory
 sudo chown -R countly:countly "/home/countly/countly"
-sudo chmod +x "/home/countly/countly/bin/countly.install_ubuntu.sh"

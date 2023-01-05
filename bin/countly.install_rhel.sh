@@ -1,10 +1,6 @@
 #!/bin/bash
-set -e
 
-#if [[ $EUID -ne 0 ]]; then
-#   echo "Please execute Countly installation script with a superuser..." 1>&2
-#   exit 1
-#fi
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
