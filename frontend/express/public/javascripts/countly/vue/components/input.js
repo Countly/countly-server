@@ -929,8 +929,10 @@
                     return;
                 }
                 if (this.uncommittedValue) {
-                    //since we are using v-for
-                    this.$refs.checkListBox[0].saveColumnOrder();
+                    if (this.persistColumnOrderKey) {
+                        //refs returns array as we are using v-for
+                        this.$refs.checkListBox[0].saveColumnOrder();
+                    }
                     this.commitValue(this.uncommittedValue);
                     this.uncommittedValue = null;
                 }
