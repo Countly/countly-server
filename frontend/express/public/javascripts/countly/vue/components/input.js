@@ -333,7 +333,7 @@
             if (this.persistColumnOrderKey && countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistColumnOrderKey] && countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap) {
                 savedSortMap = countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap;
                 Object.keys(savedSortMap).forEach(function(key) {
-                    savedSortMap[key] = parseInt(savedSortMap[key]);
+                    savedSortMap[key] = parseInt(savedSortMap[key], 10);
                 });
             }
             return {

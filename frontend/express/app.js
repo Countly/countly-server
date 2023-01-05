@@ -1711,8 +1711,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     app.post(countlyConfig.path + '/user/settings/column-order', function(req, res) {
         if (!req.session.uid) {
-            res.end();
-            return false;
+            return res.end();
         }
 
         if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
@@ -1733,16 +1732,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 }
             }, { safe: true, upsert: true }, function(err, member) {
                 if (member && !err) {
-                    res.send(true);
+                    return res.send(true);
                 }
-                else {
-                    res.send(false);
-                }
+                return res.send(false);
             });
         }
         else {
-            res.send(false);
-            return false;
+            return res.send(false);
         }
     });
 
