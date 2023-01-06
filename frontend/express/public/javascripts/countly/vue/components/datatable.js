@@ -320,11 +320,14 @@
                 }
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
+                    if (countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistKey].tableSortMap) {
+                        defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
+                    }
                     if (loadedState) {
                         var parsed = JSON.parse(loadedState);
-                        // disable loading of persisted searchQuery
-                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
-                        return parsed;
+                        defaultState.page = parsed.page;
+                        defaultState.perPage = parsed.perPage;
+                        defaultState.sort = parsed.sort;
                     }
                     return defaultState;
                 }
@@ -334,7 +337,21 @@
             },
             setControlParams: function() {
                 if (this.persistKey) {
-                    localStorage.setItem(this.persistKey, JSON.stringify(this.controlParams));
+                    var localControlParams = {};
+                    localControlParams.page = this.controlParams.page;
+                    localControlParams.perPage = this.controlParams.perPage;
+                    localControlParams.sort = this.controlParams.sort;
+                    localStorage.setItem(this.persistKey, JSON.stringify(localControlParams));
+                    $.ajax({
+                        type: "POST",
+                        url: countlyGlobal.path + "/user/settings/column-order",
+                        data: {
+                            "tableSortMap": this.controlParams.selectedDynamicCols,
+                            "columnOrderKey": this.persistKey,
+                            _csrf: countlyGlobal.csrf_token
+                        },
+                        success: function() { }
+                    });
                 }
             }
         }
