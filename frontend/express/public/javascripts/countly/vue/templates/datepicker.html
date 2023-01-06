@@ -47,7 +47,7 @@
                             <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
-                            <template v-if="isRange">
+                            <template v-if="isRange && !displayOneMode">
                                 <el-input size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
                                 <span class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
                                 <el-input size="small" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>

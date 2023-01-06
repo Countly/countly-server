@@ -828,6 +828,11 @@
                 type: String,
                 default: null,
                 required: false
+            },
+            displayOneMode: {
+                type: String,
+                default: null,
+                required: false
             }
         },
         data: function() {
@@ -1000,6 +1005,9 @@
                 this.refreshCalendarDOM();
                 if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
                     this.inputDisable = true;
+                }
+                if (this.displayOneMode && this.displayOneMode.length) {
+                    this.rangeMode = this.displayOneMode;
                 }
             },
             handleCustomRangeClick: function() {
