@@ -192,7 +192,8 @@
     function getInitialState(instance) {
         var formatter = null,
             tableType = "",
-            globalRange = null;
+            globalRange = null,
+            inputDisable = false;
 
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
@@ -203,6 +204,10 @@
             formatter = "YYYY-MM-DD";
             tableType = "date";
             globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
+        }
+
+        if (this.retentionConfiguration) {
+            inputDisable = true;
         }
 
         var state = {
@@ -229,6 +234,8 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
+            tableTypeMapper: {months: "month", weeks: "week", days: "date"},
+            inputDisable: inputDisable,
             globalMonthsRange: globalMonthsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
@@ -395,12 +402,22 @@
                 var inputObj = null;
                 switch (this.rangeMode) {
                 case 'inBetween':
-                    this.tableType = "date";
-                    inputObj = this.inBetweenInput.parsed;
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "date";
+                    if (this.tableType === "week") {
+                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                    }
+                    else {
+                        inputObj = this.inBetweenInput.parsed;
+                    }
                     break;
                 case 'since':
-                    this.tableType = "date";
-                    inputObj = this.sinceInput.parsed;
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "date";
+                    if (this.tableType === "week") {
+                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                    }
+                    else {
+                        inputObj = this.sinceInput.parsed;
+                    }
                     break;
                 case 'onm':
                     this.tableType = "date";
@@ -526,6 +543,10 @@
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.minDate).endOf("day").toDate();
                     }
+                    else if (this.tableType === "week") {
+                        minDate = moment(val.minDate).startOf("week").toDate();
+                        maxDate = moment(val.maxDate).endOf("week").toDate();
+                    }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.minDate).endOf("month").toDate();
@@ -580,6 +601,16 @@
                     else if (this.tableType === "week") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.maxDate).endOf("day").toDate();
+
+                        if (this.retentionConfiguration) {
+                            minDate = moment(val.minDate).startOf("week").toDate();
+                            if (this.retentionConfiguration === "weeks") {
+                                maxDate = moment(val.maxDate).endOf("week").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("week").toDate();
+                            }
+                            else {
+                                maxDate = moment(val.maxDate).endOf("week").toDate();
+                            }
+                        }
                     }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
@@ -625,7 +656,9 @@
                 else {
                     anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 }
-                this.$refs.vs.scrollIntoView(anchorClass);
+                if (this.$refs.vs) {
+                    this.$refs.vs.scrollIntoView(anchorClass);
+                }
             },
             resetRangeState: function() {
                 this.rangeState = {
@@ -790,6 +823,11 @@
             },
             popClass: {
                 type: String
+            },
+            retentionConfiguration: {
+                type: String,
+                default: null,
+                required: false
             }
         },
         data: function() {
@@ -817,6 +855,11 @@
             'isFuture': function() {
                 Object.assign(this.$data, getInitialState(this));
                 this.loadValue(this.value);
+            },
+            retentionConfiguration: function(newVal) {
+                this.inTheLastInput.raw.text = "1";
+                this.inTheLastInput.raw.level = newVal;
+                this.tableType = this.tableTypeMapper[newVal];
             }
         },
         methods: {
@@ -929,7 +972,9 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
-                this.tableType = "date";
+                if (!this.retentionConfiguration) {
+                    this.tableType = "date";
+                }
                 this.abortPicking();
                 this.clearCommitWarning(true);
                 if (aborted) {
@@ -953,6 +998,9 @@
             handleDropdownShow: function() {
                 this.isVisible = true;
                 this.refreshCalendarDOM();
+                if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
+                    this.inputDisable = true;
+                }
             },
             handleCustomRangeClick: function() {
                 if (this.allowCustomRange) {
