@@ -602,8 +602,10 @@
                 });
             },
             onFocus: function() {
-                this.back = true;
-                app.navigate("#/manage/configurations/search");
+                if (this.searchQuery === "") {
+                    this.back = true;
+                    this.selectedConfigSearchBar = "search";
+                }
             },
             onEnterSearch: function() {
                 var self = this;
