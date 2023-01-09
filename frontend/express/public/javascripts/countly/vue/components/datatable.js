@@ -604,12 +604,7 @@
                 type: Boolean,
                 default: true,
                 required: false
-            },
-            customExportFieldNames: {
-                type: Object,
-                default: null,
-                required: false
-            },
+            }
         },
         watch: {
             customFileName: function(newVal) {
