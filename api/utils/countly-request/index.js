@@ -49,3 +49,9 @@ module.exports.post = function(options, callback) {
     options.method = 'POST';
     module.exports(options, callback);
 };
+
+//Add a get method to the request object
+module.exports.get = function(options, callback) {
+    options.method = 'GET';
+    module.exports(options, callback); 
+};
