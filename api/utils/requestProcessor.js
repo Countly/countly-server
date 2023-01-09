@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('request');
+const request = require('countly-request');
 
 var loaded_configs_time = 0;
 

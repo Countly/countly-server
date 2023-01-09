@@ -5,7 +5,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
     config = require("../../../../frontend/express/config.js"),
     moment = require('moment-timezone'),
-    request = require('request');
+    request = require('countly-request');
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {

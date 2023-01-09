@@ -1,5 +1,5 @@
 var https = require("https");
-var request = require("request");
+var request = require("countly-request");
 var fs = require('fs');
 var path = require("path");
 var dir = path.resolve(__dirname, '../../../');
