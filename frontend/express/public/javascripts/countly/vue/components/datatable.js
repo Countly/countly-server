@@ -681,7 +681,9 @@
                                     property = this.rows[r];
                                     var dotSplittedArr = columnKey.split(".");
                                     for (var i = 0; i < dotSplittedArr.length; i++) {
-                                        property = property[dotSplittedArr[i]];
+                                        if (property[dotSplittedArr[i]]) {
+                                            property = property[dotSplittedArr[i]];
+                                        }
                                     }
                                 }
                                 else {
