@@ -1925,34 +1925,62 @@ const processRequest = (params) => {
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
                         common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+                            if (err) {
+                                common.returnMessage(params, 400, err);
+                            }
+                            else {
+                                var filename = data.report_name || data.name + ".csv";
+                                var type = filename.split(".");
+                                type = type[type.length - 1];
+                                var myfile = paths[4];
 
-                            var filename = data.report_name;
-                            var type = filename.split(".");
-                            type = type[type.length - 1];
-                            var myfile = paths[4];
-
-                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
-                                if (error) {
-                                    common.returnMessage(params, 400, error);
-                                }
-                                else if (parseInt(size) === 0) {
-                                    common.returnMessage(params, 400, "Export size is 0");
-                                }
-                                else {
-                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
-                                        if (err5) {
-                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
+                                    if (err2) {
+                                        common.returnMessage(params, 400, err2);
+                                    }
+                                    else if (parseInt(size) === 0) {
+                                        if (params.qstring.app_id) {
+                                            common.returnMessage(params, 400, "Export size is 0");
                                         }
-                                        else {
-                                            var headers = {};
-                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
-                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
-                                            params.res.writeHead(200, headers);
-                                            stream.pipe(params.res);
+                                        else if (data.data) {
+                                            var dataToSave = countlyApi.data.exports.convertData(JSON.parse(data.data), type);
+                                            countlyFs.gridfs.saveData("task_results", myfile, dataToSave, {id: myfile}, function(err3, res2) {
+                                                if (err3) {
+                                                    console.log(err3);
+                                                }
+                                                if (res2) {
+                                                    countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err4, stream) {
+                                                        if (err4) {
+                                                            common.returnMessage(params, 400, "Export stream does not exist");
+                                                        }
+                                                        else {
+                                                            var headers = {};
+                                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                            params.res.writeHead(200, headers);
+                                                            stream.pipe(params.res);
+                                                        }
+                                                    });
+                                                }
+                                            });
                                         }
-                                    });
-                                }
-                            });
+                                    }
+                                    else {
+                                        countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err5, stream) {
+                                            if (err5) {
+                                                common.returnMessage(params, 400, "Export stream does not exist");
+                                            }
+                                            else {
+                                                var headers = {};
+                                                headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                params.res.writeHead(200, headers);
+                                                stream.pipe(params.res);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
 
                         });
                     }
