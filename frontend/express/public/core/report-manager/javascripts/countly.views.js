@@ -303,12 +303,7 @@
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
             },
             isDownloadable: function(row) {
-                if (["views", "dbviewer", "tableExport"].includes(row.type)) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+                return ["views", "dbviewer", "tableExport"].includes(row.type);
             },
             isStopable: function(row) {
                 if (row.status === "running" && row.op_id && row.comment_id) {
@@ -387,7 +382,9 @@
                     }
                     else if (command === "download-task") {
                         self.$emit("download-task", row);
-                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                        //var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                        var app_id = row.type === "dbviewer" ? "" : "&app_id=" + row.app_id + "";
+                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + app_id;
                         window.location = link;
                     }
                 }
