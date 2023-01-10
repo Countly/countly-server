@@ -258,7 +258,6 @@
                     success: function(data) {
                         if (data.hooksList && data.hooksList.length === 1) {
                             var record = data.hooksList[0];
-                            record.triggerEfectDomForExport = hooksPlugin.generateTriggerActionsTreeForExport(record);
                             record.triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(record);
                             record._canUpdate = countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
                             record._canDelete = countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
@@ -388,7 +387,6 @@
 
 
                             var triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(row);
-                            var triggerEffectDomForExport = hooksPlugin.generateTriggerActionsTreeForExport(row);
 
                             tableData.push({
                                 _id: hookList[i]._id,
@@ -406,7 +404,6 @@
                                 created_at: hookList[i].created_at || 0,
                                 created_at_string: moment(hookList[i].created_at).fromNow(),
                                 triggerEffectColumn: triggerEffectDom || "",
-                                triggerEffectForExport: triggerEffectDomForExport || "",
                                 _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
                                 _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
                             });
