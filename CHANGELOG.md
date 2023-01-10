@@ -1,21 +1,22 @@
 ## Version 22.09.10
 Fixes:
-- [ui] table export column titles are not user friendly
 - [logger] removing potentially sensitive info from headers
 - [settings] small fixes to search in settings
+- [ui] table export column titles are not user friendly
 
 Enterprise fixes:
-- [oidc] generate password moved to common
 - [attribution] added typo control for platform when parsing user-agent parameters. 
-- [surveys] completed_surveys uses _id field, not uid field
 - [data-manager] invalid values on opening form when editing transformation with regexp in data-manager
+- [oidc] add same site cookie fallback
+- [oidc] generate password moved to common
+- [surveys] completed_surveys uses _id field, not uid field
 
 ## Version 22.09.9
 Fixes:
-- [push] logging crashing issue
-- [crashes] use real session as fallback in crash stats
-- [crashes] rename bi to bn
 - [applications] prevent used app_key in front and back end
+- [crashes] rename bi to bn
+- [crashes] use real session as fallback in crash stats
+- [push] logging crashing issue
 
 Enterprise fixes:
 - [ab-testing] add Ubuntu 22 support and remove CentOS 6 support on AB testing
