@@ -102,7 +102,8 @@ sudo yum -y install sendmail
 sudo service sendmail start
 
 #install npm modules
-npm config set prefix "$HOME/.local/"
+HOME="$DIR/../"
+npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
 
 #install numactl
