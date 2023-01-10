@@ -35,7 +35,7 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="240" class="is-clickable">
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true" prop="name"  min-width="240" class="is-clickable">
                 <template slot-scope="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
@@ -44,7 +44,7 @@
                 </template>
             </el-table-column> 
 
-            <el-table-column min-width="270" >
+            <el-table-column min-width="270" prop="triggerEffectColumn" label="Trigger -> Actions">
             <template v-slot:header="scope">
                <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
             </template>
@@ -66,7 +66,7 @@
             </template>
 
 
-            <el-table-column :label="i18n('hooks.create-by')" min-width="150" sortable="true">
+            <el-table-column :label="i18n('hooks.create-by')" prop="createdByUser" min-width="150" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
                         <div >
