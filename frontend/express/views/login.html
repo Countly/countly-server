@@ -123,9 +123,6 @@
 					$('#notification-image').attr("src", "images/icons/notification-toast-successful.svg")
 				}
 				else{
-					if(resetResultMessage.indexOf("invalid") !== -1 || resetResultMessage.indexOf(",") !== -1){
-						resetResultMessage = "reset.invalid"
-					}
 					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-destructive');
 					$('#notification-image').attr("src", "images/icons/notification-toast-destructive.svg")
 				}
