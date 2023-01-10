@@ -1929,7 +1929,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, err);
                             }
                             else {
-                                var filename = data.report_name || data.name + ".csv";
+                                var filename = data.report_name;
                                 var type = filename.split(".");
                                 type = type[type.length - 1];
                                 var myfile = paths[4];
@@ -1939,16 +1939,19 @@ const processRequest = (params) => {
                                         common.returnMessage(params, 400, err2);
                                     }
                                     else if (parseInt(size) === 0) {
-                                        if (params.qstring.app_id) {
+                                        if (data.type !== "dbviewer") {
                                             common.returnMessage(params, 400, "Export size is 0");
                                         }
-                                        else if (data.data) {
-                                            var dataToSave = countlyApi.data.exports.convertData(JSON.parse(data.data), type);
-                                            countlyFs.gridfs.saveData("task_results", myfile, dataToSave, {id: myfile}, function(err3, res2) {
+                                        //handling older aggregations aren't saved in countly_fs
+                                        else if (!data.gridfs && data.data) {
+                                            console.log("here");
+                                            type = "json";
+                                            filename = data.name + "." + type;
+                                            countlyFs.gridfs.saveData("task_results", myfile, data.data, {id: myfile}, function(err3) {
                                                 if (err3) {
                                                     console.log(err3);
                                                 }
-                                                if (res2) {
+                                                else {
                                                     countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err4, stream) {
                                                         if (err4) {
                                                             common.returnMessage(params, 400, "Export stream does not exist");
