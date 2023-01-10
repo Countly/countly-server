@@ -5,6 +5,7 @@
         class="cly-vue-hook-table is-clickable"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false"
+        :exportFormat="formatExportFunction"
         :available-dynamic-cols="tableDynamicCols" >
         <template v-slot:header-left="scope">
             <div class="bu-mr-2">
@@ -44,7 +45,7 @@
                 </template>
             </el-table-column> 
 
-            <el-table-column min-width="270" prop="triggerEffectColumn" label="Trigger -> Actions">
+            <el-table-column min-width="270" label="Trigger -> Actions">
             <template v-slot:header="scope">
                <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
             </template>

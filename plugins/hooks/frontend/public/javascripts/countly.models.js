@@ -136,6 +136,64 @@
         return triggerEffectDom;
     };
 
+    hooksPlugin.generateTriggerActionsTreeForExport = function(row) {
+        var triggerNames = {
+            "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
+            "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingData"],
+            "InternalEventTrigger": jQuery.i18n.map["hooks.internal-event-selector-title"],
+            "ScheduledTrigger": jQuery.i18n.map["hooks.ScheduledTrigger"],
+        };
+        var triggerText = triggerNames[row.trigger.type];
+        var triggerDesc = '';
+        try {
+            if (row.trigger.type === "IncomingDataTrigger") {
+                var event = row.trigger.configuration.event;
+                var parts = event[0].split("***");
+                triggerDesc = ' ' + parts[1] + ' ';
+            }
+
+            if (row.trigger.type === "APIEndPointTrigger") {
+                var path = row.trigger.configuration.path;
+                triggerDesc = ' ' + path + ' ';
+            }
+
+            if (row.trigger.type === "InternalEventTrigger") {
+                var eventType = row.trigger.configuration.eventType;
+                triggerDesc = ' ' + eventType + ' ';
+            }
+        }
+        catch (e) {
+            //silent catch
+        }
+
+        var effectNames = {
+            "EmailEffect": jQuery.i18n.map["hooks.EmailEffect"],
+            "HTTPEffect": jQuery.i18n.map["hooks.HTTPEffect"],
+            "CustomCodeEffect": jQuery.i18n.map["hooks.CustomCodeEffect"],
+        };
+        var effectList = "";
+        var arrow = ' -> ';
+        row.effects.forEach(function(effect) {
+            effectList += arrow + (effectNames[effect.type] && effectNames[effect.type].toUpperCase()) + ' ';
+            if (effect.type === "EmailEffect") {
+                effectList += ' ' + effect.configuration.address + ' ';
+            }
+            if (effect.type === "HTTPEffect") {
+                effectList += ' ' + effect.configuration.url + ' ';
+            }
+            if (effect.type === "CustomCodeEffect") {
+                effectList += ' ' + effect.configuration.code + ' ';
+            }
+        });
+
+        var triggerEffectDom = triggerText.toUpperCase() + ' ';
+        triggerEffectDom += triggerDesc;
+        triggerEffectDom += ' ';
+        triggerEffectDom += effectList;
+        triggerEffectDom += ' ';
+        return triggerEffectDom;
+    };
+
     hooksPlugin.getVuexModule = function() {
         var getEmptyState = function() {
             return {
@@ -200,6 +258,7 @@
                     success: function(data) {
                         if (data.hooksList && data.hooksList.length === 1) {
                             var record = data.hooksList[0];
+                            record.triggerEfectDomForExport = hooksPlugin.generateTriggerActionsTreeForExport(record);
                             record.triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(record);
                             record._canUpdate = countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
                             record._canDelete = countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
@@ -329,6 +388,8 @@
 
 
                             var triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(row);
+                            var triggerEffectDomForExport = hooksPlugin.generateTriggerActionsTreeForExport(row);
+
                             tableData.push({
                                 _id: hookList[i]._id,
                                 name: hookList[i].name || '',
@@ -345,6 +406,7 @@
                                 created_at: hookList[i].created_at || 0,
                                 created_at_string: moment(hookList[i].created_at).fromNow(),
                                 triggerEffectColumn: triggerEffectDom || "",
+                                triggerEffectForExport: triggerEffectDomForExport || "",
                                 _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
                                 _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
                             });
