@@ -1620,9 +1620,14 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
                         }
-                        if (params.qstring.app_id) {
+                        if (params.qstring.app_id && params.qstring.app_id !== "") {
                             params.qstring.query.$and.push({"app_id": params.qstring.app_id});
                         }
+                        else if (params.qstring.app_independent === true) {
+                            console.log(params.qstring.app_independent);
+                            params.qstring.query.$and.push({"app_id": "undefined"});
+                        }
+
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and.push({"$or": Object.assign([], params.qstring.query.$or) });
                             delete params.qstring.query.$or;

@@ -163,7 +163,8 @@
             },
             availableDataSources: function() {
                 var obj = {
-                    "all": CV.i18n("report-manager.app-independent")
+                    "all": CV.i18n("report-manager.all-sources"),
+                    "independent": CV.i18n("report-manager.app-independent")
                 };
                 if (countlyGlobal.apps && Object.keys(countlyGlobal.apps).length !== 0) {
                     for (var app in countlyGlobal.apps) {
@@ -173,9 +174,12 @@
                 return obj;
             },
             selectedAppId: function() {
-                return (this.currentFilter.selectedDataSource && this.currentFilter.selectedDataSource !== "all")
+                return (this.currentFilter.selectedDataSource && !["all", "independent"].includes(this.currentFilter.selectedDataSource))
                     ? this.currentFilter.selectedDataSource
                     : null;
+            },
+            isAppIndependent: function() {
+                return this.currentFilter.selectedDataSource && this.currentFilter.selectedDataSource === "independent";
             }
         },
         watch: {
@@ -204,6 +208,7 @@
                         url: countlyCommon.API_PARTS.data.r + "/tasks/list",
                         data: {
                             app_id: self.selectedAppId,
+                            app_independent: self.isAppIndependent,
                             query: JSON.stringify(queryObject),
                         }
                     };
@@ -382,7 +387,6 @@
                     }
                     else if (command === "download-task") {
                         self.$emit("download-task", row);
-                        //var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                         var app_id = row.type === "dbviewer" ? "" : "&app_id=" + row.app_id + "";
                         var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + app_id;
                         window.location = link;
