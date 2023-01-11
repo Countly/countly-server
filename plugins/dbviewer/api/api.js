@@ -287,7 +287,7 @@ var spawn = require('child_process').spawn,
                 else {
                     var name = 'Aggregation-' + Date.now();
                     var taskCb = taskManager.longtask({
-                        db: dbs[dbNameOnParam],
+                        db: common.db,
                         threshold: plugins.getConfig("api").request_threshold,
                         params: params,
                         type: "dbviewer",
