@@ -1,6 +1,6 @@
 <div>
     <cly-datatable-n :rows="ratings">
-        <el-table-column prop="widget" :label="i18n('feedback.widget-id')">
+        <el-table-column prop="widget" column-key="widget_id" :label="i18n('feedback.widget-id')">
             <template v-slot="rowScope">
               <div class="text-medium">
                 {{ rowScope.row.widget_id }}
@@ -14,7 +14,7 @@
               </span>
           </template>
         </el-table-column>
-        <el-table-column prop="time" :label="i18n('feedback.time')">
+        <el-table-column prop="time" column-key="ts" :label="i18n('feedback.time')">
           <template v-slot="rowScope">
               <span v-html="rowScope.row.ts" class="text-medium"></span>
           </template>

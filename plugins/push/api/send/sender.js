@@ -183,13 +183,15 @@ class Sender {
                 /**
                  * Periodic check to ensure mongo stream is closed once no more data is sent
                  */
-                check = function() {
+                check = () => {
                     if (last === null) {
-                        // do nothing, already closed
+                        // do nothing, already unpiped
                     }
-                    else if (last + 60 * 1000 < Date.now()) {
+                    else if (last + 120000 < Date.now()) {
+                        this.log.w('Streaming timeout, ignoring the rest');
                         last = null;
-                        connector.destroy(new PushError('Streaming timeout'));
+                        pushes.unpipe(connector);
+                        // connector.destroy(new PushError('Streaming timeout'));
                     }
                     else {
                         setTimeout(check, 10000);

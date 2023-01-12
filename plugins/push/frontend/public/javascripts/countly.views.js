@@ -2090,6 +2090,7 @@
                 this.isHuaweiConfigTouched = false;
                 this.isIOSConfigTouched = false;
                 this.uploadedIOSKeyFilename = '';
+                this.cohortOptions = [];
             },
             onIOSAuthTypeChange: function(value) {
                 this.iosAuthConfigType = value;
@@ -2308,19 +2309,25 @@
                 this.isDialogVisible = true;
             },
             fetchCohortsIfNotFound: function() {
-                var self = this;
+                var self = this, appId = this.selectedAppId;
                 if (this.cohortOptions && this.cohortOptions.length) {
                     return;
                 }
                 this.isFetchCohortsLoading = true;
-                countlyPushNotification.service.fetchCohorts()
+                countlyPushNotification.service.fetchCohorts(undefined, undefined, self.selectedAppId)
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function(error) {
                         console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
-                        self.isFetchCohortsLoading = false;
+                        if (appId !== self.selectedAppId) {
+                            self.setCohortOptions([]);
+                            self.fetchCohortsIfNotFound();
+                        }
+                        else {
+                            self.isFetchCohortsLoading = false;
+                        }
                     });
             },
             fetchTestUsers: function() {

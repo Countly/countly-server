@@ -39,7 +39,7 @@ class EmailEffect {
             return new Promise((resolve) => {
                 mail.sendMail(msg, (e) => {
                     if (e) {
-                        logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                        logs.push(`Error: ${e.message}`);
                         utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                         log.e("[hooks email effect]", e);
                     }
@@ -56,7 +56,8 @@ class EmailEffect {
                     formatedEmailContent = formatedEmailContent.replace(/\n/g, "<br />");
                 }
                 catch (e) {
-                    log.e(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                    log.e(`Error: ${e.message}`);
+                    log.e("[hooks email effect]", e);
                 }
 
             }

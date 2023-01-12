@@ -25,7 +25,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 		fi
 		# shellcheck disable=SC1091
 		python3.8 -m pip install -r /opt/countly/plugins/ab-testing/api/bayesian/requirements.txt
-		cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
+		cd /opt/countly/plugins/ab-testing/api/bayesian && python3.8 model.py
 	fi
 
 	# install monngodb tools to have mongoexport

@@ -104,10 +104,10 @@ async function removeUsers(appId, uids, error = 'consent') {
     await common.db.collection('push').deleteMany({_id: {$in: ids}});
 
     if (error === 'consent') {
-        await common.db.collection(`push_${appId}`).deleteMany({_id: {$in: uids}});
+        await common.db.collection(`push_${appId}`).updateMany({_id: {$in: uids}}, {$set: {tk: {}}});
     }
     else if (error === 'purge') {
-        await common.db.collection(`push_${appId}`).updateMany({_id: {$in: uids}}, {$set: {tk: {}}});
+        await common.db.collection(`push_${appId}`).deleteMany({_id: {$in: uids}});
     }
     else {
         throw new PushError('Invalid error value in removeUsers');

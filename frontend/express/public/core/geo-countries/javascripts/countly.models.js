@@ -5,7 +5,12 @@
 
     countlyCountry.service = {
         fetchData: function() {
-            return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
+            return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"))
+                .then(function() {
+                })
+                .catch(function(err) {
+                    return err;
+                });
         },
         calculateData: function() {
             countlyCountry.setDb(countlySession.getDb());

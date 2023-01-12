@@ -342,6 +342,11 @@ var CountriesHomeWidget = countlyVue.views.create({
             }
             return geoChart;
         },
+    },
+    watch: {
+        selectedProperty: function() {
+            this.refresh();
+        }
     }
 });
 
