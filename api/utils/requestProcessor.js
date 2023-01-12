@@ -1930,60 +1930,61 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'download': {
-                    if (paths[4] && paths[4] !== '') {
-                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
-                            if (err) {
-                                common.returnMessage(params, 400, err);
-                            }
-                            else {
-                                var filename = data.report_name;
-                                var type = filename.split(".");
-                                type = type[type.length - 1];
-                                var myfile = paths[4];
-                                var headers = {};
+                    validateRead(params, "core", () => {
+                        if (paths[4] && paths[4] !== '') {
+                            common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    var filename = data.report_name;
+                                    var type = filename.split(".");
+                                    type = type[type.length - 1];
+                                    var myfile = paths[4];
+                                    var headers = {};
 
-                                countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
-                                    if (err2) {
-                                        common.returnMessage(params, 400, err2);
-                                    }
-                                    else if (parseInt(size) === 0) {
-                                        if (data.type !== "dbviewer") {
-                                            common.returnMessage(params, 400, "Export size is 0");
+                                    countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
+                                        if (err2) {
+                                            common.returnMessage(params, 400, err2);
                                         }
-                                        //handling older aggregations that aren't saved in countly_fs
-                                        else if (!data.gridfs && data.data) {
-                                            type = "json";
-                                            filename = data.name + "." + type;
-                                            headers = {};
-                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
-                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
-                                            params.res.writeHead(200, headers);
-                                            params.res.write(data.data);
-                                            params.res.end();
-                                        }
-                                    }
-                                    else {
-                                        countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err5, stream) {
-                                            if (err5) {
-                                                common.returnMessage(params, 400, "Export stream does not exist");
+                                        else if (parseInt(size) === 0) {
+                                            if (data.type !== "dbviewer") {
+                                                common.returnMessage(params, 400, "Export size is 0");
                                             }
-                                            else {
+                                            //handling older aggregations that aren't saved in countly_fs
+                                            else if (!data.gridfs && data.data) {
+                                                type = "json";
+                                                filename = data.name + "." + type;
                                                 headers = {};
                                                 headers["Content-Type"] = countlyApi.data.exports.getType(type);
                                                 headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
                                                 params.res.writeHead(200, headers);
-                                                stream.pipe(params.res);
+                                                params.res.write(data.data);
+                                                params.res.end();
                                             }
-                                        });
-                                    }
-                                });
-                            }
-
-                        });
-                    }
-                    else {
-                        common.returnMessage(params, 400, 'Missing filename');
-                    }
+                                        }
+                                        else {
+                                            countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err5, stream) {
+                                                if (err5) {
+                                                    common.returnMessage(params, 400, "Export stream does not exist");
+                                                }
+                                                else {
+                                                    headers = {};
+                                                    headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                    headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                    params.res.writeHead(200, headers);
+                                                    stream.pipe(params.res);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Missing filename');
+                        }
+                    });
                     break;
                 }
                 case 'data':

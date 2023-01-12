@@ -389,8 +389,8 @@
                     }
                     else if (command === "download-task") {
                         self.$emit("download-task", row);
-                        var app_id = row.type === "dbviewer" ? "" : "&app_id=" + row.app_id + "";
-                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + app_id;
+                        var app_id = row.app_id && row.app_id !== "undefined" ? row.app_id : countlyCommon.ACTIVE_APP_ID;
+                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + app_id;
                         window.location = link;
                     }
                 }
