@@ -174,12 +174,14 @@
                 return obj;
             },
             selectedAppId: function() {
-                return (this.currentFilter.selectedDataSource && !["all", "independent"].includes(this.currentFilter.selectedDataSource))
-                    ? this.currentFilter.selectedDataSource
-                    : null;
+                return (this.currentFilter.selectedDataSource && ["all", "independent"].includes(this.currentFilter.selectedDataSource))
+                    ? countlyCommon.ACTIVE_APP_ID
+                    : this.currentFilter.selectedDataSource;
             },
-            isAppIndependent: function() {
-                return this.currentFilter.selectedDataSource && this.currentFilter.selectedDataSource === "independent";
+            dataSource: function() {
+                if (this.currentFilter.selectedDataSource && ["all", "independent"].includes(this.currentFilter.selectedDataSource)) {
+                    return this.currentFilter.selectedDataSource;
+                }
             }
         },
         watch: {
@@ -208,7 +210,7 @@
                         url: countlyCommon.API_PARTS.data.r + "/tasks/list",
                         data: {
                             app_id: self.selectedAppId,
-                            app_independent: self.isAppIndependent,
+                            data_source: self.dataSource,
                             query: JSON.stringify(queryObject),
                         }
                     };

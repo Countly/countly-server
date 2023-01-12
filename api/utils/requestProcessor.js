@@ -1620,12 +1620,14 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
                         }
-                        if (params.qstring.app_id && params.qstring.app_id !== "") {
-                            params.qstring.query.$and.push({"app_id": params.qstring.app_id});
-                        }
-                        else if (params.qstring.app_independent === true) {
-                            console.log(params.qstring.app_independent);
-                            params.qstring.query.$and.push({"app_id": "undefined"});
+
+                        if (params.qstring.data_source !== "all" && params.qstring.app_id) {
+                            if (params.qstring.data_source === "independent") {
+                                params.qstring.query.$and.push({"app_id": "undefined"});
+                            }
+                            else {
+                                params.qstring.query.$and.push({"app_id": params.qstring.app_id});
+                            }
                         }
 
                         if (params.qstring.query.$or) {
@@ -1938,6 +1940,7 @@ const processRequest = (params) => {
                                 var type = filename.split(".");
                                 type = type[type.length - 1];
                                 var myfile = paths[4];
+                                var headers = {};
 
                                 countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
                                     if (err2) {
@@ -1947,30 +1950,16 @@ const processRequest = (params) => {
                                         if (data.type !== "dbviewer") {
                                             common.returnMessage(params, 400, "Export size is 0");
                                         }
-                                        //handling older aggregations aren't saved in countly_fs
+                                        //handling older aggregations that aren't saved in countly_fs
                                         else if (!data.gridfs && data.data) {
-                                            console.log("here");
                                             type = "json";
                                             filename = data.name + "." + type;
-                                            countlyFs.gridfs.saveData("task_results", myfile, data.data, {id: myfile}, function(err3) {
-                                                if (err3) {
-                                                    console.log(err3);
-                                                }
-                                                else {
-                                                    countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err4, stream) {
-                                                        if (err4) {
-                                                            common.returnMessage(params, 400, "Export stream does not exist");
-                                                        }
-                                                        else {
-                                                            var headers = {};
-                                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
-                                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
-                                                            params.res.writeHead(200, headers);
-                                                            stream.pipe(params.res);
-                                                        }
-                                                    });
-                                                }
-                                            });
+                                            headers = {};
+                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                            params.res.writeHead(200, headers);
+                                            params.res.write(data.data);
+                                            params.res.end();
                                         }
                                     }
                                     else {
@@ -1979,7 +1968,7 @@ const processRequest = (params) => {
                                                 common.returnMessage(params, 400, "Export stream does not exist");
                                             }
                                             else {
-                                                var headers = {};
+                                                headers = {};
                                                 headers["Content-Type"] = countlyApi.data.exports.getType(type);
                                                 headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
                                                 params.res.writeHead(200, headers);
