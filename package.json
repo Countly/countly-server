@@ -81,7 +81,7 @@
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
     "object-hash": "3.0.0",
-    "offline-geocoder": "github:iartem/offline-geocoder",
+    "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.3.1",
     "puppeteer": "17.1.3",
     "request": "2.88.2",
