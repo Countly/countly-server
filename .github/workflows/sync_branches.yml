@@ -1,6 +1,15 @@
 name: Sync multiple branches
 on:
   workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source branch'
+        required: true
+        default: "master"
+      destination:
+        description: 'Destination branch'
+        required: true
+        default: "next"
 jobs:
   sync-branch:
     runs-on: ubuntu-latest
@@ -11,6 +20,6 @@ jobs:
         uses: devmasx/merge-branch@master
         with:
           type: now
-          from_branch: master
-          target_branch: next
+          from_branch: ${{ inputs.source }}
+          target_branch: ${{ inputs.destination }}
           github_token: ${{ secrets.BRANCH_SYNC }}
