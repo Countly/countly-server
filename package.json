@@ -46,7 +46,6 @@
     "csvtojson": "2.0.10",
     "docdash": "2.0.1",
     "ejs": "3.1.8",
-    "element-tiptap": "^1.27.1",
     "errorhandler": "1.5.1",
     "express": "4.18.2",
     "express-rate-limit": "6.7.0",
