@@ -23,7 +23,7 @@
                             <a :href="rowScope.row.homepage" target="_blank">{{ rowScope.row.name }}</a>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="desc" :label="i18n('plugins.description')">
+                    <el-table-column prop="desc" column-key="description" :label="i18n('plugins.description')">
                         <template v-slot="rowScope">
                             <div style="white-space: normal;" v-html="rowScope.row.description"> 
                             </div>

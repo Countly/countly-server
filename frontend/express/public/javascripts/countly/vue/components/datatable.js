@@ -674,12 +674,50 @@
                 if (this.exportFormat) {
                     return this.exportFormat(this.rows);
                 }
-                return this.rows;
+                else {
+                    return this.formatExportFunction();
+                }
+            },
+            formatExportFunction: function() {
+                if (this.rows && this.rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                    var table = [];
+                    var columns = this.$refs.elTable.columns;
+                    columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
+                    for (var r = 0; r < this.rows.length; r++) {
+                        var item = {};
+                        for (var c = 0; c < columns.length; c++) {
+                            var property;
+                            if (columns[c].columnKey && columns[c].columnKey.length) {
+                                var columnKey = columns[c].columnKey;
+                                if (columnKey.includes(".")) {
+                                    property = this.rows[r];
+                                    var dotSplittedArr = columnKey.split(".");
+                                    for (var i = 0; i < dotSplittedArr.length; i++) {
+                                        if (property[dotSplittedArr[i]]) {
+                                            property = property[dotSplittedArr[i]];
+                                        }
+                                    }
+                                }
+                                else {
+                                    property = this.rows[r][columnKey];
+                                }
+                            }
+                            else {
+                                property = this.rows[r][columns[c].property];
+                            }
+                            item[columns[c].label.toUpperCase()] = property;
+                        }
+                        table.push(item);
+                    }
+                    return table;
+                }
+                else {
+                    return this.rows;
+                }
             },
             initiateExport: function(params) {
                 var formData = null,
                     url = null;
-
                 if (this.exportApi) {
                     formData = this.exportApi();
                     formData.type = params.type;

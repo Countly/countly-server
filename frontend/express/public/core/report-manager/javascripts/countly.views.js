@@ -130,19 +130,58 @@
                 if (this.fixedOrigin) {
                     q.type = this.fixedOrigin;
                 }
-                else if (this.selectedOrigin && this.selectedOrigin !== "all") {
-                    q.type = this.selectedOrigin;
+                else if (this.currentFilter.selectedOrigin && this.currentFilter.selectedOrigin !== "all") {
+                    q.type = this.currentFilter.selectedOrigin;
                 }
-                if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
-                    q.autoRefresh = this.selectedRunTimeType === "auto-refresh";
+                if (this.currentFilter.selectedRunTimeType && this.currentFilter.selectedRunTimeType !== "all") {
+                    q.autoRefresh = this.currentFilter.selectedRunTimeType === "auto-refresh";
                 }
-                if (this.selectedState && this.selectedState !== "all") {
-                    q.status = this.selectedState;
+                if (this.currentFilter.selectedState && this.currentFilter.selectedState !== "all") {
+                    q.status = this.currentFilter.selectedState;
+                }
+                if (this.currentFilter.selectedOwner && this.currentFilter.selectedOwner !== "all") {
+                    q.creator = countlyGlobal.member._id;
                 }
                 return q;
             },
             remoteOpId: function() {
                 return this.$store.state.countlyTaskManager.opId;
+            },
+            filterSummary: function() {
+                let filters = [
+                    this.availableStates[this.currentFilter.selectedState],
+                    this.availableOwners[this.currentFilter.selectedOwner],
+                    this.availableDataSources[this.currentFilter.selectedDataSource]
+                ];
+                if (!this.fixedOrigin) {
+                    filters.splice(0, 0, this.availableOrigins[this.currentFilter.selectedOrigin]);
+                }
+                if (this.isManual) {
+                    filters.push(this.availableRunTimeTypes[this.currentFilter.selectedRunTimeType]);
+                }
+                return filters.join(", ");
+            },
+            availableDataSources: function() {
+                var obj = {
+                    "all": CV.i18n("report-manager.all-sources"),
+                    "independent": CV.i18n("report-manager.app-independent")
+                };
+                if (countlyGlobal.apps && Object.keys(countlyGlobal.apps).length !== 0) {
+                    for (var app in countlyGlobal.apps) {
+                        obj[app] = countlyGlobal.apps[app].name;
+                    }
+                }
+                return obj;
+            },
+            selectedAppId: function() {
+                return (this.currentFilter.selectedDataSource && ["all", "independent"].includes(this.currentFilter.selectedDataSource))
+                    ? countlyCommon.ACTIVE_APP_ID
+                    : this.currentFilter.selectedDataSource;
+            },
+            dataSource: function() {
+                if (this.currentFilter.selectedDataSource && ["all", "independent"].includes(this.currentFilter.selectedDataSource)) {
+                    return this.currentFilter.selectedDataSource;
+                }
             }
         },
         watch: {
@@ -168,9 +207,11 @@
                     }
                     return {
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/list",
                         data: {
-                            query: JSON.stringify(queryObject)
+                            app_id: self.selectedAppId,
+                            data_source: self.dataSource,
+                            query: JSON.stringify(queryObject),
                         }
                     };
                 },
@@ -238,9 +279,17 @@
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
-                selectedOrigin: "all",
-                selectedRunTimeType: "all",
-                selectedState: "all",
+                availableOwners: {
+                    "all": CV.i18n("report-manager.all-owners"),
+                    "me": CV.i18n("report-manager.my-reports")
+                },
+                currentFilter: {
+                    selectedOrigin: "all",
+                    selectedRunTimeType: "all",
+                    selectedState: "all",
+                    selectedOwner: "all",
+                    selectedDataSource: "all"
+                },
                 lastRequestPayload: {}
             };
         },
@@ -261,12 +310,7 @@
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
             },
             isDownloadable: function(row) {
-                if (row.type === "views" || row.type === "tableExport") {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+                return ["views", "dbviewer", "tableExport"].includes(row.type);
             },
             isStopable: function(row) {
                 if (row.status === "running" && row.op_id && row.comment_id) {
@@ -345,7 +389,8 @@
                     }
                     else if (command === "download-task") {
                         self.$emit("download-task", row);
-                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                        var app_id = row.app_id && row.app_id !== "undefined" ? row.app_id : countlyCommon.ACTIVE_APP_ID;
+                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + app_id;
                         window.location = link;
                     }
                 }
@@ -375,6 +420,26 @@
                     prop: ['aaData']
                 };
                 return apiQueryData;
+            },
+            handleSubmitFilter: function(newFilter) {
+                this.currentFilter = newFilter;
+                this.$refs.filterDropdown.doClose();
+            },
+            handleReloadFilter: function() {
+                //this.$refs.filterDropdown.reload();
+            },
+            handleResetFilter: function() {
+                this.currentFilter = {
+                    selectedOrigin: "all",
+                    selectedRunTimeType: "all",
+                    selectedState: "all",
+                    selectedOwner: "all",
+                    selectedDataSource: "all"
+                };
+            },
+            handleCancelFilter: function() {
+                this.$refs.filterDropdown.doClose();
+                //this.handleReloadFilter();
             }
         }
     }));

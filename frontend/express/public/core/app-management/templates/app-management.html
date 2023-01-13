@@ -137,7 +137,14 @@
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')">
                                                 {{formScope.editedObject.key}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
+                                            <cly-inline-form-field 
+                                                v-else 
+                                                prop="key" 
+                                                :rules="rules(formScope.editedObject)" 
+                                                :custom-messages="customMessages()"
+                                                :label="i18n('management-applications.app-key')" 
+                                                :help="i18n('management-applications.app-key.hint')"
+                                            >
                                                 <el-input
                                                     :readonly="isDisabled()"
                                                     onclick="select()"
@@ -167,7 +174,14 @@
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
                                         </el-button>
                                     </div>
-                                    <cly-diff-helper v-if="!edited && formScope.editedObject.name" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
+                                    <cly-diff-helper 
+                                        v-if="!edited" 
+                                        :diff="compare(formScope.editedObject,apps[selectedApp])" 
+                                        @discard="discardForm()" 
+                                        @save="save(formScope.editedObject)"
+                                        :disabled="isSaveDisabled(formScope.editedObject)"
+                                    >
+                                    </cly-diff-helper>
                                 </template>
                             </cly-form>
                         </div>
