@@ -75,7 +75,7 @@ class ScheduleJob extends J.Job {
                         'result.processed': 0,
                         'state': State.Created | State.Done | State.Error,
                         status: Status.Failed,
-                        'result.error': 'No audience'
+                        'result.error': 'NoAudience'
                     },
                     $unset: {
                         'result.next': 1
@@ -85,13 +85,8 @@ class ScheduleJob extends J.Job {
         }
 
         if (update) {
-            let res = await this.message.update(update, () => {});
-            if (!res) {
-                error = 'Failed to update message';
-            }
-            else {
-                log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
-            }
+            await this.message.update(update, () => {});
+            log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
         }
 
         if (error) {
