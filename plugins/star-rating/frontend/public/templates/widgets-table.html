@@ -14,7 +14,7 @@
                 </el-switch>
               </template>
           </el-table-column>
-          <el-table-column min-width="300" fixed :label="i18n('feedback.ratings-widget-name')">
+          <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
               <div @click="goWidgetDetail(rowScope.row._id)" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">
                   {{rowScope.row.popup_header_text}}
@@ -31,14 +31,14 @@
               </cly-cohort-targeting>
             </template>
           </el-table-column>
-          <el-table-column min-width="150" sortable="true" prop="rating_score" :label="i18n('feedback.rating-score')">
+          <el-table-column min-width="150" sortable="true" prop="rating_score" column-key="ratingScore" :label="i18n('feedback.rating-score')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
                 <span class="bu-is-size-4">
                   {{ rowScope.row.ratingScore }}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column min-width="130" sortable="true" prop="responses" :label="i18n('feedback.responses')">
+          <el-table-column min-width="130" sortable="true" prop="responses" column-key="ratingsCount" :label="i18n('feedback.responses')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
               <span class="text-medium">
                 {{ rowScope.row.ratingsCount }}

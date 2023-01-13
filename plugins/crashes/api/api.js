@@ -389,15 +389,15 @@ plugins.setConfigs("crashes", {
                         report.binary_images = JSON.stringify(report.binary_images);
                         var needs_regeneration = false;
                         for (let k in report.binary_images) {
-                            if (!report.binary_images[k].bi) {
-                                report.binary_images[k].bi = k;
+                            if (!report.binary_images[k].bn) {
+                                report.binary_images[k].bn = k;
                                 needs_regeneration = true;
                             }
                         }
                         if (needs_regeneration) {
                             var newObj = {};
                             for (let k in report.binary_images) {
-                                newObj[report.binary_images[k].bi + "-" + report.binary_images[k].la] = report.binary_images[k];
+                                newObj[report.binary_images[k].bn + "-" + report.binary_images[k].la] = report.binary_images[k];
                             }
                             report.binary_images = newObj;
                         }

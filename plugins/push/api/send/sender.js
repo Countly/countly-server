@@ -183,7 +183,7 @@ class Sender {
                 /**
                  * Periodic check to ensure mongo stream is closed once no more data is sent
                  */
-                check = function() {
+                check = () => {
                     if (last === null) {
                         // do nothing, already unpiped
                     }
