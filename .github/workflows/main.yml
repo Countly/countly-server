@@ -74,6 +74,10 @@ jobs:
       - name: Output MongoDB Logs
         if: ${{ always() }}
         run: sudo cat /var/log/mongodb/mongod.log
+
+      - name: Output Nginx Logs
+        if: ${{ always() }}
+        run: sudo cat /var/log/nginx/error.log
         
       - name: Send slack notification
         id: slack

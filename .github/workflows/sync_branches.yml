@@ -1,6 +1,11 @@
 name: Sync multiple branches
 on:
   workflow_dispatch:
+    inputs:
+      destination:
+        description: 'Destination branch'
+        required: true
+        default: "next"
 jobs:
   sync-branch:
     runs-on: ubuntu-latest
@@ -12,5 +17,7 @@ jobs:
         with:
           type: now
           from_branch: master
-          target_branch: next
+          target_branch: "$DEST"
           github_token: ${{ secrets.BRANCH_SYNC }}
+        env:
+          DEST: ${{ inputs.destination }}
