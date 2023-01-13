@@ -16,7 +16,7 @@ jobs:
         if: success()
         uses: tokorom/action-slack-incoming-webhook@main
         env:
-          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE }}
         with:
           text: A release is published.
           blocks: |
