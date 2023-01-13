@@ -17,7 +17,7 @@ jobs:
         with:
           type: now
           from_branch: master
-          target_branch: "$DEST"
+          target_branch: $DEST
           github_token: ${{ secrets.BRANCH_SYNC }}
         env:
           DEST: ${{ inputs.destination }}
