@@ -85,7 +85,7 @@ class ScheduleJob extends J.Job {
         }
 
         if (update) {
-            let res = await this.message.update(update);
+            let res = await this.message.update(update, () => {});
             if (!res) {
                 error = 'Failed to update message';
             }
