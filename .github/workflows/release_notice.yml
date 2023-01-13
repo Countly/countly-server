@@ -19,7 +19,7 @@ jobs:
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |
             {
-              "repository": "${{ github.repository }}"
+              "repository": "${{ github.repository }}",
               "tag_name": "${{ github.event.release.tag_name }}",
               "actor": "${{ github.actor }}",
               "body": ${{ toJSON(github.event.release.body) }},
