@@ -22,6 +22,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      
+      - name: Github Actions Azure connection fix
+        run: |
+          # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
+          sudo sed -i 's/azure/us/g' /etc/apt/sources.list
 
       - name: Installing Countly
         shell: bash

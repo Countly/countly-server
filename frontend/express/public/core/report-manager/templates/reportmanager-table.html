@@ -4,16 +4,75 @@
     :max-height="maxHeight"
     :default-sort="{prop: 'start', order: 'descending'}">
     <template v-slot:header-left>
-        <el-select v-if="!fixedOrigin" class="bu-mr-2" v-model="selectedOrigin" style="width: 140px" :placeholder="i18n('taskmanager.select-origin')">
-            <el-option :key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
-        </el-select>
-        <el-select class="bu-mr-2" style="width: 140px" v-if="isManual" v-model="selectedRunTimeType"
-            :placeholder="i18n('common.select-type')">
-            <el-option :key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
-        </el-select>
-        <el-select style="width: 140px" v-model="selectedState" :placeholder="i18n('common.select-status')">
-            <el-option :key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
-        </el-select>
+        <cly-dropdown ref="filterDropdown" :width="300" @hide="handleReloadFilter">
+            <template v-slot:trigger="dropdown">
+                <cly-input-dropdown-trigger
+                    v-tooltip="filterSummary"
+                    :selected-options="filterSummary"
+                    :focused="dropdown.focused"
+                    :opened="dropdown.visible"
+                    :adaptive-length="true">
+                </cly-input-dropdown-trigger>
+            </template>
+            <template>
+                <cly-form 
+                    :initial-edited-object="currentFilter"
+                    ref="filterForm"
+                    @submit="handleSubmitFilter"
+                >
+                    <template v-slot="formScope">
+                        <cly-form-step id="filter-form-step">
+                            <div class="bu-m-4">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item">
+                                            <h4>{{i18n('report-manager.filters')}}</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bu-level-right">
+                                        <div class="bu-level-item">
+                                            <el-button type="text" class="cly-multi-select__reset" @click="handleResetFilter">
+                                                {{i18n('report-manager.reset-filters')}}
+                                            </el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <cly-form-field :label="i18n('report-manager.origin')" v-if="!fixedOrigin">
+                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedOrigin"  :placeholder="i18n('report-manager.select-origin')">
+                                        <el-option :key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.status')">
+                                    <el-select  v-model="formScope.editedObject.selectedState" :placeholder="i18n('common.select-status')">
+                                        <el-option :key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.owner')">
+                                    <el-select  v-model="formScope.editedObject.selectedOwner" :placeholder="i18n('common.select-owner')">
+                                        <el-option :key="value" v-for="(label, value) in availableOwners" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.data-source')">
+                                    <el-select  v-model="formScope.editedObject.selectedDataSource" :placeholder="i18n('report-manager.select-data-source')">
+                                        <el-option :key="value" v-for="(label, value) in availableDataSources" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('report-manager.runtime-type')" v-if="isManual">
+                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedRunTimeType"
+                                        :placeholder="i18n('common.select-type')">
+                                        <el-option :key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <div class="bu-has-text-right bu-pt-3">
+                                    <el-button type="secondary" @click="handleCancelFilter">{{i18n('common.cancel')}}</el-button>
+                                    <el-button type="success" @click="formScope.submit()">{{i18n('common.apply')}}</el-button>
+                                </div>
+                            </div>
+                        </cly-form-step>
+                    </template>
+                </cly-form>
+            </template>
+        </cly-dropdown>
     </template>
     <template>
         <el-table-column :label="i18n('report-manager.name-and-desc')">

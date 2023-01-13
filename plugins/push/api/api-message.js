@@ -343,6 +343,11 @@ module.exports.update = async params => {
                 common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
             }
         }
+        else if (msg.status === Status.Inactive) { // reschedule (email again) when editing unapproved message
+            await msg.save();
+            await msg.schedule(log, params);
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
+        }
         else {
             await msg.save();
             if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
