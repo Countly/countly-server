@@ -860,25 +860,27 @@ usersApi.export = function(app_id, query, params, callback) {
             });
 
             //update db if one user
-            new Promise(function(resolve, reject) {
-                if (single_user) {
-                    common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
-                        if (err_sel) {
-                            reject(err_sel);
-                        }
-                        else {
-                            resolve();
-                        }
-                    });
-                }
-                else {
-                    resolve();
-                }
-            }).then(function() {
+            // new Promise(function(resolve, reject) {
+            //commented out the below code as we do not want appUserExport in the exported json file
+            // if (single_user) {
+            //     common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
+            //         if (err_sel) {
+            //             reject(err_sel);
+            //         }
+            //         else {
+            //             resolve();
+            //         }
+            //     });
+            // }
+            // else {
+            // resolve();
+            // }
+            new Promise(function(resolve) {
                 log.d("collection marked");
                 //export data from metric_changes
-                return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
-
+                run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]).finally(function() {
+                    resolve();
+                });
             }).then(function() {
                 log.d("metric_changes exported");
                 //export data from app_users

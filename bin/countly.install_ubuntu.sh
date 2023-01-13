@@ -4,8 +4,8 @@ set -e
 
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" ]]; then
-    echo "Unsupported OS version, only support Ubuntu 20 and 18"
+if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
     exit 1
 fi
 
@@ -16,7 +16,15 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 sudo apt-get update
 
-sudo apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck python
+sudo apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck
+
+if [[ "$UBUNTU_YEAR" = "22" && ! -h /usr/bin/python ]]; then
+    sudo apt-get -y install python2 python2-dev
+    sudo ln -s /usr/bin/python2.7 /usr/bin/python #absult path
+    sudo ln -s /usr/bin/python2-config /usr/bin/python-config
+else
+    sudo apt-get -y install python
+fi
 
 #Install GCC > 7 version
 sudo apt-get -y install software-properties-common

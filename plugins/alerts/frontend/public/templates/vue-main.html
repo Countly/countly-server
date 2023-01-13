@@ -76,13 +76,13 @@
                 <el-table-column  min-width="175"  sortable="true"  prop="appNameList" :label="i18n('alert.Application')">
                 </el-table-column>
     
-                <el-table-column  min-width="415"  sortable="true"  :label="i18n('alert.Condition')">
+                <el-table-column  min-width="415" prop="condtionText"  sortable="true"  :label="i18n('alert.Condition')">
                     <template slot-scope="scope" sortable="true">
                         <span>{{scope.row.condtionText}}</span>
                     </template>
                 </el-table-column>
                 
-                <el-table-column  min-width="130" sortable="true"  :label="i18n('alert.CreateBy')">
+                <el-table-column  min-width="130" sortable="true"  prop="createdByUser" :label="i18n('alert.CreateBy')">
                     <template slot-scope="scope">
                         <div class="bu-level">
                             <div class="bu-level-left">

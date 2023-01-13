@@ -40,6 +40,18 @@ plugins.setConfigs("logger", {
         return plugins.getConfig("logger", params.app && params.app.plugins, true);
     };
 
+    var removeCookieAndTokenFromHeader = function(header) {
+        var cleanHeader = Object.assign({}, header);
+        if (cleanHeader["countly-token"]) {
+            cleanHeader["countly-token"] = "";
+        }
+        if (cleanHeader.cookie) {
+            cleanHeader.cookie = "";
+        }
+
+        return cleanHeader;
+    };
+
     var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC && automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
             plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.OFF}));
@@ -249,7 +261,7 @@ plugins.setConfigs("logger", {
                 t: types,
                 q: q,
                 s: sdk,
-                h: params.req.headers,
+                h: removeCookieAndTokenFromHeader(params.req.headers),
                 m: params.req.method,
                 b: params.bulk || false,
                 c: (params.cancelRequest) ? params.cancelRequest : false,

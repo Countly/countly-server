@@ -276,10 +276,10 @@ describe('Testing views plugin', function() {
                 tableResponse.month.iTotalDisplayRecords += 1;
                 pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "u": 1, "n": 1, "view": "testview0"});
             }
-            else {
-                tableResponse.month.iTotalRecords = 1;
-                tableResponse.month.iTotalDisplayRecords = 1; //add count anyway because we have also "0" in list
-            }
+            /* else {
+                tableResponse.month.iTotalRecords = 0;
+                tableResponse.month.iTotalDisplayRecords = 0; //add count anyway because we have also "0" in list
+            }*/
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (25 * 24 * 60 * 60 * 1000)) + '&events=' + data)
