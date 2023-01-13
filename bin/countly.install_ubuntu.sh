@@ -9,8 +9,8 @@ fi
 
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" ]]; then
-    echo "Unsupported OS version, only support Ubuntu 20 and 18"
+if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
     exit 1
 fi
 
@@ -21,19 +21,20 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 apt-get update
 
-apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck python
+apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck
+
+if [[ "$UBUNTU_YEAR" = "22" && ! -h /usr/bin/python ]]; then
+    apt-get -y install python2 python2-dev
+    ln -s python2.7 /usr/bin/python #absult path
+    ln -s /usr/bin/python2-config /usr/bin/python-config
+else
+    apt-get -y install python
+fi
 
 #Install GCC > 7 version
 apt-get -y install software-properties-common
-add-apt-repository ppa:ubuntu-toolchain-r/test -y
-apt-get -y install build-essential gcc-8 
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
-update-alternatives --set gcc "/usr/bin/gcc-8"
-
-#Install G++ > 7 version
-apt-get -y install build-essential g++-8
-update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
-update-alternatives --set g++ "/usr/bin/g++-8"
+apt-get -y install build-essential
+apt-get install gcc g++ make
 
 #Install dependancies required by the puppeteer
 apt-get -y install libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
