@@ -138,7 +138,7 @@ var trace = {
                                 crash._architecture = parts[4];
                             }
                             if (binary_check[parts[3].replace(/(^\+)/mg, '')]) {
-                                crash._binary_images[parts[3].replace(/(^\+)/mg, '') + "-" + parts[0]] = {en: parts[3].replace(/(^\+)/mg, ''), la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")};
+                                crash._binary_images[parts[3].replace(/(^\+)/mg, '') + "-" + parts[0]] = {bn: parts[3].replace(/(^\+)/mg, ''), la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")};
                                 if (firstBinary) {
                                     firstBinary = false;
                                     crash._executable_name = parts[3].replace(/(^\+)/mg, '');

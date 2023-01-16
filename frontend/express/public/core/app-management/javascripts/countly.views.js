@@ -219,6 +219,31 @@
                 return text.join("");
 
             },
+            otherAppKeys: function(id) {
+                var keys = [];
+                for (var app in countlyGlobal.apps) {
+                    if (countlyGlobal.apps[app]._id !== id) {
+                        keys.push(countlyGlobal.apps[app].key);
+                    }
+                }
+                return keys;
+            },
+            rules: function(editedObject) {
+                return {
+                    required: !this.newApp,
+                    excluded: this.otherAppKeys(editedObject._id)
+                };
+            },
+            customMessages: function() {
+                return {
+                    excluded: CV.i18n('management-applications.app-key-unique')
+                };
+            },
+            isSaveDisabled: function(editedObject) {
+                return (!this.newApp && (!editedObject.key || editedObject.key === ""))
+                || this.otherAppKeys(editedObject._id).includes(editedObject.key)
+                || !editedObject.name || editedObject.name === "" ;
+            },
             isDisabled: function() {
                 return !this.newApp && (this.apps[this.selectedApp].locked || !this.adminApps[this.selectedApp]);
             },

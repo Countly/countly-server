@@ -41,6 +41,13 @@
                 return [moment().startOf("day").subtract(59, "d"), moment().endOf("day")];
             }
         },
+        "prevMonth": {
+            label: moment().subtract(1, "month").format("MMMM, YYYY"),
+            value: "prevMonth",
+            getRange: function() {
+                return [moment().subtract(1, "month").startOf("month"), moment().subtract(1, "month").endOf("month")];
+            }
+        },
         "day": {
             label: moment().format("MMMM, YYYY"),
             value: "day",
@@ -883,6 +890,9 @@
                 if (this.customRangeSelection) {
                     var self = this;
                     this.$nextTick(function() {
+                        if (self.$refs && self.$refs.dropdown && self.$refs.dropdown.$refs && self.$refs.dropdown.$refs.popper && self.$refs.dropdown.$refs.popper.$el) {
+                            self.$refs.dropdown.$refs.popper.$el.style = '';
+                        }
                         self.broadcast('ElSelectDropdown', 'updatePopper');
                         self.$forceUpdate();
                         self.scrollTo(self.minDate);
@@ -895,8 +905,14 @@
             },
             handleCustomRangeClick: function() {
                 if (this.allowCustomRange) {
-                    this.customRangeSelection = true;
-                    this.refreshCalendarDOM();
+                    if (!this.customRangeSelection) {
+                        this.customRangeSelection = true;
+                        this.refreshCalendarDOM();
+                    }
+                    /*else {
+						this.customRangeSelection = false; //in case we decide to hide it on click someday
+					}
+					*/
                 }
             },
             handleShortcutClick: function(value) {

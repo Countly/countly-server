@@ -24,6 +24,17 @@
                 }
             }
             var series = [];
+            var yAxis = [];
+            var graphPointsLen = 0;
+            if (sum > 0) {
+                graphPointsLen++;
+            }
+            if (count > 0) {
+                graphPointsLen++;
+            }
+            if (dur > 0) {
+                graphPointsLen++;
+            }
             if (count > 0) {
                 var countObj = {
                     name: labels.count,
@@ -31,6 +42,11 @@
                     color: "#017AFF"
                 };
                 series.push(countObj);
+                var countYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(countYAxisObj);
             }
             if (sum > 0) {
                 var sumObj = {
@@ -39,6 +55,11 @@
                     color: "#F96300"
                 };
                 series.push(sumObj);
+                var sumYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(sumYAxisObj);
             }
             if (dur > 0) {
                 var durObj = {
@@ -46,10 +67,24 @@
                     data: graphData[2],
                     color: "#FF9382"
                 };
+                if (graphPointsLen > 1) {
+                    durObj.yAxisIndex = graphPointsLen - 1;
+                }
                 series.push(durObj);
+                var durYAxisObj = {
+                    type: 'value',
+                    alignTicks: true,
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+                yAxis.push(durYAxisObj);
             }
             var obj = {
-                series: series
+                series: series,
+                yAxis: yAxis,
             };
             context.commit('setLineChartData', obj);
         },

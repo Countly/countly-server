@@ -349,6 +349,7 @@
                     activeApp: null,
                     allApps: countlyGlobal.apps,
                     notificationToasts: [],
+                    persistentNotifications: [],
                     dialogs: []
                 },
                 getters: {
@@ -376,7 +377,12 @@
                         return state.dialogs.filter(function(item) {
                             return item.intent === "message";
                         });
-                    }
+                    },
+                    blockerDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "blocker";
+                        });
+                    },
                 },
                 mutations: {
                     setAreNotesHidden: function(state, value) {
@@ -426,6 +432,17 @@
                             return item.id !== id;
                         });
                     },
+                    addPersistentNotification: function(state, payload) {
+                        if (!payload.id) {
+                            payload.id = countlyCommon.generateId();
+                        }
+                        state.persistentNotifications.unshift(payload);
+                    },
+                    removePersistentNotification: function(state, notificationId) {
+                        state.persistentNotifications = state.persistentNotifications.filter(function(item) {
+                            return item.id !== notificationId;
+                        });
+                    },
                     addDialog: function(state, payload) {
                         payload.id = countlyCommon.generateId();
                         state.dialogs.unshift(payload);
@@ -472,6 +489,12 @@
                     },
                     onRemoveNotificationToast: function(context, payload) {
                         context.commit('removeNotificationToast', payload);
+                    },
+                    onAddPersistentNotification: function(context, payload) {
+                        context.commit('addPersistentNotification', payload);
+                    },
+                    onRemovePersistentNotification: function(context, notificationId) {
+                        context.commit('removePersistentNotification', notificationId);
                     },
                     onAddDialog: function(context, payload) {
                         context.commit('addDialog', payload);
@@ -678,6 +701,18 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-message-dialog>\
+                        <el-dialog\
+                            v-for="dialog in blockerDialogs"\
+                            visible\
+                            :center="dialog.center"\
+                            :width="dialog.width"\
+                            :close-on-click-modal="false"\
+                            :close-on-press-escape="false"\
+                            :show-close="false"\
+                            :key="dialog.id"\
+                            :title="dialog.title">\
+                            <div v-html="dialog.message"></div>\
+                        </el-dialog>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
@@ -686,6 +721,9 @@
             },
             confirmDialogs: function() {
                 return this.$store.getters['countlyCommon/confirmDialogs'];
+            },
+            blockerDialogs: function() {
+                return this.$store.getters['countlyCommon/blockerDialogs'];
             }
         },
         methods: {

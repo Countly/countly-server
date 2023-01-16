@@ -154,6 +154,9 @@ class StatsJob extends job.Job {
             });
         }
         else {
+            db.collection('plugins').updateOne({_id: 'plugins'}, {$unset: {remoteConfig: 1}}).catch(dbe => {
+                log.e('Db error', dbe);
+            });
             done();
         }
     }

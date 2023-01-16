@@ -1528,6 +1528,13 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
+            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length) {
+                for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
+                    countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
+                    CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);
+                }
+            }
+
             $(document).on('DOMNodeInserted', '.cly-select', function() {
                 CountlyHelpers.makeSelectNative();
             });

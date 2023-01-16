@@ -94,7 +94,8 @@
                     dbs: db,
                     collection: collection,
                     aggregation: aggregation,
-                    app_id: app_id
+                    app_id: app_id,
+                    type: "json"
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {

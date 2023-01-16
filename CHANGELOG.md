@@ -1,3 +1,89 @@
+## Version 22.09.10
+Fixes:
+- [logger] removing potentially sensitive info from headers
+- [settings] small fixes to search in settings
+- [ui] table export column titles are not user friendly
+
+Enterprise fixes:
+- [attribution] added typo control for platform when parsing user-agent parameters. 
+- [data-manager] invalid values on opening form when editing transformation with regexp in data-manager
+- [oidc] add same site cookie fallback
+- [oidc] generate password moved to common
+- [surveys] completed_surveys uses _id field, not uid field
+
+## Version 22.09.9
+Fixes:
+- [applications] prevent used app_key in front and back end
+- [crashes] rename bi to bn
+- [crashes] use real session as fallback in crash stats
+- [push] logging crashing issue
+
+Enterprise fixes:
+- [ab-testing] add Ubuntu 22 support and remove CentOS 6 support on AB testing
+
+## Version 22.09.8
+Fixes:
+- [dashboards] date picker doesn't fit into the view in dashboards
+- [dashboards] fixed date formats for monthly selection in widgets
+- [dashboards] provided chart refresh after changing time bucket for specific widgets
+- [hooks] configurable rate limiter for hooks implemented
+- [hooks] sanitize email HTML input
+- [push] streaming timeouts handling
+- [render] added configurationsView checks not to break server side rendering
+- [settings] search in settings
+
+Enterprise fixes:
+- [cohorts] improved speed for loading cohort widgets in dashboards
+- [data-manager] fixed for missing data type in user props
+- [data-manager] fixed user properties sort 
+- [drill] adding stringified Drill query to the export file name
+- [funnels] fixed for false error ouptut in logs if funnels dashboard widget does not have filter query
+- [push_approver] correct members query
+- [revenue] fixed revenue widgets metric selection
+- [users] fixed user profiles consent table export exports ALL users, not only this one
+- [users] change format for numbers in user profiles
+
+## Version 22.09.7
+Fixes:
+- [api] added try catch block to regex
+- [core] increasing runners timeouts + bug fixes
+- [countries] fixed data display on tooltip
+- [countries] Home > Countries data is missing after navigation
+- [crashes] format binary images in new way
+- [crashes] show binary image name from new format
+- [dashboars] added required libraries for puppeteer
+- [dbviewer] preventing crash if array passed as filter to dbviewer
+- [hooks] error handling fixes
+- [longtask] error message added for delete button
+- [plugins] remove plugin upload
+- [prelogin] filter error messages
+- [push] correct app id when fetching test users cohorts
+- [push] missing indexes for token hashes
+- [ui] replaces merge with mergeWith for every chart
+- [users] added a check for application admin to have correct rights
+- [views] fixed u value estimation when viewing 'selected views' table in analytics/views
+
+Enterprise fixes:
+- [ab-testing] update python shell version
+- [active-users] fixed the issue where the data was broken if the selected period time was yesterday or yesterday
+- [cohorts] added "my cohorts" option and changed filtering to a dropdown
+- [cohorts] added cohort update on incoming user properties
+- [cohorts] added Recalculate cohort button in cohort view
+- [cohorts] added trigger to swich states for cohorts dependant on other cohorts
+- [cohorts] code optimisation and more tests
+- [cohorts] fixed bug with hashes not clearing out on cohort deletion
+- [cohorts] fixed case when user coming in/out of saame cohort in single iteration
+- [cohorts] fixed code to properly deal with definition for user properties nested under $and, $or
+- [cohorts] optimize realtime cohort update queries for sharded cluster
+- [cohorts] remove favorite number
+- [crash_symbolication] convert binary images to new format before sending
+- [crash_symbolication] fixed symbol file uploader
+- [crash_symbolication] symbolicate javascript stack trace types
+- [users] display date type based on meta type and nested values based on timeline
+- [users] fixed for user property data type change
+- [users] fixed segment not loaded after refresh
+- [users] number formatting in user profile
+
 ## Version 22.09.6
 Fixes:
 - [crashes] there can be binaries with same name, but different addresses

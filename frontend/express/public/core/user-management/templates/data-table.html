@@ -2,6 +2,7 @@
   <cly-datatable-n
     :rows="filteredRows"
     :force-loading="loading"
+    :exportFormat="formatExportFunction"
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">

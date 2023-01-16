@@ -53,6 +53,9 @@
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
+            },
+            formatDurNumber: function(val) {
+                return countlyCommon.formatSecond(val);
             }
         },
     });

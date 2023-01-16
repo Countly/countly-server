@@ -290,6 +290,7 @@
     * @deprecated 
     * @param {function=} msg.onClick - on click listener
     * @deprecated 
+    * @param {boolean=} msg.persistent - flag to determine if notification should be displayed persistently or as a toast
     * @example
     * CountlyHelpers.notify({
     *    message: "Main message text",
@@ -297,8 +298,10 @@
     */
     CountlyHelpers.notify = function(msg) {
         var payload = {};
+        var persistent = msg.persistent;
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
+        payload.id = msg.id;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
@@ -327,7 +330,21 @@
             break;
         }
         payload.color = colorToUse;
-        countlyCommon.dispatchNotificationToast(payload);
+
+        if (persistent) {
+            countlyCommon.dispatchPersistentNotification(payload);
+        }
+        else {
+            countlyCommon.dispatchNotificationToast(payload);
+        }
+    };
+
+    /**
+     * Removes a notification from persistent notification list based on id.
+     * @param {string} notificationId notification id
+     */
+    CountlyHelpers.removePersistentNotification = function(notificationId) {
+        countlyCommon.removePersistentNotification(notificationId);
     };
 
     /**
@@ -724,6 +741,34 @@
         dialog.addClass('cly-loading');
         revealDialog(dialog);
         return dialog;
+    };
+
+    /**
+    * Display modal popup that blocks the screen and cannot be closed
+    * @param {string} msg - message to display in popup
+    * @param {object} moreData - more data to display
+    * @param {string} moreData.title - alert title
+    * @example
+    * CountlyHelpers.showBlockerDialog("Some message");
+    */
+    CountlyHelpers.showBlockerDialog = function(msg, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
+        if (window.countlyVue && window.countlyVue.vuex) {
+            var payload = {
+                intent: "blocker",
+                message: msg,
+                title: (moreData && moreData.title) || "",
+                width: (moreData && moreData.width) || "400px",
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
     };
 
     /**

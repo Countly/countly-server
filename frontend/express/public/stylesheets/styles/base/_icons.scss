@@ -71,6 +71,13 @@
     &copy {
         background-image: url("../../../images/icons/copy.svg");
     }
+
+    &copy_interactive{
+        background-image: url("../../../images/icons/copy_inactive.svg");
+    }
+    &copy_interactive:hover{
+        background-image: url("../../../images/icons/copy.svg");
+    }
 }
 
 .el-button [class*=ion-]+span, [class*=cly-icon-]+span {

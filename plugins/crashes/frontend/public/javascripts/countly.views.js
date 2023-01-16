@@ -296,45 +296,45 @@
                     });
                 };
 
-                crashMeta.initialize().then(function() {
-                    if (window.countlyQueryBuilder) {
-                        filterProperties.push({
-                            id: "app_version",
-                            name: "App Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getAppVersions
-                        });
-                        filterProperties.push({
-                            id: "opengl",
-                            name: "OpenGL Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("opengl")
-                        });
-                        filterProperties.push({
-                            id: "orientation",
-                            name: "Orientation",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("orientation")
-                        });
-                        filterProperties.push({
-                            id: "os",
-                            name: "Platform",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("os")
-                        });
-                        filterProperties.push({
-                            id: "cpu",
-                            name: "CPU",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("cpu")
-                        });
-                    }
-                });
+                crashMeta.initialize();
+
+                if (window.countlyQueryBuilder) {
+                    filterProperties.push({
+                        id: "app_version",
+                        name: "App Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getAppVersions
+                    });
+                    filterProperties.push({
+                        id: "opengl",
+                        name: "OpenGL Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("opengl")
+                    });
+                    filterProperties.push({
+                        id: "orientation",
+                        name: "Orientation",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("orientation")
+                    });
+                    filterProperties.push({
+                        id: "os",
+                        name: "Platform",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("os")
+                    });
+                    filterProperties.push({
+                        id: "cpu",
+                        name: "CPU",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("cpu")
+                    });
+                }
             }
 
             return {
@@ -446,6 +446,13 @@
                         query = countlyCrashes.modifyExistsQueries(newValue.query);
                     }
 
+                    if (newValue.query) {
+                        app.navigate("#/crashes/filter/" + JSON.stringify({ query: newValue.query }));
+                    }
+                    else {
+                        app.navigate("#/crashes", true);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
@@ -516,8 +523,13 @@
         },
         methods: {
             refresh: function() {
+                var query = {};
+                if (this.crashgroupsFilter.query) {
+                    query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                }
+
                 return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter.query)}),
+                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
                     this.$store.dispatch("countlyCrashes/overview/refresh")
                 ]);
             },
@@ -578,7 +590,17 @@
             }
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/overview/refresh");
+            var query = {};
+            if (this.$route.params && this.$route.params.query) {
+                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
+
+                this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
+                this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
+            }
+
+            return Promise.all([
+                this.$store.dispatch("countlyCrashes/overview/refresh")
+            ]);
         }
     });
 
@@ -997,7 +1019,24 @@
                 if (command === "symbolicate") {
                     this.symbolicateCrash(crash);
                 }
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.crashes;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('crashes.crashed').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].ts).text;
+                    item[CV.i18n('crashes.os_version').toUpperCase()] = tableData[i].os + tableData[i].os_version;
+                    item[CV.i18n('crashes.device').toUpperCase()] = tableData[i].device;
+                    item[CV.i18n('crashes.app_version').toUpperCase()] = tableData[i].app_version;
+                    item[CV.i18n('crashes.user').toUpperCase()] = tableData[i].user && tableData[i].user.name || tableData[i].uid;
+                    item[CV.i18n('crashes.crashed').toUpperCase()] = tableData[i].name;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
@@ -1053,7 +1092,7 @@
                             var binaryProps = binaryImagesMap[binaryName];
 
                             return {
-                                name: binaryProps.en || binaryName,
+                                name: binaryProps.bn || binaryName,
                                 loadAddress: binaryProps.la,
                                 uuid: binaryProps.id
                             };
@@ -1237,6 +1276,19 @@
                     var time = moment(d).utc().format("H:mm:ss");
                     return date + " " + time;
                 },
+                formatExportFunction: function() {
+                    var tableData = this.userCrashesData;
+                    var table = [];
+                    for (var i = 0; i < tableData.length; i++) {
+                        var item = {};
+                        item[CV.i18n('crashes.error').toUpperCase()] = tableData[i].group;
+                        item[CV.i18n('crashes.reports').toUpperCase()] = tableData[i].reports;
+                        item[CV.i18n('crashes.last_time').toUpperCase()] = this.getDateAndTime(tableData[i].last);
+                        table.push(item);
+                    }
+                    return table;
+
+                },
             },
             data: function() {
                 return {
@@ -1276,6 +1328,24 @@
 
     app.route("/crashes", "crashes", function() {
         this.renderWhenReady(getOverviewView());
+    });
+
+    app.route("/crashes/filter/*query", "crashes", function(rawQuery) {
+        var parsedQuery = null;
+
+        try {
+            parsedQuery = JSON.parse(rawQuery);
+        }
+        catch (err) {
+            // no need to do anything, default parsedQuery is null
+        }
+
+        var view = getOverviewView();
+        view.params = {
+            query: parsedQuery
+        };
+
+        this.renderWhenReady(view);
     });
 
     app.route("/crashes/:group", "crashgroup", function(group) {
