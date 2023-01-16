@@ -25,7 +25,7 @@ apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shel
 
 if [[ "$UBUNTU_YEAR" = "22" && ! -h /usr/bin/python ]]; then
     apt-get -y install python2 python2-dev
-    ln -s python2.7 /usr/bin/python #absult path
+    ln -s python2.7 /usr/bin/python
     ln -s /usr/bin/python2-config /usr/bin/python-config
 else
     apt-get -y install python
