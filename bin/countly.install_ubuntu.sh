@@ -53,7 +53,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_14.x | sudo -E bash -
+wget -qO- https://deb.nodesource.com/setup_18.x | sudo bash -
 
 #update once more after adding new repos
 sudo apt-get update
@@ -103,7 +103,7 @@ sudo bash "$DIR/scripts/mongodb.install.sh"
 if [ "$INSIDE_DOCKER" == "1" ]
 then
         bash "$DIR/commands/docker/mongodb.sh" &
-    until mongo --eval "db.stats()" | grep "collections"
+    until mongosh --eval "db.stats()" | grep "collections"
     do
         echo
         echo "waiting for MongoDB to allocate files..."
