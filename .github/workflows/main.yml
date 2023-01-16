@@ -44,10 +44,6 @@ jobs:
         shell: bash
         run: mongo --version
         
-      - name: Enable all plugins
-        shell: bash
-        run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh
-        
       - name: Reinstall plugins
         shell: bash
         run: sudo bash ./bin/scripts/countly.install.plugins.sh
