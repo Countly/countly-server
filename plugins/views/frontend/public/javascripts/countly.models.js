@@ -100,7 +100,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -142,7 +142,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
