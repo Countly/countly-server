@@ -44,6 +44,10 @@ jobs:
         shell: bash
         run: mongo --version
         
+      - name: Wait for Countly
+        shell: bash
+        run: until nc -z 127.0.0.1 3001; do echo Waiting for Countly; sleep 1; done
+        
       - name: Reinstall plugins
         shell: bash
         run: sudo bash ./bin/scripts/countly.install.plugins.sh
