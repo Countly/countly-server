@@ -881,7 +881,7 @@ function transformAppVersion(inpVersion) {
             return true;
         }
         else if (obParams.qstring.method === 'crashes') {
-            validateRead(obParams, FEATURE_NAME, function(params) {
+            validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (params.qstring.group) {
                     if (params.qstring.userlist) {
                         common.db.collection('app_crashusers' + params.app_id).find({group: params.qstring.group}, {uid: 1, _id: 0}).toArray(function(err, uids) {
@@ -1077,6 +1077,8 @@ function transformAppVersion(inpVersion) {
                         query: filter
                     });
 
+                    const crashgroupMeta = await common.db.collection('app_crashgroups' + params.app_id).findOne({ _id: 'meta' });
+
                     common.db.collection('app_crashgroups' + params.app_id).estimatedDocumentCount(function(crashGroupsErr, total) {
                         total--;
                         var cursor = common.db.collection('app_crashgroups' +
@@ -1093,6 +1095,7 @@ function transformAppVersion(inpVersion) {
                             lastTs: 1,
                             reports: 1,
                             latest_version: 1,
+                            latest_version_for_sort: 1,
                             is_resolved: 1,
                             resolved_version: 1,
                             nonfatal: 1,
@@ -1105,6 +1108,12 @@ function transformAppVersion(inpVersion) {
                         cursor.count(function(errCursor, count) {
                             if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
                                 let obj = {};
+                                let sortByField = columns[params.qstring.iSortCol_0];
+
+                                if (sortByField === 'latest_version' && crashgroupMeta.appVersionSorterAdded) {
+                                    sortByField = 'latest_version_for_sort';
+                                }
+
                                 obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                                 cursor.sort(obj);
                             }
