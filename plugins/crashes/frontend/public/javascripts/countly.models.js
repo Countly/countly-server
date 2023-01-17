@@ -58,23 +58,25 @@ function transformAppVersion(inpVersion) {
     for (var idx = prefixIdx; idx < buildIdx; idx += 1) {
         var item = execResult[idx];
 
-        if (idx >= majorIdx && idx <= patchIdx) {
-            item = 100000 + parseInt(item, 10);
-        }
+        if (item) {
+            if (idx >= majorIdx && idx <= patchIdx) {
+                item = 100000 + parseInt(item, 10);
+            }
 
-        if (idx >= minorIdx && idx <= patchIdx) {
-            item = '.' + item;
-        }
+            if (idx >= minorIdx && idx <= patchIdx) {
+                item = '.' + item;
+            }
 
-        if (idx === preReleaseIdx) {
-            item = '-' + item;
-        }
+            if (idx === preReleaseIdx) {
+                item = '-' + item;
+            }
 
-        if (idx === buildIdx) {
-            item = '+' + item;
-        }
+            if (idx === buildIdx) {
+                item = '+' + item;
+            }
 
-        transformed += item;
+            transformed += item;
+        }
     }
 
     return transformed;
