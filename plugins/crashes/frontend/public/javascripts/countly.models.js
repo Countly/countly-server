@@ -1,5 +1,85 @@
 /* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
 
+/**
+ *  Check if an app version string follows some kind of scheme (there is only semantic versioning for now)
+ *  @param {string} inpVersion - an app version string
+ *  @return {array} [regex.exec result, version scheme name]
+ */
+function checkAppVersion(inpVersion) {
+    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    var semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+    // Half semver is similar to semver but with only one dot
+    var halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    var execResult = semverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'semver'];
+    }
+
+    execResult = halfSemverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'halfSemver'];
+    }
+
+    return [null, null];
+}
+
+/**
+ *  Transform app version so it will be numerically correct when sorted as a string
+ *  For example '1.10.2' will be transformed to '100001.100010.100002'
+ *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
+ *  @param {string} inpVersion - an app version string
+ *  @return {string} the transformed app version
+ */
+function transformAppVersion(inpVersion) {
+    var [execResult, versionScheme] = checkAppVersion(inpVersion);
+
+    if (execResult === null) {
+        // Version string does not follow any scheme, just return it
+        return inpVersion;
+    }
+
+    var transformed = '';
+    var prefixIdx = 1;
+    var majorIdx = 2;
+    var minorIdx = 3;
+    var patchIdx = 4;
+    var preReleaseIdx = 5;
+    var buildIdx = 6;
+
+    if (versionScheme === 'halfSemver') {
+        patchIdx -= 1;
+        preReleaseIdx -= 1;
+        buildIdx -= 1;
+    }
+
+    for (var idx = prefixIdx; idx < buildIdx; idx += 1) {
+        var item = execResult[idx];
+
+        if (idx >= majorIdx && idx <= patchIdx) {
+            item = 100000 + parseInt(item, 10);
+        }
+
+        if (idx >= minorIdx && idx <= patchIdx) {
+            item = '.' + item;
+        }
+
+        if (idx === preReleaseIdx) {
+            item = '-' + item;
+        }
+
+        if (idx === buildIdx) {
+            item = '+' + item;
+        }
+
+        transformed += item;
+    }
+
+    return transformed;
+}
+
 (function(countlyCrashes) {
     var _list = {};
     var FEATURE_NAME = 'crashes';
@@ -495,7 +575,11 @@
 
         _crashgroupSubmodule.getters.crashes = function(state) {
             if ("data" in state.crashgroup) {
-                return state.crashgroup.data;
+                return state.crashgroup.data.map(function(item) {
+                    var transformedAppVersion = transformAppVersion(item.app_version);
+                    item.app_version_for_sort = transformedAppVersion;
+                    return item;
+                });
             }
             else {
                 return [];
