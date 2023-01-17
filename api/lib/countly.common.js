@@ -2004,4 +2004,223 @@ countlyCommon.fixPercentageDelta = function(items, totalPercent) {
     return items;
 };
 
+/**
+* Calculate period function
+* @param {object} period - given period
+* @param {number} currentTimestamp timestamp
+* @returns {object} returns {@link countlyCommon.periodObj}
+*/
+countlyCommon.calculatePeriodObject = function(period, currentTimestamp) {
+    var startTimestamp, endTimestamp, periodObject, cycleDuration, nDays;
+
+    currentTimestamp = moment(currentTimestamp || undefined);
+
+    periodObject = {
+        activePeriod: undefined,
+        periodMax: undefined,
+        periodMin: undefined,
+        previousPeriod: undefined,
+        currentPeriodArr: [],
+        previousPeriodArr: [],
+        isSpecialPeriod: false,
+        dateString: undefined,
+        daysInPeriod: 0,
+        numberOfDays: 0, // new
+        uniquePeriodArr: [],
+        uniquePeriodCheckArr: [],
+        previousUniquePeriodArr: [],
+        previousUniquePeriodCheckArr: [],
+        periodContainsToday: true,
+        _period: period
+    };
+
+    endTimestamp = currentTimestamp.clone().endOf("day");
+
+    if (period && period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            period = "30days";
+        }
+    }
+
+    if (Array.isArray(period)) {
+        if ((period[0] + "").length === 10) {
+            period[0] *= 1000;
+        }
+        if ((period[1] + "").length === 10) {
+            period[1] *= 1000;
+        }
+        var fromDate, toDate;
+
+        if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
+            fromDate = moment(period[0]);
+            toDate = moment(period[1]);
+        }
+        else {
+            fromDate = moment(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+        }
+
+        startTimestamp = fromDate.clone().startOf("day");
+        endTimestamp = toDate.clone().endOf("day");
+        // fromDate.tz(_appTimezone);
+        // toDate.tz(_appTimezone);
+
+        if (fromDate.valueOf() === toDate.valueOf()) {
+            cycleDuration = moment.duration(1, "day");
+            Object.assign(periodObject, {
+                dateString: "D MMM, HH:mm",
+                periodMax: 23,
+                periodMin: 0,
+                activePeriod: fromDate.format("YYYY.M.D"),
+                previousPeriod: fromDate.clone().subtract(1, "day").format("YYYY.M.D")
+            });
+        }
+        else if (fromDate.valueOf() > toDate.valueOf()) {
+            //incorrect range - reset to 30 days
+            nDays = 30;
+
+            startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+            endTimestamp = currentTimestamp.clone().endOf("day");
+
+            cycleDuration = moment.duration(nDays, "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
+        else {
+            cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
+    }
+    else if (period === "month") {
+        startTimestamp = currentTimestamp.clone().startOf("year");
+        cycleDuration = moment.duration(1, "year");
+        periodObject.dateString = "MMM";
+        Object.assign(periodObject, {
+            dateString: "MMM",
+            periodMax: 12,
+            periodMin: 1,
+            activePeriod: currentTimestamp.year(),
+            previousPeriod: currentTimestamp.year() - 1
+        });
+    }
+    else if (period === "day") {
+        startTimestamp = currentTimestamp.clone().startOf("month");
+        cycleDuration = moment.duration(1, "month");
+        periodObject.dateString = "D MMM";
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: currentTimestamp.clone().endOf("month").date(),
+            periodMin: 1,
+            activePeriod: currentTimestamp.format("YYYY.M"),
+            previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
+        });
+    }
+    else if (period === "hour") {
+        startTimestamp = currentTimestamp.clone().startOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: currentTimestamp.format("YYYY.M.D"),
+            previousPeriod: currentTimestamp.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (period === "yesterday") {
+        var yesterday = currentTimestamp.clone().subtract(1, "day");
+
+        startTimestamp = yesterday.clone().startOf("day");
+        endTimestamp = yesterday.clone().endOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "D MMM, HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: yesterday.format("YYYY.M.D"),
+            previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (/([0-9]+)days/.test(period)) {
+        nDays = parseInt(/([0-9]+)days/.exec(period)[1]);
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)weeks/.test(period)) {
+        nDays = parseInt(/([0-9]+)weeks/.exec(period)[1]) * 7;
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)months/.test(period)) {
+        nDays = parseInt(/([0-9]+)months/.exec(period)[1]) * 30;
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        nDays = 30;
+
+        startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+
+    Object.assign(periodObject, {
+        start: startTimestamp.valueOf(),
+        end: endTimestamp.valueOf(),
+        daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), //due to daylight saving time we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+        numberOfDays: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
+        periodContainsToday: (startTimestamp <= currentTimestamp) && (currentTimestamp <= endTimestamp),
+    });
+
+    if (startTimestamp.weekYear() !== endTimestamp.weekYear()) {
+        Object.assign(periodObject, {
+            dateString: (periodObject.dateString + ", YYYY")
+        });
+    }
+
+    for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+        periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
+        periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+    }
+
+    periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
+    periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
+    periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+    periodObject.previousUniquePeriodCheckArr = getTicksCheckBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+
+    return periodObject;
+};
+
 module.exports = countlyCommon;
