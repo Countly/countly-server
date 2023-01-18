@@ -8,6 +8,7 @@ var plugin = {},
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
+    versionUtils = require('./parts/version.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
@@ -40,89 +41,6 @@ plugins.setConfigs("crashes", {
 * cru - crash user (no matter fatal or non fatal)
 * crru - crash resolved user (users who upgraded and got crashes resolved from upgraded vesion)
 */
-
-/**
- *  Check if an app version string follows some kind of scheme (there is only semantic versioning for now)
- *  @param {string} inpVersion - an app version string
- *  @return {array} [regex.exec result, version scheme name]
- */
-function checkAppVersion(inpVersion) {
-    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-    const semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
-    // Half semver is similar to semver but with only one dot
-    const halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
-
-    let execResult = semverRgx.exec(inpVersion);
-
-    if (execResult) {
-        return [execResult, 'semver'];
-    }
-
-    execResult = halfSemverRgx.exec(inpVersion);
-
-    if (execResult) {
-        return [execResult, 'halfSemver'];
-    }
-
-    return [null, null];
-}
-
-/**
- *  Transform app version so it will be numerically correct when sorted as a string
- *  For example '1.10.2' will be transformed to '100001.100010.100002'
- *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
- *  @param {string} inpVersion - an app version string
- *  @return {string} the transformed app version
- */
-function transformAppVersion(inpVersion) {
-    const [execResult, versionScheme] = checkAppVersion(inpVersion);
-
-    if (execResult === null) {
-        // Version string does not follow any scheme, just return it
-        return inpVersion;
-    }
-
-    let transformed = '';
-    let prefixIdx = 1;
-    let majorIdx = 2;
-    let minorIdx = 3;
-    let patchIdx = 4;
-    let preReleaseIdx = 5;
-    let buildIdx = 6;
-
-    if (versionScheme === 'halfSemver') {
-        patchIdx -= 1;
-        preReleaseIdx -= 1;
-        buildIdx -= 1;
-    }
-
-    for (let idx = prefixIdx; idx < buildIdx; idx += 1) {
-        let item = execResult[idx];
-
-        if (item) {
-            if (idx >= majorIdx && idx <= patchIdx) {
-                item = 100000 + parseInt(item, 10);
-            }
-
-            if (idx >= minorIdx && idx <= patchIdx) {
-                item = '.' + item;
-            }
-
-            if (idx === preReleaseIdx) {
-                item = '-' + item;
-            }
-
-            if (idx === buildIdx) {
-                item = '+' + item;
-            }
-
-            transformed += item;
-        }
-    }
-
-    return transformed;
-}
-
 
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -636,7 +554,7 @@ function transformAppVersion(inpVersion) {
                                     groupInsert.is_resolved = false;
                                     groupInsert.startTs = report.ts;
                                     groupInsert.latest_version = report.app_version;
-                                    groupInsert.latest_version_for_sort = transformAppVersion(report.app_version);
+                                    groupInsert.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
                                     groupInsert.error = report.error;
                                     groupInsert.lrid = report._id + "";
 
@@ -755,7 +673,7 @@ function transformAppVersion(inpVersion) {
                                         if (!isNew) {
                                             if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                 group.latest_version = report.app_version;
-                                                group.latest_version_for_sort = transformAppVersion(report.app_version);
+                                                group.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
                                                 group.error = report.error;
                                                 group.lrid = report._id + "";
                                             }

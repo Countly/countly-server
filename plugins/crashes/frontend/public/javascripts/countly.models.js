@@ -1,7 +1,7 @@
 /* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
 
 /**
- *  Check if an app version string follows some kind of scheme (there is only semantic versioning for now)
+ *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
  *  @param {string} inpVersion - an app version string
  *  @return {array} [regex.exec result, version scheme name]
  */
@@ -27,7 +27,7 @@ function checkAppVersion(inpVersion) {
 }
 
 /**
- *  Transform app version so it will be numerically correct when sorted as a string
+ *  Transform a version string so it will be numerically correct when sorted
  *  For example '1.10.2' will be transformed to '100001.100010.100002'
  *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
  *  @param {string} inpVersion - an app version string
@@ -41,7 +41,7 @@ function transformAppVersion(inpVersion) {
         return inpVersion;
     }
 
-    var transformed = '';
+    // Mark version parts based on semver scheme
     var prefixIdx = 1;
     var majorIdx = 2;
     var minorIdx = 3;
@@ -55,27 +55,29 @@ function transformAppVersion(inpVersion) {
         buildIdx -= 1;
     }
 
+    var transformed = '';
+    // Rejoin version parts to a new string
     for (var idx = prefixIdx; idx < buildIdx; idx += 1) {
-        var item = execResult[idx];
+        var part = execResult[idx];
 
-        if (item) {
+        if (part) {
             if (idx >= majorIdx && idx <= patchIdx) {
-                item = 100000 + parseInt(item, 10);
+                part = 100000 + parseInt(part, 10);
             }
 
             if (idx >= minorIdx && idx <= patchIdx) {
-                item = '.' + item;
+                part = '.' + part;
             }
 
             if (idx === preReleaseIdx) {
-                item = '-' + item;
+                part = '-' + part;
             }
 
             if (idx === buildIdx) {
-                item = '+' + item;
+                part = '+' + part;
             }
 
-            transformed += item;
+            transformed += part;
         }
     }
 
