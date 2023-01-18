@@ -78,7 +78,6 @@
     "nodemailer": "6.9.0",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
-    "nodemailer-smtp-transport": "2.7.4",
     "object-hash": "3.0.0",
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.3.1",
