@@ -8,19 +8,17 @@
             <h2 v-else> {{i18n('plugins.search-settings')}} </h2>
         </template>
         <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
-            <form>
-                <el-input
-                    ref="searchBox"
-                    autocomplete="off"
-                    v-model="searchQuery"
-                    :placeholder="searchPlaceholder"
-                    @focus="onFocus"
-                    @keyup.enter.native="onEnterSearch"
-                >
-                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
-                </el-input>
-            </form>
+            <el-input
+                ref="searchBox"
+                autocomplete="off"
+                v-model="searchQuery"
+                :placeholder="searchPlaceholder"
+                @focus="onFocus"
+                @keyup.enter.native="onEnterSearch"
+            >
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+            </el-input>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">

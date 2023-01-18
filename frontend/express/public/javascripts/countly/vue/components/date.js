@@ -202,7 +202,7 @@
         }
         else {
             formatter = "YYYY-MM-DD";
-            tableType = "date";
+            tableType = "day";
             globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
         }
 
@@ -234,7 +234,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            tableTypeMapper: {months: "month", weeks: "week", days: "date"},
+            tableTypeMapper: {months: "month", weeks: "week", days: "day"},
             inputDisable: inputDisable,
             globalMonthsRange: globalMonthsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
@@ -402,7 +402,7 @@
                 var inputObj = null;
                 switch (this.rangeMode) {
                 case 'inBetween':
-                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "date";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
                         inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
                     }
@@ -411,7 +411,7 @@
                     }
                     break;
                 case 'since':
-                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "date";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
                         inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
                     }
@@ -420,13 +420,14 @@
                     }
                     break;
                 case 'onm':
-                    this.tableType = "date";
+                    this.tableType = "day";
                     inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
+                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 default:
@@ -492,10 +493,15 @@
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
-                    var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
+                    this.$emit("update-stringified-value", newVal);
 
-                    if ((newVal.text === "1" || newVal.text === 1) && newVal.level === "days") {
+                    var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+
+                    if (newVal.text.toString() === "1" && newVal.level === "days") {
                         parsed = moment().startOf("day");
+                    }
+                    else if (newVal.text.toString() === "1" && newVal.level === "weeks") {
+                        parsed = moment().startOf("week");
                     }
                     if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed.isValid()) {
@@ -512,7 +518,7 @@
                         this.tableType = "week";
                     }
                     else if (newVal.level === "days") {
-                        this.tableType = "date";
+                        this.tableType = "day";
                     }
                 }
             },
@@ -531,7 +537,12 @@
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
                 }
+
                 if (firstClick) {
+                    if (this.tableType === "week") {
+                        this.minDate = moment(this.minDate).startOf("week").toDate();
+                        this.maxDate = moment(this.maxDate).endOf("week").toDate();
+                    }
                     this.rangeBackup = {
                         minDate: this.minDate,
                         maxDate: this.maxDate
@@ -539,7 +550,7 @@
                 }
                 var minDate, maxDate;
                 if (firstClick) {
-                    if (this.tableType === "date") {
+                    if (this.tableType === "day") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.minDate).endOf("day").toDate();
                     }
@@ -566,41 +577,17 @@
                     }
                     else if (this.rangeMode === 'inTheLast') {
                         maxDate = moment().toDate();
-                        var diffInMilliseconds = moment().diff(moment(val.minDate));
-
-                        if (this.tableType === "week") {
-                            var diffInWeeks = moment.duration(diffInMilliseconds).asWeeks();
-                            if (!Math.round(diffInWeeks)) {
-                                minDate = moment().subtract(1, 'weeks').toDate();
-                            }
-                            else {
-                                minDate = moment().subtract(Math.round(diffInWeeks), 'weeks').toDate();
-                            }
-                        }
-                        else if (this.tableType === "month") {
-                            var diffInMonths = moment.duration(diffInMilliseconds).asMonths();
-                            if (!parseInt(diffInMonths)) {
-                                minDate = moment(val.minDate).startOf("month").toDate();
-                            }
-                            else {
-                                minDate = moment(val.minDate).add(moment().date() - 1, 'days').toDate();
-                            }
-                        }
-                        else {
-                            maxDate = moment().endOf("day").toDate();
-                            this.setCurrentSince(minDate, maxDate);
-                        }
                     }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
-                    if (this.tableType === "date") {
+                    if (this.tableType === "day") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.maxDate).endOf("day").toDate();
                     }
                     else if (this.tableType === "week") {
-                        minDate = moment(val.minDate).startOf("day").toDate();
-                        maxDate = moment(val.maxDate).endOf("day").toDate();
+                        minDate = moment(val.minDate).startOf("week").toDate();
+                        maxDate = moment(val.maxDate).endOf("week").toDate();
 
                         if (this.retentionConfiguration) {
                             minDate = moment(val.minDate).startOf("week").toDate();
@@ -978,7 +965,7 @@
             },
             handleDropdownHide: function(aborted) {
                 if (!this.retentionConfiguration) {
-                    this.tableType = "date";
+                    this.tableType = "day";
                 }
                 this.abortPicking();
                 this.clearCommitWarning(true);

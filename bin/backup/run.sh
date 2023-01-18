@@ -19,7 +19,7 @@ cd "$(dirname "$0")"
 function check_connectivity_mongo() {
     local MONGO_OK;
 
-	if ! MONGO_OK=$(mongo --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
+	if ! MONGO_OK=$(mongosh --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
 		echo "error: mongodb service check failed"
 		return 1
 	fi
@@ -43,7 +43,7 @@ function check_connectivity() {
 }
 
 # wait till mongo becomes online.
-check_connectivity mongo
+check_connectivity mongosh
 
 #
 #  Backup is taken with the following commands

@@ -883,12 +883,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
             }
 
-            if (req.session.license) {
-                licenseError = req.session.license;
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
             }
-            if (req.session.notify) {
+            if (req.session.licenseNotification) {
                 try {
-                    licenseNotification = JSON.parse(req.session.notify);
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
                 }
                 catch (e) {
                     log.e('Failed to parse notify', e);
@@ -1705,6 +1705,39 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         else {
             res.send(false);
             return false;
+        }
+    });
+
+    app.post(countlyConfig.path + '/user/settings/column-order', function(req, res) {
+        if (!req.session.uid) {
+            return res.end();
+        }
+
+        if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
+            let reorderSortMapKey = `columnOrder.${req.body.columnOrderKey}.reorderSortMap`;
+            let tableSortMapKey = `columnOrder.${req.body.columnOrderKey}.tableSortMap`;
+
+            if (!req.body.tableSortMap) {
+                tableSortMapKey = undefined;
+            }
+            if (!req.body.reorderSortMap) {
+                reorderSortMapKey = undefined;
+            }
+
+            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, {
+                '$set': {
+                    [reorderSortMapKey]: req.body.reorderSortMap,
+                    [tableSortMapKey]: req.body.tableSortMap
+                }
+            }, { safe: true, upsert: true }, function(err, member) {
+                if (member && !err) {
+                    return res.send(true);
+                }
+                return res.send(false);
+            });
+        }
+        else {
+            return res.send(false);
         }
     });
 

@@ -96,7 +96,7 @@
                         </div>
                     </el-tab-pane>
                 </el-tabs>
-                <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === 'date'">
+                <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === 'day' || tableType === 'week'">
                     <table class="cly-vue-daterp__day-names">
                         <tr>
                             <th v-for="dayName in weekdays">{{ dayName }}</th>

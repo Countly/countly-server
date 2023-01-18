@@ -159,7 +159,25 @@
             },
             reloadFilterValues: function() {
                 this.$refs.filterForm.reload();
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.filteredRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('management-users.user').toUpperCase()] = tableData[i].full_name;
+                    item[CV.i18n('management-users.username').toUpperCase()] = tableData[i].username;
+                    item[CV.i18n('management-users.role').toUpperCase()] = tableData[i].global_admin ? CV.i18n('management-users.global-admin') : ((tableData[i].permission && tableData[i].permission._ && tableData[i].permission._.a.length > 0) ? CV.i18n('management-users.admin') : CV.i18n('management-users.user'));
+                    item[CV.i18n('management-users.email').toUpperCase()] = tableData[i].email;
+                    item[CV.i18n('management-users.group').toUpperCase()] = tableData[i].groupNames ? tableData[i].groupNames : '';
+                    item[CV.i18n('management-users.created').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].created_at).text;
+                    item[CV.i18n('management-users.last_login').toUpperCase()] = tableData[i].last_login === 0 ? CV.i18n('management-users.not-logged-in-yet') : countlyCommon.formatTimeAgoText(tableData[i].last_login).text;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         }
     });
 

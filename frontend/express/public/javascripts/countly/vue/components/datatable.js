@@ -320,11 +320,14 @@
                 }
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
+                    if (countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistKey].tableSortMap) {
+                        defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
+                    }
                     if (loadedState) {
                         var parsed = JSON.parse(loadedState);
-                        // disable loading of persisted searchQuery
-                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
-                        return parsed;
+                        defaultState.page = parsed.page;
+                        defaultState.perPage = parsed.perPage;
+                        defaultState.sort = parsed.sort;
                     }
                     return defaultState;
                 }
@@ -334,7 +337,21 @@
             },
             setControlParams: function() {
                 if (this.persistKey) {
-                    localStorage.setItem(this.persistKey, JSON.stringify(this.controlParams));
+                    var localControlParams = {};
+                    localControlParams.page = this.controlParams.page;
+                    localControlParams.perPage = this.controlParams.perPage;
+                    localControlParams.sort = this.controlParams.sort;
+                    localStorage.setItem(this.persistKey, JSON.stringify(localControlParams));
+                    $.ajax({
+                        type: "POST",
+                        url: countlyGlobal.path + "/user/settings/column-order",
+                        data: {
+                            "tableSortMap": this.controlParams.selectedDynamicCols,
+                            "columnOrderKey": this.persistKey,
+                            _csrf: countlyGlobal.csrf_token
+                        },
+                        success: function() { }
+                    });
                 }
             }
         }
@@ -657,12 +674,50 @@
                 if (this.exportFormat) {
                     return this.exportFormat(this.rows);
                 }
-                return this.rows;
+                else {
+                    return this.formatExportFunction();
+                }
+            },
+            formatExportFunction: function() {
+                if (this.rows && this.rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                    var table = [];
+                    var columns = this.$refs.elTable.columns;
+                    columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
+                    for (var r = 0; r < this.rows.length; r++) {
+                        var item = {};
+                        for (var c = 0; c < columns.length; c++) {
+                            var property;
+                            if (columns[c].columnKey && columns[c].columnKey.length) {
+                                var columnKey = columns[c].columnKey;
+                                if (columnKey.includes(".")) {
+                                    property = this.rows[r];
+                                    var dotSplittedArr = columnKey.split(".");
+                                    for (var i = 0; i < dotSplittedArr.length; i++) {
+                                        if (property[dotSplittedArr[i]]) {
+                                            property = property[dotSplittedArr[i]];
+                                        }
+                                    }
+                                }
+                                else {
+                                    property = this.rows[r][columnKey];
+                                }
+                            }
+                            else {
+                                property = this.rows[r][columns[c].property];
+                            }
+                            item[columns[c].label.toUpperCase()] = property;
+                        }
+                        table.push(item);
+                    }
+                    return table;
+                }
+                else {
+                    return this.rows;
+                }
             },
             initiateExport: function(params) {
                 var formData = null,
                     url = null;
-
                 if (this.exportApi) {
                     formData = this.exportApi();
                     formData.type = params.type;

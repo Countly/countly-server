@@ -3320,6 +3320,27 @@ class DataTable {
 common.DataTable = DataTable;
 
 /**
+ * Assign license check results to request (and session if present)
+ * 
+ * @param {object} req request
+ * @param {object|undefined} check check results
+ */
+common.licenseAssign = function(req, check) {
+    if (check && check.error) {
+        req.licenseError = check.error;
+        if (req.session) {
+            req.session.licenseError = req.licenseError;
+        }
+    }
+    if (check && check.notify && check.notify.length) {
+        req.licenseNotification = JSON.stringify(check.notify);
+        if (req.session) {
+            req.session.licenseNotification = req.licenseNotification;
+        }
+    }
+};
+
+/**
 * Standard number formatter, taken from frontend's countly.common.js
 
 * @memberof countlyCommon

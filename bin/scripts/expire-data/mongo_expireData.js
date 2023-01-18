@@ -2,7 +2,7 @@
  *  Setup TTL indexes to delete older data on multiple collections. This script should be run periodically, to create TTL indexes on new collections too, like new apps and new events, etc. For authentication mongo shell must be authenticated, as well as specifically authenticated in the script too.
  *  Server: mongodb
  *  Path: any
- *  Command: mongo < mongo_expireData.js
+ *  Command: mongosh < mongo_expireData.js
  */
 
 var COUNTLY_DRILL = 'countly_drill',
