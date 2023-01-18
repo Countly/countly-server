@@ -105,7 +105,7 @@ function getPeriodObject(prmPeriod) {
         period = [period.since, Date.now()];
     }
 
-    if (period && typeof periodObj === 'string' && period.indexOf(",") !== -1) {
+    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
         try {
             period = JSON.parse(period);
         }
