@@ -78,7 +78,7 @@ class StatsJob extends job.Job {
 
                             request.post({
                                 url: 'https://stats.count.ly/i/bulk',
-                                formData: formData
+                                body: formData
                             }, function(a) {
                                 log.d('Done running stats job: %j', a);
                                 done();
