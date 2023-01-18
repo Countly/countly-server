@@ -5,7 +5,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
     config = require("../../../../frontend/express/config.js"),
     moment = require('moment-timezone'),
-    request = require('request');
+    request = require('countly-request');
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
@@ -78,7 +78,7 @@ class StatsJob extends job.Job {
 
                             request.post({
                                 url: 'https://stats.count.ly/i/bulk',
-                                formData: formData
+                                body: formData
                             }, function(a) {
                                 log.d('Done running stats job: %j', a);
                                 done();

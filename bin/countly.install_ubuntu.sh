@@ -18,25 +18,20 @@ sudo apt-get update
 
 sudo apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck
 
-if [[ "$UBUNTU_YEAR" = "22" && ! -h /usr/bin/python ]]; then
+if [[ "$UBUNTU_YEAR" = "22" ]]; then
     sudo apt-get -y install python2 python2-dev
-    sudo ln -s /usr/bin/python2.7 /usr/bin/python #absult path
-    sudo ln -s /usr/bin/python2-config /usr/bin/python-config
+    if [[ ! -h /usr/bin/python ]]; then
+        sudo ln -s /usr/bin/python2.7 /usr/bin/python
+        sudo ln -s /usr/bin/python2-config /usr/bin/python-config
+    fi
 else
     sudo apt-get -y install python
 fi
 
-#Install GCC > 7 version
+#Install GCC && G++> 7 version
 sudo apt-get -y install software-properties-common
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-sudo apt-get -y install build-essential gcc-8
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
-sudo update-alternatives --set gcc "/usr/bin/gcc-8"
-
-#Install G++ > 7 version
-sudo apt-get -y install build-essential g++-8
-sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
-sudo update-alternatives --set g++ "/usr/bin/g++-8"
+sudo apt-get -y install build-essential
+sudo apt-get install gcc g++ make
 
 #Install dependancies required by the puppeteer
 sudo apt-get -y install libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
