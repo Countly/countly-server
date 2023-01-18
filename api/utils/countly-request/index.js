@@ -36,20 +36,6 @@ var initParams = function(uri, options, callback) {
 
 
 
-var getTimeStamp = function() {
-    return parseInt(new Date().getTime() / 1000, 10);
-};
-
-// borrowed from 'oauth-1.0a'
-var getNonce = function() {
-    var word_characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    var result = '';
-    for (var i = 0; i < 32; i++) {
-        result += word_characters[Math.floor(Math.random() * word_characters.length, 10)];
-    }
-    return result;
-};
-
 var convertOptionsToGot = function(options) {
     if (options === null || typeof options !== 'object') {
         return null;
@@ -139,10 +125,6 @@ module.exports = function(uri, options, callback) {
                 params.callback(null, response, response.body);
             })
             .catch(error => {
-                console.log("request failure");
-                console.log(error);
-                console.log("response body");
-                console.log(error.response.body);
                 // Call the callback with the error
                 params.callback(error);
             });
@@ -151,14 +133,10 @@ module.exports = function(uri, options, callback) {
         // Make the request using got
         got(params.uri, params.options)
             .then(response => {
-                console.log("request success");
-                // Call the callback with the response data
                 params.callback(null, response, response.body);
             })
             .catch(error => {
                 // Call the callback with the error
-                console.log("request failure");
-                console.log(error);
                 params.callback(error);
             });
     }
@@ -168,27 +146,11 @@ module.exports = function(uri, options, callback) {
 
 // Add a post method to the request object
 module.exports.post = function(options, callback) {
-    options.method = 'POST';
-    options.json = options.body;
-    delete options.body;
-    /*if (uri && typeof uri === 'string') {
-        options.uri = uri;
-        options.method = 'POST';
-    }
-    else if (uri && typeof uri === 'object') {
-        uri.uri = uri;
-        uri.method = 'POST';
-    }
-
-    debugger;*/
     got.post(options, callback).then(response => {
-        console.log("post request success");
         // Call the callback with the response data
         callback(null, response, response.body);
     }).catch(error => {
         // Call the callback with the error
-        console.log("post request failure");
-        console.log(error);
         callback(error);
     });
 
@@ -196,9 +158,5 @@ module.exports.post = function(options, callback) {
 
 //Add a get method to the request object
 module.exports.get = function(uri, options, callback) {
-    /*if (uri && typeof uri === 'string') {
-        options.uri = uri;
-    }
-    options.method = 'GET';*/
     module.exports(uri, options, callback);
 };
