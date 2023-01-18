@@ -1,0 +1,20 @@
+{
+  "name": "countly-request",
+  "version": "1.0.0",
+  "description": "Creates a wrapper for got with same signature with deprecated request in order to replace request package",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Countly/countly-server.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "got": "^11.8.0",
+    "oauth-signature": "^1.5.0"
+  }
+}
