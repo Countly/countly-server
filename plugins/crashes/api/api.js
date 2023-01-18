@@ -1030,11 +1030,11 @@ plugins.setConfigs("crashes", {
                                 let obj = {};
                                 let sortByField = columns[params.qstring.iSortCol_0];
 
-                                if (sortByField === 'latest_version' && crashgroupMeta.appVersionSorterAdded) {
+                                if (sortByField === 'latest_version' && crashgroupMeta.latest_version_sorter_added) {
                                     sortByField = 'latest_version_for_sort';
                                 }
 
-                                obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                                obj[sortByField] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                                 cursor.sort(obj);
                             }
                             if (params.qstring.iDisplayStart && params.qstring.iDisplayStart !== 0) {
