@@ -80,7 +80,7 @@
                 </el-table-column>
 
                 <el-table-column v-else-if="col.value === 'lastModifiedts'"
-                    prop="lastModifiedts" sortable="custom" min-width="275" :label="i18n('data-manager.last-modified')">
+                    prop="lastModifiedts" column-key="lastModifiedDate" sortable="custom" min-width="275" :label="i18n('data-manager.last-modified')">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row && rowScope.row.lastModifiedts">
                             <div>{{rowScope.row.lastModifiedDate || i18n('data-manager.empty-placeholder') }}</div>
