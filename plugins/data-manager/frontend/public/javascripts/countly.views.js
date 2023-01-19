@@ -948,7 +948,9 @@
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
                     this.$store.dispatch('countlyDataManager/loadInternalEvents');
-                    this.$store.dispatch('countlyDataManager/loadViews');
+                    if (countlyGlobal.plugins.indexOf("views") > -1) {
+                        this.$store.dispatch('countlyDataManager/loadViews');
+                    }
                 }
             },
             handleCreateCommand: function(event, tab) {
@@ -1312,5 +1314,5 @@
         this.renderWhenReady(detailView);
     });
 
-    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

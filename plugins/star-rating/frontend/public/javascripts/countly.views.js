@@ -1038,6 +1038,7 @@
         title: 'Feedback',
         name: 'feedback',
         permission: FEATURE_NAME,
+        pluginName: "star-rating",
         component: countlyVue.components.create({
             template: CV.T("/star-rating/templates/users-tab.html"),
             components: {
@@ -1101,7 +1102,7 @@
     });
 
     app.addPageScript("/manage/reports", function() {
-        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], pluginName: "star-rating", value: "star-rating"});
     });
 
     /*
@@ -1238,6 +1239,7 @@ app.addPageScript("/drill#", function() {
     app.addSubMenu("feedback", {
         code: "star-rating",
         permission: FEATURE_NAME,
+        pluginName: "star-rating",
         url: "#/feedback/ratings",
         text: "star.menu-title",
         icon: '<div class="logo ion-android-star-half"></div>',
@@ -1245,6 +1247,7 @@ app.addPageScript("/drill#", function() {
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
+		pluginName:"star-rating",
         beforeCreate: function() {
             var self = this;
             $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {

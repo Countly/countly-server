@@ -16,7 +16,7 @@
         },
         computed: {
             showDrillFilter: function() {
-                if (countlyAuth.validateRead('drill')) {
+                if (countlyAuth.validateRead('drill') && countlyGlobal.plugins.indexOf("drill") !== -1) {
                     return true;
                 }
                 else {

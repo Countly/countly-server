@@ -143,8 +143,9 @@
 
                 countlyPlugins.toggle(plugins, function(res) {
                     if (res.result === "started") {
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
-                        self.checkProcess();
+                        //self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
+                        //self.checkProcess();
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                     }
                     else {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true);
@@ -614,27 +615,29 @@
                 if (self.searchQuery && self.searchQuery !== "") {
                     self.searchQuery = self.searchQuery.toLowerCase();
                     for (var config in self.predefinedStructure) {
-                        if (config.toLowerCase().includes(self.searchQuery)) {
+                        if (config.toLowerCase().includes(self.searchQuery) && CountlyHelpers.isPluginEnabled(config.toLowerCase())) {
                             res[config] = self.predefinedStructure[config];
                         }
                         else {
                             let groups = [];
                             // eslint-disable-next-line no-loop-func
                             self.predefinedStructure[config].groups.map(function(group) {
-                                if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
-                                    groups.push(group);
-                                }
-                                else {
-                                    let list = group.list.filter(function(item) {
-                                        let label = self.getLabelName(item, config) || "";
-                                        let helper = self.getHelperLabel(item, config) || "";
-                                        return label.toLowerCase().includes(self.searchQuery)
+                                if (CountlyHelpers.isPluginEnabled(config.toLowerCase())) {
+                                    if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
+                                        groups.push(group);
+                                    }
+                                    else {
+                                        let list = group.list.filter(function(item) {
+                                            let label = self.getLabelName(item, config) || "";
+                                            let helper = self.getHelperLabel(item, config) || "";
+                                            return label.toLowerCase().includes(self.searchQuery)
                                         || helper.toLowerCase().includes(self.searchQuery);
-                                    });
-                                    if (list.length > 0) {
-                                        let tmp = group;
-                                        tmp.list = list;
-                                        groups.push(tmp);
+                                        });
+                                        if (list.length > 0) {
+                                            let tmp = group;
+                                            tmp.list = list;
+                                            groups.push(tmp);
+                                        }
                                     }
                                 }
                             });

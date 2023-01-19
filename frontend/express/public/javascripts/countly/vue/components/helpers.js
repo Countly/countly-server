@@ -561,32 +561,47 @@
                         "label": this.i18n('sidebar.events'),
                         "name": "event",
                         "options": []
-                    },
-                    {
+                    }
+                ];
+                if (countlyGlobal.plugins.indexOf('views') !== -1) {
+                    availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_view'),
                         "name": "[CLY]_view",
                         "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
-                    },
-                    {
-                        "label": this.i18n("sidebar.feedback"),
-                        "name": "feedback",
-                        "options": [
-                            { label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' },
-                            { label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' },
-                            { label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' }
-                        ]
-                    },
-                    {
+                    });
+                }
+
+                var feedbackOptions = [];
+                if (countlyGlobal.plugins.indexOf('start-rating') !== -1) {
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' });
+                }
+
+                if (countlyGlobal.plugins.indexOf('surveys') !== -1) {
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' });
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' });
+                }
+                if (feedbackOptions.length > 0) {
+                    availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
                         "name": "[CLY]_crash",
                         "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
-                    }
-                    // {
-                    //     "label": this.i18n('internal-events.[CLY]_push_action'),
-                    //     "name": "[CLY]_push_action",
-                    //     "noChild": true
-                    // }
-                ];
+                    });
+                }
+
+
+                if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
+                    availableEvents.push({
+                        "label": this.i18n("sidebar.feedback"),
+                        "name": "feedback",
+                        "options": feedbackOptions
+                    });
+                }
+
+                // {
+                //     "label": this.i18n('internal-events.[CLY]_push_action'),
+                //     "name": "[CLY]_push_action",
+                //     "noChild": true
+                // }
 
                 if (this.selectedApp) {
                     countlyEvent.getEventsForApps([this.selectedApp], function(eData) {

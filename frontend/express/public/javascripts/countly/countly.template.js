@@ -762,15 +762,20 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenu: function(category, node) {
-        if (category === "management" || category === "users") {
-            this.addMenuForType("default", category, node);
+        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
         }
         else {
-            for (var type in this.appTypes) {
-                this.addMenuForType(type, category, node);
+            if (category === "management" || category === "users") {
+                this.addMenuForType("default", category, node);
             }
-            //queue for future added app types
-            this._menuForAllTypes.push({category: category, node: node});
+            else {
+                for (var type in this.appTypes) {
+                    this.addMenuForType(type, category, node);
+                }
+                //queue for future added app types
+                this._menuForAllTypes.push({category: category, node: node});
+            }
         }
     },
     /**
@@ -789,11 +794,16 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenu: function(parent_code, node) {
-        for (var type in this.appTypes) {
-            this.addSubMenuForType(type, parent_code, node);
+        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
         }
-        //queue for future added app types
-        this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        else {
+            for (var type in this.appTypes) {
+                this.addSubMenuForType(type, parent_code, node);
+            }
+            //queue for future added app types
+            this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        }
     },
     main: function(/*forced*/) {
         var change = true,
@@ -3167,6 +3177,7 @@ var AppRouter = Backbone.Router.extend({
     /**
     * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
     * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
+	* @param {string} name - Plugin name
     * @memberof app
     * @instance
     * @example
@@ -3174,8 +3185,9 @@ var AppRouter = Backbone.Router.extend({
     *    countlyCrashes.loadList(appId);
     * });
     */
-    addAppSwitchCallback: function(callback) {
-        this.appSwitchCallbacks.push(callback);
+    addAppSwitchCallback: function(callback, name) {
+        name = name || 'core';
+        this.appSwitchCallbacks.push({"name": name, "fn": callback});
     },
     /**
     * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
@@ -3218,7 +3230,9 @@ var AppRouter = Backbone.Router.extend({
      * @param {object} View - plugin view
      */
     addAppManagementView: function(plugin, title, View) {
-        this.appManagementViews[plugin] = {title: title, view: View};
+        if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+            this.appManagementViews[plugin] = {title: title, view: View};
+        }
     },
     /**
      * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
@@ -3228,7 +3242,9 @@ var AppRouter = Backbone.Router.extend({
      * @param {Array} inputs - plugin inputs
      */
     addAppManagementInput: function(plugin, title, inputs) {
-        this.appManagementViews[plugin] = {title: title, inputs: inputs};
+        if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+            this.appManagementViews[plugin] = {title: title, inputs: inputs};
+        }
     },
     /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
@@ -3338,6 +3354,7 @@ var AppRouter = Backbone.Router.extend({
     * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
     * @param {function} callback - function to be called when view loaded
+	* @param {string} name - Plugin name
     * @memberof app
     * @instance
     * @example <caption>Adding to single specific view with specific url</caption>
@@ -3363,11 +3380,13 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each view");
     * });
     */
-    addPageScript: function(view, callback) {
-        if (!this.pageScripts[view]) {
-            this.pageScripts[view] = [];
+    addPageScript: function(view, callback, name) {
+        if (!name || CountlyHelpers.isPluginEnabled(name)) {
+            if (!this.pageScripts[view]) {
+                this.pageScripts[view] = [];
+            }
+            this.pageScripts[view].push(callback);
         }
-        this.pageScripts[view].push(callback);
     },
     /**
     * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
@@ -3423,7 +3442,9 @@ var AppRouter = Backbone.Router.extend({
                 $("#sidebar-menu #default-type").show();
             }
             for (var i = 0; i < this.appSwitchCallbacks.length; i++) {
-                this.appSwitchCallbacks[i](appId);
+                if (CountlyHelpers.isPluginEnabled(this.appSwitchCallbacks[i].name)) {
+                    this.appSwitchCallbacks[i].fn(appId);
+                }
             }
             app.localize();
         }

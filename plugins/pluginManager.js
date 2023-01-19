@@ -24,6 +24,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     spawn = cp.spawn,
     configextender = require('../api/configextender');
 
+var pluginConfig = {};
+
 /**
 * This module handles communicaton with plugins
 * @module "plugins/pluginManager"
@@ -106,7 +108,7 @@ var pluginManager = function pluginManager() {
     * @param {function} callback - function to call when configs loaded
     * @param {boolean} api - was the call made from api process
     **/
-    this.loadConfigs = function(db, callback, api) {
+    this.loadConfigs = function(db, callback/*, api*/) {
         var self = this;
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
             if (!err) {
@@ -120,8 +122,24 @@ var pluginManager = function pluginManager() {
                 configs = res;
                 delete configs._id;
                 self.checkConfigs(db, configs, defaultConfigs, callback);
-                if (api && self.getConfig("api").sync_plugins) {
+                /*if (api && self.getConfig("api").sync_plugins) {
                     self.checkPlugins(db);
+                }*/
+                pluginConfig = res.plugins || {}; //currently enabled plugins
+                var update = {};
+                for (var z = 0; z < plugins.length; z++) {
+                    if (typeof pluginConfig[plugins[z]] === 'undefined') {
+                        pluginConfig[plugins[z]] = true;
+                        update['plugins.' + plugins[z]] = true;
+                    }
+                }
+
+                if (Object.keys(update).length > 0) {
+                    db.collection("plugins").updateOne({_id: "plugins"}, {"$set": update}, function(err6) {
+                        if (err6) {
+                            log.e(err6);
+                        }
+                    });
                 }
             }
             else if (callback) {
@@ -261,7 +279,7 @@ var pluginManager = function pluginManager() {
         }));
         var ret = {};
         for (let i = 0; i < c.length; i++) {
-            if (!excludeFromUI[c[i]]) {
+            if (!excludeFromUI[c[i]] && (plugins.indexOf(c[i]) === -1 || pluginConfig[c[i]])) {
                 ret[c[i]] = this.getConfig(c[i]);
             }
         }
@@ -496,18 +514,40 @@ var pluginManager = function pluginManager() {
             }
         }
     };
+    this.getFeatureName = function() {
+        var stack = new Error('test').stack;
+        stack = stack.split('\n');
+        //0 - error, 1 - this function, 2 - pluginmanager, 3 - right path)
 
+        if (stack && stack[3]) {
+            stack = stack[3];
+
+            stack = stack.split('/');
+            for (var z = 0; z < stack.length - 3; z++) {
+                if (stack[z] === 'countly' && stack[z + 1] === 'plugins') {
+                    return stack[z + 2];
+                }
+            }
+        }
+
+    };
     /**
     * Register listening to new event on api side
     * @param {string} event - event to listen to
     * @param {function} callback - function to call, when event happens
     * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
+	* @param {string} featureName -  name of plugin
     **/
-    this.register = function(event, callback, unshift = false) {
+    this.register = function(event, callback, unshift = false, featureName) {
         if (!events[event]) {
             events[event] = [];
         }
-        events[event][unshift ? 'unshift' : 'push'](callback);
+        //{"cb":callback, "plugin":
+        if (!featureName) {
+            featureName = this.getFeatureName();
+        }
+
+        events[event][unshift ? 'unshift' : 'push']({"cb": callback, "name": featureName});
     };
 
     // TODO: Remove this function and all it calls when moving to Node 12.
@@ -537,17 +577,19 @@ var pluginManager = function pluginManager() {
         if (events[event]) {
             try {
                 for (let i = 0, l = events[event].length; i < l; i++) {
-                    try {
-                        promise = events[event][i].call(null, params);
+                    if (events[event][i] && events[event][i].cb && events[event][i].name && plugins.indexOf(events[event][i].name) > -1 && pluginConfig[events[event][i].name]) {
+                        try {
+                            promise = events[event][i].cb.call(null, params);
+                        }
+                        catch (error) {
+                            promise = Promise.reject(error);
+                            console.error(error.stack);
+                        }
+                        if (promise) {
+                            used = true;
+                        }
+                        promises.push(promise);
                     }
-                    catch (error) {
-                        promise = Promise.reject(error);
-                        console.error(error.stack);
-                    }
-                    if (promise) {
-                        used = true;
-                    }
-                    promises.push(promise);
                 }
             }
             catch (ex) {
@@ -618,7 +660,7 @@ var pluginManager = function pluginManager() {
         for (let i = 0, l = plugins.length; i < l; i++) {
             try {
                 var plugin = require("./" + plugins[i] + "/frontend/app");
-                plugs.push(plugin);
+                plugs.push({'name': plugins[i], "plugin": plugin});
                 app.use(countlyConfig.path + '/' + plugins[i], express.static(__dirname + '/' + plugins[i] + "/frontend/public", { maxAge: 31557600000 }));
                 if (plugin.staticPaths) {
                     plugin.staticPaths(app, countlyDb, express);
@@ -639,7 +681,44 @@ var pluginManager = function pluginManager() {
     this.loadAppPlugins = function(app, countlyDb, express) {
         for (let i = 0; i < plugs.length; i++) {
             try {
-                plugs[i].init(app, countlyDb, express);
+                //plugs[i].init(app, countlyDb, express);
+                plugs[i].plugin.init({
+                    name: plugs[i].name,
+                    get: function(pathTo, callback) {
+                        var pluginName = this.name;
+                        app.get(pathTo, function(req, res, next) {
+                            console.log(pluginConfig[pluginName]);
+                            if (pluginConfig[pluginName]) {
+                                callback(req, res, next);
+                            }
+                            else {
+                                next();
+                            }
+                        });
+                    },
+                    post: function(pathTo, callback) {
+                        var pluginName = this.name;
+                        app.post(pathTo, function(req, res, next) {
+                            if (pluginConfig[pluginName]) {
+                                callback(req, res, next);
+                            }
+                            else {
+                                next();
+                            }
+                        });
+                    },
+                    use: function(pathTo, callback) {
+                        var pluginName = this.name;
+                        app.use(pathTo, function(req, res, next) {
+                            if (pluginConfig[pluginName]) {
+                                callback(req, res, next);
+                            }
+                            else {
+                                next();
+                            }
+                        });
+                    }
+                }, countlyDb, express);
             }
             catch (ex) {
                 console.error(ex.stack);
@@ -673,9 +752,9 @@ var pluginManager = function pluginManager() {
             methodCache[method] = [];
             for (let i = 0; i < plugs.length; i++) {
                 try {
-                    if (plugs[i][method]) {
-                        methodCache[method].push(plugs[i]);
-                        if (plugs[i][method](params)) {
+                    if (plugs[i].plugin && plugs[i].plugin[method]) {
+                        methodCache[method].push(plugs[i].plugin);
+                        if (plugs[i].plugin[method](params)) {
                             res = true;
                         }
                     }
@@ -687,6 +766,7 @@ var pluginManager = function pluginManager() {
         }
         return res;
     };
+
 
     /**
     * Call specific predefined methods of plugin's frontend app.js modules which are expected to return a promise which resolves to an object
@@ -743,10 +823,24 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get array of enabled plugin names
+	* @param {boolean} returnOnlyEnabled  - if true will return only enabled plugins
     * @returns {array} with plugin names
     **/
-    this.getPlugins = function() {
-        return plugins;
+    this.getPlugins = function(returnOnlyEnabled) {
+        //fix it to return only enabled based on db settings
+        var list = [];
+        if (!returnOnlyEnabled) {
+
+            return JSON.parse(JSON.stringify(plugins));
+        }
+        else {
+            for (var key in pluginConfig) {
+                if (pluginConfig[key]) {
+                    list.push(key);
+                }
+            }
+            return list;
+        }
     };
 
     /**
@@ -844,7 +938,7 @@ var pluginManager = function pluginManager() {
                 this.updateConfigs(db, "plugins", plugConf, callback);
             }
             else {
-                this.syncPlugins(plugConf, callback);
+                //this.syncPlugins(plugConf, callback);
             }
         }
         else {
@@ -863,7 +957,7 @@ var pluginManager = function pluginManager() {
                         index = pluginList.indexOf(plugin);
                     if (index !== -1 && !state) {
                         changes++;
-                        plugins.splice(plugins.indexOf(plugin), 1);
+                        //plugins.splice(plugins.indexOf(plugin), 1);
                     }
                     else if (index === -1 && state) {
                         changes++;
@@ -922,6 +1016,7 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
+                callback(false);
                 if (changes > 0) {
                     if (db && self.getConfig("api").sync_plugins) {
                         self.updateConfigs(db, "plugins", pluginState);

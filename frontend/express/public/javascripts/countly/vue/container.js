@@ -1,4 +1,4 @@
-/* global countlyAuth */
+/* global countlyAuth, CountlyHelpers*/
 
 (function(countlyVue) {
 
@@ -10,73 +10,85 @@
     }
 
     Container.prototype.registerData = function(id, value, type) {
-        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-            this.dict[id] = {};
-        }
-        // Note: type property is used when registring data value as object type. By default, container keeps array type.
-        if (type === 'object') {
-            this.dict[id].data = {};
-            Object.assign(this.dict[id].data, value);
+        if (value && (value.pluginName || value.permission) && !CountlyHelpers.isPluginEnabled(value.pluginName || value.permission)) {
             return;
         }
-
-        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
-            this.dict[id].data = [];
-        }
-
-        var _items = this.dict[id].data;
-
-        if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
-            _items.push(Object.freeze(value));
-        }
         else {
-            var found = false,
-                i = 0;
-
-            while (!found && i < _items.length) {
-                if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
-                    found = true;
-                }
-                else {
-                    i++;
-                }
+            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+                this.dict[id] = {};
             }
-            _items.splice(i, 0, value);
+            // Note: type property is used when registring data value as object type. By default, container keeps array type.
+            if (type === 'object') {
+                this.dict[id].data = {};
+                Object.assign(this.dict[id].data, value);
+                return;
+            }
+
+            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
+                this.dict[id].data = [];
+            }
+
+            var _items = this.dict[id].data;
+
+            if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
+                _items.push(Object.freeze(value));
+            }
+            else {
+                var found = false,
+                    i = 0;
+
+                while (!found && i < _items.length) {
+                    if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
+                        found = true;
+                    }
+                    else {
+                        i++;
+                    }
+                }
+                _items.splice(i, 0, value);
+            }
         }
     };
 
     Container.prototype.registerTab = function(id, tab) {
-        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-            this.dict[id] = {};
+        if (tab && (tab.pluginName || tab.permission) && !CountlyHelpers.isPluginEnabled(tab.pluginName || tab.permission)) {
+            return;
         }
+        else {
+            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+                this.dict[id] = {};
+            }
 
-        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
-            this.dict[id].tabs = [];
-        }
-        tab.priority = tab.priority || 0;
-        var putAt = this.dict[id].tabs.length;
+            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
+                this.dict[id].tabs = [];
+            }
+            tab.priority = tab.priority || 0;
+            var putAt = this.dict[id].tabs.length;
 
-        if (tab.priority) {
-            for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
-                if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
-                    putAt = zz;
-                    break;
+            if (tab.priority) {
+                for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
+                    if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
+                        putAt = zz;
+                        break;
+                    }
                 }
             }
+            this.dict[id].tabs.splice(putAt, 0, tab);
         }
-        this.dict[id].tabs.splice(putAt, 0, tab);
     };
 
     Container.prototype.registerMixin = function(id, mixin) {
-        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-            this.dict[id] = {};
-        }
+        if (mixin && (!mixin.pluginName || CountlyHelpers.isPluginEnabled(mixin.pluginName))) {
+            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+                this.dict[id] = {};
+            }
 
-        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "mixins")) {
-            this.dict[id].mixins = [];
-        }
+            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "mixins")) {
+                this.dict[id].mixins = [];
+            }
 
-        this.dict[id].mixins.push(mixin);
+            this.dict[id].mixins.push(mixin);
+        }
     };
 
     Container.prototype.registerTemplate = function(id, path) {
