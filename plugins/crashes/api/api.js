@@ -1646,6 +1646,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+        common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version_for_sort": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "uid": 1}, {background: true}, function() {});
@@ -1698,6 +1699,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version_for_sort": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         });
@@ -1728,6 +1730,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version_for_sort": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         });
