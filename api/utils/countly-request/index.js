@@ -3,7 +3,6 @@
  */
 
 const got = require('got');
-const oauthSignature = require('oauth-signature');
 
 var initParams = function(uri, options, callback) {
 
@@ -74,36 +73,6 @@ var convertOptionsToGot = function(options) {
         delete requestOptions.url;
 
     }
-
-    //support for existing oauth in request
-    if (options.oauth) {
-
-        // borrowed from 'oauth-1.0a'
-
-
-        const parameters = {
-            oauth_consumer_key: options.oauth.consumer_key,
-            oauth_token: options.oauth.token,
-            oauth_signature_method: options.oauth.signature_method,
-            oauth_timestamp: Math.floor(Date.now() / 1000),
-            oauth_nonce: Math.random().toString(36).substring(2, 15),
-            oauth_version: '1.0',
-        };
-
-        const signature = oauthSignature.generate('POST', requestOptions.prefixUrl, parameters, options.oauth.private_key.replace(/ /g, "\n"), options.oauth.token_secret);
-
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `OAuth oauth_consumer_key="${parameters.oauth_consumer_key}", oauth_token="${parameters.oauth_token}", oauth_signature_method="${parameters.oauth_signature_method}", oauth_timestamp="${parameters.oauth_timestamp}", oauth_nonce="${parameters.oauth_nonce}", oauth_version="1.0", oauth_signature="${signature}"`
-        };
-
-        requestOptions.json = options.body;
-        delete requestOptions.body;
-
-        requestOptions.headers = headers;
-
-    }
-
 
     return requestOptions;
 };
