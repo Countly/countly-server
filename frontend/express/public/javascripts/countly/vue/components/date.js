@@ -494,7 +494,6 @@
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
-
                     var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
 
                     if (newVal.text.toString() === "1" && newVal.level === "days") {
