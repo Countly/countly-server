@@ -1546,7 +1546,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         }
     }
-    plugins.register("/session/post", function(ob) {
+    plugins.register("/session/post", async function(ob) {
         var params = ob.params;
         var user = params.app_user;
         if (user && user.vc) {
@@ -1589,42 +1589,46 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             if (user.lv) {
                 var segmentation = {name: user.lv, exit: 1};
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                    if (err) {
-                        log.e(err);
-                    }
-                    if (view) {
-                        if (parseInt(user.vc) === 1) {
-                            segmentation.bounce = 1;
+                await new Promise(function(resolve) {
+                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
+                        if (err) {
+                            log.e(err);
                         }
-                        params.viewsNamingMap = params.viewsNamingMap || {};
-                        params.viewsNamingMap[segmentation.name] = view._id;
-                        recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                        if (view) {
+                            if (parseInt(user.vc) === 1) {
+                                segmentation.bounce = 1;
+                            }
+                            params.viewsNamingMap = params.viewsNamingMap || {};
+                            params.viewsNamingMap[segmentation.name] = view._id;
+                            recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
 
-                        if (segmentation.exit || segmentation.bounce) {
-                            plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            if (segmentation.exit || segmentation.bounce) {
+                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            }
                         }
-                    }
+                        resolve();
+                    });
                 });
             }
             checkViewQuery(ob.updates, 0, 0);
             //update unique view vount for session
-            common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
-                if (err) {
-                    log.e(err);
-                }
-                data = data || [];
-                data = data[0] || {};
+            await new Promise(function(resolve) {
+                common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
+                    if (err) {
+                        log.e(err);
+                    }
+                    data = data || [];
+                    data = data[0] || {};
 
-                for (var key in data) {
-                    if (key !== "_id") {
-                        if (data[key].ts >= user.ls) {
-                            recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                    for (var key in data) {
+                        if (key !== "_id") {
+                            if (data[key].ts >= user.ls) {
+                                recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                            }
                         }
                     }
-                }
-
-
+                    resolve();
+                });
             });
         }
     });
