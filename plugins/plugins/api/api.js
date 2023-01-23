@@ -69,7 +69,7 @@ var plugin = {},
             }
         });
         return true;
-    });
+    }, false, 'plugins');
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;

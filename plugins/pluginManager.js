@@ -531,8 +531,8 @@ var pluginManager = function pluginManager() {
 
             stack = stack.split('/');
             for (var z = 0; z < stack.length - 3; z++) {
-                if (stack[z] === 'countly' && stack[z + 1] === 'plugins') {
-                    return stack[z + 2];
+                if (stack[z] === 'plugins') {
+                    return stack[z + 1];
                 }
             }
         }
