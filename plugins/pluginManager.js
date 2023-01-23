@@ -134,7 +134,6 @@ var pluginManager = function pluginManager() {
                         installPlugins.push(plugins[z]);
                     }
                 }
-                this.configsLaded = Date.now();
                 Promise.each(installPlugins, function(name) {
                     return new Promise(function(resolve) {
                         self.processPluginInstall(db, name, function() {
@@ -598,6 +597,11 @@ var pluginManager = function pluginManager() {
                         }
                         promises.push(promise);
                     }
+                    else {
+                        logDbWrite.e(events[event][i].name + ' ' + plugins.indexOf(events[event][i].name) + ' ' + pluginConfig[events[event][i].name]);
+                        var stack = new Error('test').stack;
+                        console.error(stack);
+                    }
                 }
             }
             catch (ex) {
@@ -1049,7 +1053,7 @@ var pluginManager = function pluginManager() {
                 callback();
             }
             else {
-                db.collection("plugins").insert({'_id': 'install_' + name, 'time': Date.now()}, function(err2) {
+                db.collection("plugins").insert({'_id': 'install_' + name, 'time': Date.now()}, {ignore_errors: [11000]}, function(err2) {
                     if (err2) {
                         if (err2.code && err2.code !== 11000) {
                             console.log(err2);
@@ -1456,7 +1460,12 @@ var pluginManager = function pluginManager() {
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
-
+        var self = this;
+        await new Promise(function(resolve) {
+            self.loadConfigs(common.db, function() {
+                resolve();
+            });
+        });
         return databases;
     };
 
