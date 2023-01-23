@@ -945,7 +945,7 @@ var pluginManager = function pluginManager() {
                 this.updateConfigs(db, "plugins", plugConf, callback);
             }
             else {
-                //this.syncPlugins(plugConf, callback);
+                this.syncPlugins(plugConf, callback);
             }
         }
         else {
@@ -964,7 +964,7 @@ var pluginManager = function pluginManager() {
                         index = pluginList.indexOf(plugin);
                     if (index !== -1 && !state) {
                         changes++;
-                        //plugins.splice(plugins.indexOf(plugin), 1);
+                        plugins.splice(plugins.indexOf(plugin), 1);
                     }
                     else if (index === -1 && state) {
                         changes++;
@@ -1023,7 +1023,6 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
-                callback(false);
                 if (changes > 0) {
                     if (db && self.getConfig("api").sync_plugins) {
                         self.updateConfigs(db, "plugins", pluginState);

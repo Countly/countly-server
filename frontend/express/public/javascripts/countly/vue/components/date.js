@@ -470,7 +470,7 @@
                 deep: true,
                 handler: function(newVal) {
                     var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
-                    if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
+                    if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed && parsed.isValid()) {
                             this.inTheLastInput.parsed[0] = parsed.toDate();
                             this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);

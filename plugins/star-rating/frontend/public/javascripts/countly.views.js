@@ -1247,7 +1247,7 @@ app.addPageScript("/drill#", function() {
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
-		pluginName:"star-rating",
+        pluginName: "star-rating",
         beforeCreate: function() {
             var self = this;
             $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {

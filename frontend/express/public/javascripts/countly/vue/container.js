@@ -51,29 +51,31 @@
     };
 
     Container.prototype.registerTab = function(id, tab) {
-        if (tab && (tab.pluginName || tab.permission) && !CountlyHelpers.isPluginEnabled(tab.pluginName || tab.permission)) {
-            return;
-        }
-        else {
-            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-                this.dict[id] = {};
+        if (tab) {
+            if ((tab.pluginName || tab.permission) && !CountlyHelpers.isPluginEnabled(tab.pluginName || tab.permission)) {
+                return;
             }
+            else {
+                if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+                    this.dict[id] = {};
+                }
 
-            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
-                this.dict[id].tabs = [];
-            }
-            tab.priority = tab.priority || 0;
-            var putAt = this.dict[id].tabs.length;
+                if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
+                    this.dict[id].tabs = [];
+                }
+                tab.priority = tab.priority || 0;
+                var putAt = this.dict[id].tabs.length;
 
-            if (tab.priority) {
-                for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
-                    if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
-                        putAt = zz;
-                        break;
+                if (tab.priority) {
+                    for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
+                        if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
+                            putAt = zz;
+                            break;
+                        }
                     }
                 }
+                this.dict[id].tabs.splice(putAt, 0, tab);
             }
-            this.dict[id].tabs.splice(putAt, 0, tab);
         }
     };
 

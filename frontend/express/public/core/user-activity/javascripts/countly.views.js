@@ -1,4 +1,4 @@
-/* global countlyAuth, countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
+/* global countlyAuth, countlyVue,CV,countlyUserActivity,app,CountlyHelpers, countlyGlobal*/
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
