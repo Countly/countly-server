@@ -521,6 +521,20 @@ var pluginManager = function pluginManager() {
             }
         }
     };
+    this.isPluginEnabled = function(name) {
+        if (plugins.indexOf(name) > -1) { //is one of plugins
+            if (pluginConfig[name]) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return true;
+        }
+    };
+
     this.getFeatureName = function() {
         var stack = new Error('test').stack;
         stack = stack.split('\n');
@@ -552,8 +566,8 @@ var pluginManager = function pluginManager() {
         //{"cb":callback, "plugin":
         if (!featureName) {
             featureName = this.getFeatureName();
+            featureName = featureName || 'core';
         }
-
         events[event][unshift ? 'unshift' : 'push']({"cb": callback, "name": featureName});
     };
 
@@ -584,7 +598,12 @@ var pluginManager = function pluginManager() {
         if (events[event]) {
             try {
                 for (let i = 0, l = events[event].length; i < l; i++) {
-                    if (events[event][i] && events[event][i].cb && events[event][i].name && plugins.indexOf(events[event][i].name) > -1 && pluginConfig[events[event][i].name]) {
+                    var isEnabled = true;
+                    if (events[event][i].name && plugins.indexOf(events[event][i].name) > -1 && !pluginConfig[events[event][i].name]) {
+                        isEnabled = false;
+                    }
+
+                    if (events[event][i] && events[event][i].cb && isEnabled) {
                         try {
                             promise = events[event][i].cb.call(null, params);
                         }
