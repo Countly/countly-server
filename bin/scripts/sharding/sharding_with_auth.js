@@ -2,7 +2,7 @@
 *  Sharding Countly collections when DB requires authentication, provide it to authDB.auth command in the code
 *  Server: mongodb
 *  Path: any
-*  Command: mongo < sharding_with_auth.js
+*  Command: mongosh < sharding_with_auth.js
 */
 
 /* global Mongo, print, printjson */

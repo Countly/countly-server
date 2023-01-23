@@ -115,10 +115,10 @@
             inTheLastInput: {
                 raw: {
                     text: '1',
-                    level: 'months'
+                    level: 'days'
                 },
-                parsed: [minDate, maxDate]
-            },
+                parsed: [moment().startOf("days").toDate(), moment().endOf("days").toDate()]
+            }
         };
         state.label = getRangeLabel(state, this.type);
         return state;
@@ -192,7 +192,8 @@
     function getInitialState(instance) {
         var formatter = null,
             tableType = "",
-            globalRange = null;
+            globalRange = null,
+            inputDisable = false;
 
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
@@ -201,8 +202,12 @@
         }
         else {
             formatter = "YYYY-MM-DD";
-            tableType = "date";
+            tableType = "day";
             globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
+        }
+
+        if (this.retentionConfiguration) {
+            inputDisable = true;
         }
 
         var state = {
@@ -229,6 +234,9 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
+            tableTypeMapper: {months: "month", weeks: "week", days: "day"},
+            inputDisable: inputDisable,
+            globalMonthsRange: globalMonthsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
@@ -392,18 +400,34 @@
             },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
-
                 switch (this.rangeMode) {
                 case 'inBetween':
-                    inputObj = this.inBetweenInput.parsed;
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
+                    if (this.tableType === "week") {
+                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                    }
+                    else {
+                        inputObj = this.inBetweenInput.parsed;
+                    }
                     break;
                 case 'since':
-                    inputObj = this.sinceInput.parsed;
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
+                    if (this.tableType === "week") {
+                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                    }
+                    else {
+                        inputObj = this.sinceInput.parsed;
+                    }
                     break;
                 case 'onm':
+                    this.tableType = "day";
                     inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
+                    if (this.inTheLastInput.raw.level === "months") {
+                        this.tableType = "month";
+                    }
+                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 default:
@@ -469,12 +493,31 @@
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
-                    var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
+                    this.$emit("update-stringified-value", newVal);
+                    var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+
+                    if (newVal.text.toString() === "1" && newVal.level === "days") {
+                        parsed = moment().startOf("day");
+                    }
+                    else if (newVal.text.toString() === "1" && newVal.level === "weeks") {
+                        parsed = moment().startOf("week");
+                    }
                     if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
-                        if (parsed && parsed.isValid()) {
+                        if (parsed.isValid()) {
                             this.inTheLastInput.parsed[0] = parsed.toDate();
-                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
+                            this.inTheLastInput.parsed[1] = moment().endOf("day").toDate();
+                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0], this.inTheLastInput.parsed[1]);
                         }
+                    }
+                    if (newVal.level === "months") {
+                        this.globalRange = this.globalMonthsRange;
+                        this.tableType = "month";
+                    }
+                    else if (newVal.level === "weeks") {
+                        this.tableType = "week";
+                    }
+                    else if (newVal.level === "days") {
+                        this.tableType = "day";
                     }
                 }
             },
@@ -488,12 +531,17 @@
             },
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
-                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm";
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast";
 
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
                 }
+
                 if (firstClick) {
+                    if (this.tableType === "week") {
+                        this.minDate = moment(this.minDate).startOf("week").toDate();
+                        this.maxDate = moment(this.maxDate).endOf("week").toDate();
+                    }
                     this.rangeBackup = {
                         minDate: this.minDate,
                         maxDate: this.maxDate
@@ -501,9 +549,13 @@
                 }
                 var minDate, maxDate;
                 if (firstClick) {
-                    if (this.tableType === "date") {
+                    if (this.tableType === "day") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.minDate).endOf("day").toDate();
+                    }
+                    else if (this.tableType === "week") {
+                        minDate = moment(val.minDate).startOf("week").toDate();
+                        maxDate = moment(val.maxDate).endOf("week").toDate();
                     }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
@@ -522,13 +574,29 @@
                         maxDate = minDate;
                         this.setCurrentOnm(minDate, maxDate);
                     }
-
+                    else if (this.rangeMode === 'inTheLast') {
+                        maxDate = moment().toDate();
+                    }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
-                    if (this.tableType === "date") {
+                    if (this.tableType === "day") {
                         minDate = moment(val.minDate).startOf("day").toDate();
                         maxDate = moment(val.maxDate).endOf("day").toDate();
+                    }
+                    else if (this.tableType === "week") {
+                        minDate = moment(val.minDate).startOf("week").toDate();
+                        maxDate = moment(val.maxDate).endOf("week").toDate();
+
+                        if (this.retentionConfiguration) {
+                            minDate = moment(val.minDate).startOf("week").toDate();
+                            if (this.retentionConfiguration === "weeks") {
+                                maxDate = moment(val.maxDate).endOf("week").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("week").toDate();
+                            }
+                            else {
+                                maxDate = moment(val.maxDate).endOf("week").toDate();
+                            }
+                        }
                     }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
@@ -574,7 +642,9 @@
                 else {
                     anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 }
-                this.$refs.vs.scrollIntoView(anchorClass);
+                if (this.$refs.vs) {
+                    this.$refs.vs.scrollIntoView(anchorClass);
+                }
             },
             resetRangeState: function() {
                 this.rangeState = {
@@ -668,7 +738,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['date', 'daterange', 'month', 'monthrange'].includes(value);
+                    return ['date', 'daterange', 'month', 'monthrange', "week"].includes(value);
                 }
             },
             displayShortcuts: {
@@ -739,6 +809,16 @@
             },
             popClass: {
                 type: String
+            },
+            retentionConfiguration: {
+                type: String,
+                default: null,
+                required: false
+            },
+            displayOneMode: {
+                type: String,
+                default: null,
+                required: false
             }
         },
         data: function() {
@@ -766,6 +846,11 @@
             'isFuture': function() {
                 Object.assign(this.$data, getInitialState(this));
                 this.loadValue(this.value);
+            },
+            retentionConfiguration: function(newVal) {
+                this.inTheLastInput.raw.text = "1";
+                this.inTheLastInput.raw.level = newVal;
+                this.tableType = this.tableTypeMapper[newVal];
             }
         },
         methods: {
@@ -808,7 +893,6 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
-
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
 
@@ -879,6 +963,9 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
+                if (!this.retentionConfiguration) {
+                    this.tableType = "day";
+                }
                 this.abortPicking();
                 this.clearCommitWarning(true);
                 if (aborted) {
@@ -902,6 +989,12 @@
             handleDropdownShow: function() {
                 this.isVisible = true;
                 this.refreshCalendarDOM();
+                if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
+                    this.inputDisable = true;
+                }
+                if (this.displayOneMode && this.displayOneMode.length) {
+                    this.rangeMode = this.displayOneMode;
+                }
             },
             handleCustomRangeClick: function() {
                 if (this.allowCustomRange) {
@@ -992,6 +1085,9 @@
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    if (this.type === "date" && !this.selectTime) {
+                        effectiveMinDate.setHours(23, 59);
+                    }
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
@@ -1046,6 +1142,7 @@
                     }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    effectiveMinDate.setHours(23, 59);
                     this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [

@@ -22,6 +22,7 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
+        countly plugin enable license;
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
@@ -34,7 +35,6 @@ then
     nodejs "$SCRIPTS/scripts/push_hash.js"
     
     if [ "$1" != "combined" ]; then
-        countly plugin enable license;
         countly upgrade;
     fi
 
