@@ -261,7 +261,7 @@ countly_upgrade (){
                     ## shellcheck requires variables and commands in double quote and this also add single quotes
                     ## to command, so that's why I prepared whole command as variable and provide it to bash
                     MONGO_URI="$(countly mongo)"
-                    DROP_COMMAND="mongo ${MONGO_URI} --eval 'db.getSiblingDB(\"countly_drill\").dropDatabase();'"
+                    DROP_COMMAND="mongosh ${MONGO_URI} --eval 'db.getSiblingDB(\"countly_drill\").dropDatabase();'"
                     echo "Dropping 'countly_drill' database..."
                     bash -c "${DROP_COMMAND}"
 
