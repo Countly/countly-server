@@ -190,21 +190,11 @@ var plugin = {},
 
                 var pluginList = plugins.getPlugins(true);
 
-                var update = {};
                 for (var z = 0; z < pluginList.length; z++) {
                     if (typeof allPlugins[pluginList[z]] === 'undefined') {
-                        update['plugins.' + pluginList[z]] = true;
                         allPlugins[pluginList[z]] = true;
                     }
                 }
-                if (Object.keys(update).length > 0) {
-                    common.db.collection("plugins").updateOne({_id: "plugins"}, {"$set": update}, function(err6) {
-                        if (err6) {
-                            log.e(err6);
-                        }
-                    });
-                }
-
                 walk(dir, allPlugins, function(err, results) {
                     if (err) {
                         console.error(err);

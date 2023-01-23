@@ -111,6 +111,9 @@ var pluginManager = function pluginManager() {
     this.loadConfigs = function(db, callback/*, api*/) {
         var self = this;
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
             if (!err) {
                 res = res || {};
                 for (let ns in configsOnchanges) {
@@ -122,25 +125,30 @@ var pluginManager = function pluginManager() {
                 configs = res;
                 delete configs._id;
                 self.checkConfigs(db, configs, defaultConfigs, callback);
-                /*if (api && self.getConfig("api").sync_plugins) {
-                    self.checkPlugins(db);
-                }*/
+
                 pluginConfig = res.plugins || {}; //currently enabled plugins
-                var update = {};
+                var installPlugins = [];
                 for (var z = 0; z < plugins.length; z++) {
                     if (typeof pluginConfig[plugins[z]] === 'undefined') {
                         pluginConfig[plugins[z]] = true;
-                        update['plugins.' + plugins[z]] = true;
+                        installPlugins.push(plugins[z]);
                     }
                 }
-
-                if (Object.keys(update).length > 0) {
-                    db.collection("plugins").updateOne({_id: "plugins"}, {"$set": update}, function(err6) {
-                        if (err6) {
-                            log.e(err6);
-                        }
+                this.configsLaded = Date.now();
+                Promise.each(installPlugins, function(name) {
+                    return new Promise(function(resolve) {
+                        self.processPluginInstall(db, name, function() {
+                            resolve();
+                        });
                     });
-                }
+                }).then(function() {
+
+                });
+                /*if (api && self.getConfig("api").sync_plugins) {
+                    self.checkPlugins(db);
+                }*/
+
+
             }
             else if (callback) {
                 callback();
@@ -687,7 +695,6 @@ var pluginManager = function pluginManager() {
                     get: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.get(pathTo, function(req, res, next) {
-                            console.log(pluginConfig[pluginName]);
                             if (pluginConfig[pluginName]) {
                                 callback(req, res, next);
                             }
@@ -1035,6 +1042,48 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    this.processPluginInstall = function(db, name, callback) {
+        var self = this;
+        db.collection("plugins").remove({'_id': 'install_' + name, 'time': {'$lt': Date.now() - 60 * 1000 * 60}}, function(err) {
+            if (err) {
+                console.log(err);
+                callback();
+            }
+            else {
+                db.collection("plugins").insert({'_id': 'install_' + name, 'time': Date.now()}, function(err2) {
+                    if (err2) {
+                        if (err2.code && err2.code !== 11000) {
+                            console.log(err2);
+                        }
+                        callback();
+                    }
+                    else {
+                        self.installPlugin(name, function(errors) {
+                            if (!errors) {
+                                var query = {_id: "plugins"};
+                                query["plugins." + name] = {"$ne": false};
+                                var update = {};
+                                update["plugins." + name] = true;
+                                db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function() {
+                                    if (callback) {
+                                        callback();
+                                    }
+                                    db.collection("plugins").remove({'_id': 'install_' + name}, function(err5) {
+                                        if (err5) {
+                                            console.log(err5);
+                                        }
+                                    });
+                                });
+                            }
+                            else {
+                                callback();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    };
     /**
     * Procedure to install plugin
     * @param {string} plugin - plugin name
