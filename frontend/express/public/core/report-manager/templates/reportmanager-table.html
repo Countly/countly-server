@@ -19,6 +19,7 @@
                     :initial-edited-object="currentFilter"
                     ref="filterForm"
                     @submit="handleSubmitFilter"
+                    class="report-manager-filter-form"
                 >
                     <template v-slot="formScope">
                         <cly-form-step id="filter-form-step">
@@ -38,28 +39,27 @@
                                     </div>
                                 </div>
                                 <cly-form-field :label="i18n('report-manager.origin')" v-if="!fixedOrigin">
-                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedOrigin"  :placeholder="i18n('report-manager.select-origin')">
+                                    <el-select v-model="formScope.editedObject.selectedOrigin"  :placeholder="i18n('report-manager.select-origin')" class="select-full-width" placement="bottom-start">
                                         <el-option :key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field :label="i18n('report-manager.status')">
-                                    <el-select  v-model="formScope.editedObject.selectedState" :placeholder="i18n('common.select-status')">
+                                    <el-select  v-model="formScope.editedObject.selectedState" :placeholder="i18n('common.select-status')" class="select-full-width" placement="bottom-start">
                                         <el-option :key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field :label="i18n('report-manager.owner')">
-                                    <el-select  v-model="formScope.editedObject.selectedOwner" :placeholder="i18n('common.select-owner')">
+                                    <el-select  v-model="formScope.editedObject.selectedOwner" :placeholder="i18n('common.select-owner')" class="select-full-width" placement="bottom-start">
                                         <el-option :key="value" v-for="(label, value) in availableOwners" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field :label="i18n('report-manager.data-source')">
-                                    <el-select  v-model="formScope.editedObject.selectedDataSource" :placeholder="i18n('report-manager.select-data-source')">
+                                    <el-select  v-model="formScope.editedObject.selectedDataSource" :placeholder="i18n('report-manager.select-data-source')" class="select-full-width" placement="bottom-start">
                                         <el-option :key="value" v-for="(label, value) in availableDataSources" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field :label="i18n('report-manager.runtime-type')" v-if="isManual">
-                                    <el-select class="bu-mr-2" v-model="formScope.editedObject.selectedRunTimeType"
-                                        :placeholder="i18n('common.select-type')">
+                                    <el-select v-model="formScope.editedObject.selectedRunTimeType" :placeholder="i18n('common.select-type')" class="select-full-width" placement="bottom-start">
                                         <el-option :key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
                                     </el-select>
                                 </cly-form-field>
@@ -145,7 +145,7 @@
         <el-table-column align="center" type="options">
             <template v-slot="scope">
                 <cly-more-options v-if="scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end">
-					<el-dropdown-item v-if="isReadyForView(scope.row) && isDownloadable(scope.row)" command="download-task">{{i18n('common.download')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="isReadyForView(scope.row) && isDownloadable(scope.row)" command="download-task">{{i18n('common.download')}}</el-dropdown-item>
                     <el-dropdown-item v-if="isReadyForView(scope.row) && !isDownloadable(scope.row)" command="view-task">{{getViewText(scope.row)}}</el-dropdown-item>
                     <el-dropdown-item v-if="isReadyForRerun(scope.row)" command="rerun-task">{{i18n('taskmanager.rerun')}}</el-dropdown-item>
                     <!-- <el-dropdown-item v-if="isManual" command="edit-task">{{i18n('taskmanager.edit')}}</el-dropdown-item> -->
