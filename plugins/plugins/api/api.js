@@ -19,6 +19,16 @@ var plugin = {},
             }*/
 
             if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
+
+                plugins.updatePluginsInDb(common.db, params, function(error) {
+                    if (error) {
+                        common.returnMessage(params, 400, error);
+                    }
+                    else {
+                        common.returnMessage(params, 200, "started");
+                    }
+                });
+                /*
                 try {
                     params.qstring.plugin = JSON.parse(params.qstring.plugin);
                 }
@@ -49,8 +59,8 @@ var plugin = {},
                             plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
                             // process.send({ cmd: "startPlugins" });
                             plugins.loadConfigs(common.db, function() {
-                                common.returnMessage(params, 200, "started");
-                                /* plugins.syncPlugins(params.qstring.plugin, function(err) {
+                                
+                                 plugins.syncPlugins(params.qstring.plugin, function(err) {
 									if (!err) {
 										process.send({ cmd: "endPlugins" });
 										updatePluginState("end");
@@ -58,11 +68,11 @@ var plugin = {},
 									else {
 										updatePluginState("failed");
 									}
-								}, common.db);*/
+								}, common.db);
                             });
                         }
                     });
-                }
+                }*/
             }
             else {
                 common.returnOutput(params, "Not enough parameters");

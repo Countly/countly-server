@@ -23,7 +23,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     exec = cp.exec,
     spawn = cp.spawn,
     configextender = require('../api/configextender');
-
 var pluginConfig = {};
 
 /**
@@ -92,6 +91,45 @@ var pluginManager = function pluginManager() {
             }
         }
     };
+
+    this.updatePluginsInDb = function(db, params, callback) {
+        try {
+            params.qstring.plugin = JSON.parse(params.qstring.plugin);
+        }
+        catch (err) {
+            console.log('Error parsing plugins');
+        }
+
+        if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+            var self = this;
+            var before = {};
+            var fordb = {};
+            var arr = self.getPlugins();
+            for (var i in params.qstring.plugin) {
+                fordb['plugins.' + i] = params.qstring.plugin[i];
+                if (arr.indexOf(i) === -1) {
+                    before[i] = false;
+                }
+                else {
+                    before[i] = true;
+                }
+            }
+            db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
+                if (err1) {
+                    log.e(err1);
+                }
+                else {
+                    self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
+                    // process.send({ cmd: "startPlugins" });
+                    self.loadConfigs(db, function() {
+                        callback();
+                    });
+                }
+            });
+        }
+
+    };
+
 
     this.initPlugin = function(pluginName) {
         try {
@@ -521,7 +559,7 @@ var pluginManager = function pluginManager() {
             }
         }
     };
-    this.isPluginEnabled = function(name) {
+    this.isPluginOn = function(name) {
         if (plugins.indexOf(name) > -1) { //is one of plugins
             if (pluginConfig[name]) {
                 return true;
@@ -615,11 +653,6 @@ var pluginManager = function pluginManager() {
                             used = true;
                         }
                         promises.push(promise);
-                    }
-                    else {
-                        logDbWrite.e(events[event][i].name + ' ' + plugins.indexOf(events[event][i].name) + ' ' + pluginConfig[events[event][i].name]);
-                        var stack = new Error('test').stack;
-                        console.error(stack);
                     }
                 }
             }
