@@ -6,12 +6,9 @@ underscore = require('underscore');
  * CountlyCommonV2 class has been created to be used instead of the existing countlyCommon in future
  */
 class CountlyCommonV2 {
-#period;
-#periodObj;
-
 constructor(period){
-    this.#period = new PeriodObjV2(period);
-    this.#periodObj = this.#period.getPeriodObj();
+    this.period = new PeriodObjV2(period);
+    this.periodObj = this.period.getPeriodObj();
 }
 
 /**
@@ -65,8 +62,8 @@ constructor(period){
 
 extractData(db, clearFunction, dataProperties) {
 
-    var periodMin = this.#periodObj.periodMin,
-        periodMax = (this.#periodObj.periodMax + 1),
+    var periodMin = this.periodObj.periodMin,
+        periodMax = (this.periodObj.periodMax + 1),
         dataObj = {},
         formattedDate = "",
         tableData = [],
@@ -78,31 +75,31 @@ extractData(db, clearFunction, dataProperties) {
 
     for (var j = 0; j < propertyNames.length; j++) {
         if (currOrPrevious[j] === "previous") {
-            if (this.#periodObj.isSpecialPeriod) {
+            if (this.periodObj.isSpecialPeriod) {
                 periodMin = 0;
-                periodMax = this.#periodObj.previousPeriodArr.length;
-                activeDateArr = this.#periodObj.previousPeriodArr;
+                periodMax = this.periodObj.previousPeriodArr.length;
+                activeDateArr = this.periodObj.previousPeriodArr;
             }
             else {
-                activeDate = this.#periodObj.previousPeriod;
+                activeDate = this.periodObj.previousPeriod;
             }
         }
         else {
-            if (this.#periodObj.isSpecialPeriod) {
+            if (this.periodObj.isSpecialPeriod) {
                 periodMin = 0;
-                periodMax = this.#periodObj.currentPeriodArr.length;
-                activeDateArr = this.#periodObj.currentPeriodArr;
+                periodMax = this.periodObj.currentPeriodArr.length;
+                activeDateArr = this.periodObj.currentPeriodArr;
             }
             else {
-                activeDate = this.#periodObj.activePeriod;
+                activeDate = this.periodObj.activePeriod;
             }
         }
         var dateString = "";
         for (var i = periodMin; i < periodMax; i++) {
 
-            if (!this.#periodObj.isSpecialPeriod) {
+            if (!this.periodObj.isSpecialPeriod) {
 
-                if (this.#periodObj.periodMin === 0) {
+                if (this.periodObj.periodMin === 0) {
                     dateString = "YYYY-M-D H:00";
                     formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                 }
@@ -216,20 +213,20 @@ extractTwoLevelData(db, rangeArray, clearFunction, dataProperties, totalUserOver
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
 
-    if (!this.#periodObj.isSpecialPeriod) {
-        periodMin = this.#periodObj.periodMin;
-        periodMax = (this.#periodObj.periodMax + 1);
+    if (!this.periodObj.isSpecialPeriod) {
+        periodMin = this.periodObj.periodMin;
+        periodMax = (this.periodObj.periodMax + 1);
     }
     else {
         periodMin = 0;
-        periodMax = this.#periodObj.currentPeriodArr.length;
+        periodMax = this.periodObj.currentPeriodArr.length;
     }
 
     var tableCounter = 0;
 
-    if (!this.#periodObj.isSpecialPeriod) {
+    if (!this.periodObj.isSpecialPeriod) {
         for (let j = 0; j < rangeArray.length; j++) {
-            dataObj = this.getDescendantProp(db, this.#periodObj.activePeriod + "." + rangeArray[j]);
+            dataObj = this.getDescendantProp(db, this.periodObj.activePeriod + "." + rangeArray[j]);
 
             if (!dataObj) {
                 continue;
@@ -271,7 +268,7 @@ extractTwoLevelData(db, rangeArray, clearFunction, dataProperties, totalUserOver
                 tmp_x = {};
 
             for (let i = periodMin; i < periodMax; i++) {
-                dataObj = this.getDescendantProp(db, this.#periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
+                dataObj = this.getDescendantProp(db, this.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
                 if (!dataObj) {
                     continue;
                 }
@@ -314,8 +311,8 @@ extractTwoLevelData(db, rangeArray, clearFunction, dataProperties, totalUserOver
                         tmpUniqValCheck = 0,
                         tmpCheckVal = 0;
 
-                    for (let l = 0; l < (this.#periodObj.uniquePeriodArr.length); l++) {
-                        tmp_x = this.getDescendantProp(db, this.#periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                    for (let l = 0; l < (this.periodObj.uniquePeriodArr.length); l++) {
+                        tmp_x = this.getDescendantProp(db, this.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
                         if (!tmp_x) {
                             continue;
                         }
@@ -331,8 +328,8 @@ extractTwoLevelData(db, rangeArray, clearFunction, dataProperties, totalUserOver
                         }
                     }
 
-                    for (let l = 0; l < (this.#periodObj.uniquePeriodCheckArr.length); l++) {
-                        tmp_x = this.getDescendantProp(db, this.#periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                    for (let l = 0; l < (this.periodObj.uniquePeriodCheckArr.length); l++) {
+                        tmp_x = this.getDescendantProp(db, this.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
                         if (!tmp_x) {
                             continue;
                         }
@@ -1053,3 +1050,5 @@ union = function(x, y) {
 };
 
 }
+
+module.exports = CountlyCommonV2;

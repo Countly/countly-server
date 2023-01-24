@@ -3,24 +3,23 @@ var moment = require('moment-timezone');
 /**
  * PeriodObjV2 class contains period. This is created to be used instead of the existing periodObj in future
  */
-export class PeriodObjV2 {
-  #period;
+class PeriodObjV2 {
   static appTimezone = "UTC";
   static currMoment = moment();
 
   constructor() {
-    this.#period = "hour";
+    this.period = "hour";
   }
 
   constructor(period) {
-    this.#period = period;
+    this.period = period;
   }
 
-  get period() {
-    return this.#period;
+  getPeriod() {
+    return this.period;
   }
-  set period(period) {
-    this.#period = period;
+  setPeriod(period) {
+    this.period = period;
   }
 
   getPeriodObj() {
@@ -49,36 +48,36 @@ export class PeriodObjV2 {
 
   endTimestamp = currMoment.clone().endOf("day");
 
-  if (this.#period.since) {
-      this.#period = [this.#period.since, Date.now()];
+  if (this.period.since) {
+      this.period = [this.period.since, Date.now()];
   }
 
-  if (this.#period && typeof this.#period === 'string' && this.#period.indexOf(",") !== -1) {
+  if (this.period && typeof this.period === 'string' && this.period.indexOf(",") !== -1) {
       try {
-          this.#period = JSON.parse(this.#period);
+          this.period = JSON.parse(this.period);
       }
       catch (SyntaxError) {
           console.log("period JSON parse failed");
-          this.#period = "30days";
+          this.period = "30days";
       }
   }
 
-  if (Array.isArray(this.#period)) {
-      if ((this.#period[0] + "").length === 10) {
-          this.#period[0] *= 1000;
+  if (Array.isArray(this.period)) {
+      if ((this.period[0] + "").length === 10) {
+          this.period[0] *= 1000;
       }
-      if ((this.#period[1] + "").length === 10) {
-          this.#period[1] *= 1000;
+      if ((this.period[1] + "").length === 10) {
+          this.period[1] *= 1000;
       }
       var fromDate, toDate;
 
-      if (Number.isInteger(this.#period[0]) && Number.isInteger(this.#period[1])) {
-          fromDate = moment(this.#period[0]);
-          toDate = moment(this.#period[1]);
+      if (Number.isInteger(this.period[0]) && Number.isInteger(this.period[1])) {
+          fromDate = moment(this.period[0]);
+          toDate = moment(this.period[1]);
       }
       else {
-          fromDate = moment(this.#period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
-          toDate = moment(this.#period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+          fromDate = moment(this.period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+          toDate = moment(this.period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
       }
 
       startTimestamp = fromDate.clone().startOf("day");
@@ -117,7 +116,7 @@ export class PeriodObjV2 {
           });
       }
   }
-  else if (this.#period === "month") {
+  else if (this.period === "month") {
       startTimestamp = currMoment.clone().startOf("year");
       cycleDuration = moment.duration(1, "year");
       periodObject.dateString = "MMM";
@@ -129,7 +128,7 @@ export class PeriodObjV2 {
           previousPeriod: currMoment.year() - 1
       });
   }
-  else if (this.#period === "day") {
+  else if (this.period === "day") {
       startTimestamp = currMoment.clone().startOf("month");
       cycleDuration = moment.duration(1, "month");
       periodObject.dateString = "D MMM";
@@ -141,7 +140,7 @@ export class PeriodObjV2 {
           previousPeriod: currMoment.clone().subtract(1, "month").format("YYYY.M")
       });
   }
-  else if (this.#period === "hour") {
+  else if (this.period === "hour") {
       startTimestamp = currMoment.clone().startOf("day");
       cycleDuration = moment.duration(1, "day");
       Object.assign(periodObject, {
@@ -152,7 +151,7 @@ export class PeriodObjV2 {
           previousPeriod: currMoment.clone().subtract(1, "day").format("YYYY.M.D")
       });
   }
-  else if (this.#period === "yesterday") {
+  else if (this.period === "yesterday") {
       let yesterday = currMoment.clone().subtract(1, "day");
 
       startTimestamp = yesterday.clone().startOf("day");
@@ -166,8 +165,8 @@ export class PeriodObjV2 {
           previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
       });
   }
-  else if (/([0-9]+)days/.test(this.#period)) {
-      let nDays = parseInt(/([0-9]+)days/.exec(this.#period)[1]);
+  else if (/([0-9]+)days/.test(this.period)) {
+      let nDays = parseInt(/([0-9]+)days/.exec(this.period)[1]);
       if (nDays < 1) {
           nDays = 30; //if there is less than 1 day
       }
@@ -178,8 +177,8 @@ export class PeriodObjV2 {
           isSpecialPeriod: true
       });
   }
-  else if (/([0-9]+)weeks/.test(this.#period)) {
-      let nDays = parseInt(/([0-9]+)weeks/.exec(this.#period)[1]) * 7;
+  else if (/([0-9]+)weeks/.test(this.period)) {
+      let nDays = parseInt(/([0-9]+)weeks/.exec(this.period)[1]) * 7;
       if (nDays < 1) {
           nDays = 30; //if there is less than 1 day
       }
@@ -190,8 +189,8 @@ export class PeriodObjV2 {
           isSpecialPeriod: true
       });
   }
-  else if (/([0-9]+)months/.test(this.#period)) {
-      let nDays = parseInt(/([0-9]+)months/.exec(this.#period)[1]) * 30;
+  else if (/([0-9]+)months/.test(this.period)) {
+      let nDays = parseInt(/([0-9]+)months/.exec(this.period)[1]) * 30;
       if (nDays < 1) {
           nDays = 30; //if there is less than 1 day
       }
@@ -252,3 +251,5 @@ export class PeriodObjV2 {
 
 
 }
+
+module.exports = PeriodObjV2;
