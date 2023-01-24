@@ -203,14 +203,18 @@ class PushError extends Error {
      * Reconstruct error to a correct type from serialized JSON
      * 
      * @param {object} data error JSON
+     * @param {constructor} C default error constructor used when data is a generic Error instance or string / object / nothing
      * @returns {PushError} correct error class instance
      */
-    static deserialize(data) {
+    static deserialize(data, C = PushError) {
+        if (typeof data === 'string' || !data) {
+            data = new Error(data || 'Unknown error');
+        }
         if (data instanceof PushError) {
             return data;
         }
         else if (data instanceof Error) {
-            let e = new PushError(data.message, ERROR.EXCEPTION);
+            let e = new C(data.message, ERROR.EXCEPTION);
             e.stack = data.stack;
             return e;
         }
@@ -227,7 +231,7 @@ class PushError extends Error {
                     .setLeft(data.left, data.leftBytes);
             }
             else {
-                e = new PushError(data.message, data.type || ERROR.EXCEPTION, data.date);
+                e = new C(data.message, data.type || ERROR.EXCEPTION, data.date);
             }
 
             e.stack = data.stack;

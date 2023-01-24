@@ -5,7 +5,7 @@ const cluster = require('cluster'),
 
     ERROR_COOLDOWN = config.runners && config.runners.error_cooldown || 60000, // 1min to cooldown on error
     PERIODICITY = config.runners && config.runners.periodicity || 30000, // 1min between "I'm alive" updates
-    MAX_LAST_SEEN = config.runners && config.runners.max_last_seen || 1800000, // 10min for leader last seen date before considering it dead
+    MAX_LAST_SEEN = config.runners && config.runners.max_last_seen || 600000, // 10min for leader last seen date before considering it dead
 
     FORCE_UNLOCK = 60 * 60 * 1000, // ms to forcefully unlock runners
     UNLOCK_ATTEMPTS = 100, // how many times to try to unlock before terminating the process
