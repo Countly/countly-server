@@ -1,29 +1,43 @@
 <div v-bind:class="[componentId]" class="configurations">
     <cly-header>
-        <template v-if="back" v-slot:header-top>
-            <cly-back-link v-on:click="goBack" :title="i18n('plugins.back')"></cly-back-link>
+        <template v-slot:header-top>
+            <cly-back-link :title="i18n('plugins.back-to-settings')" v-if="back" link="#/manage/configurations"></cly-back-link>
         </template>
         <template v-slot:header-left>
-            <h2> {{i18n('plugins.configs')}} </h2>
+            <h2 v-if="!back"> {{i18n('plugins.configs')}} </h2>
+            <h2 v-else> {{i18n('plugins.search-settings')}} </h2>
+        </template>
+        <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
+            <el-input
+                ref="searchBox"
+                autocomplete="off"
+                v-model="searchQuery"
+                :placeholder="searchPlaceholder"
+                @focus="onFocus"
+                @keyup.enter.native="onEnterSearch"
+            >
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+            </el-input>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">
-        <div class="bu-columns bu-is-gapless">
+        <div v-if="!back" class="bu-columns bu-is-gapless">
             <div class="bu-column bu-is-3 bu-mr-5" style="max-height:681px; max-width:223px">
                 <cly-listbox
                     skin="jumbo"
                     height="624"
-                    :searchPlaceholder="searchPlaceholder"
+                    searchPlaceholder="Search"
                     :options="configsList"
-                    :searchable="true"
+                    :searchable="false"
                     v-model="selectedConfigSearchBar">
-                    </cly-listbox>
+                </cly-listbox>
             </div>
             <div class="bu-column bu-is-9 selected-config" v-if="predefinedStructure[selectedConfig]">
                 <form>
                     <h2 class="bu-mb-4"> {{selectedConfigName}} </h2>
                     <div v-if="predefinedStructure[selectedConfig].description" class="bu-mb-4 text-medium">{{i18n(predefinedStructure[selectedConfig].description)}}</div>
-                    <div :key="group.label" v-for="group in predefinedStructure[selectedConfig].groups">
+                    <div :id="group.label" :key="index" v-for="(group, index) in predefinedStructure[selectedConfig].groups">
                         <h3 v-if="predefinedStructure[selectedConfig].groups.length > 1 || group.label" class="bu-my-4"> 
                             {{group.label && i18n(group.label)}}
                             <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
@@ -135,6 +149,150 @@
                         </cly-section>
                     </div>
                 </form>
+            </div>
+        </div>
+        <div v-else>
+            <cly-empty-view
+                v-if="Object.keys(searchResultStructure).length === 0"
+                style="opacity:1"
+                :title="i18n('configs.start-search')"
+                :subTitle="i18n('configs.start-search-description')"
+            >
+                <template v-slot:icon>
+                    <img src="images/icons/start-search.svg"></img>
+                </template>
+            </cly-empty-view>
+            <cly-empty-view
+                v-if="searchResultStructure.empty"
+                style="opacity:1"
+                :title="i18n('configs.no-search-result')"
+                :subTitle="i18n('configs.no-search-result-description')"
+            >
+                <template v-slot:icon>
+                    <img src="images/icons/no-search-result.svg"></img>
+                </template>
+            </cly-empty-view>
+            <div v-else v-for="(config, configKey) in searchResultStructure" :key="configKey">
+                <h2 class="bu-mb-4 bu-mt-4 bu-has-text-weight-medium"> 
+                    <a :href="redirectToConfig(configKey)">
+                        {{getConfigType(configKey)}}
+                        <i class="el-icon-arrow-right"></i>
+                        {{getLabel(configKey)}} 
+                    </a>
+                </h2>
+                <div v-for="(group, index) in config.groups" :key="index">
+                    <h3 v-if="config.groups.length > 1 || group.label" class="bu-my-4"> 
+                        <a :href="redirectToConfig(configKey, group.label)">
+                            {{group.label && i18n(group.label)}}
+                            <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
+                        </a>
+                    </h3>
+                    <cly-section class="bu-mr-5">
+                        <template slot-scope="scope">
+                            <div 
+                                v-if="key !== '_user' && configsData[configKey] && typeof configsData[configKey][key] !== 'undefined'" 
+                                v-for="key in group.list" :key="key" 
+                                class="bu-columns bu-is-vcentered bu-p-5 config-section"
+                            >
+                                <div class="bu-column bu-is-7">
+                                    <p class="bu-has-text-weight-medium">{{getLabelName(key, configKey)}}</p>
+                                    <p class="bu-has-text-weight-normal bu-mt-2" v-html="getHelperLabel(key, configKey)" v-if="getHelperLabel(key, configKey)"></p>
+                                    <div v-if="checkIfOverwritten(key, configKey)" class="config-section-overwritten">
+                                        <a :href="checkIfOverwritten(key, configKey).href" target="_blank">{{checkIfOverwritten(key, configKey).label}}</a>
+                                    </div>
+                                </div>
+                                <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end">
+                                    <div 
+                                        v-if="getInputType(key, configKey) === 'function'" 
+                                        v-html="predefinedInputs[configKey + '.' + key](configsData[configKey][key])">
+                                    </div>
+                                    <el-input
+                                        v-else-if="getInputType(key, configKey) === 'el-input'" 
+                                        @input="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs"
+                                        >
+                                    </el-input>
+                                    <el-select 
+                                        v-else-if="getInputType(key, configKey) === 'el-select'" 
+                                        @change="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                        <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[configKey + '.' + key].list"></el-option>
+                                    </el-select>
+                                    <el-slider 
+                                        v-else-if="getInputType(key, configKey) === 'el-slider'" 
+                                        @change="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                    </el-slider>
+                                    <el-button
+                                        v-else-if="getInputType(key, configKey) === 'el-button'" 
+                                        @click="predefinedInputs[configKey + '.' + key].click()"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                        {{predefinedInputs[configKey + '.' + key].label}}
+                                    </el-button>
+                                    <el-switch 
+                                        v-else-if="getInputType(key, configKey) === 'el-switch'"
+                                        @change="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                    </el-switch>
+                                    <el-input-number 
+                                        v-else-if="getInputType(key, configKey) === 'el-input-number'" 
+                                        @change="onChange(key, $event, configKey)"
+                                        :max='2147483647' 
+                                        :min='0' 
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                    </el-input-number>
+                                    <el-color-picker 
+                                        v-else-if="getInputType(key, configKey) === 'el-color-picker'" 
+                                        @change="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                    </el-color-picker>
+                                    <cly-colorpicker 
+                                        v-else-if="getInputType(key, configKey) === 'cly-colorpicker'" 
+                                        v-model="configsData[configKey][key]"
+                                        :value="configsData[configKey][key]"
+                                        @change="onChange(key,configsData[configKey][key], configKey)"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs"
+                                        style="display:inline">
+                                    </cly-colorpicker>
+                                    <el-upload
+                                        v-else-if="getInputType(key, configKey) === 'image'" 
+                                        :show-file-list="false"
+                                        :before-upload="predefinedInputs[configKey + '.' + key].before"
+                                        :on-success="predefinedInputs[configKey + '.' + key].success"
+                                        :on-error="predefinedInputs[configKey + '.' + key].error"
+                                        v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                        <div :class="predefinedInputs[configKey + '.' + key].image_size">
+                                            <div v-if="configsData[configKey][key]" class="image-delete bu-is-flex">
+                                                <el-button 
+                                                size="small" 
+                                                type="text" 
+                                                @click.stop="onChange(key, '', configKey)"
+                                                class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
+                                                <img :src="'/white-label/preview/' + configsData[configKey][key] + '?' + Date.now()">
+                                            </div>
+                                            <div v-else class="bu-is-flex">
+                                                <el-button type="default" style="display:flex;margin:auto;">{{i18n('white-labeling.choose-file')}}</el-button>
+                                                <el-button type="default" disabled style="width: 165px;height: 50px;cursor: default;">{{i18n('white-labeling.logo-preview')}}</el-button>
+                                            </div>
+                                        </div>
+                                        <span class="config-error">{{predefinedInputs[configKey + '.' + key].errorMessage || ""}}</span>
+                                    </el-upload>
+                                    <el-input 
+                                        v-else
+                                        @input="onChange(key, $event, configKey)"
+                                        :value="configsData[configKey][key]">
+                                    </el-input>
+                                </div>
+                            </div>
+                        </template>
+                    </cly-section>
+                </div>
             </div>
         </div>
         <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>

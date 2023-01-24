@@ -1106,6 +1106,7 @@
                     return {
                         code: dto.result.error,
                         affectedUsers: dto.result.total || '',
+                        description: CV.i18n('push-notification.error-code.' + dto.result.error + '.desc') || ''
                     };
                 }
                 return null;
@@ -2192,7 +2193,7 @@
             }
             return ret;
         },
-        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
+        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty, appId) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
@@ -2204,7 +2205,7 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        app_id: appId || countlyCommon.ACTIVE_APP_ID,
                         method: "get_cohorts",
                         outputFormat: "full"
                     },

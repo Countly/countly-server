@@ -94,7 +94,7 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                    var url = '/i/reports/preview?auth_token=' + countlyGlobal.auth_token + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                     window.open(url, "_blank");
                     break;
                 default:

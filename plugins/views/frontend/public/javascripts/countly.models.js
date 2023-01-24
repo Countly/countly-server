@@ -100,7 +100,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -142,7 +142,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -286,7 +286,22 @@
                     totals[key2] += (rr.chartData[z][key2] || 0);
                 }
             }
+            //fix value for u
+            var uvalue1 = 0;
+            var uvalue2 = 0;
+            var l = 0;
 
+            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                var ob = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodArr[l]) || {};
+                uvalue1 += ob.u || 0;
+            }
+
+            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                var ob2 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodCheckArr[l]) || {};
+                uvalue2 += ob2.u || 0;
+
+            }
+            totals.u = Math.min(totals.n, uvalue1, uvalue2);
             if (totals.t > 0) {
                 totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
                 var vv = parseFloat(totals.scr) / parseFloat(totals.t);

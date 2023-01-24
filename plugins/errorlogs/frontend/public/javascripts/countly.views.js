@@ -1,4 +1,4 @@
-/*globals $,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV,countlyAuth */
+/*globals $,countlyErrorLogs,countlyGlobal,jQuery,CountlyHelpers,app,countlyVue,CV,countlyAuth */
 (function() {
     var FEATURE_NAME = "errorlogs";
     var ErrorLogsView = countlyVue.views.create({
@@ -6,7 +6,7 @@
         data: function() {
             return {
                 selectLog: this.query || "api",
-                downloadLink: countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + this.query || "api",
+                downloadLink: countlyGlobal.path + "/o/errorlogs?auth_token=" + countlyGlobal.auth_token + "&download=true&log=" + this.query || "api",
                 logList: [{name: "Api Log", value: "api"}],
                 cachedLog: {}
             };
@@ -35,7 +35,7 @@
                 }
             },
             changeLog: function(value) {
-                this.downloadLink = countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + value,
+                this.downloadLink = countlyGlobal.path + "/o/errorlogs?auth_token=" + countlyGlobal.auth_token + "&download=true&log=" + value,
                 app.navigate("#/manage/logs/errorlogs/" + value);
                 this.refresh(true);
             },

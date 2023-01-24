@@ -1,4 +1,4 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
 
 (function(countlyCrashes) {
     var _list = {};
@@ -17,6 +17,7 @@
                     rawData: {},
                     filteredData: {},
                     isLoading: false,
+                    realSession: {},
                 };
             },
             getters: {},
@@ -38,6 +39,8 @@
         };
 
         _overviewSubmodule.getters.dashboardData = function(state) {
+            var realSession = state.realSession;
+            var realTotalSession = (realSession.usage && realSession.usage['total-sessions'].total) || 0;
             var dashboard = {};
 
             if ("data" in state.rawData) {
@@ -129,7 +132,22 @@
 
             ["crses", "crnfses", "crfses"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100));
+                    var propValue = 0;
+
+                    if (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) {
+                        propValue = 100;
+                    }
+                    else {
+                        if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
+                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                        }
+                        else {
+                            // Use real total session if cr_s value is too low
+                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                        }
+                    }
+
+                    dashboard[name][prop] = Math.min(100, propValue);
                 });
                 populateMetric(name, true);
             });
@@ -390,6 +408,10 @@
                         context.state.filteredData = json;
                     }
                 }
+            }));
+
+            ajaxPromises.push(countlySession.initialize().then(function() {
+                context.state.realSession = countlySession.getSessionData();
             }));
 
             return Promise.all(ajaxPromises);

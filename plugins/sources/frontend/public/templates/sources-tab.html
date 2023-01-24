@@ -46,21 +46,21 @@
               </div>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="total-sessions" :label="i18n('common.table.total-sessions')">
+        <el-table-column sortable="true" prop="t" :label="i18n('common.table.total-sessions')">
             <template v-slot="rowScope">
                 <div>
                     {{ formatNumber(rowScope.row.t) }}
                 </div>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="total-users" :label="i18n('common.table.total-users')">
+        <el-table-column sortable="true" prop="u" :label="i18n('common.table.total-users')">
             <template v-slot="rowScope">
                 <div>
                     {{ formatNumber(rowScope.row.u) }}
                 </div>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="new-users" :label="i18n('common.new-users')">
+        <el-table-column sortable="true" prop="n" :label="i18n('common.new-users')">
         <template v-slot="rowScope">
             <div>
                 {{ formatNumber(rowScope.row.n) }}
