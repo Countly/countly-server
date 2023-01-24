@@ -178,7 +178,7 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax(),
                 query: JSON.stringify({a: actionQuery}),
-				method:"systemlogs"
+                method: "systemlogs"
             };
 
             return {
