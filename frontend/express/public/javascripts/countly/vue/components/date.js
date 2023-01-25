@@ -459,7 +459,6 @@
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
-
                 if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
@@ -910,7 +909,6 @@
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
-
                 changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
@@ -921,14 +919,15 @@
                 var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
                     return shortcut.value === value;
                 });
-
+                if (this.moveRangeTabsToLeftSide) {
+                    this.customRangeSelection = false;
+                }
                 if (isShortcut) {
                     var shortcutRange = availableShortcuts[value].getRange();
                     return {
                         minDate: shortcutRange[0].toDate(),
                         maxDate: shortcutRange[1].toDate(),
-                        selectedShortcut: value,
-                        customRangeSelection: this.moveRangeTabsToLeftSide ? true : false
+                        selectedShortcut: value
                     };
                 }
 
@@ -946,7 +945,6 @@
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
-
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -954,6 +952,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "inBetween" : null;
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
@@ -968,6 +967,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "since" : null;
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
@@ -981,6 +981,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "on" : null;
                 }
                 else if (meta.type === "before") {
                     state.rangeMode = 'before';
@@ -993,6 +994,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "before" : null;
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
@@ -1005,6 +1007,12 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    if (this.moveRangeTabsToLeftSide && meta.value === "0days") {
+                        state.selectedShortcut = "0days";
+                    }
+                    else if (this.moveRangeTabsToLeftSide) {
+                        state.selectedShortcut = "inTheLast";
+                    }
                 }
                 else if (availableShortcuts[value]) {
                     /*
@@ -1058,9 +1066,6 @@
                 if (this.displayOneMode && this.displayOneMode.length) {
                     this.rangeMode = this.displayOneMode;
                 }
-                if (this.moveRangeTabsToLeftSide) {
-                    this.selectedShortcut = this.rangeMode || "inBetween";
-                }
             },
             handleCustomRangeClick: function() {
                 if (this.allowCustomRange) {
@@ -1092,8 +1097,12 @@
                 }
                 this.rangeMode = val;
                 this.tableType = "day";
-                this.abortPicking();
-                this.handleUserInputUpdate();
+                this.customRangeSelection = true;
+                var self = this;
+                setTimeout(function() {
+                    self.abortPicking();
+                    self.handleUserInputUpdate();
+                }, 0);
             },
             handleTabChange: function() {
                 this.abortPicking();
