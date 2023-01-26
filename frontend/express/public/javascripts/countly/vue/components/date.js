@@ -112,6 +112,12 @@
                 },
                 parsed: [minDate, minDate]
             },
+            beforeInput: {
+                raw: {
+                    text: minDateText,
+                },
+                parsed: [minDate, maxDate]
+            },
             inTheLastInput: {
                 raw: {
                     text: '1',
@@ -236,11 +242,17 @@
             tableType: tableType,
             tableTypeMapper: {months: "month", weeks: "week", days: "day"},
             inputDisable: inputDisable,
+            leftSideShortcuts: [
+                {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
+                {label: CV.i18n('common.time-period-select.before'), value: "before"},
+                {label: CV.i18n('common.time-period-select.since'), value: "since"},
+                {label: CV.i18n('common.time-period-select.last-n'), value: "inTheLast"},
+                {label: CV.i18n('common.all-time'), value: "0days"},
+            ],
             globalMonthsRange: globalMonthsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
-
         return _.extend(state, getDefaultInputState(formatter));
     }
 
@@ -286,6 +298,9 @@
         }
         else if (state.rangeMode === 'onm') {
             return CV.i18n('common.time-period-name.on', moment(state.minDate).format("ll"));
+        }
+        else if (state.rangeMode === 'before') {
+            return CV.i18n('common.time-period-name.before', moment(state.maxDate).format("ll"));
         }
         else if (state.rangeMode === 'inTheLast') {
             var num = parseInt(state.inTheLastInput.raw.text, 10),
@@ -430,6 +445,10 @@
                     this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
                     break;
+                case 'before':
+                    this.beforeInput.parsed[0] = globalMin.toDate();
+                    inputObj = this.beforeInput.parsed;
+                    break;
                 default:
                     return;
                 }
@@ -440,7 +459,6 @@
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
-
                 if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
@@ -470,6 +488,18 @@
                     },
                     parsed: [minDate, maxDate]
                 };
+            },
+            setCurrentBefore: function(minDate, maxDate) {
+                this.beforeInput = {
+                    raw: {
+                        text: moment(maxDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
+            },
+            setCurrentInTheLast: function(minDate, maxDate) {
+                this.inTheLastInput.parsed = [minDate, maxDate];
+                this.inTheLastInput.raw.text = moment(this.inTheLastInput.parsed[1]).diff(moment(this.inTheLastInput.parsed[0]), this.inTheLastInput.raw.level) || "1";
             }
         },
         watch: {
@@ -490,11 +520,13 @@
             'onmInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.onmInput, 0, [0, 1]);
             },
+            'beforeInput.raw.text': function(newVal) {
+                this.tryParsing(newVal, this.beforeInput, 1);
+            },
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
-
                     var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
 
                     if (newVal.text.toString() === "1" && newVal.level === "days") {
@@ -532,7 +564,7 @@
             },
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
-                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast";
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast" || this.rangeMode === "before";
 
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
@@ -577,6 +609,12 @@
                     }
                     else if (this.rangeMode === 'inTheLast') {
                         maxDate = moment().toDate();
+                        this.setCurrentInTheLast(minDate, maxDate);
+                    }
+                    else if (this.rangeMode === 'before') {
+                        maxDate = minDate;
+                        minDate = globalMin.toDate();
+                        this.setCurrentBefore(minDate, maxDate);
                     }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
@@ -690,7 +728,10 @@
                 return this.rangeState.selecting && this.rangeState.focusOn === "end";
             },
             shortcuts: function() {
-                if (this.type === "daterange" && this.displayShortcuts) {
+                if (this.moveRangeTabsToLeftSide) {
+                    return this.leftSideShortcuts;
+                }
+                else if (this.type === "daterange" && this.displayShortcuts) {
                     var self = this;
                     return Object.keys(availableShortcuts).reduce(function(acc, shortcutKey) {
                         if (self.enabledShortcuts === false && self.disabledShortcuts === false) {
@@ -786,6 +827,11 @@
                 default: false,
                 required: false
             },
+            allowBeforeSelection: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             minInputWidth: {
                 type: Number,
                 default: -1,
@@ -814,6 +860,11 @@
             retentionConfiguration: {
                 type: String,
                 default: null,
+                required: false
+            },
+            moveRangeTabsToLeftSide: {
+                type: Boolean,
+                default: false,
                 required: false
             },
             displayOneMode: {
@@ -858,7 +909,6 @@
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
-
                 changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
@@ -866,18 +916,18 @@
                 });
             },
             valueToInputState: function(value) {
-
                 var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
                     return shortcut.value === value;
                 });
-
+                if (this.moveRangeTabsToLeftSide) {
+                    this.customRangeSelection = false;
+                }
                 if (isShortcut) {
                     var shortcutRange = availableShortcuts[value].getRange();
                     return {
                         minDate: shortcutRange[0].toDate(),
                         maxDate: shortcutRange[1].toDate(),
-                        selectedShortcut: value,
-                        customRangeSelection: false
+                        selectedShortcut: value
                     };
                 }
 
@@ -891,12 +941,10 @@
                         selectedShortcut: null,
                         customRangeSelection: true
                     };
-
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
-
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -904,6 +952,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "inBetween" : null;
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
@@ -918,6 +967,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "since" : null;
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
@@ -931,6 +981,20 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "on" : null;
+                }
+                else if (meta.type === "before") {
+                    state.rangeMode = 'before';
+                    state.minDate = globalMin.toDate(); //new Date(this.fixTimestamp(meta.value.before, "input"));
+
+                    state.maxDate = new Date(this.fixTimestamp(meta.value.before, "input"));//meta.value.before;
+                    state.beforeInput = {
+                        raw: {
+                            text: moment(state.maxDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "before" : null;
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
@@ -943,6 +1007,12 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    if (this.moveRangeTabsToLeftSide && meta.value === "0days") {
+                        state.selectedShortcut = "0days";
+                    }
+                    else if (this.moveRangeTabsToLeftSide) {
+                        state.selectedShortcut = "inTheLast";
+                    }
                 }
                 else if (availableShortcuts[value]) {
                     /*
@@ -1011,9 +1081,28 @@
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
-                if (value) {
-                    this.doCommit(value, true);
+                if (this.moveRangeTabsToLeftSide) {
+                    this.handleCustomTabChange(value);
                 }
+                else {
+                    if (value) {
+                        this.doCommit(value, true);
+                    }
+                }
+            },
+            handleCustomTabChange: function(val) {
+                if (val === "0days") {
+                    this.doCommit(val, true);
+                    return;
+                }
+                this.rangeMode = val;
+                this.tableType = "day";
+                this.customRangeSelection = true;
+                var self = this;
+                setTimeout(function() {
+                    self.abortPicking();
+                    self.handleUserInputUpdate();
+                }, 0);
             },
             handleTabChange: function() {
                 this.abortPicking();
@@ -1102,6 +1191,9 @@
                 }
                 else if (this.rangeMode === 'onm') {
                     this.doCommit({ on: this.fixTimestamp(this.minDate.valueOf(), "output") }, false);
+                }
+                else if (this.rangeMode === 'before') {
+                    this.doCommit({ before: this.fixTimestamp(this.maxDate.valueOf(), "output") }, false);
                 }
             },
             handleDiscardClick: function() {
