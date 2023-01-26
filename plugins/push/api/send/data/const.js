@@ -148,6 +148,8 @@ const TriggerKind = {
     Event:      'event',        // Automated on-event message
     Cohort:     'cohort',       // Automated on-cohort message
     API:        'api',          // API (Transactional) message
+    Recurring:  'rec',          // Recurring message,
+    Multi:      'multi',        // Multiple times,
 };
 
 
