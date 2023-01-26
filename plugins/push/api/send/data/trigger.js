@@ -91,6 +91,12 @@ class Trigger extends Validatable {
         else if (data.kind === TriggerKind.API) {
             return new APITrigger(data);
         }
+        else if (data.kind === TriggerKind.Recurring) {
+            return new RecurringTrigger(data);
+        }
+        else if (data.kind === TriggerKind.Multi) {
+            return new MultiTrigger(data);
+        }
         else {
             throw new PushError(`Invalid trigger kind ${data.kind}`);
         }
@@ -656,4 +662,34 @@ class APITrigger extends AutoTrigger {
     }
 }
 
-module.exports = { Trigger, TriggerKind, PlainTrigger, EventTrigger, CohortTrigger, APITrigger };
+/**
+ * Recurring trigger
+ */
+class RecurringTrigger extends Trigger {
+    /**
+     * Constructor
+     * 
+     * @param {object|null} data filter data
+     */
+    constructor(data) {
+        data.kind = TriggerKind.Recurring;
+        super(data);
+    }
+}
+
+/**
+ * Multi trigger
+ */
+class MultiTrigger extends Trigger {
+    /**
+     * Constructor
+     * 
+     * @param {object|null} data filter data
+     */
+    constructor(data) {
+        data.kind = TriggerKind.Multi;
+        super(data);
+    }
+}
+
+module.exports = { Trigger, TriggerKind, PlainTrigger, EventTrigger, CohortTrigger, APITrigger, RecurringTrigger, MultiTrigger };
