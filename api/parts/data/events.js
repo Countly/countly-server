@@ -113,6 +113,10 @@ countlyEvents.processEvents = function(params) {
                         }
 
                         var tmpSegVal;
+                        if (Array.isArray(currEvent.segmentation[segKey])) {
+                            tmpSegVal = "";
+                            continue;
+                        }
                         try {
                             tmpSegVal = currEvent.segmentation[segKey] + "";
                         }
@@ -314,6 +318,9 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 tmpEventObj = {};
 
                 var tmpSegVal;
+                if (Array.isArray(currEvent.segmentation[segKey])) {
+                    continue;
+                }
                 try {
                     tmpSegVal = currEvent.segmentation[segKey] + "";
                 }
