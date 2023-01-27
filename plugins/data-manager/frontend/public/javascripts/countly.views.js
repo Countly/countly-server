@@ -1068,6 +1068,7 @@
                     doc.actionType = 'merge-regex';
                 }
                 else {
+                    doc.isRegexMerge = false;
                     doc.actionType = doc.actionType.split('_')[1].toLowerCase();
                 }
                 doc.isExistingEvent = 'true';
