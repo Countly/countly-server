@@ -1068,7 +1068,6 @@
                     doc.actionType = 'merge-regex';
                 }
                 else {
-                    doc.isRegexMerge = false;
                     doc.actionType = doc.actionType.split('_')[1].toLowerCase();
                 }
                 doc.isExistingEvent = 'true';
@@ -1080,6 +1079,15 @@
                 doc.isEditMode = true;
                 if (doc.parentEvent) {
                     doc.selectedParentEvent = doc.parentEvent;
+                }
+                if (!doc.targetRegex) {
+                    doc.targetRegex = false;
+                }
+                if (!doc.isRegex) {
+                    doc.isRegex = false;
+                }
+                if (!doc.isRegexMerge) {
+                    doc.isRegexMerge = false;
                 }
                 self.openDrawer("transform", doc);
             });
