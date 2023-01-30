@@ -29,7 +29,7 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appRows" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
+			<cly-datatable-n  :rows="appRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">

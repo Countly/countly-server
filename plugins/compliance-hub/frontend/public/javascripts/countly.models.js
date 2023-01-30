@@ -128,12 +128,12 @@
         //eslint-disable-next-line
         onRequest: function(context) {
             var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
+                app_id: countlyCommon.ACTIVE_APP_ID
             };
 
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + '/app_users/consents' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                url: countlyCommon.API_PARTS.data.r + '/app_users/consents',
                 data: data
             };
         },
@@ -177,12 +177,13 @@
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax(),
-                query: JSON.stringify({a: actionQuery})
+                query: JSON.stringify({a: actionQuery}),
+                method: "systemlogs"
             };
 
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs",
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -230,7 +231,7 @@
 
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + '/consent/search' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                url: countlyCommon.API_PARTS.data.r + '/consent/search',
                 data: data
             };
         },

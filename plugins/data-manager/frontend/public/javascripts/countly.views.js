@@ -1064,7 +1064,7 @@
                 if (doc.actionType.split('_')[1] !== "MERGE") {
                     doc.transformTarget = doc.transformTarget[0];
                 }
-                if (doc.actionType === 'EVENT_MERGE' && doc.isRegex === true) {
+                if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
                 }
                 else {
@@ -1079,6 +1079,15 @@
                 doc.isEditMode = true;
                 if (doc.parentEvent) {
                     doc.selectedParentEvent = doc.parentEvent;
+                }
+                if (!doc.targetRegex) {
+                    doc.targetRegex = false;
+                }
+                if (!doc.isRegex) {
+                    doc.isRegex = false;
+                }
+                if (!doc.isRegexMerge) {
+                    doc.isRegexMerge = false;
                 }
                 self.openDrawer("transform", doc);
             });

@@ -191,6 +191,7 @@ class Sender {
                         this.log.w('Streaming timeout, ignoring the rest');
                         last = null;
                         pushes.unpipe(connector);
+                        connector.end();
                         // connector.destroy(new PushError('Streaming timeout'));
                     }
                     else {
@@ -206,11 +207,11 @@ class Sender {
                 last = null;
                 this.log.w('pushes unpipe');
             });
+            pushes.on('data', () => last = Date.now());
+            setTimeout(check, 10000);
+
             connector.on('close', () => this.log.w('connector close'));
             connector.on('unpipe', () => this.log.w('connector unpipe'));
-
-            connector.on('data', () => last = Date.now());
-            setTimeout(check, 10000);
 
             pushes
                 .pipe(connector)
