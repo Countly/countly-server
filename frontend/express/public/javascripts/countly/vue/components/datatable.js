@@ -274,7 +274,7 @@
                 if (elTableSorting.order) {
                     this.updateControlParams({
                         sort: [{
-                            field: elTableSorting.prop,
+                            field: elTableSorting.column.sortBy || elTableSorting.prop,
                             type: elTableSorting.order === "ascending" ? "asc" : "desc"
                         }]
                     });
