@@ -1,7 +1,7 @@
 ## Version 22.09.11
 Fixes:
 -[compliance-hub] Fixes for table export.
--[core] Readable column titles for local table export.
+-[core] Local table export improvements to allow sorting. 
 -[data-manager] Fixes for event transformation drawer.
 -[dbviewer] Storing aggregation pipeline results in reports if they take long to calculate.
 -[plugins] Update internal-events endpoint access right
