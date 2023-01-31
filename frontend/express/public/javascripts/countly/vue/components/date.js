@@ -729,7 +729,7 @@
             },
             shortcuts: function() {
                 if (this.moveRangeTabsToLeftSide) {
-                    return this.leftSideShortcuts;
+                    return this.customDateRanges ? this.customDateRanges : this.leftSideShortcuts;
                 }
                 else if (this.type === "daterange" && this.displayShortcuts) {
                     var self = this;
@@ -869,6 +869,11 @@
             },
             displayOneMode: {
                 type: String,
+                default: null,
+                required: false
+            },
+            customDateRanges: {
+                type: Array,
                 default: null,
                 required: false
             }
