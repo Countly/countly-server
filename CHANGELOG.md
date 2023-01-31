@@ -1,3 +1,36 @@
+## Version 22.09.11
+Fixes:
+- [compliance-hub] Fixes for table export.
+- [core] Local table export improvements to allow sorting. 
+- [data-manager] Fixes for event transformation drawer.
+- [dbviewer] Storing aggregation pipeline results in reports if they take long to calculate.
+- [plugins] Update internal-events endpoint access right
+- [push] App filter for consent removal
+- [push] Better network error handling, less batching logging, moving timeout checks to mongo stream
+- [push] Proper error message and scheduling for no audience case
+- [push] Sending approval emails again on message edits, leaving submitted props on edits
+- [report manager] Improved filtering of reports to allow filter by App and owner.
+- [views] Correct path usage in dashboard to prevent errors in case countly  root is in subfolder.
+
+Enterprise fixes:
+- [ab-testing] AB testing bayesian models compilation fixed
+- [attribution] Fixed issues with invalid url after edit
+- [attribution] Fixes for platform recording 
+- [cohorts] Bugfix for cohort data merging on user merge.
+- [cohorts] Fixed issues for realtime cohort update on requests with only user properties
+- [concurrent-users] Number visualization widget
+- [data-manager] Fixes for biglist handling on install
+- [data-manager] User property handling fixes
+- [drill] Improved cohort filtering in query builder
+- [flows] Fixed issue with resetting settings on install
+- [flows] Valid range selection on calculating flows
+- [oidc] allow provide custom text for Login button
+- [oidc] make sure email is lower case
+- [oidc] precreate config file on install, if it does not exist
+- [push_approver] Allowing global admin approvers to be notified about messages
+- [users] not showing exported filename path in exported file.
+
+
 ## Version 22.09.10
 Fixes:
 - [logger] removing potentially sensitive info from headers
