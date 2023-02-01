@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _ */
+/* global Vue, CV, countlyGlobal, $, _, _merge */
 
 (function(countlyVue) {
 
@@ -379,6 +379,7 @@
                 if (!this.persistColumnOrderKey) {
                     return;
                 }
+                var self = this;
                 var sortMap = {};
                 this.sortedOptions.forEach(function(val, idx) {
                     sortMap[val.value] = idx;
@@ -391,7 +392,15 @@
                         "columnOrderKey": this.persistColumnOrderKey,
                         _csrf: countlyGlobal.csrf_token
                     },
-                    success: function() { }
+                    success: function() {
+                        //since countlyGlobal.member does not updates automatically till refresh
+                        var updatedSortMap = {
+                            [self.persistColumnOrderKey]: {
+                                reorderSortMap: sortMap
+                            }
+                        };
+                        countlyGlobal.member.columnOrder = _merge({}, countlyGlobal.member.columnOrder, updatedSortMap);
+                    }
                 });
             }
         },
