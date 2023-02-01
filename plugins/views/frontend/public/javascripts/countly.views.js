@@ -800,7 +800,7 @@
                 drillClone = $("#drill-filter-view").clone(true);
             }, 0);
         }
-    });
+    }, FEATURE_NAME);
 
     var GridComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
@@ -952,6 +952,7 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
+        permission: FEATURE_NAME,
         label: CV.i18n("views.widget-type"),
         priority: 1,
         primary: false,
@@ -1009,7 +1010,7 @@
     };
 
     app.addAppSwitchCallback(function(appId) {
-        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {
             countlyViews.loadList(appId);
         }
     });

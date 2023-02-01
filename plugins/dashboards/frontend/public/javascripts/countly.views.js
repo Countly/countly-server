@@ -1730,6 +1730,7 @@
 
     countlyVue.container.registerData("/sidebar/menu/main", {
         name: "dashboards",
+        pluginName: "dashboards",
         icon: "cly-icon-sidebar-dashboards",
         tooltip: CV.i18n("sidebar.dashboard-tooltip"),
         component: DashboardsMenu
@@ -1737,6 +1738,7 @@
 
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "dashboards",
         beforeCreate: function() {
             var self = this;
             this.$store.dispatch("countlyDashboards/getAll").then(function(res) {

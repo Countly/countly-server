@@ -5,19 +5,31 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
+    log = common.log('plugins:api'),
     { validateUser, validateGlobalAdmin, validateAppAdmin, validateRead } = require('../../../api/utils/rights.js');
+
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
 
         validateGlobalAdmin(params, function() {
-            if (process.env.COUNTLY_CONTAINER === 'api') {
+            /*if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
-            }
+            }*/
 
             if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
+
+                plugins.updatePluginsInDb(common.db, params, function(error) {
+                    if (error) {
+                        common.returnMessage(params, 400, error);
+                    }
+                    else {
+                        common.returnMessage(params, 200, "started");
+                    }
+                });
+                /*
                 try {
                     params.qstring.plugin = JSON.parse(params.qstring.plugin);
                 }
@@ -26,11 +38,13 @@ var plugin = {},
                 }
 
                 if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
-                    updatePluginState("start");
-                    common.returnMessage(params, 200, "started");
+                    // updatePluginState("start");
+
                     var before = {};
+                    var fordb = {};
                     var arr = plugins.getPlugins();
                     for (var i in params.qstring.plugin) {
+                        fordb['plugins.' + i] = params.qstring.plugin[i];
                         if (arr.indexOf(i) === -1) {
                             before[i] = false;
                         }
@@ -38,27 +52,35 @@ var plugin = {},
                             before[i] = true;
                         }
                     }
-                    plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
-                    process.send({ cmd: "startPlugins" });
-                    plugins.loadConfigs(common.db, function() {
-                        plugins.syncPlugins(params.qstring.plugin, function(err) {
-                            if (!err) {
-                                process.send({ cmd: "endPlugins" });
-                                updatePluginState("end");
-                            }
-                            else {
-                                updatePluginState("failed");
-                            }
-                        }, common.db);
+                    common.db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
+                        if (err1) {
+                            log.e(err1);
+                        }
+                        else {
+                            plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
+                            // process.send({ cmd: "startPlugins" });
+                            plugins.loadConfigs(common.db, function() {
+                                
+                                 plugins.syncPlugins(params.qstring.plugin, function(err) {
+									if (!err) {
+										process.send({ cmd: "endPlugins" });
+										updatePluginState("end");
+									}
+									else {
+										updatePluginState("failed");
+									}
+								}, common.db);
+                            });
+                        }
                     });
-                }
+                }*/
             }
             else {
                 common.returnOutput(params, "Not enough parameters");
             }
         });
         return true;
-    });
+    }, false, 'plugins');
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
@@ -88,10 +110,10 @@ var plugin = {},
     });
 
     plugins.register("/o/plugins", function(ob) {
+
         var params = ob.params;
-        var pluginList = plugins.getPlugins();
         var ignore = {"empty": true, "plugins": true};
-        var walk = function(dir, done) {
+        var walk = function(dir, allPlugins, done) {
             var results = [];
             fs.readdir(dir, function(err, list) {
                 if (err) {
@@ -102,7 +124,7 @@ var plugin = {},
                     return done(null, results);
                 }
                 list.forEach(function(file) {
-                    if (!ignore[file]) {
+                    if (!ignore[file] && typeof allPlugins[file] !== 'undefined') {
                         var fullpath = dir + '/' + file;
                         fs.stat(fullpath, function(fsError, stat) {
                             if (stat && stat.isDirectory()) {
@@ -114,12 +136,8 @@ var plugin = {},
                                     // Error
                                 }
                                 var resultObj = {};
-                                if (pluginList.indexOf(file) > -1) {
-                                    resultObj.enabled = true;
-                                }
-                                else {
-                                    resultObj.enabled = false;
-                                }
+                                resultObj.enabled = allPlugins[file] || false;
+
                                 resultObj.code = file;
                                 if (data) {
                                     resultObj.title = data.title || file;
@@ -172,11 +190,29 @@ var plugin = {},
         };
         validateGlobalAdmin(params, function() {
             var dir = path.resolve(__dirname, "../../");
-            walk(dir, function(err, results) {
-                if (err) {
-                    console.error(err);
+
+            //getting list of plugins.
+            common.db.collection("plugins").findOne({_id: "plugins"}, function(err0, res) {
+                if (err0) {
+                    log.e(err0);
                 }
-                common.returnOutput(params, results || {});
+                var allPlugins = res.plugins;
+                allPlugins = allPlugins || {};
+
+                var pluginList = plugins.getPlugins(true);
+
+                for (var z = 0; z < pluginList.length; z++) {
+                    if (typeof allPlugins[pluginList[z]] === 'undefined') {
+                        allPlugins[pluginList[z]] = true;
+                    }
+                }
+                walk(dir, allPlugins, function(err, results) {
+                    if (err) {
+                        console.error(err);
+                    }
+                    common.returnOutput(params, results || {});
+                });
+
             });
         });
         return true;
@@ -315,7 +351,7 @@ var plugin = {},
         return true;
     });
 
-    var updatePluginState = function(state) {
+    /*var updatePluginState = function(state) {
         switch (state) {
         case 'start':
             common.db.collection('plugins').remove({"_id": "failed"}, function() {});
@@ -329,7 +365,7 @@ var plugin = {},
             common.db.collection('plugins').remove({"_id": "busy"}, function() {});
             break;
         }
-    };
+    };*/
 
     plugins.register("/o/email_test", function(ob) {
         // check if global admin
