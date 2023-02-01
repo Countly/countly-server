@@ -763,7 +763,7 @@ var AppRouter = Backbone.Router.extend({
     **/
     addMenu: function(category, node) {
         if (node && !node.pluginName && !node.permission) {
-            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-eval
+            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
         }
         if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
             return;
@@ -798,7 +798,7 @@ var AppRouter = Backbone.Router.extend({
     **/
     addSubMenu: function(parent_code, node) {
         if (node && !node.pluginName && !node.permission) {
-            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-eval
+            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
         }
         if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
             return;
