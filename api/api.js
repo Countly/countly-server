@@ -57,7 +57,7 @@ plugins.connectToAllDatabases().then(function() {
         event_limit: 500,
         event_segmentation_limit: 100,
         event_segmentation_value_limit: 1000,
-		array_list_limit:10,
+        array_list_limit: 10,
         metric_limit: 1000,
         sync_plugins: false,
         session_cooldown: 15,

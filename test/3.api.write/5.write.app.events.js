@@ -1324,16 +1324,16 @@ describe('Writing app events', function() {
             });
         });
     });
-	describe('Verifying array values are skipped', function() {
-		describe('creating event', function() {
+    describe('Verifying array values are skipped', function() {
+        describe('creating event', function() {
             it('should success', function(done) {
                 var params = [{
                     "key": "testArray",
                     "count": 1,
                     "sum": 5,
                     "segmentation": {
-                        "arrayValues": ["Ping","Pong"],
-						"test":"bat"
+                        "arrayValues": ["Ping", "Pong"],
+                        "test": "bat"
                     }
                 }];
                 request
@@ -1359,7 +1359,7 @@ describe('Writing app events', function() {
                     });
             });
         });
-	});
+    });
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {
