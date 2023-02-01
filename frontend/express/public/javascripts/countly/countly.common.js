@@ -4751,6 +4751,9 @@
                 else if (Object.prototype.hasOwnProperty.call(period, "on")) {
                     inferredType = "on";
                 }
+                else if (Object.prototype.hasOwnProperty.call(period, "before")) {
+                    inferredType = "before";
+                }
             }
             else if (period.endsWith("days")) {
                 inferredLevel = "days";

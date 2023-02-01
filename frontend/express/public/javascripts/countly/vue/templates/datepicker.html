@@ -27,21 +27,21 @@
     </template>
     <div class="cly-vue-daterp">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
-            <div v-if="allowCustomRange" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
-                :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
-                @click="handleCustomRangeClick">
-                {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
+            <div v-if="allowCustomRange && !moveRangeTabsToLeftSide" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
+            :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
+            @click="handleCustomRangeClick">
+            {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
             </div>
             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"
-                :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value, 'cly-vue-daterp__shortcut--deactive': customRangeSelection}"
+                :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value, 'cly-vue-daterp__shortcut--deactive': customRangeSelection && !moveRangeTabsToLeftSide}"
                 v-for="shortcut in shortcuts"
                 @click="handleShortcutClick(shortcut.value)">
                 {{shortcut.label}}
             </div>
         </div>
-        <div class="cly-vue-daterp__calendars-col" v-if="isVisible && customRangeSelection">
+        <div class="cly-vue-daterp__calendars-col" v-if="(isVisible && customRangeSelection)">
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
-                <el-tabs v-model="rangeMode" @tab-click="handleTabChange">
+                <el-tabs v-model="rangeMode" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
                     <el-tab-pane name="inBetween">
                         <template slot="label">
                             <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
@@ -62,6 +62,14 @@
                                     </div>
                                 </div>
                             </template>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane name="before" v-if="allowBeforeSelection">
+                        <template slot="label">
+                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.before')}}</span>
+                        </template>
+                        <div class="cly-vue-daterp__input-wrapper">
+                            <el-input size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="since">
@@ -96,6 +104,23 @@
                         </div>
                     </el-tab-pane>
                 </el-tabs>
+                <div v-if="moveRangeTabsToLeftSide" class="cly-vue-daterp__input-wrapper">
+                    <div v-if="rangeMode === 'inBetween'" class="cly-vue-daterp__input-wrapper-content">
+                        <el-input size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
+                        <span class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
+                        <el-input size="small" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
+                    </div>
+                    <el-input v-if="rangeMode === 'before'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
+                    <el-input v-if="rangeMode === 'since'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
+                    <div v-if="rangeMode === 'inTheLast'" class="cly-vue-daterp__input-wrapper-content">
+                        <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
+                        <el-select size="small" v-model="inTheLastInput.raw.level">
+                            <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
+                            <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
+                            <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
+                        </el-select>
+                    </div>
+                </div>
                 <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === 'day' || tableType === 'week'">
                     <table class="cly-vue-daterp__day-names">
                         <tr>

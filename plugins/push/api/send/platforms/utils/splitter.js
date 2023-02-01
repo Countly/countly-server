@@ -89,7 +89,10 @@ class Splitter extends Base {
             // req.on('socket', socket => {
             //     this.socket = socket;
             // });
-            req.on('error', error => reject([0, error]));
+            req.on('error', error => {
+                this.log.d('send request error', error);
+                reject([0, error]);
+            });
             req.end(content);
         });
     }

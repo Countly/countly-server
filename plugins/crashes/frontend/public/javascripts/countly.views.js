@@ -587,6 +587,13 @@
                         }
                     });
                 }
+            },
+            appVersionSort: function(item1, item2) {
+                if (item1.latest_version_for_sort && item2.latest_version_for_sort) {
+                    return item1.latest_version_for_sort.localeCompare(item2.latest_version_for_sort);
+                }
+
+                return item1.latest_version.localeCompare(item2.latest_version);
             }
         },
         beforeCreate: function() {

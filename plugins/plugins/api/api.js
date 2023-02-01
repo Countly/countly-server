@@ -6,7 +6,8 @@ var plugin = {},
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
     log = common.log('plugins:api'),
-    { validateUser, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js');
+    { validateUser, validateGlobalAdmin, validateAppAdmin, validateRead } = require('../../../api/utils/rights.js');
+
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
@@ -220,7 +221,7 @@ var plugin = {},
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
 
-        validateGlobalAdmin(params, function() {
+        validateRead(params, 'core', function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);

@@ -389,7 +389,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="device" :label="i18n('crashes.device')" sortable></el-table-column>
-                        <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable>
+                        <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable sort-by="app_version_for_sort">
                         </el-table-column>
                         <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')">
                             <template slot-scope="col">
