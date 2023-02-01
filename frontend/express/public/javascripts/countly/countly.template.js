@@ -762,6 +762,9 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenu: function(category, node) {
+        if (!node.pluginName && !node.permission) {
+            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-eval
+        }
         if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
             return;
         }
@@ -794,6 +797,9 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenu: function(parent_code, node) {
+        if (!node.pluginName && !node.permission) {
+            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-eval
+        }
         if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
             return;
         }
@@ -1123,9 +1129,9 @@ var AppRouter = Backbone.Router.extend({
         self.addMenuCategory("reach", {priority: 30});
         self.addMenuCategory("improve", {priority: 40});
         self.addMenuCategory("utilities", {priority: 50});
-        self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
-        self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
-        self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+        self.addMenu("understand", {code: "overview", permission: "core", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
+        self.addMenu("understand", {code: "analytics", permission: "core", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+        self.addMenu("understand", {code: "events", permission: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
         // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
         self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
         self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
@@ -1135,6 +1141,7 @@ var AppRouter = Backbone.Router.extend({
 
         self.addMenu("utilities", {
             code: "management",
+            permission: "core",
             text: "sidebar.utilities",
             icon: '<div class="logo management ion-wrench"></div>',
             priority: 10000000,
@@ -1152,13 +1159,13 @@ var AppRouter = Backbone.Router.extend({
 
         var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
         if (countlyAuth.validateAnyAppAdmin()) {
-            self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
+            self.addMenu("management", {code: "applications", permission: "core", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
         }
         if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
+            self.addMenu("management", {code: "users", permission: "core", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
         }
         if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
+            self.addMenu("management", {code: "jobs", permission: "core", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
         }
 
         // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});

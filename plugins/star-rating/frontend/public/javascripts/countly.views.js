@@ -1235,7 +1235,7 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-    app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addMenu("reach", {code: "feedback", permission: FEATURE_NAME, text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
     app.addSubMenu("feedback", {
         code: "star-rating",
         permission: FEATURE_NAME,
