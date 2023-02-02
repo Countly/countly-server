@@ -685,6 +685,10 @@
             align-items: center;
         }
 
+        &__input-wrapper-content {
+            display: contents;
+        }
+
         &__time-picker-section {
             border-bottom: 1px solid #ECECEC;
         }

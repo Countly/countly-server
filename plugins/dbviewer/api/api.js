@@ -285,22 +285,24 @@ var spawn = require('child_process').spawn,
                     common.returnOutput(params, { task_id: task_id });
                 }
                 else {
+                    var name = 'Aggregation-' + Date.now();
                     var taskCb = taskManager.longtask({
-                        db: dbs[dbNameOnParam],
+                        db: common.db,
                         threshold: plugins.getConfig("api").request_threshold,
                         params: params,
                         type: "dbviewer",
                         force: params.qstring.save_report || false,
+                        gridfs: true,
                         meta: JSON.stringify({
                             db: dbNameOnParam,
                             collection: params.qstring.collection,
                             aggregation: aggregation
                         }),
                         view: "#/manage/db/task/",
-                        report_name: params.qstring.report_name,
+                        report_name: params.qstring.report_name || name + "." + params.qstring.type,
                         report_desc: params.qstring.report_desc,
                         period_desc: params.qstring.period_desc,
-                        name: 'Aggregation-' + Date.now(),
+                        name,
                         creator: params.member._id + "",
                         global: params.qstring.global === 'true',
                         autoRefresh: params.qstring.autoRefresh === 'true',

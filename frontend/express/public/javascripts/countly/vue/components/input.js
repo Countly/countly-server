@@ -1,4 +1,4 @@
-/* global Vue, CV, _ */
+/* global Vue, CV, countlyGlobal, $, _ */
 
 (function(countlyVue) {
 
@@ -322,11 +322,22 @@
             disableNonSelected: {
                 type: Boolean,
                 default: false
+            },
+            persistColumnOrderKey: {
+                type: String,
+                default: null
             }
         },
         data: function() {
+            var savedSortMap = null;
+            if (this.persistColumnOrderKey && countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistColumnOrderKey] && countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap) {
+                savedSortMap = countlyGlobal.member.columnOrder[this.persistColumnOrderKey].reorderSortMap;
+                Object.keys(savedSortMap).forEach(function(key) {
+                    savedSortMap[key] = parseInt(savedSortMap[key], 10);
+                });
+            }
             return {
-                sortMap: null
+                sortMap: savedSortMap
             };
         },
         watch: {
@@ -363,6 +374,25 @@
             commitValue: function(val) {
                 this.$emit("input", val);
                 this.$emit("change", val);
+            },
+            saveColumnOrder() {
+                if (!this.persistColumnOrderKey) {
+                    return;
+                }
+                var sortMap = {};
+                this.sortedOptions.forEach(function(val, idx) {
+                    sortMap[val.value] = idx;
+                });
+                $.ajax({
+                    type: "POST",
+                    url: countlyGlobal.path + "/user/settings/column-order",
+                    data: {
+                        "reorderSortMap": sortMap,
+                        "columnOrderKey": this.persistColumnOrderKey,
+                        _csrf: countlyGlobal.csrf_token
+                    },
+                    success: function() { }
+                });
             }
         },
         computed: {
@@ -433,10 +463,11 @@
                                     :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
+                                    :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -761,7 +792,8 @@
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false},
             showSearch: {type: Boolean, default: false},
-            popperAppendToBody: {type: Boolean, default: true}
+            popperAppendToBody: {type: Boolean, default: true},
+            persistColumnOrderKey: { type: String, default: null}
         },
         data: function() {
             return {
@@ -898,6 +930,10 @@
                     return;
                 }
                 if (this.uncommittedValue) {
+                    if (this.persistColumnOrderKey) {
+                        //refs returns array as we are using v-for
+                        this.$refs.checkListBox[0].saveColumnOrder();
+                    }
                     this.commitValue(this.uncommittedValue);
                     this.uncommittedValue = null;
                 }

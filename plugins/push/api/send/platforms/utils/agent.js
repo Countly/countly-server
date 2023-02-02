@@ -121,8 +121,8 @@ class ProxyAgent extends https.Agent {
 
         log.d('creating socket', options);
         this.createConnection(options, function(err, s) {
-            log.d('socket created');
             if (err) {
+                log.e('error while creating proxy connection', err);
                 if (!err.message) {
                     err = new Error(err);
                 }
@@ -137,6 +137,7 @@ class ProxyAgent extends https.Agent {
 
                 return;
             }
+            log.d('socket created');
 
             if (!self.sockets[name]) {
                 self.sockets[name] = [];

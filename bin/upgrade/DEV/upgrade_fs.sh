@@ -22,16 +22,17 @@ then
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
+
+    #install dependencies, process files and restart countly
+    countly plugin enable license;
     
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"
     
     #get web sdk
     countly update sdk-web
-
-    #install dependencies, process files and restart countly
+    
     if [ "$1" != "combined" ]; then
-        countly plugin enable license;
         countly upgrade;
     else
         countly task dist-all;

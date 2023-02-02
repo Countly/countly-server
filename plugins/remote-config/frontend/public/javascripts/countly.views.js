@@ -166,7 +166,7 @@
                     id: "disallowOperator",
                     params: {
                         selector: function(operator) {
-                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset"].includes(operator.id);
+                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset", "cly.beginswith"].includes(operator.id);
                         }
                     }
                 })]

@@ -415,6 +415,7 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18nM("sources.title"),
+        permission: FEATURE_NAME,
         priority: 1,
         primary: false,
         getter: function(widget) {

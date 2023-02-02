@@ -53,7 +53,7 @@ async function clear(ob) {
  * @param {string} error error code (consent is default) 
  */
 async function removeUsers(appId, uids, error = 'consent') {
-    let stream = common.db.collection('push').find({u: {$in: uids}}).stream(),
+    let stream = common.db.collection('push').find({a: dbext.oid(appId), u: {$in: uids}}).stream(),
         updates = {},
         ids = [];
 

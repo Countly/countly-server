@@ -11,6 +11,21 @@
  */
 (function(CountlyHelpers) {
 
+    CountlyHelpers.isPluginEnabled = function(name) {
+        if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull) && countlyGlobal.pluginsFull.indexOf(name) > -1) {
+            if (countlyGlobal.plugins && Array.isArray(countlyGlobal.plugins) && countlyGlobal.plugins.indexOf(name) !== -1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return true;
+        }
+
+    };
+
     CountlyHelpers.logout = function(path) {
         if (path) {
             window.location = "/logout";

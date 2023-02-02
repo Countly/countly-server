@@ -100,7 +100,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -142,7 +142,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -689,7 +689,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

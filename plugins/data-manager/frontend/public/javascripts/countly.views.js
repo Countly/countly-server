@@ -948,7 +948,9 @@
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
                     this.$store.dispatch('countlyDataManager/loadInternalEvents');
-                    this.$store.dispatch('countlyDataManager/loadViews');
+                    if (countlyGlobal.plugins.indexOf("views") > -1) {
+                        this.$store.dispatch('countlyDataManager/loadViews');
+                    }
                 }
             },
             handleCreateCommand: function(event, tab) {
@@ -1064,7 +1066,7 @@
                 if (doc.actionType.split('_')[1] !== "MERGE") {
                     doc.transformTarget = doc.transformTarget[0];
                 }
-                if (doc.actionType === 'EVENT_MERGE' && doc.isRegex === true) {
+                if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
                 }
                 else {
@@ -1079,6 +1081,15 @@
                 doc.isEditMode = true;
                 if (doc.parentEvent) {
                     doc.selectedParentEvent = doc.parentEvent;
+                }
+                if (!doc.targetRegex) {
+                    doc.targetRegex = false;
+                }
+                if (!doc.isRegex) {
+                    doc.isRegex = false;
+                }
+                if (!doc.isRegexMerge) {
+                    doc.isRegexMerge = false;
                 }
                 self.openDrawer("transform", doc);
             });
@@ -1312,5 +1323,5 @@
         this.renderWhenReady(detailView);
     });
 
-    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

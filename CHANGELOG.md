@@ -1,3 +1,81 @@
+## Version 22.09.11
+Fixes:
+- [compliance-hub] Fixes for table export.
+- [core] Local table export improvements to allow sorting. 
+- [data-manager] Fixes for event transformation drawer.
+- [dbviewer] Storing aggregation pipeline results in reports if they take long to calculate.
+- [plugins] Update internal-events endpoint access right
+- [push] App filter for consent removal
+- [push] Better network error handling, less batching logging, moving timeout checks to mongo stream
+- [push] Proper error message and scheduling for no audience case
+- [push] Sending approval emails again on message edits, leaving submitted props on edits
+- [report manager] Improved filtering of reports to allow filter by App and owner.
+- [views] Correct path usage in dashboard to prevent errors in case countly  root is in subfolder.
+
+Enterprise fixes:
+- [ab-testing] AB testing bayesian models compilation fixed
+- [attribution] Fixed issues with invalid url after edit
+- [attribution] Fixes for platform recording 
+- [cohorts] Bugfix for cohort data merging on user merge.
+- [cohorts] Fixed issues for realtime cohort update on requests with only user properties
+- [concurrent-users] Number visualization widget
+- [data-manager] Fixes for biglist handling on install
+- [data-manager] User property handling fixes
+- [drill] Improved cohort filtering in query builder
+- [flows] Fixed issue with resetting settings on install
+- [flows] Valid range selection on calculating flows
+- [oidc] allow provide custom text for Login button
+- [oidc] make sure email is lower case
+- [oidc] precreate config file on install, if it does not exist
+- [push_approver] Allowing global admin approvers to be notified about messages
+- [users] not showing exported filename path in exported file.
+
+
+## Version 22.09.10
+Fixes:
+- [logger] removing potentially sensitive info from headers
+- [settings] small fixes to search in settings
+- [ui] table export column titles are not user friendly
+
+Enterprise fixes:
+- [attribution] added typo control for platform when parsing user-agent parameters. 
+- [data-manager] invalid values on opening form when editing transformation with regexp in data-manager
+- [oidc] add same site cookie fallback
+- [oidc] generate password moved to common
+- [surveys] completed_surveys uses _id field, not uid field
+
+## Version 22.09.9
+Fixes:
+- [applications] prevent used app_key in front and back end
+- [crashes] rename bi to bn
+- [crashes] use real session as fallback in crash stats
+- [push] logging crashing issue
+
+Enterprise fixes:
+- [ab-testing] add Ubuntu 22 support and remove CentOS 6 support on AB testing
+
+## Version 22.09.8
+Fixes:
+- [dashboards] date picker doesn't fit into the view in dashboards
+- [dashboards] fixed date formats for monthly selection in widgets
+- [dashboards] provided chart refresh after changing time bucket for specific widgets
+- [hooks] configurable rate limiter for hooks implemented
+- [hooks] sanitize email HTML input
+- [push] streaming timeouts handling
+- [render] added configurationsView checks not to break server side rendering
+- [settings] search in settings
+
+Enterprise fixes:
+- [cohorts] improved speed for loading cohort widgets in dashboards
+- [data-manager] fixed for missing data type in user props
+- [data-manager] fixed user properties sort 
+- [drill] adding stringified Drill query to the export file name
+- [funnels] fixed for false error ouptut in logs if funnels dashboard widget does not have filter query
+- [push_approver] correct members query
+- [revenue] fixed revenue widgets metric selection
+- [users] fixed user profiles consent table export exports ALL users, not only this one
+- [users] change format for numbers in user profiles
+
 ## Version 22.09.7
 Fixes:
 - [api] added try catch block to regex

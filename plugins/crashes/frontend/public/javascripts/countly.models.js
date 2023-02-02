@@ -1,4 +1,88 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
+
+/**
+ *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
+ *  @param {string} inpVersion - an app version string
+ *  @return {array} [regex.exec result, version scheme name]
+ */
+function checkAppVersion(inpVersion) {
+    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    var semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+    // Half semver is similar to semver but with only one dot
+    var halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    var execResult = semverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'semver'];
+    }
+
+    execResult = halfSemverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'halfSemver'];
+    }
+
+    return [null, null];
+}
+
+/**
+ *  Transform a version string so it will be numerically correct when sorted
+ *  For example '1.10.2' will be transformed to '100001.100010.100002'
+ *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
+ *  @param {string} inpVersion - an app version string
+ *  @return {string} the transformed app version
+ */
+function transformAppVersion(inpVersion) {
+    var [execResult, versionScheme] = checkAppVersion(inpVersion);
+
+    if (execResult === null) {
+        // Version string does not follow any scheme, just return it
+        return inpVersion;
+    }
+
+    // Mark version parts based on semver scheme
+    var prefixIdx = 1;
+    var majorIdx = 2;
+    var minorIdx = 3;
+    var patchIdx = 4;
+    var preReleaseIdx = 5;
+    var buildIdx = 6;
+
+    if (versionScheme === 'halfSemver') {
+        patchIdx -= 1;
+        preReleaseIdx -= 1;
+        buildIdx -= 1;
+    }
+
+    var transformed = '';
+    // Rejoin version parts to a new string
+    for (var idx = prefixIdx; idx < buildIdx; idx += 1) {
+        var part = execResult[idx];
+
+        if (part) {
+            if (idx >= majorIdx && idx <= patchIdx) {
+                part = 100000 + parseInt(part, 10);
+            }
+
+            if (idx >= minorIdx && idx <= patchIdx) {
+                part = '.' + part;
+            }
+
+            if (idx === preReleaseIdx) {
+                part = '-' + part;
+            }
+
+            if (idx === buildIdx) {
+                part = '+' + part;
+            }
+
+            transformed += part;
+        }
+    }
+
+    return transformed;
+}
 
 (function(countlyCrashes) {
     var _list = {};
@@ -17,6 +101,7 @@
                     rawData: {},
                     filteredData: {},
                     isLoading: false,
+                    realSession: {},
                 };
             },
             getters: {},
@@ -38,6 +123,8 @@
         };
 
         _overviewSubmodule.getters.dashboardData = function(state) {
+            var realSession = state.realSession;
+            var realTotalSession = (realSession.usage && realSession.usage['total-sessions'].total) || 0;
             var dashboard = {};
 
             if ("data" in state.rawData) {
@@ -129,7 +216,22 @@
 
             ["crses", "crnfses", "crfses"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100));
+                    var propValue = 0;
+
+                    if (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) {
+                        propValue = 100;
+                    }
+                    else {
+                        if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
+                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                        }
+                        else {
+                            // Use real total session if cr_s value is too low
+                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                        }
+                    }
+
+                    dashboard[name][prop] = Math.min(100, propValue);
                 });
                 populateMetric(name, true);
             });
@@ -392,6 +494,10 @@
                 }
             }));
 
+            ajaxPromises.push(countlySession.initialize().then(function() {
+                context.state.realSession = countlySession.getSessionData();
+            }));
+
             return Promise.all(ajaxPromises);
         };
 
@@ -473,7 +579,11 @@
 
         _crashgroupSubmodule.getters.crashes = function(state) {
             if ("data" in state.crashgroup) {
-                return state.crashgroup.data;
+                return state.crashgroup.data.map(function(item) {
+                    var transformedAppVersion = transformAppVersion(item.app_version);
+                    item.app_version_for_sort = transformedAppVersion;
+                    return item;
+                });
             }
             else {
                 return [];

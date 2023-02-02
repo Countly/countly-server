@@ -1106,6 +1106,7 @@
                     return {
                         code: dto.result.error,
                         affectedUsers: dto.result.total || '',
+                        description: CV.i18n('push-notification.error-code.' + dto.result.error + '.desc') || ''
                     };
                 }
                 return null;

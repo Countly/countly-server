@@ -252,11 +252,11 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
     if (req.session.temporary_token) {
         reuse = false;
     }
-    if (req.license) {
-        req.session.license = req.license;
+    if (req.licenseError) {
+        req.session.licenseError = req.licenseError;
     }
-    if (req.notify) {
-        req.session.notify = req.notify;
+    if (req.licenseNotification) {
+        req.session.licenseNotification = req.licenseNotification;
     }
 
     authorize.save({
@@ -408,20 +408,15 @@ membersUtility.login = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(results => {
-                if (results && results.error) {
-                    req.license = results.error;
-                }
-                if (results && results.notify && results.notify.length) {
-                    req.notify = JSON.stringify(results.notify);
-                }
-
+            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
                 plugins.callMethod("loginSuccessful", {req: req, data: member});
 
                 // update stats
                 membersUtility.updateStats(member);
 
                 req.session.regenerate(function() {
+                    common.licenseAssign(req, licenseCheck);
+
                     // will have a new session here
                     var update = {last_login: Math.round(new Date().getTime() / 1000)};
                     if (typeof member.password_changed === "undefined") {
@@ -492,20 +487,15 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(results => {
-                if (results && results.error) {
-                    req.license = results.error;
-                }
-                if (results && results.notify && results.notify.length) {
-                    req.notify = JSON.stringify(results.notify);
-                }
-
+            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
                 plugins.callMethod("loginSuccessful", {req: req, data: member});
 
                 // update stats
                 membersUtility.updateStats(member);
 
                 req.session.regenerate(function() {
+                    common.licenseAssign(req, licenseCheck);
+
                     // will have a new session here
                     var update = {last_login: Math.round(new Date().getTime() / 1000)};
 
@@ -605,13 +595,8 @@ membersUtility.loginWithToken = function(req, callback) {
                     callback(undefined);
                 }
                 else {
-                    plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(results => {
-                        if (results && results.error) {
-                            req.license = results.error;
-                        }
-                        if (results && results.notify && results.notify.length) {
-                            req.notify = JSON.stringify(results.notify);
-                        }
+                    plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
+                        common.licenseAssign(req, licenseCheck);
 
                         plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
 

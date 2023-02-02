@@ -814,14 +814,20 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
-                    else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
-                        if (returnErrors) {
-                            returnObj.errors.push("Invalid url string " + arg);
-                            returnObj.result = false;
-                            argState = false;
+                    else {
+                        let { URL } = require('url');
+                        try {
+                            new URL(args[arg]);
                         }
-                        else {
-                            return false;
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid url string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -2770,14 +2776,132 @@ common.sanitizeFilename = (filename, replacement = "") => {
  * @returns {string} sanitizedHTML - sanitized html content
  */
 common.sanitizeHTML = (html) => {
-    const allowedTags = ['p', 'b', 'strong', 'i', 'em', 'a']; // only allow these tags
 
-    var sanitizedHtml = html.replace(/<\/?([^>]+)>/gi, (match, tag) => {
-        return allowedTags.includes(tag) ? match : '';
+    const whiteList = {
+        a: ["target", "title"],
+        abbr: ["title"],
+        address: [],
+        area: ["shape", "coords", "href", "alt"],
+        article: [],
+        aside: [],
+        audio: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "preload",
+            "src",
+        ],
+        b: [],
+        bdi: ["dir"],
+        bdo: ["dir"],
+        big: [],
+        blockquote: ["cite"],
+        br: [],
+        caption: [],
+        center: [],
+        cite: [],
+        code: [],
+        col: ["align", "valign", "span", "width"],
+        colgroup: ["align", "valign", "span", "width"],
+        dd: [],
+        del: ["datetime"],
+        details: ["open"],
+        div: [],
+        dl: [],
+        dt: [],
+        em: [],
+        figcaption: [],
+        figure: [],
+        font: ["color", "size", "face"],
+        footer: [],
+        h1: [],
+        h2: [],
+        h3: [],
+        h4: [],
+        h5: [],
+        h6: [],
+        header: [],
+        hr: [],
+        i: [],
+        img: ["src", "alt", "title", "width", "height"],
+        ins: ["datetime"],
+        li: [],
+        mark: [],
+        nav: [],
+        ol: [],
+        p: [],
+        pre: [],
+        s: [],
+        section: [],
+        small: [],
+        span: [],
+        sub: [],
+        summary: [],
+        sup: [],
+        strong: [],
+        strike: [],
+        table: ["width", "border", "align", "valign"],
+        tbody: ["align", "valign"],
+        td: ["width", "rowspan", "colspan", "align", "valign"],
+        tfoot: ["align", "valign"],
+        th: ["width", "rowspan", "colspan", "align", "valign"],
+        thead: ["align", "valign"],
+        tr: ["rowspan", "align", "valign"],
+        tt: [],
+        u: [],
+        ul: [],
+        video: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "playsinline",
+            "poster",
+            "preload",
+            "src",
+            "height",
+            "width",
+        ],
+    };
+
+    return html.replace(/<\/?([^>]+)>/gi, (tag) => {
+        const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
+
+        if (!Object.getOwnPropertyDescriptor(whiteList, tagName)) {
+            return "";
+        }
+
+        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+
+        let matches;
+        let filteredAttributes = [];
+        let allowedAttributes = Object.getOwnPropertyDescriptor(whiteList, tagName).value;
+        let tagHasAttributes = false;
+        while ((matches = attributesRegex.exec(tag)) !== null) {
+            tagHasAttributes = true;
+            let attributeName = matches[1];
+            let attributeValue = matches[2];
+            if (allowedAttributes.indexOf(attributeName) > -1) {
+                filteredAttributes.push(`${attributeName}="${attributeValue}"`);
+            }
+        }
+        console.log("attributes", filteredAttributes);
+        if (!tagHasAttributes) { //closing tag or tag without any attributes
+            return tag;
+        }
+        if (filteredAttributes.length <= 0) { //tag had attributes but none of them on whilelist
+            return `<${tagName}>`;
+        }
+
+        return `<${tagName} ${filteredAttributes.join(" ")}>`;
+
     });
 
-    return sanitizedHtml;
 };
+
 
 
 /**
@@ -3200,6 +3324,27 @@ class DataTable {
 }
 
 common.DataTable = DataTable;
+
+/**
+ * Assign license check results to request (and session if present)
+ * 
+ * @param {object} req request
+ * @param {object|undefined} check check results
+ */
+common.licenseAssign = function(req, check) {
+    if (check && check.error) {
+        req.licenseError = check.error;
+        if (req.session) {
+            req.session.licenseError = req.licenseError;
+        }
+    }
+    if (check && check.notify && check.notify.length) {
+        req.licenseNotification = JSON.stringify(check.notify);
+        if (req.session) {
+            req.session.licenseNotification = req.licenseNotification;
+        }
+    }
+};
 
 /**
 * Standard number formatter, taken from frontend's countly.common.js

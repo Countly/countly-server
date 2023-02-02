@@ -108,7 +108,7 @@ class FCM extends Splitter {
                 }
                 catch (error) {
                     this.log.e('Bad FCM response format: %j', resp, error);
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
 
                 if (resp.failure === 0 && resp.canonical_ids === 0) {
@@ -190,7 +190,7 @@ class FCM extends Splitter {
                             .setConnectionError(error.code, `${error.errno} ${error.code} ${error.syscall}`)
                             .addAffected(pushes.map(p => p._id), bytes);
                     }
-                    let pe = PushError.deserialize(error);
+                    let pe = PushError.deserialize(error, SendError);
                     pe.addAffected(pushes.map(p => p._id), bytes);
                     throw pe;
                 }
