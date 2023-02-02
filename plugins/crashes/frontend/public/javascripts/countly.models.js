@@ -735,7 +735,8 @@
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
                                     app_version: crashgroupJson.latest_version,
-                                    build_uuid: latestCrash && latestCrash.build_uuid
+                                    build_uuid: latestCrash && latestCrash.build_uuid,
+                                    javascript: crashgroupJson.javascript
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
