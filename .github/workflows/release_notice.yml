@@ -22,7 +22,6 @@ jobs:
               "repository": "${{ github.repository }}",
               "tag_name": "${{ github.event.release.tag_name }}",
               "actor": "${{ github.actor }}",
-              "body": ${{ toJSON(github.event.release.body) }},
               "html_url": "${{ github.event.release.html_url }}"
             }
         env:
