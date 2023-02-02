@@ -51,7 +51,7 @@ plugins.connectToAllDatabases().then(function() {
     plugins.setConfigs("api", {
         domain: "",
         safe: false,
-        session_duration_limit: 120,
+        session_duration_limit: 86400,
         country_data: true,
         city_data: true,
         event_limit: 500,

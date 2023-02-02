@@ -29,6 +29,7 @@ then
     nodejs "$DIR/scripts/add_indexes.js"
 
     #run upgrade scripts
+    countly config "api.session_duration_limit" 86400
     nodejs "$SCRIPTS/scripts/add_cohort_creation_info.js"
     nodejs "$SCRIPTS/scripts/add_funnel_creator.js"
     nodejs "$SCRIPTS/scripts/push_hash.js"
