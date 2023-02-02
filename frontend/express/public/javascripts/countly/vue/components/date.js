@@ -263,7 +263,6 @@
      * @returns {String} Range label
      */
     function getRangeLabel(state, type) {
-
         if (state.selectedShortcut === "0days") {
             return countlyVue.i18n("common.all-time");
         }
@@ -419,7 +418,7 @@
                 case 'inBetween':
                     this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
-                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                        inputObj = [moment().startOf("isoWeek").toDate(), moment().endOf("day").toDate()];
                     }
                     else {
                         inputObj = this.inBetweenInput.parsed;
@@ -428,7 +427,7 @@
                 case 'since':
                     this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
-                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                        inputObj = [moment().startOf("isoWeek").toDate(), moment().endOf("day").toDate()];
                     }
                     else {
                         inputObj = this.sinceInput.parsed;
@@ -499,7 +498,8 @@
             },
             setCurrentInTheLast: function(minDate, maxDate) {
                 this.inTheLastInput.parsed = [minDate, maxDate];
-                this.inTheLastInput.raw.text = moment(this.inTheLastInput.parsed[1]).diff(moment(this.inTheLastInput.parsed[0]), this.inTheLastInput.raw.level) || "1";
+                var diffBetweenTwoDates = (moment(this.inTheLastInput.parsed[1]).diff(moment(this.inTheLastInput.parsed[0]), this.inTheLastInput.raw.level));
+                this.inTheLastInput.raw.text = diffBetweenTwoDates ? (diffBetweenTwoDates + 1) : 1;
             }
         },
         watch: {
@@ -527,13 +527,15 @@
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
-                    var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
-
+                    var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+                    if (newVal.level === "weeks") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
+                    }
                     if (newVal.text.toString() === "1" && newVal.level === "days") {
                         parsed = moment().startOf("day");
                     }
                     else if (newVal.text.toString() === "1" && newVal.level === "weeks") {
-                        parsed = moment().startOf("week");
+                        parsed = moment().startOf("isoWeek");
                     }
                     if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed.isValid()) {
@@ -565,15 +567,14 @@
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
                     singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast" || this.rangeMode === "before";
-
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
                 }
 
                 if (firstClick) {
                     if (this.tableType === "week") {
-                        this.minDate = moment(this.minDate).startOf("week").toDate();
-                        this.maxDate = moment(this.maxDate).endOf("week").toDate();
+                        this.minDate = moment(this.minDate).startOf("isoWeek").toDate();
+                        this.maxDate = moment(this.maxDate).endOf("isoWeek").toDate();
                     }
                     this.rangeBackup = {
                         minDate: this.minDate,
@@ -587,8 +588,8 @@
                         maxDate = moment(val.minDate).endOf("day").toDate();
                     }
                     else if (this.tableType === "week") {
-                        minDate = moment(val.minDate).startOf("week").toDate();
-                        maxDate = moment(val.maxDate).endOf("week").toDate();
+                        minDate = moment(val.minDate).startOf("isoWeek").toDate();
+                        maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
                     }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
@@ -624,16 +625,16 @@
                         maxDate = moment(val.maxDate).endOf("day").toDate();
                     }
                     else if (this.tableType === "week") {
-                        minDate = moment(val.minDate).startOf("week").toDate();
-                        maxDate = moment(val.maxDate).endOf("week").toDate();
+                        minDate = moment(val.minDate).startOf("isoWeek").toDate();
+                        maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
 
                         if (this.retentionConfiguration) {
-                            minDate = moment(val.minDate).startOf("week").toDate();
+                            minDate = moment(val.minDate).startOf("isoWeek").toDate();
                             if (this.retentionConfiguration === "weeks") {
-                                maxDate = moment(val.maxDate).endOf("week").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("week").toDate();
+                                maxDate = moment(val.maxDate).endOf("isoWeek").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("isoWeek").toDate();
                             }
                             else {
-                                maxDate = moment(val.maxDate).endOf("week").toDate();
+                                maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
                             }
                         }
                     }
@@ -909,6 +910,7 @@
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
+
                 changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
