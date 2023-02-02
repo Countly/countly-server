@@ -15,7 +15,8 @@ const FEATURE_NAME = 'crashes';
 
 plugins.setConfigs("crashes", {
     report_limit: 100,
-    grouping_strategy: "error_and_file"
+    grouping_strategy: "error_and_file",
+    smart_preprocessing: true
 });
 
 /**
