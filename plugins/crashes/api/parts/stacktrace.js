@@ -51,20 +51,52 @@ var trace = {
      */
     groupStrategy: function(stack, crash, callback) {
         var groupStrategy = plugins.getConfig("crashes").grouping_strategy;
+        var seed = "";
         if (groupStrategy === "stacktrace") {
-            callback(stack.join("\n"));
+            seed = stack.join("\n");
         }
         else {
             //default grouping strategy for error_and_file
-            var seed = crash._name || stack[0];
+            seed = crash._name || stack[0];
             if (crash._name !== stack[0]) {
                 seed += stack[0] || "";
             }
             else {
                 seed += stack[1] || "";
             }
-            callback(seed);
         }
+
+        //seed cleanup
+        if (plugins.getConfig("crashes").smart_preprocessing) {
+            //remove stand alone numbers like ids (MongoServerError: cursor id 8983374575113418154 not found)
+            seed = seed.replace(/(?<!\S)\d+(?!\S)/gim, "");
+
+            //remove content between / / like regex values (SyntaxError: Invalid regular expression: /.*(2672960366.*/: Unterminated group)
+            seed = seed.replace(/\/.*?\//gim, "");
+
+            //remove object contents like (android.app.XyzException:  Context.method() did not then call  Service.method():Object{3e13d46 u14  com.example/.Service})
+            seed = seed.replace(/Object\{.*?\}/gim, "");
+
+            //remove protocol (http://test)
+            seed = seed.replace(/[a-zA-Z]*.:\/\//gim, "/");
+
+            //remove params (http://test/test?id=123)
+            seed = seed.replace(/\?[^)\n]*/gim, "");
+
+            //remove file paths
+            seed = seed.replace(/\/(.*\/)/gim, "");
+
+            //remove ports
+            seed = seed.replace(/:[0-9]+/gim, "");
+
+            //remove ipv4
+            seed = seed.replace(/((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}/gim, "");
+
+            //remove ipv6
+            seed = seed.replace(/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/gim, "");
+        }
+
+        callback(seed);
     },
     /**
     * Process crash

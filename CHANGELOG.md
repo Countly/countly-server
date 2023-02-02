@@ -1,3 +1,16 @@
+## Version 22.09.12
+Fixes:
+- [core] fix for users with appListSort
+- [crashes] smart stack preprocessing to remove dynamic content
+- [report-manager] Prevent server crashing on invalid comment value upon saving long task
+
+Enterprise fixes:
+- [crash_symbolication] display symbolicate option for javascript stacktraces
+- [drill] do not call sorting function on cohorts. (As it is object, not array )
+- [drill] Fix bug with not loading values in query builder for custom properties
+- [drill] prevent server error if for segmentation calculation are passed values, which are not type is not string
+- [funnels] time between steps is ofsetted
+
 ## Version 22.09.11
 Fixes:
 - [compliance-hub] Fixes for table export.
