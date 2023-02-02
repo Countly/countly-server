@@ -246,7 +246,7 @@
                         });
                     }
                 });
-                self.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
+                this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
             },
             cancel: function() {
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
