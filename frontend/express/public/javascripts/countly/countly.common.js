@@ -1638,13 +1638,20 @@
 
             for (var j = 0; j < propertyNames.length; j++) {
                 if (currOrPrevious[j] === "previous") {
-                    if (countlyCommon.periodObj.isSpecialPeriod) {
+                    if (countlyCommon.periodObj.daysInPeriod === 1) {
                         periodMin = 0;
-                        periodMax = countlyCommon.periodObj.previousPeriodArr.length;
-                        activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                        periodMax = 24;
+                        activeDate = countlyCommon.periodObj.previousPeriodArr[0];
                     }
                     else {
-                        activeDate = countlyCommon.periodObj.previousPeriod;
+                        if (countlyCommon.periodObj.isSpecialPeriod) {
+                            periodMin = 0;
+                            periodMax = countlyCommon.periodObj.previousPeriodArr.length;
+                            activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                        }
+                        else {
+                            activeDate = countlyCommon.periodObj.previousPeriod;
+                        }
                     }
                 }
                 else if (currOrPrevious[j] === "previousThisMonth") {
@@ -1667,9 +1674,16 @@
                 }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
-                        periodMin = 0;
-                        periodMax = countlyCommon.periodObj.currentPeriodArr.length;
-                        activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                        if (countlyCommon.periodObj.daysInPeriod === 1) {
+                            periodMin = 0;
+                            periodMax = 24;
+                            activeDate = countlyCommon.periodObj.currentPeriodArr[0];
+                        }
+                        else {
+                            periodMin = 0;
+                            periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+                            activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                        }
                     }
                     else {
                         activeDate = countlyCommon.periodObj.activePeriod;
@@ -1711,6 +1725,10 @@
                                 formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
                             }
 
+                            dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        }
+                        else if (countlyCommon.periodObj.daysInPeriod === 1) {
+                            formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                             dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
                         }
                         else {
