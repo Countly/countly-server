@@ -223,7 +223,7 @@
             dbviewerAPIEndpoint: function() {
                 var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.db + '&collection=' + this.collection;
                 if (this.queryFilter) {
-                    url += '&filter=' + this.queryFilter;
+                    url += '&filter=' + encodeURIComponent(this.queryFilter);
                 }
                 if (this.projectionEnabled) {
                     url += '&projection=' + JSON.stringify(this.preparedProjectionFields);
