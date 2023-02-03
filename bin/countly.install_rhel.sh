@@ -8,9 +8,11 @@ bash "$DIR/scripts/logo.sh";
 
 # fix D-Bus in OfflinePackage job
 if [ "$INSIDE_DOCKER" == "1" ]; then
+    mv /bin/systemctl /bin/systemctl.old
     mv /usr/bin/systemctl /usr/bin/systemctl.old
     curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py > /usr/bin/systemctl
     chmod +x /usr/bin/systemctl
+    ln -s /usr/bin/systemctl /bin/systemctl
 fi
 
 # prerequisite per release
