@@ -530,6 +530,7 @@
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
+                    var self = this;
                     var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
                     if (newVal.level === "weeks") {
                         parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
@@ -553,12 +554,15 @@
                     }
                     else if (newVal.level === "weeks") {
                         this.tableType = "week";
+                        this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                        setTimeout(function() {
+                            self.scrollTo(self.inTheLastInput.parsed[0]);
+                        }, 0);
                     }
                     else if (newVal.level === "days") {
                         this.formatter = "YYYY-MM-DD";
                         this.tableType = "day";
                         this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
-                        var self = this;
                         setTimeout(function() {
                             self.scrollTo(self.inTheLastInput.parsed[0]);
                         }, 0);
@@ -968,6 +972,7 @@
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
+
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -1278,6 +1283,7 @@
                         isShortcut: isShortcut,
                         value: submittedVal
                     });
+
                     if (this.isGlobalDatePicker) {
                         if (!isShortcut) {
                             localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, this.rangeMode);
