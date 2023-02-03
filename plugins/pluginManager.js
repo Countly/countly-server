@@ -898,7 +898,7 @@ var pluginManager = function pluginManager() {
         }
         else {
             for (var key in pluginConfig) {
-                if (pluginConfig[key]) {
+                if (pluginConfig[key] && plugins.indexOf(key) > -1) {
                     list.push(key);
                 }
             }
