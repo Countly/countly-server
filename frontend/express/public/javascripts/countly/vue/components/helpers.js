@@ -505,6 +505,7 @@
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
                     placeholder="Select Event"\
+                    :disabled="disabled"\
                     :hide-default-tabs="true"\
                     :options="availableEvents"\
                     :hide-all-options-tab="true"\
@@ -535,7 +536,8 @@
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
-            selectedApp: {type: String, required: false, default: ''}
+            selectedApp: {type: String, required: false, default: ''},
+            disabled: {type: Boolean, default: false},
         },
         data: function() {
             return {
