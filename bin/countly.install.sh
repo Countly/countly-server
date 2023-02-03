@@ -26,7 +26,7 @@ fi
 if [ -f "$DIR/offline_installer.sh" ]; then
     sudo su countly -c "/bin/bash $DIR/offline_installer.sh" 2>&1 | sudo -u countly tee "$DIR/../log/countly-install-$DATE.log"
 elif [ -f /etc/lsb-release ]; then
-    sudo su countly -c "/bin/bash $DIR/countly.install_ubuntu.sh" 2>&1 | sudo -u countly tee "$DIR/../log/countly-install-$DATE.log"
+    sudo su countly -c "INSIDE_DOCKER=$INSIDE_DOCKER /bin/bash $DIR/countly.install_ubuntu.sh" 2>&1 | sudo -u countly tee "$DIR/../log/countly-install-$DATE.log"
 elif [ -f /etc/redhat-release ]; then
-    sudo su countly -c "/bin/bash $DIR/countly.install_rhel.sh" 2>&1 | sudo -u countly tee "$DIR/../log/countly-install-$DATE.log"
+    sudo su countly -c "INSIDE_DOCKER=$INSIDE_DOCKER /bin/bash $DIR/countly.install_rhel.sh" 2>&1 | sudo -u countly tee "$DIR/../log/countly-install-$DATE.log"
 fi
