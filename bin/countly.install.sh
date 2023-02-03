@@ -5,9 +5,10 @@ totalm=$(free -m | awk '/^Mem:/{print $2}')
 echo "$INSIDE_DOCKER"
 if [ "$INSIDE_DOCKER" == "1" ]; then
     echo -e '#!/bin/bash\n$@' > /usr/bin/sudo
+else
+    sudo bash "$DIR/scripts/init_countly_user.sh"
 fi
 cat /usr/bin/sudo
-sudo bash "$DIR/scripts/init_countly_user.sh"
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"
