@@ -455,6 +455,9 @@
                 if (scrollToDate) {
                     this.scrollTo(scrollToDate);
                 }
+                else if (this.rangeMode === "before" && inputObj[1]) {
+                    this.scrollTo(inputObj[1]);
+                }
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
@@ -552,7 +555,13 @@
                         this.tableType = "week";
                     }
                     else if (newVal.level === "days") {
+                        this.formatter = "YYYY-MM-DD";
                         this.tableType = "day";
+                        this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                        var self = this;
+                        setTimeout(function() {
+                            self.scrollTo(self.inTheLastInput.parsed[0]);
+                        }, 0);
                     }
                 }
             },
@@ -567,6 +576,7 @@
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
                     singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast" || this.rangeMode === "before";
+
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
                 }
@@ -760,7 +770,9 @@
                 return this.type === 'date' && this.selectTime;
             },
             weekdays: function() {
-                return moment.weekdaysMin();
+                var weekdaysMin = moment.weekdaysMin();
+                var startFromMonday = [weekdaysMin[1], weekdaysMin[2], weekdaysMin[3], weekdaysMin[4], weekdaysMin[5], weekdaysMin[6], weekdaysMin[0]];
+                return startFromMonday;
             },
             warnings: function() {
                 if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
@@ -877,6 +889,11 @@
                 type: Array,
                 default: null,
                 required: false
+            },
+            isGlobalDatePicker: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -915,7 +932,6 @@
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
-
                 changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
@@ -1060,7 +1076,12 @@
                         }
                         self.broadcast('ElSelectDropdown', 'updatePopper');
                         self.$forceUpdate();
-                        self.scrollTo(self.minDate);
+                        if (self.rangeMode === "before") {
+                            self.scrollTo(self.maxDate);
+                        }
+                        else {
+                            self.scrollTo(self.minDate);
+                        }
                     });
                 }
             },
@@ -1069,6 +1090,9 @@
                 this.refreshCalendarDOM();
                 if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
                     this.inputDisable = true;
+                }
+                if (this.isGlobalDatePicker) {
+                    this.rangeMode = localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID) || "inBetween";
                 }
                 if (this.displayOneMode && this.displayOneMode.length) {
                     this.rangeMode = this.displayOneMode;
@@ -1242,7 +1266,9 @@
                     }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
-                    effectiveMinDate.setHours(23, 59);
+                    if (this.type === "date" && !this.selectTime) {
+                        effectiveMinDate.setHours(23, 59);
+                    }
                     this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [
@@ -1252,6 +1278,14 @@
                         isShortcut: isShortcut,
                         value: submittedVal
                     });
+                    if (this.isGlobalDatePicker) {
+                        if (!isShortcut) {
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, this.rangeMode);
+                        }
+                        else {
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, "inBetween");
+                        }
+                    }
                     this.doClose();
                 }
             }
@@ -1279,7 +1313,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
+        template: '<cly-date-picker is-global-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
     Vue.component("cly-date-picker-g", globalDatepicker);
