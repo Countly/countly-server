@@ -99,9 +99,7 @@ fi
 
 #install sendmail
 sudo yum -y install sendmail
-if [ "$INSIDE_DOCKER" != "1" ]; then
-    sudo service sendmail start
-fi
+sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
@@ -112,6 +110,9 @@ sudo yum install numactl -y
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
+if [ "$INSIDE_DOCKER" == "1" ]; then
+    mongod -f /etc/mongod.conf --fork
+fi
 
 cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
@@ -129,12 +130,8 @@ sudo countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
 sudo countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
-
-if [ "$INSIDE_DOCKER" != "1" ]; then
-    sudo service nginx restart
-fi
-
-sudo chkconfig nginx on
+sudo systemctl restart nginx > /dev/null || echo "nginx service does not exist"
+sudo systemctl enable nginx > /dev/null || echo "nginx service does not exist"
 set -e
 
 #create configuration files from samples
