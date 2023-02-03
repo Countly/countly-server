@@ -131,7 +131,7 @@ sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 
 if [ "$INSIDE_DOCKER" != "1" ]; then
-    sudo service sendmail start
+    sudo service nginx restart
 fi
 
 sudo chkconfig nginx on
