@@ -6,6 +6,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
 
+# fix D-Bus in OfflinePackage job
+if [ "$INSIDE_DOCKER" == "1" ]; then
+    mv /usr/bin/systemctl /usr/bin/systemctl.old
+    curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py > /usr/bin/systemctl
+    chmod +x /usr/bin/systemctl
+fi
+
 # prerequisite per release
 sudo yum -y install wget openssl-devel make git sqlite unzip bzip2
 
