@@ -111,7 +111,7 @@ sudo yum install numactl -y
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    mongod -f /etc/mongod.conf --fork
+    mongod -f /etc/mongod.conf &
 fi
 
 cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
