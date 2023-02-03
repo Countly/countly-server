@@ -9,9 +9,9 @@ if [ "$INSIDE_DOCKER" == "1" ]; then
     elif [ -f /etc/redhat-release ]; then
         yum install sudo -y
     fi
-else
-    sudo bash "$DIR/scripts/init_countly_user.sh"
 fi
+
+sudo bash "$DIR/scripts/init_countly_user.sh"
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"
