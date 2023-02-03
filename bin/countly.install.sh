@@ -4,8 +4,7 @@ DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    echo -e '#!/bin/bash\n$@' > /usr/bin/sudo
-    chmod +x /usr/bin/sudo
+    yum install sudo -y
 else
     sudo bash "$DIR/scripts/init_countly_user.sh"
 fi
