@@ -6,13 +6,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
 
-# fix D-Bus in OfflinePackage job
-if [ "$INSIDE_DOCKER" == "1" ]; then
-    sudo mv /bin/systemctl /bin/systemctl.old
-    curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py | sudo tee /bin/systemctl
-    sudo chmod +x /bin/systemctl
-fi
-
 # prerequisite per release
 sudo yum -y install wget openssl-devel make git sqlite unzip bzip2
 
@@ -106,7 +99,9 @@ fi
 
 #install sendmail
 sudo yum -y install sendmail
-sudo service sendmail start
+if [ "$INSIDE_DOCKER" != "1" ]; then
+    sudo service sendmail start
+fi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
@@ -134,7 +129,11 @@ sudo countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
 sudo countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
-sudo service nginx restart
+
+if [ "$INSIDE_DOCKER" != "1" ]; then
+    sudo service sendmail start
+fi
+
 sudo chkconfig nginx on
 set -e
 
