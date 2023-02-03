@@ -4,7 +4,11 @@ DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    yum install sudo -y
+    if [ -f /etc/lsb-release ]; then
+        apt install sudo -y
+    elif [ -f /etc/redhat-release ]; then
+        yum install sudo -y
+    fi
 else
     sudo bash "$DIR/scripts/init_countly_user.sh"
 fi
