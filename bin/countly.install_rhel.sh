@@ -9,10 +9,8 @@ bash "$DIR/scripts/logo.sh";
 # fix D-Bus in OfflinePackage job
 if [ "$INSIDE_DOCKER" == "1" ]; then
     sudo mv /bin/systemctl /bin/systemctl.old
-    sudo mv /usr/bin/systemctl /usr/bin/systemctl.old
-    curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py | sudo tee /usr/bin/systemctl
-    sudo chmod +x /usr/bin/systemctl
-    sudo ln -s /usr/bin/systemctl /bin/systemctl
+    curl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py | sudo tee /bin/systemctl
+    sudo chmod +x /bin/systemctl
 fi
 
 # prerequisite per release
