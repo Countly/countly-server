@@ -179,7 +179,11 @@ sudo countly task dist-all
 sudo countly check after install
 
 #finally start countly api and dashboard
-sudo countly start
+if [ "$INSIDE_DOCKER" != "1" ]; then
+    sudo countly start
+else
+    pkill mongod
+fi
 
 bash "$DIR/scripts/done.sh";
 
