@@ -182,7 +182,7 @@ sudo countly check after install
 if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo countly start
 else
-    pkill mongod
+    sudo pkill mongod
 fi
 
 bash "$DIR/scripts/done.sh";
