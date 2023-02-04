@@ -181,7 +181,13 @@
 
 
         countlyCommon.getPeriodForAjax = function() {
-            return CountlyHelpers.getPeriodUrlQueryParameter(_period);
+            var newPeriod = _period;
+            if (Array.isArray(_period)) {
+                newPeriod = [];
+                newPeriod[0] = _period[0] - countlyCommon.getOffsetCorrectionForTimestamp(_period[0]);
+                newPeriod[1] = _period[1] - countlyCommon.getOffsetCorrectionForTimestamp(_period[1]);
+            }
+            return CountlyHelpers.getPeriodUrlQueryParameter(newPeriod);
         };
 
         /**

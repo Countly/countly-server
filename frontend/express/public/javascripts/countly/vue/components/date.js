@@ -948,11 +948,6 @@
                 if (this.rangeMode === 'inBetween') {
                     //var _minDate = new Date(this.minDate.setHours(0,0));
                     var _maxDate = new Date(this.maxDate);
-
-                    //currentDate.setDate(_maxDate.getDate() - 1);
-
-
-
                     var currentDate = new Date(_maxDate.getTime());
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
