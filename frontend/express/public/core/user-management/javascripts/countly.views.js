@@ -649,9 +649,23 @@
                                 for (var type in types) {
                                     for (var feature in this.features) {
                                         // TODO: these checks will be converted to helper method
-                                        permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet]) {
+                                            permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        }
+                                        else {
+                                            permissionSet[types[type]].all = false;
+                                        }
+
                                         if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all || (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            if (permissionSet[types[type]].all) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all;
+                                            }
+                                            else if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet] && this.user.permission[types[type]][appFromSet].allowed) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            }
+                                            else {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = false;
+                                            }
                                         }
                                     }
                                 }
