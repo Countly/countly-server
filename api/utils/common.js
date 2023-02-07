@@ -2411,6 +2411,13 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 update.$set.last_req = params.request_hash;
+                let get_data = params.href.substr(3) || "";
+                if (user.last_req_get !== get_data) {
+                    update.$set.last_req_get = get_data;
+                }
+                if (params.req && params.req.body && user.last_req_post !== params.req.body) {
+                    update.$set.last_req_post = params.req.body || "";
+                }
             }
         }
 
