@@ -965,7 +965,7 @@
                     }
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
-                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
+                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate.valueOf(), "output")
                     ], false);
                 }
                 else if (this.rangeMode === 'since') {

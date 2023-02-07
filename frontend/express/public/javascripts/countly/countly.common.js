@@ -179,15 +179,27 @@
             return _period;
         };
 
-
-        countlyCommon.getPeriodForAjax = function() {
-            var newPeriod = _period;
-            if (Array.isArray(_period)) {
+        countlyCommon.removePeriodOffset = function(period) {
+            var newPeriod = period;
+            if (Array.isArray(period)) {
                 newPeriod = [];
-                newPeriod[0] = _period[0] - countlyCommon.getOffsetCorrectionForTimestamp(_period[0]);
-                newPeriod[1] = _period[1] - countlyCommon.getOffsetCorrectionForTimestamp(_period[1]);
+                newPeriod[0] = period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]);
+                newPeriod[1] = period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
             }
-            return CountlyHelpers.getPeriodUrlQueryParameter(newPeriod);
+            return newPeriod;
+        };
+
+        countlyCommon.getPeriodWithOffset = function(period) {
+            var newPeriod = period;
+            if (Array.isArray(period)) {
+                newPeriod = [];
+                newPeriod[0] = period[0] - countlyCommon.getOffsetCorrectionForTimestamp(period[0]);
+                newPeriod[1] = period[1] - countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
+            }
+            return newPeriod;
+        };
+        countlyCommon.getPeriodForAjax = function() {
+            return CountlyHelpers.getPeriodUrlQueryParameter(countlyCommon.getPeriodWithOffset(_period));
         };
 
         /**
