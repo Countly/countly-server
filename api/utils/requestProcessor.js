@@ -3191,11 +3191,24 @@ function processUser(params, initiator, done, try_times) {
                         //even if paralel request already inserted uid
                         //this insert will fail
                         //but we will retry again and fetch new inserted document
-                        common.db.collection('app_users' + params.app_id).insert({
+                        var doc = {
                             _id: params.app_user_id,
                             uid: uid,
                             did: params.qstring.device_id
-                        }, {ignore_errors: [11000]}, function() {
+                        };
+                        if (params && params.href) {
+                            doc.first_req_get = (params.href + "") || "";
+                        }
+                        else {
+                            doc.first_req_get = "";
+                        }
+                        if (params && params.req && params.req.body) {
+                            doc.first_req_post = (params.req.body + "") || "";
+                        }
+                        else {
+                            doc.first_req_post = "";
+                        }
+                        common.db.collection('app_users' + params.app_id).insert(doc, {ignore_errors: [11000]}, function() {
                             restartRequest(params, initiator, done, try_times, resolve);
                         });
                     }
