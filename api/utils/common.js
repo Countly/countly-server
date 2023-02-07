@@ -2418,6 +2418,12 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 if (params.req && params.req.body && user.last_req_post !== params.req.body) {
                     update.$set.last_req_post = params.req.body || "";
                 }
+                if (!user.req_count || user.req_count < 100) {
+                    if (!update.$inc) {
+                        update.$inc = {};
+                    }
+                    update.$inc.req_count = 1;
+                }
             }
         }
 
