@@ -936,7 +936,15 @@ var AppRouter = Backbone.Router.extend({
         this.routesHit++;
 
         if (_.isEmpty(countlyGlobal.apps)) {
-            if (Backbone.history.fragment !== "/manage/apps") {
+            if (!countlyGlobal.member.global_admin) {
+                if (Backbone.history.fragment !== "/account-settings/no-access") {
+                    this.navigate("/account-settings/no-access", true);
+                }
+                else {
+                    viewName.render();
+                }
+            }
+            else if (Backbone.history.fragment !== "/manage/apps") {
                 this.navigate("/manage/apps", true);
             }
             else {
