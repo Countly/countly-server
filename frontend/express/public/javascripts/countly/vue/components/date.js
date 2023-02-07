@@ -1150,36 +1150,12 @@
                 }
 
                 var newValue = value;
-
-                if (this.exceptionOffset) {
-                    if (mode === "output") {
-                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
-                    }
-                    else {
-                        if (this.timestampFormat === "s") {
-                            return newValue * 1000;
-                        }
-                        else {
-                            return newValue;
-                        }
-                    }
-                }
-
                 if (this.timestampFormat === "s") {
                     if (mode === "output") {
                         newValue = Math.floor(value / 1000);
                     }
                     else { // mode === "input"
                         newValue = value * 1000;
-                    }
-                }
-
-                if (this.offsetCorrection) {
-                    if (mode === "output") {
-                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
-                    }
-                    else { // mode === "input" 
-                        newValue = newValue + countlyCommon.getOffsetCorrectionForTimestamp(newValue);
                     }
                 }
                 return newValue;
@@ -1196,27 +1172,19 @@
             },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween') {
-                    var _minDate = new Date(this.minDate);
+                    //var _minDate = new Date(this.minDate.setHours(0,0));
                     var _maxDate = new Date(this.maxDate);
-
-                    // case of custom range is selected by same day
-                    if (_maxDate.getTime() - _minDate.getTime() <= 86400000) {
-                        this.exceptionOffset = false;
-                    }
-                    else {
-                        this.exceptionOffset = true;
-                        var currentDate = new Date(_maxDate.getTime());
-                        currentDate.setDate(_maxDate.getDate() - 1);
-                    }
+                    var currentDate = new Date(_maxDate.getTime());
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     if (this.type === "date" && !this.selectTime) {
                         effectiveMinDate.setHours(23, 59);
+                        this.maxDate.setHours(23, 59);
                     }
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
-                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
+                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate.valueOf(), "output")
                     ], false);
                 }
                 else if (this.rangeMode === 'since') {

@@ -59,6 +59,18 @@ usersApi.create = function(app_id, doc, params, callback) {
             usersApi.getUid(app_id, function(err1, uid) {
                 if (uid) {
                     doc.uid = uid;
+                    if (params && params.href) {
+                        doc.first_req_get = (params.href + "") || "";
+                    }
+                    else {
+                        doc.first_req_get = "";
+                    }
+                    if (params && params.req && params.req.body) {
+                        doc.first_req_post = (params.req.body + "") || "";
+                    }
+                    else {
+                        doc.first_req_post = "";
+                    }
                     common.db.collection('app_users' + app_id).insert(doc, function(err2) {
                         if (!err2) {
                             plugins.dispatch("/i/app_users/create", {
@@ -474,6 +486,7 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             //store last merged uid for reference
             newAppUserP.merged_uid = oldAppUser.uid;
+            newAppUserP.merged_did = oldAppUser.did;
             if (typeof newAppUserP.merges === "undefined") {
                 newAppUserP.merges = 0;
             }

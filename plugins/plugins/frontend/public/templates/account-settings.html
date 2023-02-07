@@ -1,7 +1,8 @@
 <div v-bind:class="[componentId]">
     <cly-header>
         <template v-slot:header-left>
-            <h2> {{i18n('plugins.user-account')}} </h2>
+            <h2 v-if="noaccess">{{i18n('plugins.no-access')}}</h2>
+            <h2 v-else> {{i18n('plugins.user-account')}} </h2>
         </template>
     </cly-header>
     <cly-main>

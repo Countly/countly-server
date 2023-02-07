@@ -223,12 +223,37 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax()
             };
-            if (context.rootState.countlyConsentManager.uid !== "") {
-                data.filter = JSON.stringify({
-                    "uid": context.rootState.countlyConsentManager.uid
-                });
+            var filter = {};
+            var after = context.getters.consentHistoryFilter.after;
+            var type = context.getters.consentHistoryFilter.type;
+
+            if (after === "all") {
+                if (type !== "all") {
+                    var query = {};
+                    query.type = type;
+                    // Match type that is not in an array
+                    query["type.0"] = { "$exists": false };
+                    filter = query;
+                }
+            }
+            else {
+                if (type !== "all") {
+                    filter["after." + after] = type === 'i' ? true : false;
+                }
+                else {
+                    var q1 = {};
+                    q1["after." + after] = true;
+                    var q2 = {};
+                    q2["after." + after] = false;
+                    filter.$or = [q1, q2];
+                }
             }
 
+            if (context.rootState.countlyConsentManager.uid !== "") {
+                filter.uid = context.rootState.countlyConsentManager.uid;
+            }
+
+            data.filter = JSON.stringify(filter);
             return {
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.r + '/consent/search',
@@ -303,6 +328,10 @@
                     _consentDP: {},
                     _exportDP: {},
                     _bigNumberData: {},
+                    consentHistoryFilter: {
+                        type: 'all',
+                        after: 'all',
+                    },
                     exportHistoryFilter: "all",
                     isLoading: false,
                     uid: ''
@@ -334,6 +363,9 @@
         _consentManagerDbModule.getters._bigNumberData = function(state) {
             return state._bigNumberData;
         };
+        _consentManagerDbModule.getters.consentHistoryFilter = function(state) {
+            return state.consentHistoryFilter;
+        };
         _consentManagerDbModule.getters.exportHistoryFilter = function(state) {
             return state.exportHistoryFilter;
         };
@@ -356,6 +388,9 @@
         _consentManagerDbModule.mutations._bigNumberData = function(state, payload) {
             state._bigNumberData = payload;
             state._bigNumberData = Object.assign({}, state._bigNumberData, {});
+        };
+        _consentManagerDbModule.mutations.setConsentHistoryFilter = function(state, payload) {
+            state.consentHistoryFilter[payload.key] = payload.value;
         };
         _consentManagerDbModule.mutations.exportHistoryFilter = function(state, value) {
             state.exportHistoryFilter = value;
