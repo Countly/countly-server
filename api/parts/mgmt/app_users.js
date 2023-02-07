@@ -474,6 +474,7 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             //store last merged uid for reference
             newAppUserP.merged_uid = oldAppUser.uid;
+            newAppUserP.merged_did = oldAppUser.did;
             if (typeof newAppUserP.merges === "undefined") {
                 newAppUserP.merges = 0;
             }
