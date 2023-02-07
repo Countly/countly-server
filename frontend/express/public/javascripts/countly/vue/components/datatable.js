@@ -337,6 +337,7 @@
             },
             setControlParams: function() {
                 if (this.persistKey) {
+                    var self = this;
                     var localControlParams = {};
                     localControlParams.page = this.controlParams.page;
                     localControlParams.perPage = this.controlParams.perPage;
@@ -350,7 +351,15 @@
                             "columnOrderKey": this.persistKey,
                             _csrf: countlyGlobal.csrf_token
                         },
-                        success: function() { }
+                        success: function() {
+                            //since countlyGlobal.member does not updates automatically till refresh
+                            var updatedSortMap = {
+                                [self.persistKey]: {
+                                    tableSortMap: self.controlParams.selectedDynamicCols
+                                }
+                            };
+                            countlyGlobal.member.columnOrder = _merge({}, countlyGlobal.member.columnOrder, updatedSortMap);
+                        }
                     });
                 }
             }
