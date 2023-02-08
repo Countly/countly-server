@@ -34,24 +34,12 @@ is not there, or has a small percentage of translation. Create your account and 
 
 Whether you want to start working on developing a new plugin, or some feature/ issue on the Countly Server itself, you will need a development environment to test your code on. 
 
-_Note: you will need [Vagrant](https://www.vagrantup.com/) and [Virtualbox](https://www.virtualbox.org/wiki/Downloads) installed._
+You can install Countly on Ubuntu yourself: https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server
 
-1. Start a VM on your machine, with `vagrant up`. 
-1. Log into the VM, with `vagrant ssh`
-1. Use the standard `countly start` / `countly restart` / etc. commands
-1. Logs are available in `/opt/countly/logs`
-1. (Optional) You might additionally want to enable the [debugger](https://resources.count.ly/v1.0/docs/debugging). 
+Or use Docker containers: https://support.count.ly/hc/en-us/articles/360037814511-Docker-and-Kubernetes
 
 
 ## Add a badge to your site
 
-If you like Countly, [why not use one of our badges](https://count.ly/brand-assets/) and give a link back to us, so others know about this wonderful platform? 
-
-### Small badges
-
-![Light badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_5.png)  ![Dark badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_6.png)
-
-### Big badges
-
-![Badge 1](https://count.ly/wp-content/uploads/2014/10/countly_badge_1.png) ![Badge 2](https://count.ly/wp-content/uploads/2014/10/countly_badge_2.png) ![Badge 3](https://count.ly/wp-content/uploads/2014/10/countly_badge_3.png) ![Badge 4](https://count.ly/wp-content/uploads/2014/10/countly_badge_4.png)
+If you like Countly, [why not use one of our badges]([https://count.ly/brand-assets/](https://countly.com/brand-guidelines)) and give a link back to us, so others know about this wonderful platform? 
 
