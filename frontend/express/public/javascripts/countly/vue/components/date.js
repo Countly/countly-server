@@ -465,6 +465,21 @@
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
                 }
+                var self = this;
+                if (this.tableType !== "month") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
             },
             setCurrentInBetween: function(minDate, maxDate) {
                 this.inBetweenInput = {
@@ -1127,20 +1142,28 @@
                 }
             },
             handleCustomTabChange: function(val) {
+                var self = this;
                 if (val === "0days") {
                     this.doCommit(val, true);
                     return;
                 }
                 this.rangeMode = val;
-                this.tableType = "day";
                 this.customRangeSelection = true;
-                var self = this;
                 setTimeout(function() {
                     self.abortPicking();
                     self.handleUserInputUpdate();
                 }, 0);
             },
             handleTabChange: function() {
+                var self = this;
+                if (!this.retentionConfiguration && this.rangeMode !== "inTheLast") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.tableType = "day";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
                 this.abortPicking();
                 this.handleUserInputUpdate();
             },
