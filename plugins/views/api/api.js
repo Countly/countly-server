@@ -1,6 +1,5 @@
 var pluginOb = {},
     crypto = require('crypto'),
-    request = require('request'),
     Promise = require("bluebird"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
@@ -1180,30 +1179,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             return true;
         }
         return false;
-    });
-
-    plugins.register("/o/urltest", function(ob) {
-        var params = ob.params;
-        if (params.qstring.url) {
-            var options = {
-                url: params.qstring.url,
-                headers: {
-                    'User-Agent': 'CountlySiteBot'
-                }
-            };
-            request(options, function(error, response) {
-                if (!error && response.statusCode >= 200 && response.statusCode < 400) {
-                    common.returnOutput(params, {result: true});
-                }
-                else {
-                    common.returnOutput(params, {result: false});
-                }
-            });
-        }
-        else {
-            common.returnOutput(params, {result: false});
-        }
-        return true;
     });
 
     /**
