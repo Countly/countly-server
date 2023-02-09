@@ -1133,6 +1133,7 @@ countlyCommon.getDateRange = function() {
 * @param {object} db - countly standard metric data object
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
+* @param {module:api/lib/countly.common.periodObj} periodObject - period object override to use for extracting data
 * @returns {array} object to use in timeline graph
 * @example <caption>Extracting total users data from users collection</caption>
 * countlyCommon.extractData(_sessionDb, countlySession.clearObject, [
@@ -1176,10 +1177,9 @@ countlyCommon.getDateRange = function() {
 *    {"_id":"2017-2-28","t":7,"n":7,"u":7,"d":0,"e":7}
 * ]
 */
-countlyCommon.extractData = function(db, clearFunction, dataProperties) {
+countlyCommon.extractData = function(db, clearFunction, dataProperties, periodObject) {
 
-    countlyCommon.periodObj = getPeriodObject();
-
+    countlyCommon.periodObj = periodObject || getPeriodObject();
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
         dataObj = {},
