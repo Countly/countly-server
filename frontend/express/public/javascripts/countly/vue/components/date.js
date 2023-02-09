@@ -441,7 +441,7 @@
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
-                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 case 'before':
@@ -515,6 +515,10 @@
                 };
             },
             setCurrentInTheLast: function(minDate, maxDate) {
+                if (this.retentionConfiguration) {
+                    this.tableType = this.tableTypeMapper[this.retentionConfiguration] || "day";
+                    this.inTheLastInput.raw.level = this.retentionConfiguration ;
+                }
                 this.inTheLastInput.parsed = [minDate, maxDate];
                 var diffBetweenTwoDates = (moment(this.inTheLastInput.parsed[1]).diff(moment(this.inTheLastInput.parsed[0]), this.inTheLastInput.raw.level));
                 this.inTheLastInput.raw.text = diffBetweenTwoDates ? (diffBetweenTwoDates + 1) : 1;
@@ -1108,14 +1112,35 @@
             handleDropdownShow: function() {
                 this.isVisible = true;
                 this.refreshCalendarDOM();
-                if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
-                    this.inputDisable = true;
+                if (this.retentionConfiguration) {
+                    this.tableType = this.tableTypeMapper[this.retentionConfiguration] || "day";
+                    if (this.retentionConfiguration !== "days") {
+                        this.inputDisable = true;
+                    }
+                }
+                else {
+                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
                 }
                 if (this.isGlobalDatePicker) {
                     this.rangeMode = localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID) || "inBetween";
                 }
                 if (this.displayOneMode && this.displayOneMode.length) {
                     this.rangeMode = this.displayOneMode;
+                }
+                var self = this;
+                if (this.tableType !== "month") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
                 }
             },
             handleCustomRangeClick: function() {
