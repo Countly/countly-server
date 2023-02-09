@@ -1,3 +1,17 @@
+## Version 22.09.13
+Fixes:
+- [compliance-hub] Fix consent history filter
+- [core] Fixes for dashboard date picker in for different timezones
+- [core] Fixes to correctly select single day in date picker
+- [core] Improve permission check in member drawer
+- [remote-config] changes for remote config invalid condition scenario
+- [server-stats] Fixed localization
+- [star-ratings] Fixed issue with submit button
+
+Enterprise fixes:
+- [cohort] Prevent errors in segmentation filter in case of invalid cohort name.
+- [data-manager] Fix for Invalid values on opening form when editing transformation with regexp in data manager
+
 ## Version 22.09.12
 Fixes:
 - [core] fix for users with appListSort
