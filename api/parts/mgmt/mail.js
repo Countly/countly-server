@@ -16,26 +16,33 @@ var mail = {},
 if (config.mail && config.mail.transport) {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
 }
+else if (config.mail && config.mail.config) {
+    mail.smtpTransport = nodemailer.createTransport(config.mail.config);
+}
 else {
-    mail.smtpTransport = nodemailer.createTransport(require('nodemailer-sendmail-transport')({path: "/usr/sbin/sendmail"}));
+    mail.smtpTransport = nodemailer.createTransport({
+        sendmail: true,
+        newline: 'unix',
+        path: '/usr/sbin/sendmail'
+    });
 }
 
 /*
  Use the below transport to send mails through Gmail
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: 'localhost',
         port: 25,
         auth: {
             user: 'username',
             pass: 'password'
         }
-    }));
+    });
 */
 /*
  Use the below transport to send mails through your own SMTP server
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: "smtp.gmail.com", // hostname
         secureConnection: true, // use SSL
         port: 465, // port for secure SMTP

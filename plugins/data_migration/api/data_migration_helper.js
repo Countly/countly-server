@@ -9,7 +9,7 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
 var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
-const request = require('request');
+const request = require('countly-request');
 var common = require('../../../api/utils/common.js');
 
 module.exports = function(my_db) {

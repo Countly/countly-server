@@ -1,7 +1,7 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const request = require("request");
+const request = require("countly-request");
 const {NodeVM} = require('vm2');
 
 /**

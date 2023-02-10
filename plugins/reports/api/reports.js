@@ -4,7 +4,7 @@ var reportsInstance = {},
     ejs = require("ejs"),
     fs = require('fs'),
     path = require('path'),
-    request = require('request'),
+    request = require('countly-request'),
     crypto = require('crypto'),
     mail = require("../../../api/parts/mgmt/mail"),
     fetch = require("../../../api/parts/data/fetch"),
@@ -605,7 +605,7 @@ var metricProps = {
         try {
             const reportConfig = plugins.getConfig("reports", null, true);
             const key = reportConfig.secretKey;
-            const decipher = crypto.createDecipheriv('aes-256-ctr', key, Buffer.from(data.iv, 'hex'));
+            const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(data.iv, 'hex'));
             const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
             const result = JSON.parse(decrpyted.toString());
             return result;
@@ -621,7 +621,7 @@ var metricProps = {
 
             const iv = crypto.randomBytes(16);
             const key = reportConfig.secretKey;
-            const cipher = crypto.createCipheriv('aes-256-ctr', key, iv);
+            const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
             const data = {
                 "reportID": report._id,
                 "email": email,
