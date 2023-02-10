@@ -3014,6 +3014,18 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
         }
+        if (ob1 && ob1.$set && ob1.$unset) {
+            for (let key in ob1.$unset) {
+                if (key.startsWith("engagement.")) {
+                    if (ob1.$set[key + ".sd"]) {
+                        delete ob1.$set[key + ".sd"];
+                    }
+                    if (ob1.$set[key + ".sc"]) {
+                        delete ob1.$set[key + ".sc"];
+                    }
+                }
+            }
+        }
     }
 
     return ob1;
