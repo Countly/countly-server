@@ -1179,9 +1179,9 @@ countlyCommon.getDateRange = function() {
 */
 countlyCommon.extractData = function(db, clearFunction, dataProperties, periodObject) {
 
-    countlyCommon.periodObj = periodObject || getPeriodObject();
-    var periodMin = countlyCommon.periodObj.periodMin,
-        periodMax = (countlyCommon.periodObj.periodMax + 1),
+    var localPeriodObj = periodObject || getPeriodObject();
+    var periodMin = localPeriodObj.periodMin,
+        periodMax = (localPeriodObj.periodMax + 1),
         dataObj = {},
         formattedDate = "",
         tableData = [],
@@ -1193,31 +1193,31 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties, periodOb
 
     for (var j = 0; j < propertyNames.length; j++) {
         if (currOrPrevious[j] === "previous") {
-            if (countlyCommon.periodObj.isSpecialPeriod) {
+            if (localPeriodObj.isSpecialPeriod) {
                 periodMin = 0;
-                periodMax = countlyCommon.periodObj.previousPeriodArr.length;
-                activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                periodMax = localPeriodObj.previousPeriodArr.length;
+                activeDateArr = localPeriodObj.previousPeriodArr;
             }
             else {
-                activeDate = countlyCommon.periodObj.previousPeriod;
+                activeDate = localPeriodObj.previousPeriod;
             }
         }
         else {
-            if (countlyCommon.periodObj.isSpecialPeriod) {
+            if (localPeriodObj.isSpecialPeriod) {
                 periodMin = 0;
-                periodMax = countlyCommon.periodObj.currentPeriodArr.length;
-                activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                periodMax = localPeriodObj.currentPeriodArr.length;
+                activeDateArr = localPeriodObj.currentPeriodArr;
             }
             else {
-                activeDate = countlyCommon.periodObj.activePeriod;
+                activeDate = localPeriodObj.activePeriod;
             }
         }
         var dateString = "";
         for (var i = periodMin; i < periodMax; i++) {
 
-            if (!countlyCommon.periodObj.isSpecialPeriod) {
+            if (!localPeriodObj.isSpecialPeriod) {
 
-                if (countlyCommon.periodObj.periodMin === 0) {
+                if (localPeriodObj.periodMin === 0) {
                     dateString = "YYYY-M-D H:00";
                     formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                 }
