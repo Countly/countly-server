@@ -3007,6 +3007,12 @@ common.mergeQuery = function(ob1, ob2) {
                     if (ob1.$set[key + ".sc"]) {
                         delete ob1.$set[key + ".sc"];
                     }
+                    if (ob1.$inc[key + ".sd"]) {
+                        delete ob1.$inc[key + ".sd"];
+                    }
+                    if (ob1.$inc[key + ".sc"]) {
+                        delete ob1.$inc[key + ".sc"];
+                    }
                 }
             }
         }
