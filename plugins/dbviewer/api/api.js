@@ -130,7 +130,7 @@ var spawn = require('child_process').spawn,
         /**
         * Get collection data from db
         **/
-        function dbGetCollection() {
+        async function dbGetCollection() {
             var limit = parseInt(params.qstring.limit || 20);
             var skip = parseInt(params.qstring.skip || 0);
             var filter = params.qstring.filter || params.qstring.query || "{}";
@@ -171,7 +171,8 @@ var spawn = require('child_process').spawn,
                 if (Object.keys(sort).length > 0) {
                     cursor.sort(sort);
                 }
-                cursor.count(function(err, total) {
+                try {
+                    var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
                             return JSON.stringify(objectIdCheck(doc));
@@ -207,7 +208,10 @@ var spawn = require('child_process').spawn,
                             params.res.end();
                         });
                     }
-                });
+                }
+                catch (err) {
+                    common.returnMessage(params, 500, err);
+                }
             }
         }
         /**
@@ -275,6 +279,10 @@ var spawn = require('child_process').spawn,
         function aggregate(collection, aggregation) {
             if (params.qstring.iDisplayLength) {
                 aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
+            }
+            if (!Array.isArray(aggregation)) {
+                common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
+
             }
             // check task is already running?
             taskManager.checkIfRunning({
