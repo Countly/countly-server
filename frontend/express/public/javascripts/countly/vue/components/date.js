@@ -1118,11 +1118,23 @@
                         this.inputDisable = true;
                     }
                 }
-                else {
-                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
-                }
                 if (this.isGlobalDatePicker) {
-                    this.rangeMode = localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID) || "inBetween";
+                    try {
+                        var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
+                        var inTheLastInputLevelMapper = {"month": "months", "week": "weeks", "day": "days"};
+                        this.rangeMode = storedDateItems.rangeMode;
+                        this.tableType = storedDateItems.tableType;
+                        if (this.rangeMode === "inTheLast") {
+                            this.inTheLastInput.raw.level = inTheLastInputLevelMapper[storedDateItems.tableType];
+                            this.setCurrentInTheLast(this.minDate, this.maxDate);
+                        }
+                        else {
+                            this.tableType = "day"; //in case of chosen inBetween-montly in retention
+                        }
+                    }
+                    catch (error) {
+                        this.rangeMode = "inBetween";
+                    }
                 }
                 if (this.displayOneMode && this.displayOneMode.length) {
                     this.rangeMode = this.displayOneMode;
@@ -1302,10 +1314,10 @@
 
                     if (this.isGlobalDatePicker) {
                         if (!isShortcut) {
-                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, this.rangeMode);
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, JSON.stringify({"rangeMode": this.rangeMode, "tableType": this.tableType}));
                         }
                         else {
-                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, "inBetween");
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, JSON.stringify({"rangeMode": "inBetween", "tableType": this.tableType}));
                         }
                     }
                     this.doClose();
