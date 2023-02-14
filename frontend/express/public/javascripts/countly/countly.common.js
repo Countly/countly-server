@@ -4130,7 +4130,9 @@
         * Parse second to standard time format
         * @memberof countlyCommon
         * @param {number} second  number
-        * @returns {string} return format "HH:MM:SS"
+        * @param {number} [trimTo=5]  number [1,5]
+        * @returns {string} return format "Xh Xm Xs", if trimTo is specified the length of the result is trimmed
+        * @example trimTo = 2, "Xh Xm Xs" result will be trimmed to "Xh Xm"
         */
         countlyCommon.formatSecond = function(second) {
             var timeLeft = parseInt(second);
