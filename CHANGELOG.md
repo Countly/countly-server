@@ -1,3 +1,19 @@
+## Version 22.09.14
+Fixes:
+- [core] Always use random initialization vector if not provided for encryption
+- [core] Fix incorrect changing of platform to Windows Phone 10 for Windows 10 
+- [dashboards] Fix incorrect data & fluctations of visualisation in analytics widgets
+
+Enterprise fixes:
+- [attribution] express-user-agent npm module replaced with ua-parser-js
+- [drill] Adding ability to pass additional ids for views and events tracking
+- [retention] Fix for cohort queries not working in retention breakdown
+- [ldap] Allow enabling of disabling tls
+- [active_directory] Pass tlsOptions to active directory when tls is enabled
+- [data-manager] Remove unnecessary loading of big lists into memory
+- [funnels] Fix Last update time not shown for cached funnels
+- [okta] Update version for got dependency
+
 ## Version 22.09.13
 Fixes:
 - [compliance-hub] Fix consent history filter

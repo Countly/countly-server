@@ -3952,6 +3952,10 @@
                 periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
             }
 
+            if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
+                periodObject.activePeriod = periodObject.currentPeriodArr[0];
+            }
+
             if (periodObject.daysInPeriod !== 0) {
                 var currentYear = 0,
                     currWeeksArr = [],
