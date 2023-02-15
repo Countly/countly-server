@@ -171,11 +171,11 @@
             },
             selectedfilterforMetrics: {
                 get: function() {
-                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].after;
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].change;
                 },
                 set: function(newValue) {
                     this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
-                        key: 'after',
+                        key: 'change',
                         value: newValue,
                     });
                     this.initializeStoreData();
