@@ -31,7 +31,7 @@ class Result extends Validatable {
             this._data.lastError = PushError.deserialize(this._data.lastError);
         }
         if (this._data.lastErrors) {
-            this._data.lastErrors = this._data.lastErrors.map(PushError.deserialize);
+            this._data.lastErrors = this._data.lastErrors.map(e => PushError.deserialize(e));
         }
 
         if (this._data.subs) {

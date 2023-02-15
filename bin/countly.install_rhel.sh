@@ -53,7 +53,7 @@ enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
     sudo yum install devtoolset-8 -y
     sudo yum install devtoolset-8-gcc* -y
     #shellcheck source=/dev/null
-    source /opt/rh/devtoolset-8/enable
+    source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile 
     sudo yum install -y epel-release
     sudo yum install -y ShellCheck
 
@@ -103,7 +103,7 @@ sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
+( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install numactl
 sudo yum install numactl -y

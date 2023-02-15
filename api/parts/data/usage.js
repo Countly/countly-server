@@ -216,15 +216,40 @@ usage.getPredefinedMetrics = function(params, userProps) {
 
     if (params.qstring.metrics) {
         common.processCarrier(params.qstring.metrics);
-
-        if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+        if (params.qstring.metrics._os && params.qstring.metrics._os_version && !params.is_os_processed) {
             params.qstring.metrics._os += "";
             params.qstring.metrics._os_version += "";
+
             if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
                 params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
             }
-            else if (!params.qstring.metrics._os_version.startsWith(params.qstring.metrics._os[0].toLowerCase())) {
-                params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+            else {
+                var value;
+                var length;
+                for (var key in common.os_mapping) {
+                    if (params.qstring.metrics._os.toLowerCase().startsWith(key)) {
+                        if (value) {
+                            if (length < key.length) {
+                                value = common.os_mapping[key];
+                                length = key.length;
+                            }
+                        }
+                        else {
+                            value = common.os_mapping[key];
+                            length = key.length;
+                        }
+                    }
+                }
+
+                if (!value) {
+                    params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
+                else {
+                    params.qstring.metrics._os_version = value + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
             }
         }
         if (params.qstring.metrics._app_version) {
@@ -342,6 +367,7 @@ usage.getPredefinedMetrics = function(params, userProps) {
 
     return predefinedMetrics;
 };
+
 
 /**
  * Process all metrics and return
