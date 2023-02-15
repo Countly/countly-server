@@ -4006,6 +4006,10 @@
                 periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
             }
 
+            if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
+                periodObject.activePeriod = periodObject.currentPeriodArr[0];
+            }
+
             periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
             periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
             periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
