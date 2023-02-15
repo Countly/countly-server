@@ -282,54 +282,55 @@ var spawn = require('child_process').spawn,
             }
             if (!Array.isArray(aggregation)) {
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
-
             }
-            // check task is already running?
-            taskManager.checkIfRunning({
-                db: dbs[dbNameOnParam],
-                params: params
-            }, function(task_id) {
-                if (task_id) {
-                    common.returnOutput(params, { task_id: task_id });
-                }
-                else {
-                    var name = 'Aggregation-' + Date.now();
-                    var taskCb = taskManager.longtask({
-                        db: common.db,
-                        threshold: plugins.getConfig("api").request_threshold,
-                        params: params,
-                        type: "dbviewer",
-                        force: params.qstring.save_report || false,
-                        gridfs: true,
-                        meta: JSON.stringify({
-                            db: dbNameOnParam,
-                            collection: params.qstring.collection,
-                            aggregation: aggregation
-                        }),
-                        view: "#/manage/db/task/",
-                        report_name: params.qstring.report_name || name + "." + params.qstring.type,
-                        report_desc: params.qstring.report_desc,
-                        period_desc: params.qstring.period_desc,
-                        name,
-                        creator: params.member._id + "",
-                        global: params.qstring.global === 'true',
-                        autoRefresh: params.qstring.autoRefresh === 'true',
-                        manually_create: params.qstring.manually_create === 'true',
-                        processData: function(error, result, callback) {
-                            callback(error, result);
-                        },
-                        outputData: function(aggregationErr, result) {
-                            if (!aggregationErr) {
-                                common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+            else {
+                // check task is already running?
+                taskManager.checkIfRunning({
+                    db: dbs[dbNameOnParam],
+                    params: params
+                }, function(task_id) {
+                    if (task_id) {
+                        common.returnOutput(params, { task_id: task_id });
+                    }
+                    else {
+                        var name = 'Aggregation-' + Date.now();
+                        var taskCb = taskManager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            params: params,
+                            type: "dbviewer",
+                            force: params.qstring.save_report || false,
+                            gridfs: true,
+                            meta: JSON.stringify({
+                                db: dbNameOnParam,
+                                collection: params.qstring.collection,
+                                aggregation: aggregation
+                            }),
+                            view: "#/manage/db/task/",
+                            report_name: params.qstring.report_name || name + "." + params.qstring.type,
+                            report_desc: params.qstring.report_desc,
+                            period_desc: params.qstring.period_desc,
+                            name,
+                            creator: params.member._id + "",
+                            global: params.qstring.global === 'true',
+                            autoRefresh: params.qstring.autoRefresh === 'true',
+                            manually_create: params.qstring.manually_create === 'true',
+                            processData: function(error, result, callback) {
+                                callback(error, result);
+                            },
+                            outputData: function(aggregationErr, result) {
+                                if (!aggregationErr) {
+                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+                                }
+                                else {
+                                    common.returnMessage(params, 500, aggregationErr);
+                                }
                             }
-                            else {
-                                common.returnMessage(params, 500, aggregationErr);
-                            }
-                        }
-                    });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
-                }
-            });
+                        });
+                        dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
+                    }
+                });
+            }
         }
 
         //console.log(userApps);
