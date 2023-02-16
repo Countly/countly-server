@@ -574,7 +574,7 @@
                 }
 
                 var feedbackOptions = [];
-                if (countlyGlobal.plugins.indexOf('start-rating') !== -1) {
+                if (countlyGlobal.plugins.indexOf('star-rating') !== -1) {
                     feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' });
                 }
 
