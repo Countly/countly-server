@@ -795,13 +795,41 @@
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
+                            //decoding html elements
+                            res.list = res.list.map(function(val) {
+                                return countlyCommon.decodeHtml(val);
+                            });
+                            Object.keys(res.map).forEach(key => {
+                                var decodedKey = countlyCommon.decodeHtml(key);
+                                if (res.map[key].name) {
+                                    res.map[key].name = countlyCommon.decodeHtml(res.map[key].name);
+                                }
+                                if (res.map[key].key) {
+                                    res.map[key].key = countlyCommon.decodeHtml(res.map[key].key);
+                                }
+                                if (res.map[key].key) {
+                                    res.map[key].key = countlyCommon.decodeHtml(res.map[key].key);
+                                }
+                                if (key !== decodedKey) {
+                                    res.map[decodedKey] = res.map[key];
+                                    delete res.map[key];
+                                }
+                            });
+                            Object.keys(res.segments).forEach(key => {
+                                var decodedKey = countlyCommon.decodeHtml(key);
+                                if (key !== decodedKey) {
+                                    res.segments[countlyCommon.decodeHtml(key)] = res.segments[key];
+                                    delete res.segments[key];
+                                }
+                            });
+
                             context.commit("setAllEventsData", res);
                             if (!context.state.selectedEventName) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
                                 var eventKeyForStorage = {};
-                                eventKeyForStorage[appId] = countlyCommon.decodeHtml(res.list[0]);
+                                eventKeyForStorage[appId] = res.list[0];
                                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
-                                context.commit('setSelectedEventName', countlyCommon.decodeHtml(res.list[0]));
+                                context.commit('setSelectedEventName', res.list[0]);
                             }
                             context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
 
@@ -884,7 +912,6 @@
             },
             fetchSelectedEventName: function(context, name) {
                 var appId = countlyCommon.ACTIVE_APP_ID;
-                name=countlyCommon.decodeHtml(name)
                 var eventKeyForStorage = {};
                 eventKeyForStorage[appId] = name;
                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
