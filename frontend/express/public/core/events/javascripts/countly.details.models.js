@@ -369,7 +369,7 @@
         },
         getSelectedEventsOverview: function(context, res) {
             if (typeof context.state.selectedEventName === "string") {
-                var event = res[countlyAllEvents.helpers.encode(countlyCommon.encodeHtml(context.state.selectedEventName))];
+                var event = res[countlyAllEvents.helpers.encode(context.state.selectedEventName)];
                 return event.data;
             }
             return res[context.state.selectedEventName].data;
@@ -799,7 +799,7 @@
                             res.list = res.list.map(function(val) {
                                 return countlyCommon.decodeHtml(val);
                             });
-                            Object.keys(res.map).forEach(key => {
+                            Object.keys(res.map).forEach(function(key) {
                                 var decodedKey = countlyCommon.decodeHtml(key);
                                 if (res.map[key].name) {
                                     res.map[key].name = countlyCommon.decodeHtml(res.map[key].name);
@@ -815,10 +815,10 @@
                                     delete res.map[key];
                                 }
                             });
-                            Object.keys(res.segments).forEach(key => {
+                            Object.keys(res.segments).forEach(function(key) {
                                 var decodedKey = countlyCommon.decodeHtml(key);
                                 if (key !== decodedKey) {
-                                    res.segments[countlyCommon.decodeHtml(key)] = res.segments[key];
+                                    res.segments[decodedKey] = res.segments[key];
                                     delete res.segments[key];
                                 }
                             });
@@ -851,6 +851,13 @@
                                                     countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
+                                                                Object.keys(resp).forEach(function(key) {
+                                                                    var decodedKey = countlyCommon.decodeHtml(key);
+                                                                    if (key !== decodedKey) {
+                                                                        resp[decodedKey] = resp[key];
+                                                                        delete resp[key];
+                                                                    }
+                                                                });
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
                                                                 context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, response));
                                                                 context.dispatch('setTableLoading', false);
