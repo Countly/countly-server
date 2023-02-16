@@ -224,10 +224,10 @@
                 period: countlyCommon.getPeriodForAjax()
             };
             var filter = {};
-            var after = context.getters.consentHistoryFilter.after;
+            var change = context.getters.consentHistoryFilter.change;
             var type = context.getters.consentHistoryFilter.type;
 
-            if (after === "all") {
+            if (change === "all") {
                 if (type !== "all") {
                     var query = {};
                     query.type = type;
@@ -238,13 +238,13 @@
             }
             else {
                 if (type !== "all") {
-                    filter["after." + after] = type === 'i' ? true : false;
+                    filter["change." + change] = type === 'i' ? true : false;
                 }
                 else {
                     var q1 = {};
-                    q1["after." + after] = true;
+                    q1["change." + change] = true;
                     var q2 = {};
-                    q2["after." + after] = false;
+                    q2["change." + change] = false;
                     filter.$or = [q1, q2];
                 }
             }
@@ -330,7 +330,7 @@
                     _bigNumberData: {},
                     consentHistoryFilter: {
                         type: 'all',
-                        after: 'all',
+                        change: 'all',
                     },
                     exportHistoryFilter: "all",
                     isLoading: false,
