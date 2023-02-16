@@ -807,9 +807,6 @@
                                 if (res.map[key].key) {
                                     res.map[key].key = countlyCommon.decodeHtml(res.map[key].key);
                                 }
-                                if (res.map[key].key) {
-                                    res.map[key].key = countlyCommon.decodeHtml(res.map[key].key);
-                                }
                                 if (key !== decodedKey) {
                                     res.map[decodedKey] = res.map[key];
                                     delete res.map[key];
