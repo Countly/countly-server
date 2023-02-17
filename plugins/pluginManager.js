@@ -185,13 +185,16 @@ var pluginManager = function pluginManager() {
                     self.checkPlugins(db);
                 }*/
 
+                if (self.getConfig("data-manager").enableDataMasking) {
+                    self.fetchMaskingConf({"db": db});
+                }
 
             }
             else if (callback) {
                 callback();
             }
         });
-        this.fetchMaskingConf({"db": db});
+
     };
 
     /**
