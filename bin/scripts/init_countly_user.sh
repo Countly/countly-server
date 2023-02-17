@@ -10,9 +10,8 @@ if [ "$(getent passwd countly)x" == 'x' ]; then
     #countly process should be able to restart itself
     echo "countly ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers.d/countly >/dev/null
 else
-
     echo "Countly user already exist."
-    usermod -d "$COUNTLY_DIR" -M countly
+    usermod -d "$COUNTLY_DIR" countly
 fi
 
 #change permission of countly directory
