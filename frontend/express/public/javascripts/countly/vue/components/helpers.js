@@ -44,18 +44,24 @@
     Vue.component("cly-in-page-notification", countlyBaseComponent.extend(
         {
             props: {
-                text: {type: String, required: false}
+                text: {type: String, required: false},
+                color: {type: String, required: false, default: "light-warning"},
             },
             computed: {
                 innerText: function() {
-                    if (this.text) {
-                        return this.text;
-                    }
-                    return "";
+                    return this.text || "";
+                },
+                dynamicClasses: function() {
+                    return ["cly-in-page-notification--" + this.color];
+                },
+            },
+            methods: {
+                click: function() {
+                    this.$emit('click');
                 }
             },
-            template: '<div class="cly-in-page-notification color-cool-gray-100 bg-red-10 text-medium bu-p-2 center">\
-                            <slot><span v-html="innerText"></span></slot>\
+            template: '<div @click="click" class="cly-in-page-notification text-medium bu-p-2" :class="dynamicClasses">\
+                            <span v-html="innerText"></span>\
                         </div>'
         }
     ));
