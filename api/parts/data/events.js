@@ -86,6 +86,8 @@ countlyEvents.processEvents = function(params) {
                     continue;
                 }
 
+                shortEventName = shortEventName.replace(/\.+$/, '');
+
                 eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
 
                 if (currEvent.segmentation) {
@@ -242,6 +244,8 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         if (!shortEventName) {
             continue;
         }
+
+        shortEventName = shortEventName.replace(/\.+$/, '');
 
         // Create new collection name for the event
         eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
