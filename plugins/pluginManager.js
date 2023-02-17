@@ -123,12 +123,15 @@ var pluginManager = function pluginManager() {
                 if (api && self.getConfig("api").sync_plugins) {
                     self.checkPlugins(db);
                 }
+                if (self.getConfig("data-manager").enableDataMasking) {
+                    self.fetchMaskingConf({"db": db});
+                }
             }
             else if (callback) {
                 callback();
             }
         });
-        this.fetchMaskingConf({"db": db});
+
     };
 
     /**
