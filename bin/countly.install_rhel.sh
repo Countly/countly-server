@@ -53,7 +53,7 @@ enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
     sudo yum install devtoolset-8 -y
     sudo yum install devtoolset-8-gcc* -y
     #shellcheck source=/dev/null
-    source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile 
+    source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile
     sudo yum install -y epel-release
     sudo yum install -y ShellCheck
 
@@ -66,6 +66,7 @@ sudo ln -sf /usr/local/bin/echo_supervisord_conf /usr/bin/echo_supervisord_conf
 sudo ln -sf /usr/local/bin/pidproxy /usr/bin/pidproxy
 sudo ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
 sudo ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
+cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 
 #Install dependancies required by the puppeteer
 sudo yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils ipa-gothic-fonts
