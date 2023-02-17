@@ -105,11 +105,14 @@
                             "segmentation": { type: "dbviewer" }
                         });
                         countlyTaskManager.monitor(json.aaData.task_id);
-                        callback(false);
+                        callback(false, false);
                     }
                     else {
-                        callback(json);
+                        callback(false, json);
                     }
+                },
+                error: function(error) {
+                    callback(error, false);
                 }
             });
         }
