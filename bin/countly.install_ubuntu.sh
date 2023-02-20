@@ -94,9 +94,7 @@ npm config set prefix "$DIR/../.local/"
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
-mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
-mongo foo --quiet --eval 'db.foo.insert({"name":"tutorials point"})'
-mongo foo --quiet --eval 'db.foo.find()'
+node "$DIR/../debug.js"
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
