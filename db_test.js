@@ -2,8 +2,10 @@ const {MongoClient} = require('mongodb');
 
 async function main() {
     // we'll add code here soon
+    console.log("creating client");
     const client = new MongoClient("mongodb://localhost:27017", { useUnifiedTopology: true });
     try {
+        console.log("connecting");
         await client.connect();
         console.log("connected");
         await listDatabases(client);

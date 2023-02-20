@@ -110,6 +110,8 @@ fi
 
 sudo bash "$DIR/scripts/detect.init.sh"
 
+cat /etc/mongod.conf
+
 nodejs "$DIR/../db_test.js"
 
 #configure and start nginx
