@@ -110,6 +110,10 @@ fi
 
 sudo bash "$DIR/scripts/detect.init.sh"
 
+until nc -z 127.0.0.1 3001; do echo Waiting for Countly; sleep 1; done
+
+nodejs "$DIR/../db_test.js"
+
 #configure and start nginx
 countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
 countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
