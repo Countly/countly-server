@@ -797,15 +797,18 @@
                         if (res) {
                             //decoding html elements
                             res.list = res.list.map(function(val) {
-                                return countlyCommon.decodeHtml(val);
+                                return countlyCommon.unescapeHtml(val);
                             });
                             Object.keys(res.map).forEach(function(key) {
-                                var decodedKey = countlyCommon.decodeHtml(key);
+                                var decodedKey = countlyCommon.unescapeHtml(key);
                                 if (res.map[key].name) {
-                                    res.map[key].name = countlyCommon.decodeHtml(res.map[key].name);
+                                    res.map[key].name = countlyCommon.unescapeHtml(res.map[key].name);
                                 }
                                 if (res.map[key].key) {
-                                    res.map[key].key = countlyCommon.decodeHtml(res.map[key].key);
+                                    res.map[key].key = countlyCommon.unescapeHtml(res.map[key].key);
+                                }
+                                if (res.map[key].description) {
+                                    res.map[key].description = countlyCommon.unescapeHtml(res.map[key].description);
                                 }
                                 if (key !== decodedKey) {
                                     res.map[decodedKey] = res.map[key];
@@ -813,7 +816,7 @@
                                 }
                             });
                             Object.keys(res.segments).forEach(function(key) {
-                                var decodedKey = countlyCommon.decodeHtml(key);
+                                var decodedKey = countlyCommon.unescapeHtml(key);
                                 if (key !== decodedKey) {
                                     res.segments[decodedKey] = res.segments[key];
                                     delete res.segments[key];
@@ -849,7 +852,7 @@
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 Object.keys(resp).forEach(function(key) {
-                                                                    var decodedKey = countlyCommon.decodeHtml(key);
+                                                                    var decodedKey = countlyCommon.unescapeHtml(key);
                                                                     if (key !== decodedKey) {
                                                                         resp[decodedKey] = resp[key];
                                                                         delete resp[key];
@@ -932,7 +935,7 @@
                     if (data) {
                         var map = {};
                         data.forEach(function(c) {
-                            map[c._id] = c.name;
+                            map[c._id] = countlyCommon.unescapeHtml(c.name);
                         });
                         context.commit('setCategoriesMap', map);
                     }
