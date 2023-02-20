@@ -240,13 +240,13 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
-                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.full_name Full name
                  * @apiQuery {String} args.username Username
                  * @apiQuery {String} args.password Password
                  * @apiQuery {String} args.email Email
                  * @apiQuery {Object} args.permission Permission object
                  * @apiQuery {Boolean} args.global_admin Global admin flag
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
@@ -270,11 +270,11 @@ const processRequest = (params) => {
                  *  "api_key":"1c5e93c6657d76ae8903f14c32cb3796",
                  *  "_id":"626bef4cb00db29a02f8f7a0"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'create':
@@ -287,23 +287,23 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
-                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.full_name Full name
                  * @apiQuery {String} args.username Username
                  * @apiQuery {String} args.password Password
                  * @apiQuery {String} args.email Email
                  * @apiQuery {Object} args.permission Permission object
                  * @apiQuery {Boolean} args.global_admin Global admin flag
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *  "result":"Success"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'update':
@@ -317,17 +317,17 @@ const processRequest = (params) => {
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
                  * @apiQuery {String} args.user_ids IDs array for users which will be deleted
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *  "result":"Success"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'delete':
@@ -2082,7 +2082,7 @@ const processRequest = (params) => {
                  *       "_events": {},
                  *       "_eventsCount": 4,
                  *       "id": 4,
-                 *       "address": "127.0.0.1:27017",
+                 *       "address": "localhost:27017",
                  *       "bson": {},
                  *       "socketTimeout": 999999999,
                  *       "host": "localhost",
@@ -2097,7 +2097,7 @@ const processRequest = (params) => {
                  *       "ok": 1
                  *     }
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -2137,13 +2137,13 @@ const processRequest = (params) => {
                  * @apiQuery {Boolean} multi, Defines availability multiple times
                  * @apiQuery {Boolean} apps, App Id of selected application
                  * @apiQuery {Boolean} ttl, expiration time for token
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *    "result": "0e1c012f855e7065e779b57a616792fb5bd03834"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -2245,7 +2245,7 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Returns active tokens as an array that uses tokens in order to protect the API key
                  * @apiQuery {String} app_id, App Id of related application or {String} auth_token
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
@@ -2258,7 +2258,7 @@ const processRequest = (params) => {
                  *        "owner": "60e42efa5c23ee7ec6259af0",
                  *        "app": "",
                  *        "endpoint": [
-                 *            
+                 *
                  *        ],
                  *        "purpose": "Test Token",
                  *        "temporary": false
@@ -2276,7 +2276,7 @@ const processRequest = (params) => {
                  *        }
                  *    ]
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -2312,15 +2312,15 @@ const processRequest = (params) => {
                      * @api {get} /o?method=jobs Get Jobs Table Information
                      * @apiName GetJobsTableInfo
                      * @apiGroup Jobs
-                     * 
+                     *
                      * @apiDescription Get jobs information in the jobs table
                      * @apiQuery {String} method which kind jobs requested, it should be 'jobs'
-                     * 
+                     *
                      * @apiSuccess {Number} iTotalRecords Total number of jobs
                      * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
                      * @apiSuccess {Objects[]} aaData Job details
                      * @apiSuccess {Number} sEcho DataTable's internal counter
-                     * 
+                     *
                      * @apiSuccessExample {json} Success-Response:
                      * HTTP/1.1 200 OK
                      * {
@@ -2343,16 +2343,16 @@ const processRequest = (params) => {
                     * @api {get} /o?method=jobs/name Get Job Details Table Information
                     * @apiName GetJobDetailsTableInfo
                     * @apiGroup Jobs
-                    * 
+                    *
                     * @apiDescription Get the information of the filtered job in the table
                     * @apiQuery {String} method Which kind jobs requested, it should be 'jobs'
                     * @apiQuery {String} name The job name is required to redirect to the selected job
-                    * 
+                    *
                     * @apiSuccess {Number} iTotalRecords Total number of jobs
                     * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
                     * @apiSuccess {Objects[]} aaData Job details
                     * @apiSuccess {Number} sEcho DataTable's internal counter
-                    * 
+                    *
                     * @apiSuccessExample {json} Success-Response:
                     * HTTP/1.1 200 OK
                     * {

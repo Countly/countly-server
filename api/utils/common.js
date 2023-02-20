@@ -80,7 +80,7 @@ common.escape_html = function(string, more) {
 };
 
 /**
-* Decode escaped html 
+* Decode escaped html
 * @param  {string} string - The string to decode
 * @returns {string} escaped string
 **/
@@ -164,7 +164,7 @@ function getJSON(val) {
 }
 /**
 * Logger object for creating module specific logging
-* @type {module:api/utils/log~Logger} 
+* @type {module:api/utils/log~Logger}
 * @example
 * var log = common.log('myplugin:api');
 * log.i('myPlugin got a request: %j', params.qstring);
@@ -173,7 +173,7 @@ common.log = logger;
 
 /**
 * Mapping some common property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {object}
 */
 common.dbMap = {
     'events': 'e',
@@ -191,7 +191,7 @@ common.dbMap = {
 
 /**
 * Mapping some common user property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {object}
 */
 common.dbUserMap = {
     'device_id': 'did',
@@ -226,7 +226,7 @@ common.dbUniqueMap = {
 
 /**
 * Mapping some common event property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {object}
 */
 common.dbEventMap = {
     'user_properties': 'up',
@@ -240,26 +240,26 @@ common.dbEventMap = {
 
 /**
 * Default {@link countlyConfig} object for API server
-* @type {object} 
+* @type {object}
 */
 common.config = countlyConfig;
 
 /**
 * Reference to momentjs
-* @type {object} 
+* @type {object}
 */
 common.moment = moment;
 
 /**
 * Reference to crypto module
-* @type {object} 
+* @type {object}
 */
 common.crypto = crypto;
 
 /**
-* Operating syste/platform mappings from what can be passed in metrics to shorter representations 
+* Operating syste/platform mappings from what can be passed in metrics to shorter representations
 * stored in db as prefix to OS segmented values
-* @type {object} 
+* @type {object}
 */
 common.os_mapping = {
     "webos": "webos",
@@ -304,7 +304,7 @@ common.os_mapping = {
 
 /**
 * Whole base64 alphabet for fetching splitted documents
-* @type {object} 
+* @type {object}
 */
 common.base64 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "+", "/"];
 
@@ -363,7 +363,7 @@ common.getDescendantProp = function(obj, desc) {
 };
 
 /**
-* Checks if provided value could be converted to a number, 
+* Checks if provided value could be converted to a number,
 * even if current type is other, as string, as example value "42"
 * @param {any} n - value to check if it can be converted to number
 * @returns {boolean} true if can be a number, false if can't be a number
@@ -526,7 +526,7 @@ common.md5Hash = function(str) {
 };
 
 /**
-* Modifies provided object in the format object["2012.7.20.property"] = increment. 
+* Modifies provided object in the format object["2012.7.20.property"] = increment.
 * Usualy used when filling up Countly metric model data
 * @param {params} params - {@link params} object
 * @param {object} object - object to fill
@@ -611,7 +611,7 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 
     /**
    * @typedef timeObject
-   * @type {object} 
+   * @type {object}
    * @global
    * @property {momentjs} now - momentjs instance for request's time in app's timezone
    * @property {momentjs} nowUTC - momentjs instance for request's time in UTC
@@ -1376,9 +1376,9 @@ common.unblockResponses = function(params) {
 * Custom API response handler callback
 * @typedef APICallback
 * @callback APICallback
-* @type {function} 
+* @type {function}
 * @global
-* @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
+* @param {bool} error - true if there was problem processing request, and false if request was processed successfully
 * @param {string} responseMessage - what API returns
 * @param {object} headers - what API would have returned to HTTP request
 * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
@@ -1590,7 +1590,7 @@ common.getIpAddress = function(req) {
                 return ips[i].startsWith(elem);
             });
         }
-        if (ips[i] !== "127.0.0.1" && (!countlyConfig.ignoreProxies || !masks)) {
+        if (ips[i] !== "localhost" && (!countlyConfig.ignoreProxies || !masks)) {
             ip = ips[i];
             break;
         }
@@ -1630,7 +1630,7 @@ function stripPort(ip) {
 }
 
 /**
-* Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
+* Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment.
 * Usualy used when filling up Countly metric model zero document
 * @param {params} params - {@link params} object
 * @param {object} object - object to fill
@@ -1688,7 +1688,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 };
 
 /**
-* Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
+* Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment.
 * Usualy used when filling up Countly metric model monthly document
 * @param {params} params - {@link params} object
 * @param {object} object - object to fill
@@ -2166,7 +2166,7 @@ common.dot = function(obj, is, value) {
 
 /**
 * Not deep object and primitive type comparison function
-* 
+*
 * @param  {Any} a object to compare
 * @param  {Any} b object to compare
 * @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
@@ -2478,7 +2478,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             });
         }
         else {
-            // using updateOne costs less than findAndModify, so we should use this 
+            // using updateOne costs less than findAndModify, so we should use this
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
             common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
         }
@@ -2634,7 +2634,7 @@ common.generatePassword = function(length, no_special) {
  * Check db host match for both of API and Frontend config
  * @param {object} apiConfig - mongodb object from API config
  * @param {object} frontendConfig - mongodb object from Frontend config
- * @returns {boolean} isMatched - is config correct?  
+ * @returns {boolean} isMatched - is config correct?
  */
 common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     if (typeof apiConfig === typeof frontendConfig) {
@@ -2719,7 +2719,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              * {
              *  mongodb: {
              *      host: 'localhost',
-             *      
+             *
              *  }
              * }
              */
@@ -3032,7 +3032,7 @@ common.dbext = {
 
     /**
      * Check if passed value is an ObjectId
-     * 
+     *
      * @param {any} id value
      * @returns {boolean} true if id is instance of ObjectId
      */
@@ -3042,7 +3042,7 @@ common.dbext = {
 
     /**
      * Decode string to ObjectID if needed
-     * 
+     *
      * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
      * @returns {ObjectID} id
      */
@@ -3051,9 +3051,9 @@ common.dbext = {
     },
 
     /**
-     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the
      * object id returned still has same uniquness guarantees as random ones.
-     * 
+     *
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
      * @returns {ObjectID} with given timestamp
      */
@@ -3066,7 +3066,7 @@ common.dbext = {
     /**
      * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
      * For use in queries like {_id: {$gt: oidBlankWithDate()}}
-     * 
+     *
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
      * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
      */
@@ -3077,17 +3077,17 @@ common.dbext = {
 };
 
 /**
- * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides 
- * abstraction for server side pagination, searching and column based sorting. The class relies 
- * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since 
- * there can be many different execution scenarios, db left to the users of the class. 
- * 
+ * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides
+ * abstraction for server side pagination, searching and column based sorting. The class relies
+ * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since
+ * there can be many different execution scenarios, db left to the users of the class.
+ *
  * There are two main methods of the class:
- * 
- * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline 
- * can be customized, please see its description. 
- *  
- * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be 
+ *
+ * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline
+ * can be customized, please see its description.
+ *
+ * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be
  * served as a response directly.
  */
 class DataTable {
@@ -3095,22 +3095,22 @@ class DataTable {
     /**
      * Constructor
      * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
-     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
+     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different
      * use-case, please make sure that the object has necessary fields.
-     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
-     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
+     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a
+     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
      * @param {Object} options Wraps options
-     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
-     * specify a column list in order to make it work (e.g. ["name", "status"]). 
-     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
-     * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
-     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to
+     * specify a column list in order to make it work (e.g. ["name", "status"]).
+     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting
+     * falls back to this object, if you provide any (e.g. {"name": "asc"}).
+     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]).
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
-     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
-     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
-     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed.
+     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat.
+     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
      * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
@@ -3203,26 +3203,26 @@ class DataTable {
     /**
      * Creates an aggregation pipeline based on the query string and additional stages/facets
      * if provided any. Data flow between stages are not checked, so please do check manually.
-     * 
+     *
      * @param {Object} options Wraps options
-     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
-     * 
+     *
      * # of output rows = total number of docs.
-     * 
-     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
-     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
+     *
+     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a
+     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
-     * 
+     *
      * # of output rows = filtered number of docs.
-     * 
-     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
-     * Custom facets will use initial pipeline's output as its input. If the documents you're 
+     *
+     * @param {Object} options.customFacets You can add facets to your results using option.customFacets.
+     * Custom facets will use initial pipeline's output as its input. If the documents you're
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
-     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
+     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be
      * available when the output format is "full".
-     * 
+     *
      * @returns {Object} Pipeline object
      */
     getAggregationPipeline({
@@ -3250,7 +3250,7 @@ class DataTable {
             $facetFilteredTotal.push({$match: matcher});
         }
         $facetPagedData.push(...filteredPipeline);
-        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
+        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match)
         $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
         if (this.sorting !== null) {
             $facetPagedData.push({$sort: this.sorting});
@@ -3281,7 +3281,7 @@ class DataTable {
      * @param {Object} queryResult Aggregation result returned by the MongoDB.
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
-     * a final stage to do modifications to fetched items before completing the response. 
+     * a final stage to do modifications to fetched items before completing the response.
      * @returns {Object|Array} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {

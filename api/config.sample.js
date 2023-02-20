@@ -7,7 +7,7 @@
 var countlyConfig = {
     /**
     * MongoDB connection definition and options
-    * @type {object} 
+    * @type {object}
     * @property {string} [host=localhost] - host where to connect to mongodb, default localhost
     * @property {array=} replSetServers - array with multiple hosts, if you are connecting to replica set, provide this instead of host
     * @property {string=} replicaName - replica name, must provide for replica set connection to work
@@ -55,7 +55,7 @@ var countlyConfig = {
     */
     /**
     * Default API configuration
-    * @type {object} 
+    * @type {object}
     * @property {number} [port=3001] - api port number to use, default 3001
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
@@ -70,12 +70,12 @@ var countlyConfig = {
     },
     /**
     * Path to use for countly directory, empty path if installed at root of website
-    * @type {string} 
+    * @type {string}
     */
     path: "",
     /**
     * Default logging settings
-    * @type {object} 
+    * @type {object}
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
     */
@@ -85,9 +85,9 @@ var countlyConfig = {
     },
     /**
     * Default proxy settings, if provided then countly uses ip address from the right side of x-forwarded-for header ignoring list of provided proxy ip addresses
-    * @type {array=} 
+    * @type {array=}
     */
-    ignoreProxies: [/*"127.0.0.1"*/],
+    ignoreProxies: [/*"localhost"*/],
 
     /**
     * Default settings to be used for {@link module:api/utils/utils.encrypt} and {@link module:api/utils/utils.decrypt} functions and for commandline
@@ -112,7 +112,7 @@ var countlyConfig = {
     reloadConfigAfter: 10000,
 
     /**
-     * Simple SMTP mail sender configuration. 
+     * Simple SMTP mail sender configuration.
      * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
      * If omited, sendmail will be used. Sendmail is not installed in Docker images.
      * @type {Object}
@@ -121,7 +121,7 @@ var countlyConfig = {
     mail: {
         // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
         transport: 'nodemailer-smtp-transport',
-        
+
         // config object passed to the transport
         config: {
             host: 'smtp.example.com',
@@ -131,7 +131,7 @@ var countlyConfig = {
                 pass: 'PASSWORD'
             },
         },
-        
+
         // standard strings used in email templates
         strings: {
             from: 'countly@example.com',
