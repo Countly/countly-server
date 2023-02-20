@@ -118,7 +118,7 @@ sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 
 if [ "$INSIDE_DOCKER" != "1" ]
 then
-    sudo /etc/init.d/nginx restart
+        sudo /etc/init.d/nginx restart
 fi
 
 cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
@@ -165,7 +165,7 @@ sudo countly check after install
 #finally start countly api and dashboard
 if [ "$INSIDE_DOCKER" != "1" ]
 then
-    sudo countly start
+        sudo countly start
 fi
 
 bash "$DIR/scripts/done.sh";
