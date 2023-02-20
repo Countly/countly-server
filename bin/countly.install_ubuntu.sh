@@ -94,6 +94,7 @@ npm config set prefix "$DIR/../.local/"
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
+mongo 'mongodb://localhost:27017/countly?maxPoolSize=10&noDelay=true&keepAlive=true&keepAliveInitialDelay=30000&connectTimeoutMS=999999999&socketTimeoutMS=999999999&serverSelectionTimeoutMS=999999999&maxIdleTimeMS=0&waitQueueTimeoutMS=0&useNewUrlParser=true&useUnifiedTopology=true&retryWrites=false&appname=kkkkk'
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
