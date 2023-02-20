@@ -93,8 +93,10 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
-#sudo bash "$DIR/scripts/mongodb.install.sh"
-
+sudo bash "$DIR/scripts/mongodb.install.sh"
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
+mongo foo --quiet --eval 'db.foo.insert({"name":"tutorials point"})'
+mongo foo --quiet --eval 'db.foo.find()'
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
