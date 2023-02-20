@@ -97,6 +97,12 @@ sudo bash "$DIR/scripts/mongodb.install.sh"
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
+    MONGODB_PATH=$(grep dbPath /etc/mongod.conf | awk -F' ' '{print $2}')
+    sudo rm -rf "$MONGODB_PATH/*"
+fi
+
+if [ "$INSIDE_DOCKER" == "1" ]
+then
         bash "$DIR/commands/docker/mongodb.sh" &
     until mongo --eval "db.stats()" | grep "collections"
     do
