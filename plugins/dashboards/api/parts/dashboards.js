@@ -963,10 +963,9 @@ function getSessionModel(params, apps, appId, collection, segment, widget) {
             fetch.getTotalUsersObj(segment, paramsObj, function(dbTotalUsersObj) {
                 var formattedUserObj = fetch.formatTotalUsersObj(dbTotalUsersObj);
 
-                countlyCommon.setPeriod(paramsObj.qstring.period);
-
                 var model = countlyModel.load(toModel(segment));
 
+                model.setPeriod(paramsObj.qstring.period);
                 model.setDb(data);
 
                 if (formattedUserObj) {

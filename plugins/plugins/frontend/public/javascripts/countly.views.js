@@ -119,7 +119,7 @@
                     data: { t: this.tryCount },
                     success: function(state) {
                         if (state.result === "completed") {
-                            self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
+                            self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.applying"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                         }
                         else if (state.result === "failed") {
                             self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true);
@@ -145,7 +145,7 @@
                     if (res.result === "started") {
                         //self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
                         //self.checkProcess();
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.applying"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                     }
                     else {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true);
@@ -697,6 +697,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
+                noaccess: this.$route.params && this.$route.params.noaccess || false,
                 components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
@@ -1254,6 +1255,12 @@
     app.route('/account-settings/reset', 'account-settings', function() {
         var view = getAccountView();
         view.params = {reset: true};
+        this.renderWhenReady(view);
+    });
+
+    app.route('/account-settings/no-access', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {noaccess: true};
         this.renderWhenReady(view);
     });
 

@@ -1,3 +1,46 @@
+## Version 22.09.14
+Fixes:
+- [core] Always use random initialization vector if not provided for encryption
+- [core] Fix incorrect changing of platform to Windows Phone 10 for Windows 10 
+- [dashboards] Fix incorrect data & fluctations of visualisation in analytics widgets
+
+Enterprise fixes:
+- [attribution] express-user-agent npm module replaced with ua-parser-js
+- [drill] Adding ability to pass additional ids for views and events tracking
+- [retention] Fix for cohort queries not working in retention breakdown
+- [ldap] Allow enabling of disabling tls
+- [active_directory] Pass tlsOptions to active directory when tls is enabled
+- [data-manager] Remove unnecessary loading of big lists into memory
+- [funnels] Fix Last update time not shown for cached funnels
+- [okta] Update version for got dependency
+
+## Version 22.09.13
+Fixes:
+- [compliance-hub] Fix consent history filter
+- [core] Fixes for dashboard date picker in for different timezones
+- [core] Fixes to correctly select single day in date picker
+- [core] Improve permission check in member drawer
+- [remote-config] changes for remote config invalid condition scenario
+- [server-stats] Fixed localization
+- [star-ratings] Fixed issue with submit button
+
+Enterprise fixes:
+- [cohort] Prevent errors in segmentation filter in case of invalid cohort name.
+- [data-manager] Fix for Invalid values on opening form when editing transformation with regexp in data manager
+
+## Version 22.09.12
+Fixes:
+- [core] fix for users with appListSort
+- [crashes] smart stack preprocessing to remove dynamic content
+- [report-manager] Prevent server crashing on invalid comment value upon saving long task
+
+Enterprise fixes:
+- [crash_symbolication] display symbolicate option for javascript stacktraces
+- [drill] do not call sorting function on cohorts. (As it is object, not array )
+- [drill] Fix bug with not loading values in query builder for custom properties
+- [drill] prevent server error if for segmentation calculation are passed values, which are not type is not string
+- [funnels] time between steps is ofsetted
+
 ## Version 22.09.11
 Fixes:
 - [compliance-hub] Fixes for table export.

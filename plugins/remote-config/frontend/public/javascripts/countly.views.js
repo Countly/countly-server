@@ -230,15 +230,23 @@
                     this.conditionDialog.condition_definition = this.managedPropertySegmentation.queryText;
                 }
                 this.$store.dispatch(action, this.conditionDialog).then(function(data) {
-                    var ob = {
-                        name: self.conditionDialog.condition_name,
-                        id: data
-                    };
-                    self.$emit("input", ob);
-                    self.$emit("closeConditionDialog");
+                    if (data) {
+                        var ob = {
+                            name: self.conditionDialog.condition_name,
+                            id: data
+                        };
+                        self.$emit("input", ob);
+                        self.$emit("closeConditionDialog");
+                    }
+                    else {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: self.$store.getters["countlyRemoteConfig/conditions/conditionError"],
+                            type: "error"
+                        });
+                    }
                 });
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
-
             },
             cancel: function() {
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);

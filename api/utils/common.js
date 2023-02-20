@@ -380,6 +380,7 @@ common.isNumber = function(n) {
 * This default Countly behavior of type conversion for storing proeprties accepted through API requests
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
+* @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
 * @returns {varies} converted value
 * @example
 * common.convertToType(1) //outputs 1
@@ -387,11 +388,11 @@ common.isNumber = function(n) {
 * common.convertToType("test") //outputs "test"
 * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
 */
-common.convertToType = function(value) {
+common.convertToType = function(value, preventParsingToNumber) {
     //handle array values
     if (Array.isArray(value)) {
         for (var i = 0; i < value.length; i++) {
-            value[i] = common.convertToType(value[i]);
+            value[i] = common.convertToType(value[i], true);
         }
         return value;
     }
@@ -404,7 +405,10 @@ common.convertToType = function(value) {
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
-        if (value.length && value.length <= 16) {
+        if (preventParsingToNumber) {
+            return value;
+        }
+        else if (value.length && value.length <= 16) {
             //convert to number
             return parseFloat(value);
         }
@@ -2411,6 +2415,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 update.$set.last_req = params.request_hash;
+                if (params.href && user.last_req_get !== params.href) {
+                    update.$set.last_req_get = (params.href + "") || "";
+                }
+                if (params.req && params.req.body && user.last_req_post !== params.req.body) {
+                    update.$set.last_req_post = (params.req.body + "") || "";
+                }
+                if (!user.req_count || user.req_count < 100) {
+                    if (!update.$inc) {
+                        update.$inc = {};
+                    }
+                    update.$inc.req_count = 1;
+                }
             }
         }
 

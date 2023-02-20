@@ -71,11 +71,30 @@ countlyModel.create = function(fetchValue) {
     };
     //Private Properties
     var _Db = {},
+        _period = "30days",
         _metas = {},
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
         _totalUsersObj = {},
         _prevTotalUsersObj = {};
+
+    /**
+    * Get the current period Object for the model
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @return {module:api/lib/countly.common.periodObj} period object
+    */
+    countlyMetric.getPeriod = function() {
+        return _period;
+    };
+
+    /**
+    * Set period object for the model to use, for overriding calls to common methods
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {module:api/lib/countly.common.periodObj} period - set period Object used by the model
+    */
+    countlyMetric.setPeriod = function(period) {
+        _period = period;
+    };
 
     /**
     * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -537,7 +556,8 @@ countlyModel.create = function(fetchValue) {
         for (let i = 0; i < _metrics.length; i++) {
             dataProps.push({ name: _metrics[i] });
         }
-        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps);
+        var periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps, periodObject);
         var ret = {};
         for (let i = 0; i < data.length; i++) {
             ret[data[i]._id] = {};

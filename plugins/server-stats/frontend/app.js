@@ -1,7 +1,7 @@
 var pluginExported = {};
 var countlyConfig = require('../../../frontend/express/config');
 var versionInfo = require('../../../frontend/express/version.info');
-var request = require('request');
+var request = require('countly-request');
 var moment = require('moment');
 const { getUserApps } = require('../../../api/utils/rights');
 

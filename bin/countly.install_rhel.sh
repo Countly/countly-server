@@ -53,7 +53,7 @@ enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
     sudo yum install devtoolset-8 -y
     sudo yum install devtoolset-8-gcc* -y
     #shellcheck source=/dev/null
-    source /opt/rh/devtoolset-8/enable
+    source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile
     sudo yum install -y epel-release
     sudo yum install -y ShellCheck
 
@@ -66,6 +66,7 @@ sudo ln -sf /usr/local/bin/echo_supervisord_conf /usr/bin/echo_supervisord_conf
 sudo ln -sf /usr/local/bin/pidproxy /usr/bin/pidproxy
 sudo ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
 sudo ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
+cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 
 #Install dependancies required by the puppeteer
 sudo yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils ipa-gothic-fonts
@@ -99,17 +100,21 @@ fi
 
 #install sendmail
 sudo yum -y install sendmail
-sudo service sendmail start
+sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
+( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install numactl
 sudo yum install numactl -y
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
+if [ "$INSIDE_DOCKER" == "1" ]; then
+    sudo sed -i 's/  fork/#  fork/g' /etc/mongod.conf
+    sudo mongod -f /etc/mongod.conf &
+fi
 
 cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
@@ -127,8 +132,8 @@ sudo countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
 sudo countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
-sudo service nginx restart
-sudo chkconfig nginx on
+sudo systemctl restart nginx > /dev/null || echo "nginx service does not exist"
+sudo systemctl enable nginx > /dev/null || echo "nginx service does not exist"
 set -e
 
 #create configuration files from samples
@@ -175,7 +180,11 @@ sudo countly task dist-all
 sudo countly check after install
 
 #finally start countly api and dashboard
-sudo countly start
+if [ "$INSIDE_DOCKER" != "1" ]; then
+    sudo countly start
+else
+    sudo pkill mongod
+fi
 
 bash "$DIR/scripts/done.sh";
 
