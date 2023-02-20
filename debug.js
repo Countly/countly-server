@@ -1,7 +1,6 @@
 const log = require('./api/utils/log.js');
 log.setDefault("debug");
 var pluginManager = require('./plugins/pluginManager');
-console.log(pluginManager);
 pluginManager.dbConnection().then((countlyDb) => {
     countlyDb.collection('apps').count(function(err, apps) {
         console.log(err, apps);

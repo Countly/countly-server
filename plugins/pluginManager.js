@@ -357,7 +357,7 @@ var pluginManager = function pluginManager() {
     * @param {object} db -database connection for countly db
     * @param {string} appId - id of application
     * @param {string} namespace - name of plugin
-    * @param {object} config  - new configuration object for selected plugin 
+    * @param {object} config  - new configuration object for selected plugin
     * @param {function} callback - function that is called when updating has finished
     **/
     this.updateApplicationConfigs = function(db, appId, namespace, config, callback) {
@@ -592,7 +592,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Dispatch specific event on api side
-    * 
+    *
     * @param {string} event - event to dispatch
     * @param {object} params - object with parameters to pass to event
     * @returns {Promise} which resolves to array of objects returned by events if any or error
@@ -1396,6 +1396,9 @@ var pluginManager = function pluginManager() {
             options: dbOptions
         });
         const client = new mongodb.MongoClient(dbName, dbOptions);
+        console.log(dbName);
+        console.log(dbOptions);
+        console.log(client);
         try {
             await client.connect();
         }
