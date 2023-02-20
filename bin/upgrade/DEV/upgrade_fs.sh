@@ -25,6 +25,7 @@ then
 
     #install dependencies, process files and restart countly
     countly plugin enable license;
+    countly plugin upgrade attribution;
     
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"
