@@ -115,6 +115,11 @@ cat /etc/mongod.conf
 mongo --version
 mongod --version
 
+
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
+
+ss -a | grep ESTAB | grep 27017 | sed 's/   / /g' | sed 's/   / /g'
+
 mongo 'mongodb://localhost:27017/countly' --eval 'db.foo.insert({"name":"tutorials point"})'
 
 nodejs "$DIR/../db_test.js"
