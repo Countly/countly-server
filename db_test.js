@@ -3,7 +3,7 @@ const {MongoClient} = require('mongodb');
 async function main() {
     // we'll add code here soon
     console.log("creating client");
-    const client = new MongoClient("mongodb://localhost:27017/countly", { useUnifiedTopology: true });
+    const client = new MongoClient("mongodb://localhost:27017/countly?compressors=disabled&gssapiServiceName=mongodb");
     try {
         console.log("connecting");
         await client.connect();
