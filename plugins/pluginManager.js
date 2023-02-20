@@ -1422,7 +1422,7 @@ var pluginManager = function pluginManager() {
 
         if (db_name === "countly") {
             var wrapped = client.db(db_name);
-            await this.fetchMaskingConf({db: wrapped});
+            //await this.fetchMaskingConf({db: wrapped});
             return wrapped;
         }
         else {
