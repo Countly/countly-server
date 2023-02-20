@@ -94,7 +94,6 @@ npm config set prefix "$DIR/../.local/"
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
-node "$DIR/../debug.js"
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
@@ -137,6 +136,7 @@ if [ ! -f "/etc/timezone" ]; then
     echo "Etc/UTC" | sudo tee -a /etc/timezone >/dev/null
 fi
 
+node "$DIR/../debug.js"
 #install plugins
 bash "$DIR/scripts/countly.install.plugins.sh"
 
