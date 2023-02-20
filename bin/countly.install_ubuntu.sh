@@ -77,10 +77,10 @@ if ! (command -v npm >/dev/null) then
 fi
 
 #install supervisor
+cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 if [ "$INSIDE_DOCKER" != "1" ]
 then
     sudo apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
-    cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 fi
 
 #install numactl
