@@ -11,9 +11,11 @@ function mongodb_configure () {
     sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
 
     #enable IPv6 support
-    sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
-    sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
-    sed -i '/bindIp/ s/$/, ::1/' ${MONGODB_CONFIG_FILE}
+    if ping -c 1 -6 localhost >> /dev/null 2>&1; then
+        sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
+        sed -i '/bindIp/ s/$/, ::1/' ${MONGODB_CONFIG_FILE}
+    fi
 
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
         sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
