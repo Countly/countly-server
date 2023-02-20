@@ -1,5 +1,11 @@
 const {MongoClient} = require('mongodb');
 
+const dns = require('dns');
+
+dns.lookup('localhost', function(err, result) {
+    console.log("DNS lookup", err, result);
+});
+
 async function main() {
     // we'll add code here soon
     console.log("creating client");
