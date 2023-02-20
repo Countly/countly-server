@@ -112,6 +112,11 @@ sudo bash "$DIR/scripts/detect.init.sh"
 
 cat /etc/mongod.conf
 
+mongo --version
+mongod --version
+
+mongo 'mongodb://localhost:27017/countly' --eval 'db.foo.insert({"name":"tutorials point"})'
+
 nodejs "$DIR/../db_test.js"
 
 #configure and start nginx
