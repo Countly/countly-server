@@ -93,13 +93,16 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
-sudo bash "$DIR/scripts/mongodb.install.sh"
-
 if [ "$INSIDE_DOCKER" == "1" ]
 then
     MONGODB_PATH=$(grep dbPath /etc/mongod.conf | awk -F' ' '{print $2}')
+    echo "$MONGODB_PATH"
+    sudo ls -la "$MONGODB_PATH"
     sudo rm -rf "$MONGODB_PATH/*"
+    sudo ls -la "$MONGODB_PATH"
 fi
+sudo bash "$DIR/scripts/mongodb.install.sh"
+
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
