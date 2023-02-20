@@ -1155,7 +1155,7 @@
                     var customPeriodEndDate;
                     if (this.$parent.data.bucket === "daily") {
                         customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
-                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).setHours(23, 59);
                         filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
                     }
                     else if (this.$parent.data.bucket === "weekly") {
