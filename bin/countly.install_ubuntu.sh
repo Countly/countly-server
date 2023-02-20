@@ -94,8 +94,8 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
 
 sudo apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
-sudo rm /etc/apt/sources.list.d/mongodb-org-5.0.list
-sudo rm /etc/mongod.conf
+#sudo rm /etc/apt/sources.list.d/mongodb-org-5.0.list
+#sudo rm /etc/mongod.conf
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
