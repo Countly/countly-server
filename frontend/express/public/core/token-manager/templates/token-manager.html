@@ -23,7 +23,7 @@
                             </cly-status-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="ends" :label="i18n('token_manager.table.ends')">
+                    <el-table-column sortable="custom" prop="ends" column-key="ttlDate" :label="i18n('token_manager.table.ends')">
                         <template slot-scope="scope">
                             <p>{{scope.row.ttlDate}}</p>
                             <p class="text-small color-cool-gray-40">{{scope.row.ttlTime}}</p>

@@ -657,12 +657,78 @@
                 if (this.exportFormat) {
                     return this.exportFormat(this.rows);
                 }
-                return this.rows;
+                else {
+                    return this.formatExportFunction();
+                }
+            },
+            getOrderedDataForExport: function() {
+                var currentArray = this.localSearchedRows;
+                if (this.controlParams.sort.length > 0) {
+                    var sorting = this.controlParams.sort[0],
+                        dir = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray = currentArray.slice();
+                    currentArray.sort(function(a, b) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
+                            return -dir;
+                        }
+                        if (priA > priB) {
+                            return dir;
+                        }
+                        return 0;
+                    });
+                }
+                return currentArray;
+            },
+            formatExportFunction: function() {
+                var rows = this.getOrderedDataForExport();
+                if (rows && rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                    var table = [];
+                    var columns = this.$refs.elTable.columns;
+                    columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
+                    for (var r = 0; r < rows.length; r++) {
+                        var item = {};
+                        for (var c = 0; c < columns.length; c++) {
+                            var property;
+                            if (columns[c].columnKey && columns[c].columnKey.length) {
+                                var columnKey = columns[c].columnKey;
+                                if (columnKey.includes(".")) {
+                                    property = rows[r];
+                                    var dotSplittedArr = columnKey.split(".");
+                                    for (var i = 0; i < dotSplittedArr.length; i++) {
+                                        if (property[dotSplittedArr[i]]) {
+                                            property = property[dotSplittedArr[i]];
+                                        }
+                                    }
+                                }
+                                else {
+                                    property = rows[r][columnKey];
+                                }
+                            }
+                            else {
+                                property = rows[r][columns[c].property];
+                            }
+                            item[columns[c].label.toUpperCase()] = property;
+                        }
+                        table.push(item);
+                    }
+                    return table;
+                }
+                else {
+                    return this.rows;
+                }
             },
             initiateExport: function(params) {
                 var formData = null,
                     url = null;
-
                 if (this.exportApi) {
                     formData = this.exportApi();
                     formData.type = params.type;

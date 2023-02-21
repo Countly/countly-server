@@ -97,7 +97,23 @@
                 if (!rowsArray[index]) {
                     rowsArray.push({});
                 }
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.userActivityRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('user-activity.table-session-count').toUpperCase()] = tableData[i].bucket;
+                    item[CV.i18n('user-activity.table-all-users').toUpperCase()] = this.formatNumber(tableData[i].all) + " | " + this.formatPercentage(tableData[i].all / this.seriesTotal.all) + "%";
+                    item[CV.i18n('user-activity.table-thirty-days').toUpperCase()] = tableData[i].thirtyDays + " | " + this.formatPercentage(tableData[i].thirtyDays / this.seriesTotal.thirtyDays) + "%";
+                    item[CV.i18n('user-activity.table-seven-days').toUpperCase()] = this.formatNumber(tableData[i].sevenDays) + " | " + this.formatPercentage(tableData[i].sevenDays / this.seriesTotal.sevenDays) + "%";
+
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         },
         mounted: function() {
             if (this.$route.params && this.$route.params.query) {

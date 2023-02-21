@@ -94,7 +94,8 @@
                     dbs: db,
                     collection: collection,
                     aggregation: aggregation,
-                    app_id: app_id
+                    app_id: app_id,
+                    type: "json"
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {
@@ -104,11 +105,14 @@
                             "segmentation": { type: "dbviewer" }
                         });
                         countlyTaskManager.monitor(json.aaData.task_id);
-                        callback(false);
+                        callback(false, false);
                     }
                     else {
-                        callback(json);
+                        callback(false, json);
                     }
+                },
+                error: function(error) {
+                    callback(error, false);
                 }
             });
         }

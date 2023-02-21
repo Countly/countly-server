@@ -997,7 +997,24 @@
                 if (command === "symbolicate") {
                     this.symbolicateCrash(crash);
                 }
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.crashes;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('crashes.crashed').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].ts).text;
+                    item[CV.i18n('crashes.os_version').toUpperCase()] = tableData[i].os + tableData[i].os_version;
+                    item[CV.i18n('crashes.device').toUpperCase()] = tableData[i].device;
+                    item[CV.i18n('crashes.app_version').toUpperCase()] = tableData[i].app_version;
+                    item[CV.i18n('crashes.user').toUpperCase()] = tableData[i].user && tableData[i].user.name || tableData[i].uid;
+                    item[CV.i18n('crashes.crashed').toUpperCase()] = tableData[i].name;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
@@ -1236,6 +1253,19 @@
                     var date = moment(d).utc().format("MMM Do, YYYY");
                     var time = moment(d).utc().format("H:mm:ss");
                     return date + " " + time;
+                },
+                formatExportFunction: function() {
+                    var tableData = this.userCrashesData;
+                    var table = [];
+                    for (var i = 0; i < tableData.length; i++) {
+                        var item = {};
+                        item[CV.i18n('crashes.error').toUpperCase()] = tableData[i].group;
+                        item[CV.i18n('crashes.reports').toUpperCase()] = tableData[i].reports;
+                        item[CV.i18n('crashes.last_time').toUpperCase()] = this.getDateAndTime(tableData[i].last);
+                        table.push(item);
+                    }
+                    return table;
+
                 },
             },
             data: function() {

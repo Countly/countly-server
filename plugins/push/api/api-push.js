@@ -42,6 +42,18 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
                     });
                 }
             });
+
+            setTimeout(() => {
+                common.db.collection(`app_users${params.app_id}`).findOne({_id: dbAppUser._id}, (er, user) => {
+                    if (er) {
+                        log.e('Error while loading user', er);
+                    }
+                    else if (!user) {
+                        log.w('Removing stale push_%s record for user %s/%s', params.app_id, dbAppUser._id, dbAppUser.uid);
+                        common.db.collection(`push_${params.app_id}`).deleteOne({_id: dbAppUser.uid}, () => {});
+                    }
+                });
+            }, 10000);
         }
         else {
             appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
@@ -334,6 +346,17 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
             if (Object.keys(update).length) {
                 log.d('Updating push data for %s: %j', nuid, update);
                 common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, e => e && log.e('Error while updating new uid with push data', e));
+                setTimeout(() => {
+                    common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
+                        if (er) {
+                            log.e('Error while loading user', er);
+                        }
+                        else if (!user) {
+                            log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
+                            common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
+                        }
+                    });
+                }, 10000);
             }
         });
     }

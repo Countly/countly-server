@@ -268,7 +268,7 @@
                 <cly-chart-bar :option="chartData" :legend="{show: true}" :force-loading="isLoading"></cly-chart-bar>
             </cly-section>
             <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
-                <cly-datatable-n :force-loading="isLoading" :rows="crashes" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
+                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
                     </template>

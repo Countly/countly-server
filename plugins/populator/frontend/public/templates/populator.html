@@ -28,7 +28,7 @@
                     </cly-sub-section>
                     <cly-sub-section>
                         <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.maxtime') }}</span>
-                        <el-input class="populator-wrapper__max-time" v-model="maxTime"></el-input>
+                        <el-input class="populator-wrapper__max-time" onkeyup="this.value=this.value.replace(/[^\d]/,'')" v-model="maxTime"></el-input>
                     </cly-sub-section>
                     <cly-sub-section class="bu-level-right">
                         <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>

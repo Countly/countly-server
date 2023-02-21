@@ -1458,7 +1458,31 @@ const processRequest = (params) => {
                                         common.returnMessage(params, 400, error);
                                     }
                                     else if (parseInt(size) === 0) {
-                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                        //export does not exist. lets check out export collection.
+                                        var eid = filename[0].split(".");
+                                        eid = eid[0];
+
+                                        var cursor = common.db.collection("exports").find({"_eid": eid}, {"_eid": 0, "_id": 0});
+                                        var options = {"type": "stream", "filename": eid + ".json", params: params};
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Disposition': 'inline; filename="' + eid + '.json'
+                                        });
+                                        options.streamOptions = {};
+                                        if (options.type === "stream" || options.type === "json") {
+                                            options.streamOptions.transform = function(doc) {
+                                                doc._id = doc.__id;
+                                                delete doc.__id;
+                                                return JSON.stringify(doc);
+                                            };
+                                        }
+
+                                        options.output = options.output || function(stream) {
+                                            countlyApi.data.exports.stream(options.params, stream, options);
+                                        };
+                                        options.output(cursor);
+
+
                                     }
                                     else {
                                         countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
@@ -1613,18 +1637,28 @@ const processRequest = (params) => {
                                 params.qstring.query = {};
                             }
                         }
-                        if (params.qstring.query.$or) {
-                            params.qstring.query.$and = [
-                                {"$or": Object.assign([], params.qstring.query.$or) },
-                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
-                            ];
-                            delete params.qstring.query.$or;
+                        params.qstring.query.$and = [];
+                        if (params.qstring.query.creator && params.qstring.query.creator === params.member._id) {
+                            params.qstring.query.$and.push({"creator": params.member._id + ""});
                         }
                         else {
-                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                            params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
+                        }
+
+                        if (params.qstring.data_source !== "all" && params.qstring.app_id) {
+                            if (params.qstring.data_source === "independent") {
+                                params.qstring.query.$and.push({"app_id": "undefined"});
+                            }
+                            else {
+                                params.qstring.query.$and.push({"app_id": params.qstring.app_id});
+                            }
+                        }
+
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and.push({"$or": Object.assign([], params.qstring.query.$or) });
+                            delete params.qstring.query.$or;
                         }
                         params.qstring.query.subtask = {$exists: false};
-                        params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -1920,42 +1954,61 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'download': {
-                    if (paths[4] && paths[4] !== '') {
-                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
-
-                            var filename = data.report_name;
-                            var type = filename.split(".");
-                            type = type[type.length - 1];
-                            var myfile = paths[4];
-
-                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
-                                if (error) {
-                                    common.returnMessage(params, 400, error);
-                                }
-                                else if (parseInt(size) === 0) {
-                                    common.returnMessage(params, 400, "Export size is 0");
+                    validateRead(params, "core", () => {
+                        if (paths[4] && paths[4] !== '') {
+                            common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
                                 }
                                 else {
-                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
-                                        if (err5) {
-                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                    var filename = data.report_name;
+                                    var type = filename.split(".");
+                                    type = type[type.length - 1];
+                                    var myfile = paths[4];
+                                    var headers = {};
+
+                                    countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
+                                        if (err2) {
+                                            common.returnMessage(params, 400, err2);
+                                        }
+                                        else if (parseInt(size) === 0) {
+                                            if (data.type !== "dbviewer") {
+                                                common.returnMessage(params, 400, "Export size is 0");
+                                            }
+                                            //handling older aggregations that aren't saved in countly_fs
+                                            else if (!data.gridfs && data.data) {
+                                                type = "json";
+                                                filename = data.name + "." + type;
+                                                headers = {};
+                                                headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                params.res.writeHead(200, headers);
+                                                params.res.write(data.data);
+                                                params.res.end();
+                                            }
                                         }
                                         else {
-                                            var headers = {};
-                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
-                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
-                                            params.res.writeHead(200, headers);
-                                            stream.pipe(params.res);
+                                            countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err5, stream) {
+                                                if (err5) {
+                                                    common.returnMessage(params, 400, "Export stream does not exist");
+                                                }
+                                                else {
+                                                    headers = {};
+                                                    headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                    headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                    params.res.writeHead(200, headers);
+                                                    stream.pipe(params.res);
+                                                }
+                                            });
                                         }
                                     });
                                 }
                             });
-
-                        });
-                    }
-                    else {
-                        common.returnMessage(params, 400, 'Missing filename');
-                    }
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Missing filename');
+                        }
+                    });
                     break;
                 }
                 case 'data':
@@ -3162,11 +3215,24 @@ function processUser(params, initiator, done, try_times) {
                         //even if paralel request already inserted uid
                         //this insert will fail
                         //but we will retry again and fetch new inserted document
-                        common.db.collection('app_users' + params.app_id).insert({
+                        var doc = {
                             _id: params.app_user_id,
                             uid: uid,
                             did: params.qstring.device_id
-                        }, {ignore_errors: [11000]}, function() {
+                        };
+                        if (params && params.href) {
+                            doc.first_req_get = (params.href + "") || "";
+                        }
+                        else {
+                            doc.first_req_get = "";
+                        }
+                        if (params && params.req && params.req.body) {
+                            doc.first_req_post = (params.req.body + "") || "";
+                        }
+                        else {
+                            doc.first_req_post = "";
+                        }
+                        common.db.collection('app_users' + params.app_id).insert(doc, {ignore_errors: [11000]}, function() {
                             restartRequest(params, initiator, done, try_times, resolve);
                         });
                     }

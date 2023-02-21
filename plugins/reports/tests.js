@@ -164,6 +164,22 @@ describe('Testing Reports', function() {
             });
         });
 
+        describe('reset app', function() {
+            it('should reset data', function(done) {
+                var params = {app_id: testUtils.get("APP_ID"), "period": "reset"};
+                request
+                    .get(getRequestURL('/i/apps/reset') + "&args=" + JSON.stringify(params))
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.property('result', 'Success');
+                        setTimeout(done, 500 * testUtils.testScalingFactor);
+                    });
+            });
+        });
 
     });
 });

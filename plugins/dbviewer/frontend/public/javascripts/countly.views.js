@@ -70,8 +70,13 @@
                         }
                         self.expandKeys = self.expandKeysHolder;
                     },
-                    onError: function(context, err) {
-                        throw err;
+                    onError: function(context, error) {
+                        if (error && error.status !== 0) {
+                            CountlyHelpers.notify({
+                                message: error.statusText || CV.i18n('dbviewer.server-error'),
+                                type: "error"
+                            });
+                        }
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
@@ -224,7 +229,7 @@
                 dbviewerAPIEndpoint: function() {
                     var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.db + '&collection=' + this.collection;
                     if (this.queryFilter) {
-                        url += '&filter=' + this.queryFilter;
+                        url += '&filter=' + encodeURIComponent(this.queryFilter);
                     }
                     if (this.projectionEnabled) {
                         url += '&projection=' + JSON.stringify(this.preparedProjectionFields);
@@ -403,16 +408,32 @@
                     try {
                         var query = JSON.stringify(JSON.parse(this.query));
                         this.queryLoading = true;
-                        countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(res) {
-                            self.aggregationResult = res.aaData;
-                            if (res.aaData.length) {
-                                self.fields = Object.keys(res.aaData[0]);
+                        countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
+                            if (res) {
+                                self.aggregationResult = res.aaData;
+                                if (res.aaData.length) {
+                                    self.fields = Object.keys(res.aaData[0]);
+                                }
                             }
-                            self.queryLoading = false;
+                            if (err) {
+                                var message = CV.i18n('dbviewer.server-error');
+                                if (err.responseJSON && err.responseJSON.result && typeof err.responseJSON.result === "string") {
+                                    message = err.responseJSON.result;
+                                }
+                                CountlyHelpers.notify({
+                                    message,
+                                    type: "error"
+                                });
+                            }
                         });
+                        self.queryLoading = false;
                     }
                     catch (err) {
-                        CountlyHelpers.notify(CV.i18n('dbviewer.invalid-pipeline'));
+                        CountlyHelpers.notify({
+                            message: CV.i18n('dbviewer.invalid-pipeline'),
+                            type: "error"
+                        });
+                        self.queryLoading = false;
                     }
                 }
             },

@@ -930,6 +930,12 @@
         methods: {
             formatPeriodString: function(period) {
                 if (Array.isArray(period)) {
+                    if ((period[0] + '').length === 10) {
+                        period[0] = period[0] * 1000;
+                    }
+                    if ((period[1] + '').length === 10) {
+                        period[1] = period[1] * 1000;
+                    }
                     var effectiveRange = [moment(period[0]), moment(period[1])];
                     if (effectiveRange[0].isSame(effectiveRange[1])) {
                         return effectiveRange[0].format("lll");

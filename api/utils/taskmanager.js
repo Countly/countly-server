@@ -94,8 +94,13 @@ taskmanager.longtask = function(options) {
                         if (comment_position === -1) {
                             continue;
                         }
-                        let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
-                        var comment_val = substr.match(/"(.*?)"/)[1];
+
+                        let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length) || "";
+                        var comment_val = "";
+                        substr = substr.match(/"(.*?)"/);
+                        if (substr && Array.isArray(substr)) {
+                            comment_val = substr[1];
+                        }
 
                         if (comment_val === comment_id) {
                             var task_id = options.id;
@@ -283,7 +288,7 @@ taskmanager.createTask = function(options, callback) {
     update.request = JSON.stringify(options.request || {});
     update.app_id = options.app_id || "";
     update.creator = options.creator;
-    update.global = options.global;
+    update.global = options.global || false;
     update.r_hour = options.r_hour || 0;
     update.autoRefresh = options.autoRefresh || false;
     update.report_name = options.report_name || "";

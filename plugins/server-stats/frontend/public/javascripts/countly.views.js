@@ -166,7 +166,7 @@ var DataPointsView = countlyVue.views.create({
                         lines.push('<td>' + countlyCommon.formatNumber(Math.round((dd.sum - tt) * 100 / dd.sum || 1), 0) + '%</td><td> **Unknown</td>');
                     }*/
 
-                    var retString = '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('common.table.total-users') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div><table><tr><td class="bu-pr-2">Max.</td><td>Min.</td><td>Avg.</td></tr><tr class="text-big"><td>' + countlyCommon.formatNumber(dd.max, 0) + '</td><td>' + countlyCommon.formatNumber((dd.min || 0), 0) + '</td><td>' + countlyCommon.formatNumber(dd.avg, 0) + '</td></tr></table>';
+                    var retString = '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('server-stats.total-datapoints') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div><table><tr><td class="bu-pr-2">Max.</td><td>Min.</td><td>Avg.</td></tr><tr class="text-big"><td>' + countlyCommon.formatNumber(dd.max, 0) + '</td><td>' + countlyCommon.formatNumber((dd.min || 0), 0) + '</td><td>' + countlyCommon.formatNumber(dd.avg, 0) + '</td></tr></table>';
 
                     if (lines.length > 0) {
                         retString += '<div class="color-cool-gray-100 text-small bu-p-0 bu-pt-3 data-points-tooltip-bottom-table"><table><tr>' + lines.join('</tr><tr>') + '</tr></table></div>';

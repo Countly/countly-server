@@ -10,6 +10,13 @@ function mongodb_configure () {
     sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
     sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
 
+    #enable IPv6 support
+    if ping -c 1 -6 localhost >> /dev/null 2>&1; then
+        sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
+        sed -i '/bindIp/ s/$/, ::1/' ${MONGODB_CONFIG_FILE}
+    fi
+
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
         sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
         sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGODB_CONFIG_FILE}
@@ -388,6 +395,11 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mon
         if [ "$UBUNTU_YEAR" == "16" ]; then
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         elif [ "$UBUNTU_YEAR" == "18" ]; then
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+        elif [ "$UBUNTU_YEAR" == "22" ]; then
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
+            dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
+            rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
             echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         else
             echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;

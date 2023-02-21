@@ -433,10 +433,11 @@
                                     :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
+                                    :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
