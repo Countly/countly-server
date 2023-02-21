@@ -385,8 +385,19 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mon
             exit 1
         fi
 
+        #mongodb 4.4 is not supported officially on Ubuntu 22
+        if [[ "$UBUNTU_YEAR" == "22" ]]; then
+            #we can install binaries of Ubuntu 20 if we pre-install required libssl
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
+            dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
+            rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
+            UBUNTU_RELEASE="focal"
+        else
+            UBUNTU_RELEASE="$(lsb_release -cs)"
+        fi
+
         wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
-        UBUNTU_RELEASE="$(lsb_release -cs)"
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
 
         apt-get update
