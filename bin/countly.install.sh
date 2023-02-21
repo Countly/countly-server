@@ -3,7 +3,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')
 
-if ! [[ "$1" = 'gh' ]]; then
+GH_ACTIONS_TRIGGER=$1
+if ! [[ "$GH_ACTIONS_TRIGGER" = 'gh' ]]; then
     if [[ "$DIR" = '/root'* ]]; then
         echo "You cannot install Countly under /root. Suggested paths: /opt or /usr."
         exit 1
