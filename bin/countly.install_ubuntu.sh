@@ -79,7 +79,8 @@ fi
 #install supervisor
 if [ "$INSIDE_DOCKER" != "1" ]
 then
-        sudo apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+    sudo apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+    cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 fi
 
 #install numactl
@@ -117,7 +118,7 @@ sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 
 if [ "$INSIDE_DOCKER" != "1" ]
 then
-        sudo /etc/init.d/nginx restart
+    sudo /etc/init.d/nginx restart
 fi
 
 cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
@@ -164,12 +165,12 @@ sudo countly check after install
 #finally start countly api and dashboard
 if [ "$INSIDE_DOCKER" != "1" ]
 then
-        sudo countly start
+    sudo countly start
 fi
 
 bash "$DIR/scripts/done.sh";
 
 if [ "$INSIDE_DOCKER" == "1" ]
 then
-        kill -2 "$(pgrep mongo)"
+    kill -2 "$(pgrep mongo)"
 fi

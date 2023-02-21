@@ -326,6 +326,7 @@
                                 widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
                             }
                         }
+                        widget.settings.custom_period = countlyCommon.getPeriodWithOffset(widget.settings.custom_period);
                     }
                     return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
                         return id;
@@ -352,6 +353,7 @@
                                 widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
                             }
                         }
+                        widget.settings.custom_period = countlyCommon.getPeriodWithOffset(widget.settings.custom_period);
                     }
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
@@ -614,7 +616,11 @@
                         if (dashbaord) {
                             context.commit("addOrUpdateDashboard", dashbaord);
                         }
-
+                        for (var z = 0; z < widgets.length; z++) {
+                            if (widgets[z].custom_period) { //modify period for displying
+                                widgets[z].custom_period = countlyCommon.removePeriodOffset(widgets[z].custom_period);
+                            }
+                        }
                         context.dispatch("widgets/setAll", widgets);
                         context.commit("setApps", apps);
 

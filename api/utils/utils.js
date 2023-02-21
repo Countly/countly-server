@@ -29,7 +29,7 @@ exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_enco
     key = Buffer.concat([Buffer.from(key), Buffer.alloc(32)], 32);
 
     if (typeof iv === "undefined") {
-        iv = countlyConfig.encryption.iv || crypto.randomBytes(16);
+        iv = crypto.randomBytes(16);
     }
     if (typeof algorithm === "undefined") {
         //The algorithm is dependent on OpenSSL, examples are 'aes192', etc. 

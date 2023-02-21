@@ -694,6 +694,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
+                noaccess: this.$route.params && this.$route.params.noaccess || false,
                 components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
@@ -1251,6 +1252,12 @@
     app.route('/account-settings/reset', 'account-settings', function() {
         var view = getAccountView();
         view.params = {reset: true};
+        this.renderWhenReady(view);
+    });
+
+    app.route('/account-settings/no-access', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {noaccess: true};
         this.renderWhenReady(view);
     });
 
