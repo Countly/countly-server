@@ -3,13 +3,15 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')
 
-if [[ "$DIR" = '/root'* ]]; then
-    echo "You cannot install Countly under /root. Suggested paths: /opt or /usr."
-    exit 1
-elif [[ "$DIR" = '/home'* ]]; then
-    if ! [[ "$DIR" = '/home/countly'* ]]; then
-        echo "You cannot install Countly under home directory of any other user. Suggested paths: /opt or /usr."
+if ! [[ "$1" = 'gh' ]]; then
+    if [[ "$DIR" = '/root'* ]]; then
+        echo "You cannot install Countly under /root. Suggested paths: /opt or /usr."
         exit 1
+    elif [[ "$DIR" = '/home'* ]]; then
+        if ! [[ "$DIR" = '/home/countly'* ]]; then
+            echo "You cannot install Countly under home directory of any other user. Suggested paths: /opt or /usr."
+            exit 1
+        fi
     fi
 fi
 
