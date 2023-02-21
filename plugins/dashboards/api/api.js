@@ -1078,7 +1078,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
@@ -1157,7 +1157,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
