@@ -24,8 +24,7 @@
 
         <el-table-column fixed="left" sortable="custom" prop="name" :label="i18n('data-manager.event-group-name')" min-width="330px">
             <template v-slot="rowScope">
-                <a v-bind:href="'#/manage/data-manager/events/event-groups/' + rowScope.row._id" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
-                    {{rowScope.row.name}}
+                <a v-bind:href="'#/manage/data-manager/events/event-groups/' + rowScope.row._id" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100" v-html="rowScope.row.name">
                 </a>
                 <div class="text-small color-cool-gray-50" v-if="rowScope.row.source_events">{{rowScope.row.source_events.length || 0}} Events</div>
                 <span v-if="rowScope.row.status === false" class="cly-vue-data-manager__hidden-icon"><i class="ion-eye-disabled"></i></span>
@@ -35,7 +34,7 @@
 
         <el-table-column sortable="custom"  prop="description" :label="i18n('data-manager.event-group-description')" min-width="330px">
             <template v-slot="rowScope">
-                {{rowScope.row.description || i18n('data-manager.empty-placeholder') }}
+                <div v-html="rowScope.row.description || i18n('data-manager.empty-placeholder')"></div>
             </template>
         </el-table-column>
 

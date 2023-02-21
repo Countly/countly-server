@@ -339,6 +339,14 @@
                 this.$store.dispatch('countlyDataManager/loadEventGroups');
             },
             handleEdit: function() {
+                var doc = this.eventGroup;
+                doc.name = countlyCommon.unescapeHtml(doc.name);
+                doc.description = countlyCommon.unescapeHtml(doc.description);
+                if (Array.isArray(doc.source_events)) {
+                    doc.source_events = doc.source_events.map(function(val) {
+                        return countlyCommon.unescapeHtml(val);
+                    });
+                }
                 this.openDrawer('eventgroup', this.eventGroup);
             },
             handleCommand: function(ev, eventGroup) {
@@ -1115,6 +1123,7 @@
                 if (!doc.isRegexMerge) {
                     doc.isRegexMerge = false;
                 }
+
                 self.openDrawer("transform", doc);
             });
             this.$root.$on('dm-open-edit-event-group-drawer', function(data) {
