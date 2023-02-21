@@ -51,7 +51,7 @@
     "express-rate-limit": "6.7.0",
     "express-session": "1.17.3",
     "formidable": "1.2.2",
-    "fs-extra": "10.1.0",
+    "fs-extra": "11.1.0",
     "geoip-lite": "1.4.7",
     "grunt": "1.6.1",
     "grunt-cli": "1.4.3",
