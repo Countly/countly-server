@@ -165,9 +165,8 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo countly start
 fi
 
-bash "$DIR/scripts/done.sh";
-
-if [ "$INSIDE_DOCKER" == "1" ]
-then
+if [ "$INSIDE_DOCKER" == "1" ]; then
     kill -2 "$(pgrep mongo)"
 fi
+
+bash "$DIR/scripts/done.sh";
