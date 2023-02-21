@@ -2,14 +2,14 @@
 
 set -e
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
 if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
     echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
     exit 1
 fi
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
 
