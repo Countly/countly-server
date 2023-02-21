@@ -20,6 +20,7 @@ sudo apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2
 
 if [[ "$UBUNTU_YEAR" = "22" ]]; then
     sudo apt-get -y install python2 python2-dev
+
     if [[ ! -h /usr/bin/python ]]; then
         sudo ln -s /usr/bin/python2.7 /usr/bin/python
         sudo ln -s /usr/bin/python2-config /usr/bin/python-config
@@ -68,7 +69,7 @@ set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
-        sudo ln -s "$(which node)" /usr/bin/nodejs
+    sudo ln -s "$(which node)" /usr/bin/nodejs
 fi
 
 #if npm is not installed, install it too
@@ -77,8 +78,7 @@ if ! (command -v npm >/dev/null) then
 fi
 
 #install supervisor
-if [ "$INSIDE_DOCKER" != "1" ]
-then
+if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
     cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 fi
@@ -96,15 +96,15 @@ npm config set prefix "$DIR/../.local/"
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
 
-if [ "$INSIDE_DOCKER" == "1" ]
-then
-        bash "$DIR/commands/docker/mongodb.sh" &
-    until mongo --eval "db.stats()" | grep "collections"
-    do
+if [ "$INSIDE_DOCKER" == "1" ]; then
+    bash "$DIR/commands/docker/mongodb.sh" &
+
+    until mongo --eval "db.stats()" | grep "collections"; do
         echo
         echo "waiting for MongoDB to allocate files..."
         sleep 1
     done
+
     sleep 3
 fi
 
@@ -116,8 +116,7 @@ countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 
-if [ "$INSIDE_DOCKER" != "1" ]
-then
+if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo /etc/init.d/nginx restart
 fi
 
@@ -130,7 +129,7 @@ cp -n "$DIR/../api/config.sample.js" "$DIR/../api/config.js"
 cp -n "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.js"
 
 if [ ! -f "$DIR/../plugins/plugins.json" ]; then
-        cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
+    cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
 fi
 
 if [ ! -f "/etc/timezone" ]; then
@@ -163,8 +162,7 @@ sudo countly task dist-all
 sudo countly check after install
 
 #finally start countly api and dashboard
-if [ "$INSIDE_DOCKER" != "1" ]
-then
+if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo countly start
 fi
 
