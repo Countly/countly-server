@@ -1041,7 +1041,7 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
-
+            model.setPeriod(paramsObj.qstring.period);
             model.setDb(data);
 
             /**
@@ -1086,6 +1086,7 @@ function getPushModel(params, apps, appId, collection, segment, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 
@@ -1118,6 +1119,7 @@ function getCrashModel(params, apps, appId, collection, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = model = countlyModel.load(toModel("data"));
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 
