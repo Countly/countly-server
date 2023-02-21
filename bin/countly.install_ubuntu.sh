@@ -46,15 +46,7 @@ if ! (command -v apt-add-repository >/dev/null) then
     sudo apt-get -y install software-properties-common
 fi
 
-#add node.js repo
-#echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_14.x | sudo -E bash -
-
-#update once more after adding new repos
-sudo apt-get update
-
 #install nginx
-sudo apt-get -y install curl gnupg2 ca-certificates lsb-release
 echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
@@ -62,6 +54,10 @@ sudo apt-get update
 sudo apt-get -y install nginx
 
 #install node.js
+#add node.js repo
+#echo | apt-add-repository ppa:chris-lea/node.js
+wget -qO- https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get update
 sudo apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
 set +e
