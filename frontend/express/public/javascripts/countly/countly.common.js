@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS, mergeWith*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -2944,16 +2944,7 @@
         * @returns {Object} target after the merge
         */
         countlyCommon.deepObjectExtend = function(target, source) {
-            Object.keys(source).forEach(function(key) {
-                if ((key in target) && _.isObject(target[key])) {
-                    countlyCommon.deepObjectExtend(target[key], source[key]);
-                }
-                else {
-                    target[key] = source[key];
-                }
-            });
-
-            return target;
+            return mergeWith({}, target, source);
         };
 
         /**

@@ -2792,7 +2792,6 @@ common.sanitizeFilename = (filename, replacement = "") => {
  * @returns {string} sanitizedHTML - sanitized html content
  */
 common.sanitizeHTML = (html) => {
-
     const whiteList = {
         a: ["target", "title"],
         abbr: ["title"],
@@ -2891,20 +2890,34 @@ common.sanitizeHTML = (html) => {
         }
 
         const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
-
+        var doubleQuote = '"',
+            singleQuote = "'";
         let matches;
         let filteredAttributes = [];
         let allowedAttributes = Object.getOwnPropertyDescriptor(whiteList, tagName).value;
         let tagHasAttributes = false;
         while ((matches = attributesRegex.exec(tag)) !== null) {
             tagHasAttributes = true;
+            let fullAttribute = matches[0];
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-                filteredAttributes.push(`${attributeName}="${attributeValue}"`);
+
+                var attributeValueStart = fullAttribute.indexOf(attributeValue);
+                if (attributeValueStart >= 1) {
+                    var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
+                    if (attributeWithQuote.indexOf(doubleQuote) === 0) {
+                        filteredAttributes.push(`${attributeName}=${doubleQuote}${attributeValue}${doubleQuote}`);
+                    }
+                    else if ((attributeWithQuote.indexOf(singleQuote) === 0)) {
+                        filteredAttributes.push(`${attributeName}=${singleQuote}${attributeValue}${singleQuote}`);
+                    }
+                    else { //no quote
+                        filteredAttributes.push(`${attributeName}=${attributeValue}`);
+                    }
+                }
             }
         }
-        console.log("attributes", filteredAttributes);
         if (!tagHasAttributes) { //closing tag or tag without any attributes
             return tag;
         }
