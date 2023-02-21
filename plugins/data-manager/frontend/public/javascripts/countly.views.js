@@ -275,7 +275,7 @@
                 var events = this.$store.getters["countlyDataManager/events"] || [];
                 return events.map(function(ev) {
                     return {
-                        label: ev.name || ev.key || ev.e,
+                        label: countlyCommon.unescapeHtml(ev.name || ev.key || ev.e),
                         value: ev.key || ev.e
                     };
                 });
@@ -1088,11 +1088,22 @@
                 doc.isExistingEvent = 'true';
                 // doc.tab;
                 // delete doc.transformType;
+                doc.name = countlyCommon.unescapeHtml(doc.name);
+                doc.transformResult = countlyCommon.unescapeHtml(doc.transformResult);
+                if (Array.isArray(doc.transformTarget)) {
+                    doc.transformTarget = doc.transformTarget.map(function(val) {
+                        return countlyCommon.unescapeHtml(val);
+                    });
+                }
+                else {
+                    doc.transformTarget = countlyCommon.unescapeHtml(doc.transformTarget);
+                }
                 if (doc.actionType === 'value') {
                     doc.actionType = 'change-value';
                 }
                 doc.isEditMode = true;
                 if (doc.parentEvent) {
+                    doc.parentEvent = countlyCommon.unescapeHtml(doc.parentEvent);
                     doc.selectedParentEvent = doc.parentEvent;
                 }
                 if (!doc.targetRegex) {
