@@ -162,10 +162,10 @@
             return obj;
         },
         decode: function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+            return str.replace(/&amp;/g, '&').replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
         },
         encode: function(str) {
-            return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
         },
         getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
@@ -795,34 +795,6 @@
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
-                            //decoding html elements
-                            res.list = res.list.map(function(val) {
-                                return countlyCommon.unescapeHtml(val);
-                            });
-                            Object.keys(res.map).forEach(function(key) {
-                                var decodedKey = countlyCommon.unescapeHtml(key);
-                                if (res.map[key].name) {
-                                    res.map[key].name = countlyCommon.unescapeHtml(res.map[key].name);
-                                }
-                                if (res.map[key].key) {
-                                    res.map[key].key = countlyCommon.unescapeHtml(res.map[key].key);
-                                }
-                                if (res.map[key].description) {
-                                    res.map[key].description = countlyCommon.unescapeHtml(res.map[key].description);
-                                }
-                                if (key !== decodedKey) {
-                                    res.map[decodedKey] = res.map[key];
-                                    delete res.map[key];
-                                }
-                            });
-                            Object.keys(res.segments).forEach(function(key) {
-                                var decodedKey = countlyCommon.unescapeHtml(key);
-                                if (key !== decodedKey) {
-                                    res.segments[decodedKey] = res.segments[key];
-                                    delete res.segments[key];
-                                }
-                            });
-
                             context.commit("setAllEventsData", res);
                             if (!context.state.selectedEventName) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
@@ -851,13 +823,6 @@
                                                     countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
-                                                                Object.keys(resp).forEach(function(key) {
-                                                                    var decodedKey = countlyCommon.unescapeHtml(key);
-                                                                    if (key !== decodedKey) {
-                                                                        resp[decodedKey] = resp[key];
-                                                                        delete resp[key];
-                                                                    }
-                                                                });
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
                                                                 context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, response));
                                                                 context.dispatch('setTableLoading', false);
@@ -935,7 +900,7 @@
                     if (data) {
                         var map = {};
                         data.forEach(function(c) {
-                            map[c._id] = countlyCommon.unescapeHtml(c.name);
+                            map[c._id] = c.name;
                         });
                         context.commit('setCategoriesMap', map);
                     }
