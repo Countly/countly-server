@@ -1322,6 +1322,32 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].regex) {
+                try {
+                    var re = new RegExp(argProperties[arg].regex);
+                    if (!re.test(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push(arg + " is not correct format");
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                catch (ex) {
+                    if (returnErrors) {
+                        returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
