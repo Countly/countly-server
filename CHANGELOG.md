@@ -3,6 +3,7 @@ Fixes:
 - [compliance-hub] use 'change' instead of 'after' for filter
 - [core] app user export to database (not using filesystem anymore) !!!changes export format!!!
 - [core] do not fetch masking config if masking is not enabled
+- [core] fixed parsing of special characters in event keys
 - [core] only use custom period when set explicitly in model file
 - [core] set activePeriod as current day in periodObject if single day selected
 - [dashboards] fixed bug with not fully loaded graphs for events and crashes for some periods
