@@ -915,14 +915,16 @@ plugins.register("/i", function(ob) {
                         updates: updates,
                         session_duration: params.session_duration,
                         end_session: true
+                    }, function() {
+                        updates.push({$set: {sd: 0, data: {}}});
+                        let updateUser = {};
+                        for (let i = 0; i < updates.length; i++) {
+                            updateUser = common.mergeQuery(updateUser, updates[i]);
+                        }
+                        common.updateAppUser(params, updateUser);
                     });
 
-                    updates.push({$set: {sd: 0, data: {}}});
-                    let updateUser = {};
-                    for (let i = 0; i < updates.length; i++) {
-                        updateUser = common.mergeQuery(updateUser, updates[i]);
-                    }
-                    common.updateAppUser(params, updateUser);
+
                 }
             });
         }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
