@@ -20,7 +20,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.setConfigs("views", {
         view_limit: 50000,
-        view_name_limit: 100,
+        view_name_limit: 128,
         segment_value_limit: 10,
         segment_limit: 100
     });
