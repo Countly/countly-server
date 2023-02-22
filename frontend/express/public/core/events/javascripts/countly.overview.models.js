@@ -258,6 +258,59 @@
                 return eventKey;
             }
         },
+        formatEvents: function(res) {
+            //decoding html elements
+            res.list = res.list.map(function(val) {
+                return countlyCommon.unescapeHtml(val);
+            });
+            Object.keys(res.map).forEach(function(key) {
+                var decodedKey = countlyCommon.unescapeHtml(key);
+                if (res.map[key].name) {
+                    res.map[key].name = countlyCommon.unescapeHtml(res.map[key].name);
+                }
+                if (res.map[key].key) {
+                    res.map[key].key = countlyCommon.unescapeHtml(res.map[key].key);
+                }
+                if (res.map[key].description) {
+                    res.map[key].description = countlyCommon.unescapeHtml(res.map[key].description);
+                }
+                if (key !== decodedKey) {
+                    res.map[decodedKey] = res.map[key];
+                    delete res.map[key];
+                }
+            });
+            Object.keys(res.segments).forEach(function(key) {
+                var decodedKey = countlyCommon.unescapeHtml(key);
+                if (res.segments[key].length) {
+                    res.segments[key] = res.segments[key].map(function(val) {
+                        if (val) {
+                            val = countlyCommon.unescapeHtml(val);
+                        }
+                        return val;
+                    });
+                }
+                if (key !== decodedKey) {
+                    res.segments[decodedKey] = res.segments[key];
+                    delete res.segments[key];
+                }
+            });
+            res.overview = res.overview.map(function(val) {
+                val.eventKey = countlyCommon.unescapeHtml(val.eventKey);
+                val.eventName = countlyCommon.unescapeHtml(val.eventName);
+                return val;
+            });
+            return res;
+        },
+        formatMonitorEvents: function(response) {
+            Object.keys(response).forEach(function(key) {
+                var decodedKey = countlyCommon.unescapeHtml(key);
+                if (key !== decodedKey) {
+                    response[decodedKey] = response[key];
+                    delete response[key];
+                }
+            });
+            return response;
+        }
     };
 
     countlyEventsOverview.service = {
@@ -391,6 +444,7 @@
                 return countlyEventsOverview.service.fetchMonitorEvents(context, period)
                     .then(function(res) {
                         if (res) {
+                            res = countlyEventsOverview.helpers.formatEvents(res);
                             context.commit("setMonitorEvents", res || {});
                             var events = [];
                             if (res && res.overview) {
@@ -409,6 +463,7 @@
                                             .then(function(response) {
                                                 context.dispatch("setMonitorEventsLoading", false);
                                                 if (response) {
+                                                    response = countlyEventsOverview.helpers.formatMonitorEvents(response);
                                                     return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
                                             });
@@ -417,6 +472,14 @@
                             countlyEventsOverview.service.fetchTopEvents("count", 3)
                                 .then(function(resp) {
                                     if (resp) {
+                                        if (resp.data.length) {
+                                            resp.data = resp.data.map(function(val) {
+                                                if (val.name) {
+                                                    val.name = countlyCommon.unescapeHtml(val.name);
+                                                }
+                                                return val;
+                                            });
+                                        }
                                         return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
 
                                     }
@@ -428,6 +491,14 @@
                                 .then(function(response) {
                                     context.dispatch("setTableLoading", false);
                                     if (response) {
+                                        if (response.data.length) {
+                                            response.data = response.data.map(function(val) {
+                                                if (val.name) {
+                                                    val.name = countlyCommon.unescapeHtml(val.name);
+                                                }
+                                                return val;
+                                            });
+                                        }
                                         context.commit("setDetailEvents", response || {});
                                         context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(response) || []);
                                         context.commit("setTableRows", countlyEventsOverview.helpers.getTableRows(response.data, res.map) || []);
@@ -463,6 +534,7 @@
                 return countlyEventsOverview.service.fetchMonitorEvents(context, period)
                     .then(function(res) {
                         if (res) {
+                            res = countlyEventsOverview.helpers.formatEvents(res);
                             context.commit("setMonitorEvents", res || {});
                             var events = [];
                             if (res && res.overview) {
@@ -482,6 +554,7 @@
                                                 context.dispatch("setMonitorEventsLoading", false);
 
                                                 if (response) {
+                                                    response = countlyEventsOverview.helpers.formatMonitorEvents(response);
                                                     return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
                                             });
