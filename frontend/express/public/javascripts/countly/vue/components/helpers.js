@@ -55,13 +55,10 @@
                     return ["cly-in-page-notification--" + this.color];
                 },
             },
-            methods: {
-                click: function() {
-                    this.$emit('click');
-                }
-            },
-            template: '<div @click="click" class="cly-in-page-notification text-medium bu-p-2" :class="dynamicClasses">\
-                            <span v-html="innerText"></span>\
+            template: '<div class="cly-in-page-notification text-medium bu-p-2" :class="dynamicClasses">\
+                            <slot name="innerText">\
+                                <span v-html="innerText"></span>\
+                            </slot>\
                         </div>'
         }
     ));
