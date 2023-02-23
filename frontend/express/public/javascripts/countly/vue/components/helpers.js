@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon */
 
 (function(countlyVue) {
 
@@ -611,13 +611,13 @@
                 if (this.selectedApp) {
                     countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
                         availableEvents[1].options = eData.map(function(e) {
-                            return {label: e.name, value: e.value};
+                            return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
                         });
                     });
                 }
                 else {
                     availableEvents[1].options = countlyEvent.getEvents().map(function(event) {
-                        return {label: event.name, value: event.key};
+                        return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
                     });
                 }
 

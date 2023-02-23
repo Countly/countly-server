@@ -71,7 +71,7 @@ countlyModel.create = function(fetchValue) {
     };
     //Private Properties
     var _Db = {},
-        _period = "30days",
+        _period = null,
         _metas = {},
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
@@ -553,10 +553,13 @@ countlyModel.create = function(fetchValue) {
     */
     countlyMetric.getTimelineData = function() {
         var dataProps = [];
+        var periodObject = null;
         for (let i = 0; i < _metrics.length; i++) {
             dataProps.push({ name: _metrics[i] });
         }
-        var periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps, periodObject);
         var ret = {};
         for (let i = 0; i < data.length; i++) {

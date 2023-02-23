@@ -120,7 +120,8 @@
             formatTimeAgo: countlyCommon.formatTimeAgo,
             formatNumber: countlyCommon.formatNumber,
             formatNumberSafe: countlyCommon.formatNumberSafe,
-            getShortNumber: countlyCommon.getShortNumber
+            getShortNumber: countlyCommon.getShortNumber,
+            unescapeHtml: countlyCommon.unescapeHtml
         }
     };
 
