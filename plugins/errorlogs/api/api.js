@@ -63,7 +63,7 @@ const readFromEnd = (file, size) => {
                 if (params.qstring.log && logs[params.qstring.log]) {
                     if (params.qstring.download) {
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                            fs.readFile(dir + "/" + common.sanitizeFilename(logs[params.qstring.log]), 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
@@ -83,7 +83,7 @@ const readFromEnd = (file, size) => {
                     }
                     else {
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                            fs.readFile(dir + "/" + common.sanitizeFilename(logs[params.qstring.log]), 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
@@ -106,7 +106,7 @@ const readFromEnd = (file, size) => {
                     var readLog = function(key, done) {
                         var finished = false;
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[key], 'utf8', function(err, data) {
+                            fs.readFile(dir + "/" + common.sanitizeFilename(logs[key]), 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
