@@ -392,11 +392,11 @@ usage.returnAllProcessedMetrics = function(params) {
             }
 
             // We check if country data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "country" && (plugins.getConfig("api").country_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
             // We check if city data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "city" && (plugins.getConfig("api").city_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
 
