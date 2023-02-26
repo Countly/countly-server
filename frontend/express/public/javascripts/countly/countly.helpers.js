@@ -3378,7 +3378,7 @@
      * @returns {string} random string from charset
      */
     CountlyHelpers.getRandomValue = function(charSet, length = 1) {
-        const randomValues = self.crypto.getRandomValues(new Uint8Array(charSet.length));
+        const randomValues = crypto.getRandomValues(new Uint8Array(charSet.length));
         let randomValue = "";
 
         if (length > charSet.length) {
