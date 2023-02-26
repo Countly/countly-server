@@ -489,7 +489,7 @@
                     {"value": "t", "name": CV.i18n('views.total-visits')},
                     {"value": "u", "name": CV.i18n('common.table.total-users')},
                     {"value": "n", "name": CV.i18n('common.table.new-users')},
-                    {"value": "d", "name": CV.i18n('views.duration')},
+                    {"value": "d", "name": CV.i18n('views.avg-duration')},
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},

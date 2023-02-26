@@ -369,6 +369,35 @@
                 chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: name, color: '#333933' });
             }
+            if (metric === "d") {
+                dataProps = [];
+                dataProps.push(
+                    {
+                        "name": "pd",
+                        func: function(dataObj2) {
+                            return dataObj2.s;
+                        },
+                        period: "previous"
+                    },
+                    {
+                        "name": "d"
+                    },
+                    {
+                        "name": "pt",
+                        func: function(dataObj2) {
+                            return dataObj2.b;
+                        },
+                        period: "previous"
+                    },
+                    {
+                        "name": "t"
+                    }
+                );
+                chartData.push(
+                    { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
+                    { data: [], label: name, color: '#333933' }
+                );
+            }
 
             var calculated = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
 
@@ -383,6 +412,12 @@
                         bounceRate = 100;
                     }
                     data.push(bounceRate);
+                }
+            }
+            if (metric === "d") {
+                for (k = 0; k < takefrom.length; k++) {
+                    var avgDuration = Math.floor(takefrom[k][1] / (calculated.chartDP[3].data[k][1] || 1));
+                    data.push(avgDuration);
                 }
             }
             else {
