@@ -166,7 +166,7 @@
                     rows[k].u = Math.min(rows[k].uvalue, rows[k].u);
                 }
                 if (rows[k].t > 0) {
-                    rows[k].dCalc = countlyCommon.timeString((rows[k].d / rows[k].t) / 60);
+                    rows[k].dCalc = countlyCommon.formatSecond(rows[k].d / rows[k].t);
                     var vv = parseFloat(rows[k].scr) / parseFloat(rows[k].t);
                     if (vv > 100) {
                         vv = 100;
@@ -303,7 +303,7 @@
             }
             totals.u = Math.min(totals.n, uvalue1, uvalue2);
             if (totals.t > 0) {
-                totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
+                totals.dCalc = countlyCommon.formatSecond(totals.d / totals.t);
                 var vv = parseFloat(totals.scr) / parseFloat(totals.t);
                 if (vv > 100) {
                     vv = 100;

@@ -456,6 +456,9 @@
                 if (this.selectedProperty === "br") {
                     return countlyCommon.getShortNumber(value) + '%';
                 }
+                if (this.selectedProperty === "d") {
+                    return countlyCommon.formatSecond(value);
+                }
                 return countlyCommon.getShortNumber(value);
             }
 
@@ -854,7 +857,7 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (this.data.metrics[k] === "d") {
                             if (this.data.dashData.data.chartData[z].t > 0) {
-                                ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
+                                ob[this.data.metrics[k]] = countlyCommon.formatSecond(this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t);
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
