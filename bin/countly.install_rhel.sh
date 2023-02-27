@@ -25,7 +25,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     sudo yum -y install epel-release
     # see https://github.com/koalaman/shellcheck/issues/1871
-    wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
+    sudo wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
     sudo tar -C /usr/local/bin/ -xf shellcheck-v0.7.1.linux.x86_64.tar.xz --no-anchored 'shellcheck' --strip=1
 
     sudo ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
