@@ -895,15 +895,8 @@
             }, timeout);
         };
 
-        this.startSessionForAb = function(template) {
-            var deviceId = getRandomInt(1, countlyPopulator.getUserAmount() * 10);
-            var self = this;
-            this.createUsersForAB(deviceId, function(res) {
-                if (res && res.result) {
-                    self.id = deviceId;
-                    self.startSession(template);
-                }
-            });
+        this.startSessionForAb = function() {
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {
@@ -1800,7 +1793,7 @@
         function processUserForAb(u) {
             if (u && !u.hasSession) {
                 u.timer = setTimeout(function() {
-                    u.startSessionForAb(template);
+                    u.startSessionForAb();
                 }, Math.random() * timeout);
             }
         }
