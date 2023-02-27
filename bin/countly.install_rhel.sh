@@ -2,6 +2,13 @@
 
 set -e
 
+CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
+
+if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
+    echo "Unsupported OS version, only support CentOS/RHEL 9 and 8"
+    exit 1
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
@@ -15,52 +22,31 @@ sudo pip3 install meld3
 sudo pip3 install supervisor --ignore-installed meld3
 sudo yum -y install python3-setuptools
 
-if grep -q -i "release 8" /etc/redhat-release ; then
-    sudo yum -y install python3-policycoreutils
-    sudo yum -y group install "Development Tools"
+sudo yum -y install python3-policycoreutils
+sudo yum -y group install "Development Tools"
 
-    if [ ! -f "/etc/centos-release" ]; then
-        sudo dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-    fi
-
-    sudo yum -y install epel-release
-
-    # see https://github.com/koalaman/shellcheck/issues/1871
-    wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
-    sudo tar -C /usr/local/bin/ -xf shellcheck-v0.7.1.linux.x86_64.tar.xz --no-anchored 'shellcheck' --strip=1
-    sudo ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
-
-    if [ ! -x "$(command -v python)" ]; then
-        sudo ln -sf /usr/bin/python3 /usr/bin/python
-    fi
-
-    #Install raven-release for ipa-gothic-fonts required by puppeteer
-    sudo yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
-elif grep -q -i "release 7" /etc/redhat-release ; then
-    sudo yum -y install policycoreutils-python
-    #install nginx
-    echo "[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/rhel/7/x86_64/
-gpgcheck=0
-enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
-
-    if [ -f "/etc/centos-release" ]; then
-        sudo yum -y --enablerepo=extras install epel-release
-        sudo yum install centos-release-scl -y
-    fi
-
-    sudo yum install devtoolset-8 -y
-    sudo yum install devtoolset-8-gcc* -y
-
-    #shellcheck source=/dev/null
-    source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile
-    sudo yum install -y epel-release
-    sudo yum install -y ShellCheck
-else
-    echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
-    exit 1
+if [ ! -f "/etc/centos-release" ]; then
+    sudo dnf -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_MAJOR}.noarch.rpm"
 fi
+
+sudo yum -y install epel-release
+
+# see https://github.com/koalaman/shellcheck/issues/1871
+wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
+sudo tar -C /usr/local/bin/ -xf shellcheck-v0.7.1.linux.x86_64.tar.xz --no-anchored 'shellcheck' --strip=1
+sudo ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
+
+if [ ! -x "$(command -v python)" ]; then
+    sudo ln -sf /usr/bin/python3 /usr/bin/python
+fi
+
+#Install raven-release for ipa-gothic-fonts required by puppeteer
+if [[ "$CENTOS_MAJOR" = "9" ]]; then
+    sudo yum -y install https://pkgs.dyn.su/el9/base/x86_64/raven-release-1.0-4.el9.noarch.rpm
+else
+    sudo yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
+fi
+
 
 sudo ln -sf /usr/local/bin/echo_supervisord_conf /usr/bin/echo_supervisord_conf
 sudo ln -sf /usr/local/bin/pidproxy /usr/bin/pidproxy
@@ -74,7 +60,7 @@ sudo yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo yum update nss -y
 
 #install nodejs
-curl -sL https://rpm.nodesource.com/setup_18.x | bash -
+curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
 
 set +e
@@ -94,9 +80,7 @@ sudo useradd www-data
 unalias cp
 set -e
 
-if grep -q -i "release 8" /etc/redhat-release ; then
-    sudo chown -R www-data:www-data /var/lib/nginx
-fi
+sudo chown -R www-data:www-data /var/lib/nginx
 
 #install sendmail
 sudo yum -y install sendmail
