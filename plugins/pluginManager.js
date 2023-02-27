@@ -753,19 +753,24 @@ var pluginManager = function pluginManager() {
                     name: plugs[i].name,
                     get: function(pathTo, callback) {
                         var pluginName = this.name;
-                        app.get(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
-                                callback(req, res, next);
-                            }
-                            else {
-                                next();
-                            }
-                        });
+                        if (!callback) {
+                            app.get(pathTo);
+                        }
+                        else {
+                            app.get(pathTo, function(req, res, next) {
+                                if (pluginConfig[pluginName]) {
+                                    callback(req, res, next);
+                                }
+                                else {
+                                    next();
+                                }
+                            });
+                        }
                     },
                     post: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.post(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
@@ -774,9 +779,30 @@ var pluginManager = function pluginManager() {
                         });
                     },
                     use: function(pathTo, callback) {
+                        if (!callback) {
+                            callback = pathTo;
+                            pathTo = '/';//fallback to default
+                        }
+
                         var pluginName = this.name;
                         app.use(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
+                                callback(req, res, next);
+                            }
+                            else {
+                                next();
+                            }
+                        });
+                    },
+                    all: function(pathTo, callback) {
+                        if (!callback) {
+                            callback = pathTo;
+                            pathTo = '/';//fallback to default
+                        }
+
+                        var pluginName = this.name;
+                        app.all(pathTo, function(req, res, next) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
