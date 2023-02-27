@@ -1,4 +1,4 @@
-FROM phusion/baseimage:bionic-1.0.0
+FROM fermium-bullseye-slim
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards
 # Enterprise Edition:
