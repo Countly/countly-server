@@ -414,6 +414,15 @@
                             },
                         }
                     };
+                    if (self.selectedProperty === "d") {
+                        self.lineOptions.yAxis = {
+                            axisLabel: {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value);
+                                }
+                            }
+                        };
+                    }
                 });
             },
             getExportQuery: function() {
