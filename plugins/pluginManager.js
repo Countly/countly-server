@@ -754,7 +754,7 @@ var pluginManager = function pluginManager() {
                     get: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.get(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
@@ -765,7 +765,7 @@ var pluginManager = function pluginManager() {
                     post: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.post(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
@@ -776,7 +776,7 @@ var pluginManager = function pluginManager() {
                     use: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.use(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
