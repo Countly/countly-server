@@ -35,6 +35,7 @@ process.title = t.join(' ');
 
 plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
+    common.drillReadBatcher = new ReadBatcher(common.drillDb);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
 
