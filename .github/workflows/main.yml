@@ -30,7 +30,7 @@ jobs:
 
       - name: Installing Countly
         shell: bash
-        run: sudo bash ./bin/countly.install.sh gh
+        run: sudo bash ./bin/countly.install.sh
 
       - name: NodeJS version
         shell: bash
