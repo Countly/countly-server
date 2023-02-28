@@ -18,6 +18,7 @@ sudo su countly -c "/bin/bash $DIR/scripts/check_countly_user_permissions.sh > /
 if [ ! -f ./permission_test_file.txt ]; then
     PARENT_DIR=$(cd ./../ && pwd)
     echo "Permission error, you cannot install Countly under ${PARENT_DIR}."
+    exit 1
 else
     sudo rm -f ./permission_test_file.txt
 fi
