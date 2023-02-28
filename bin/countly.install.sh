@@ -12,6 +12,7 @@ if [ "$INSIDE_DOCKER" == "1" ]; then
 fi
 
 sudo bash "$DIR/scripts/init_countly_user.sh"
+cd "$DIR/../"
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"
