@@ -472,41 +472,50 @@ exports.fromDatabase = function(options) {
         options.params.qstring.method = "user_details";
         options.params.app_id = options.collection.replace("app_users", "");
     }
-    plugin.dispatch("/drill/preprocess_query", {
-        query: options.query,
-        params: options.params
-    }, ()=>{
-        var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
-        if (options.sort) {
-            cursor.sort(options.sort);
-        }
 
-        if (options.skip) {
-            cursor.skip(parseInt(options.skip));
-        }
-        if (options.limit) {
-            cursor.limit(parseInt(options.limit));
-        }
-        options.streamOptions = {};
-        if (options.type === "stream" || options.type === "json") {
-            options.streamOptions.transform = function(doc) {
-                doc = transformValuesInObject(doc, options.mapper);
-                return JSON.stringify(doc);
-            };
-        }
-        if (options.type === "stream" || options.type === "json" || options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
-            options.output = options.output || function(stream) {
-                exports.stream(options.params, stream, options);
-            };
-            options.output(cursor);
-        }
-        else {
-            cursor.toArray(function(err, data) {
-                exports.fromData(data, options);
-            });
-        }
+    if (options.params && options.params.qstring && options.params.qstring.get_index && options.params.qstring.get_index !== null) {
+        options.db.collection(options.collection).indexes(function(err, indexes) {
+            if (!err) {
+                exports.fromData(indexes, options);
+            }
+        });
+    }
+    else {
+        plugin.dispatch("/drill/preprocess_query", {
+            query: options.query,
+            params: options.params
+        }, ()=>{
+            var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+            if (options.sort) {
+                cursor.sort(options.sort);
+            }
 
-    });
+            if (options.skip) {
+                cursor.skip(parseInt(options.skip));
+            }
+            if (options.limit) {
+                cursor.limit(parseInt(options.limit));
+            }
+            options.streamOptions = {};
+            if (options.type === "stream" || options.type === "json") {
+                options.streamOptions.transform = function(doc) {
+                    doc = transformValuesInObject(doc, options.mapper);
+                    return JSON.stringify(doc);
+                };
+            }
+            if (options.type === "stream" || options.type === "json" || options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+                options.output = options.output || function(stream) {
+                    exports.stream(options.params, stream, options);
+                };
+                options.output(cursor);
+            }
+            else {
+                cursor.toArray(function(err, data) {
+                    exports.fromData(data, options);
+                });
+            }
+        });
+    }
 };
 
 /**

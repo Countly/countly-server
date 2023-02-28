@@ -138,6 +138,9 @@
                     case 'indexes':
                         window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection;
                         break;
+                    case 'data':
+                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection;
+                        break;
                     }
                 },
                 showFilterPopup: function(options) {
@@ -200,7 +203,8 @@
                         sort: sort,
                         collection: this.collection,
                         db: this.db,
-                        url: "/o/export/db"
+                        url: "/o/export/db",
+                        get_index: this.index
                     };
                     return apiQueryData;
                 },
