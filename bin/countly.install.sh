@@ -19,7 +19,7 @@ if [ ! -f ./permission_test_file.txt ]; then
     PARENT_DIR=$(cd ./../ && pwd)
     echo "Permission error, you cannot install Countly under ${PARENT_DIR}."
 else
-    rm -f ./permission_test_file.txt
+    sudo rm -f ./permission_test_file.txt
 fi
 
 
