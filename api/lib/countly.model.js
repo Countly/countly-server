@@ -507,6 +507,10 @@ countlyModel.create = function(fetchValue) {
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getNumber = function(metric, isSparklineNotRequired) {
+        var periodObject = null;
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         metric = metric || _metrics[0];
         var metrics = [metric];
         //include other default metrics for data correction
@@ -517,7 +521,7 @@ countlyModel.create = function(fetchValue) {
         if (metric === "n") {
             metrics.push("u");
         }
-        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users });
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users }, periodObject);
         if (isSparklineNotRequired) {
             return data[metric];
         }
@@ -535,7 +539,7 @@ countlyModel.create = function(fetchValue) {
             }
 
             return obj;
-        });
+        }, periodObject);
         for (let i in data) {
             if (sparkLines[i]) {
                 data[i].sparkline = sparkLines[i].split(",").map(function(item) {
