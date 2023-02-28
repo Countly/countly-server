@@ -414,6 +414,15 @@
                             },
                         }
                     };
+                    if (self.selectedProperty === "d") {
+                        self.lineOptions.yAxis = {
+                            axisLabel: {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value);
+                                }
+                            }
+                        };
+                    }
                 });
             },
             getExportQuery: function() {
@@ -456,6 +465,9 @@
                 if (this.selectedProperty === "br") {
                     return countlyCommon.getShortNumber(value) + '%';
                 }
+                if (this.selectedProperty === "d") {
+                    return countlyCommon.formatSecond(value);
+                }
                 return countlyCommon.getShortNumber(value);
             }
 
@@ -489,7 +501,7 @@
                     {"value": "t", "name": CV.i18n('views.total-visits')},
                     {"value": "u", "name": CV.i18n('common.table.total-users')},
                     {"value": "n", "name": CV.i18n('common.table.new-users')},
-                    {"value": "d", "name": CV.i18n('views.duration')},
+                    {"value": "d", "name": CV.i18n('views.avg-duration')},
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
@@ -854,7 +866,7 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (this.data.metrics[k] === "d") {
                             if (this.data.dashData.data.chartData[z].t > 0) {
-                                ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
+                                ob[this.data.metrics[k]] = countlyCommon.formatSecond(this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t);
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
