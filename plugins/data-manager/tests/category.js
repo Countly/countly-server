@@ -3,6 +3,18 @@ const testUtils = require("../../../test/testUtils");
 let request = require("supertest");
 request = request(testUtils.url);
 
+function escapeHTML(text) {
+    const replacements = {
+        "<": "&lt;",
+        ">": "&gt;",
+        "&": "&amp;",
+        '"': "&quot;"
+    };
+    return text.replace(/[<>&"]/g, function(character) {
+        return replacements[character];
+    });
+}
+
 describe("Testing Category", function() {
     describe("Category Creation", () => {
         it("create a single category", async() => {
@@ -67,7 +79,7 @@ describe("Testing Category", function() {
                 .send(`api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&event=${JSON.stringify(event)}`);
             eventResponse.status.should.equal(200);
 
-            const category = ['single cat'];
+            const category = ['single cat & <'];
             const categoryResponse = await request
                 .post('/i/data-manager/category/create')
                 .send(`api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&categories=${JSON.stringify(category)}`);
@@ -77,7 +89,7 @@ describe("Testing Category", function() {
                 .post('/o/data-manager/category')
                 .send(`api_key=${API_KEY_ADMIN}&app_id=${APP_ID}`);
             categoriesResponse.status.should.equal(200);
-            const categories = categoriesResponse.body.find((item) => item.name === category[0]);
+            const categories = categoriesResponse.body.find((item) => escapeHTML(item.name) === category[0]);
             categories.should.have.property("name");
 
             const categoryChangeResponse = await request
@@ -91,6 +103,18 @@ describe("Testing Category", function() {
 
             const updatedEvent = allEventsResponse.body.find((item) => item.key === event.key);
             updatedEvent.category.should.equal(categories._id);
+        });
+    });
+
+    describe('fake test', () => {
+        it('trick to test the tests', async() => {
+            const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            const APP_ID = testUtils.get("APP_ID");
+            const category = ['single cat & <> &&&'];
+            const response = await request
+                .post('/i/data-manager/category/create')
+                .send(`api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&categories=${JSON.stringify(category)}`);
+            response.status.should.equal(305);
         });
     });
 });
