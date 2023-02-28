@@ -392,11 +392,11 @@ usage.returnAllProcessedMetrics = function(params) {
             }
 
             // We check if country data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "country" && (plugins.getConfig("api").country_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
             // We check if city data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "city" && (plugins.getConfig("api").city_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
 
@@ -915,14 +915,16 @@ plugins.register("/i", function(ob) {
                         updates: updates,
                         session_duration: params.session_duration,
                         end_session: true
+                    }, function() {
+                        updates.push({$set: {sd: 0, data: {}}});
+                        let updateUser = {};
+                        for (let i = 0; i < updates.length; i++) {
+                            updateUser = common.mergeQuery(updateUser, updates[i]);
+                        }
+                        common.updateAppUser(params, updateUser);
                     });
 
-                    updates.push({$set: {sd: 0, data: {}}});
-                    let updateUser = {};
-                    for (let i = 0; i < updates.length; i++) {
-                        updateUser = common.mergeQuery(updateUser, updates[i]);
-                    }
-                    common.updateAppUser(params, updateUser);
+
                 }
             });
         }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
