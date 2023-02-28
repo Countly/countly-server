@@ -353,12 +353,13 @@
                         },
                         success: function() {
                             //since countlyGlobal.member does not updates automatically till refresh
-                            var updatedSortMap = {
-                                [self.persistKey]: {
-                                    tableSortMap: self.controlParams.selectedDynamicCols
-                                }
-                            };
-                            countlyGlobal.member.columnOrder = _merge({}, countlyGlobal.member.columnOrder, updatedSortMap);
+                            if (!countlyGlobal.member.columnOrder) {
+                                countlyGlobal.member.columnOrder = {};
+                            }
+                            if (!countlyGlobal.member.columnOrder[self.persistKey]) {
+                                countlyGlobal.member.columnOrder[self.persistKey] = {};
+                            }
+                            countlyGlobal.member.columnOrder[self.persistKey].tableSortMap = self.controlParams.selectedDynamicCols;
                         }
                     });
                 }
