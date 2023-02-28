@@ -3,19 +3,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')
 
-GH_ACTIONS_TRIGGER=$1
-if ! [[ "$GH_ACTIONS_TRIGGER" = 'gh' ]]; then
-    if [[ "$DIR" = '/root'* ]]; then
-        echo "You cannot install Countly under /root. Suggested paths: /opt or /usr."
-        exit 1
-    elif [[ "$DIR" = '/home'* ]]; then
-        if ! [[ "$DIR" = '/home/countly'* ]]; then
-            echo "You cannot install Countly under home directory of any other user. Suggested paths: /opt or /usr."
-            exit 1
-        fi
-    fi
-fi
-
 if [ "$INSIDE_DOCKER" == "1" ]; then
     if [ -f /etc/lsb-release ]; then
         apt install sudo -y
@@ -25,6 +12,16 @@ if [ "$INSIDE_DOCKER" == "1" ]; then
 fi
 
 sudo bash "$DIR/scripts/init_countly_user.sh"
+cd "$DIR/../"
+sudo su countly -c "/bin/bash $DIR/scripts/check_countly_user_permissions.sh > /dev/null 2>&1"
+
+if [ ! -f ./permission_test_file.txt ]; then
+    PARENT_DIR=$(cd ./../ && pwd)
+    echo "Permission error, you cannot install Countly under ${PARENT_DIR}."
+else
+    rm -f ./permission_test_file.txt
+fi
+
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"
