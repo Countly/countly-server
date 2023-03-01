@@ -1488,9 +1488,7 @@ var pluginManager = function pluginManager() {
     }
     this.isAnyMasked = function() {
         if (masking && masking.apps) {
-            console.error(JSON.stringify(masking.apps));
             for (var app in masking.apps) {
-
                 if (masking.apps[app] && masking.apps[app].masking) {
                     return hasAnyValueTrue(masking.apps[app].masking);
                 }
