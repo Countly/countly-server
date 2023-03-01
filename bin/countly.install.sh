@@ -13,6 +13,7 @@ fi
 
 sudo bash "$DIR/scripts/init_countly_user.sh"
 cd "$DIR/../"
+
 sudo su countly -c "/bin/bash $DIR/scripts/check_countly_user_permissions.sh > /dev/null 2>&1"
 
 if [ ! -f ./permission_test_file.txt ]; then
@@ -22,7 +23,6 @@ if [ ! -f ./permission_test_file.txt ]; then
 else
     sudo rm -f ./permission_test_file.txt
 fi
-
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"

@@ -1,3 +1,62 @@
+## Version 22.09.16
+Fixes:
+- [dashboard] fixed incorrectly changing widgets with number visualisation
+- [core] Fix decoding of special characters in ui
+- [core] Fix for vulnerable password generation
+- [core] Sanitize file names for localisation and themes
+- [hooks] Fix calling of localhost
+- [data-manager] fixed bug in category change for events
+- [install] run wget without sudo during installation
+- [populator] Fix for empty users created for ab-testing
+- [settings] Fix for API settings missing from app level configuration
+
+Enterprise fixes:
+- [data-manager] Fix bug in changing visibility for event
+- [cohorts] Fixed element sizes of cohort steps, inside cohort creation form
+- [ab-testing] Change python3 to python3.8 for CentOS 8
+- [ab-testing] Set default timezone for models installation scripts
+- [drill] Send segmentation request as POST
+
+## Version 22.09.15
+Fixes:
+- [compliance-hub] use 'change' instead of 'after' for filter
+- [core] app user export to database (not using filesystem anymore) !!!changes export format!!!
+- [core] do not fetch masking config if masking is not enabled
+- [core] fixed parsing of special characters in event keys
+- [core] only use custom period when set explicitly in model file
+- [core] set activePeriod as current day in periodObject if single day selected
+- [dashboards] fixed bug with not fully loaded graphs for events and crashes for some periods
+- [data-manager] fixed localization for data masking toggle
+- [dbviewer] correct read access check fixed
+- [dbviewer] fixed server error on invalid queries
+- [events] fixed display bug in the all events view for events with ampersand in its name enterprise
+- [install] do not overwrite supervisord.conf in upgrades
+- [install] online and offline setups for CentOS/RHEL 7
+- [networking] support for ipv6
+- [period] end date was set as 00:00Am in custom period selections
+- [populator] added UI check for maximum time input that prevents non-number inputs
+- [populator] populating with template create SDK requests with template document properties
+- [push] fixed wrong error deserialization
+- [security] deepExtend manual object copy replaced with lodash merge
+- [security] jquery validation xss vulnerability fix
+- [UI] graph notes back link is fixed
+
+Enterprise fixes:
+- [ab-testing] Fixes for setup.
+- [active-directory] Remove tlsKey for active directory  client
+- [cohorts] Fixes for displaying special characters
+- [data-manager] Ability to mask device id
+- [data-manager] [users]  Fixes for & in events name
+- [drill] Added index on eventTimeline collection for field app to have faster deletion on app delete/clear.
+- [drill] Fixed bug in timeline on single event deletion.
+- [drill] Make sure only preset values are used in meta regeneration and no new values are added.
+- [drill] Meta cleanup endpoint and function in drill. Clears out wrongly saved infromation in meta about user properties.
+- [retention] Fixes for showing cohort names in retention view.
+- [retention] Retention label set according to selected result type.
+- [revenue] Null check for revenue widgets
+- [users]  Fixes for displaying special characters
+- [users] sidebar properties value change after page has loaded
+
 ## Version 22.09.14
 Fixes:
 - [core] Always use random initialization vector if not provided for encryption
