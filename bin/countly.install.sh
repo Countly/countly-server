@@ -14,6 +14,16 @@ fi
 sudo bash "$DIR/scripts/init_countly_user.sh"
 cd "$DIR/../"
 
+sudo su countly -c "/bin/bash $DIR/scripts/check_countly_user_permissions.sh > /dev/null 2>&1"
+
+if [ ! -f ./permission_test_file.txt ]; then
+    PARENT_DIR=$(cd ./../ && pwd)
+    echo "Permission error, you cannot install Countly under ${PARENT_DIR}."
+    exit 1
+else
+    sudo rm -f ./permission_test_file.txt
+fi
+
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"
     if [ "$COUNTLY_OVERWRITE_MEM_REQUIREMENT" != "1" ]; then

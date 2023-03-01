@@ -358,76 +358,57 @@ function mongodb_check() {
 }
 
 if [ $# -eq 0 ]; then
+    #install latest mongodb
     if [ -f /etc/redhat-release ]; then
-        #install latest mongodb
+        CENTOS_RELEASE="$(rpm --eval '%{centos_ver}')"
 
-        #select source based on release
-        if grep -q -i "release 6" /etc/redhat-release ; then
-            echo "[mongodb-org-4.4]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/4.4/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
-        elif grep -q -i "release 7" /etc/redhat-release ; then
-            echo "[mongodb-org-4.4]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/4.4/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
-        elif grep -q -i "release 8" /etc/redhat-release ; then
-            echo "[mongodb-org-4.4]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+        if [[ "$CENTOS_RELEASE" != "7" && "$CENTOS_RELEASE" != "8" ]]; then
+            echo "Unsupported OS version, only support CentOS/RHEL 8 and 7"
+            exit 1
         fi
+
+        echo "[mongodb-org-4.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_RELEASE}/mongodb-org/4.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+
         yum install -y mongodb-org
     fi
 
     if [ -f /etc/lsb-release ]; then
-        #install latest mongodb
-        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-        if [ "$UBUNTU_YEAR" == "16" ]; then
-            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
-        elif [ "$UBUNTU_YEAR" == "18" ]; then
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
-        elif [ "$UBUNTU_YEAR" == "22" ]; then
+        if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+            echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
+            exit 1
+        fi
+
+        #mongodb 4.4 is not supported officially on Ubuntu 22
+        if [[ "$UBUNTU_YEAR" == "22" ]]; then
+            #we can install binaries of Ubuntu 20 if we pre-install required libssl
             wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
             dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
             rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+
+            UBUNTU_RELEASE="focal"
         else
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+            UBUNTU_RELEASE="$(lsb_release -cs)"
         fi
+
+        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+
         apt-get update
-        #install mongodb
         DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
     fi
 
     #backup config and remove configuration to prevent duplicates
     mongodb_configure
 
-    if [ -f /etc/redhat-release ]; then
-        #mongodb might need to be started
-        if grep -q -i "release 6" /etc/redhat-release ; then
-            service mongod restart > /dev/null || echo "mongodb service does not exist"
-        else
-            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-        fi
-    fi
-
-    if [ -f /etc/lsb-release ]; then
-        if [[ "$(/sbin/init --version)" =~ upstart ]]; then
-            restart mongod > /dev/null || echo "mongodb upstart job does not exist"
-        else
-            systemctl restart mongod || echo "mongodb systemctl job does not exist"
-        fi 2> /dev/null
-    fi
+    #mongodb might need to be restarted
+    systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
 
     mongodb_check
 elif [ "$1" == "check" ]; then
