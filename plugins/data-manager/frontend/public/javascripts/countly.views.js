@@ -569,7 +569,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -619,7 +619,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -661,7 +661,7 @@
                 this.$store.dispatch("countlyDataManager/changeCategory", {
                     category: cat,
                     events: rows.map(function(ev) {
-                        return ev.key;
+                        return countlyCommon.unescapeHtml(ev.key);
                     })
                 });
             },
