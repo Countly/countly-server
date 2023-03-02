@@ -54,6 +54,7 @@ enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
     sudo yum install devtoolset-8-gcc* -y
 
     #shellcheck source=/dev/null
+    curl https://raw.githubusercontent.com/Countly/countly-devops/main/snippets/fix_rhel_devtoolset_8_sudo/rhel_devtoolset_8_sudo.txt | sudo tee /opt/rh/devtoolset-8/root/usr/bin/sudo && sudo chmod +x /opt/rh/devtoolset-8/root/usr/bin/sudo
     source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile
     sudo yum install -y epel-release
     sudo yum install -y ShellCheck
