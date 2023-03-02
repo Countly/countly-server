@@ -9,6 +9,6 @@ do
           STATUS=1
       fi
   fi
-done < <(find "$DIR/../" -type f  -name "*.sh" -print)
+done < <(find "$DIR/../../../" -type f  -name "*.sh" -print)
 
  exit $STATUS
