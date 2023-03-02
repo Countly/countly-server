@@ -360,10 +360,11 @@ function mongodb_check() {
 if [ $# -eq 0 ]; then
     #install latest mongodb
     if [ -f /etc/redhat-release ]; then
-        CENTOS_RELEASE="$(rpm --eval '%{centos_ver}')"
+        #install latest mongodb
+        CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
 
-        if [[ "$CENTOS_RELEASE" != "7" && "$CENTOS_RELEASE" != "8" ]]; then
-            echo "Unsupported OS version, only support CentOS/RHEL 8 and 7"
+        if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
+            echo "Unsupported OS version, only support CentOS/RHEL 9 and 8"
             exit 1
         fi
 
@@ -378,6 +379,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
     fi
 
     if [ -f /etc/lsb-release ]; then
+        #install latest mongodb
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
         if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
