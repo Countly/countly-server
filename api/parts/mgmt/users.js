@@ -9,7 +9,7 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
-    { hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+    { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
@@ -925,7 +925,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filteredAppIds = appIds.filter((appId) => {
-            if (hasAdminAccess(params.member, appId)) {
+            if (hasAdminAccess(params.member, appId) || hasReadRight('core', appId, params.member)) {
                 return true;
             }
             return false;
