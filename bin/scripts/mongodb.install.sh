@@ -376,34 +376,29 @@ enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
 
         yum install -y mongodb-org
-    fi
-
-    if [ -f /etc/lsb-release ]; then
+    elif [ -f /etc/lsb-release ]; then
         #install latest mongodb
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-        if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
             echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
             exit 1
         fi
 
-        #mongodb 6.0 is not supported officially on Ubuntu 22
-        if [[ "$UBUNTU_YEAR" == "22" ]]; then
-            #we can install binaries of Ubuntu 20 if we pre-install required libssl
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+        if [ "$UBUNTU_YEAR" == "22" ]; then
             wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
             dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
             rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
-            UBUNTU_RELEASE="focal"
-        else
-            UBUNTU_RELEASE="$(lsb_release -cs)"
         fi
 
-        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
-
         apt-get update
         DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
+    else
+        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22."
+        exit 1
     fi
 
     #backup config and remove configuration to prevent duplicates
