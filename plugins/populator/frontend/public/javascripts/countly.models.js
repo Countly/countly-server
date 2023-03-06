@@ -1485,11 +1485,11 @@
 
                     setTimeout(function() {
                         generateSurveyWidgets2(done);
-                    }, 2000);
+                    }, 3000);
 
                     setTimeout(function() {
                         generateSurveyWidgets3(done);
-                    }, 3000);
+                    }, 5000);
                 });
             }
             else {
