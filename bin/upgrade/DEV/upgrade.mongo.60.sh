@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #check if authentication is required
-if grep -E '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
+isAuth=0
+if grep -Eq '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
     isAuth=1
-else
-    isAuth=0
 fi
 
 #check if we have previous upgrade needed

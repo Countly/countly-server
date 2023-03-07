@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #check if authentication is required
-if grep -E '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
+isAuth=0
+if grep -Eq '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
     isAuth=1
-else
-    isAuth=0
 fi
 
 #check if we have previous upgrade needed
@@ -63,7 +62,7 @@ if [ -x "$(command -v mongo)" ]; then
         fi
         #uninstall mognodb
         apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools python3-apt
-        apt-get install python3-apt -y
+        apt-get -y install python3-apt
     fi
 fi
 
