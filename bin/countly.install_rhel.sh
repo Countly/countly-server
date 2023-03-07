@@ -24,10 +24,10 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     fi
 
     sudo yum -y install epel-release
+
     # see https://github.com/koalaman/shellcheck/issues/1871
     wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
     sudo tar -C /usr/local/bin/ -xf shellcheck-v0.7.1.linux.x86_64.tar.xz --no-anchored 'shellcheck' --strip=1
-
     sudo ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
 
     if [ ! -x "$(command -v python)" ]; then
@@ -52,11 +52,11 @@ enabled=1" | sudo tee /etc/yum.repos.d/nginx.repo >/dev/null
 
     sudo yum install devtoolset-8 -y
     sudo yum install devtoolset-8-gcc* -y
+
     #shellcheck source=/dev/null
     source /opt/rh/devtoolset-8/enable && echo -e "\nsource /opt/rh/devtoolset-8/enable" | sudo tee -a /etc/profile
     sudo yum install -y epel-release
     sudo yum install -y ShellCheck
-
 else
     echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
     exit 1
@@ -111,6 +111,7 @@ sudo yum install numactl -y
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
+
 if [ "$INSIDE_DOCKER" == "1" ]; then
     sudo sed -i 's/  fork/#  fork/g' /etc/mongod.conf
     sudo mongod -f /etc/mongod.conf &

@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
 
 const FEATURE_NAME = 'dbviewer';
@@ -247,7 +247,7 @@ var spawn = require('child_process').spawn,
                             var db = { name: name, collections: {} };
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
-                                    dbUserHasAccessToCollection(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
+                                    userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
                                         if (hasAccess) {
                                             ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
@@ -333,7 +333,41 @@ var spawn = require('child_process').spawn,
             }
         }
 
-        //console.log(userApps);
+        /**
+        * Wrapper for dbUserHasAccessToCollection.  Checks if user has access to dbViewer plugin
+        * If user has access to dbViewer plugin,  dbUserHasAccessToCollection is called
+        * @param {object} parameters - {@link parameters} object
+        * @param {string} collection - collection will be checked for access
+        * @param {string} appId - appId to which to restrict access
+        * @param {function} callback - callback method includes boolean variable as argument  
+        * @returns {function} returns callback
+         */
+        function userHasAccess(parameters, collection, appId, callback) {
+            if (typeof appId === "function") {
+                callback = appId;
+                appId = null;
+            }
+            if (parameters.member.global_admin && !appId) {
+                //global admin without app_id restriction just has access to everything
+                return callback(true);
+            }
+
+            if (appId) {
+                if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
+                    return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                }
+            }
+            else {
+                var userApps = getUserApps(parameters.member);
+                for (let i = 0; i < userApps.length; i++) {
+                    //if collection is in the apps of user
+                    if (collection.indexOf(userApps[i]) > 0 && hasReadRight(FEATURE_NAME, userApps[i], parameters.member)) {
+                        return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                    }
+                }
+            }
+            return callback(false);
+        }
 
         validateUser(params, function() {
             // conditions
@@ -351,7 +385,7 @@ var spawn = require('child_process').spawn,
                     getIndexes();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             getIndexes();
                         }
@@ -367,7 +401,7 @@ var spawn = require('child_process').spawn,
                     dbGetDocument();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetDocument();
                         }
@@ -390,7 +424,7 @@ var spawn = require('child_process').spawn,
                     }
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             try {
                                 let aggregation = JSON.parse(params.qstring.aggregation);
@@ -413,7 +447,7 @@ var spawn = require('child_process').spawn,
                     dbGetCollection();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetCollection();
                         }
