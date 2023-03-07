@@ -62,7 +62,7 @@ if [ -x "$(command -v mongo)" ]; then
         fi
         #uninstall mognodb
         apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools python3-apt
-        apt-get -y install python3-apt
+        apt-get install -y python3-apt
     fi
 fi
 
