@@ -1462,6 +1462,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 options.upsert = false;
                             }
                             common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                                if (err2) {
+                                    log.e(err);
+                                }
                                 if (view2 && view2.value) {
                                     callback(err, view2.value);
                                     common.readBatcher.invalidate(collection, query, {}, false);
@@ -1485,6 +1488,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         options.upsert = false;
                     }
                     common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
+                        if (err) {
+                            log.e(err);
+                        }
                         if (view && view.value) {
                             callback(err, view.value);
                         }
@@ -1715,8 +1721,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             if (haveVisit) {
                                 common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
                                     for (let p = 0; p < results.length; p++) {
-                                        var currEvent = results[p];
-                                        recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                        if (results[p]) {
+                                            var currEvent = results[p];
+                                            recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                        }
                                     }
                                 });
                             }
@@ -1726,6 +1734,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
                             }
 
+                        }, function(onfail) {
+                            log.e(JSON.stringify(onfail || ""));
+                        }).catch(function(rejection) {
+                            log.e(rejection);
                         });
                         resolve();
                     });
@@ -1803,6 +1815,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         currEvent.viewAlias = escapedMetricVal;
                         resolve(currEvent);
                     }
+                    else {
+                        resolve(false);
+                    }
                 });
             }
             else if (currEvent.segmentation.view) {
@@ -1811,6 +1826,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (view) {
                         currEvent.viewAlias = common.db.encode(view._id + "");
                         resolve(currEvent);
+                    }
+                    else {
+                        resolve(false);
                     }
                 });
             }
