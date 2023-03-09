@@ -246,50 +246,6 @@ function mongodb_check() {
     #Check logrotation
     mongodb_logrotate
 
-    #Check kernel version 2.6.36
-    KERNEL_VERSION=$(uname -r | awk -F'-' '{print $1}')
-    KERNEL_VERSION_MAJOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $1}')
-    KERNEL_VERSION_MAJOR=$((KERNEL_VERSION_MAJOR + 0))
-    KERNEL_VERSION_MINOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $2}')
-    KERNEL_VERSION_MINOR=$((KERNEL_VERSION_MINOR + 0))
-    KERNEL_VERSION_PATCH=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $3}')
-    KERNEL_VERSION_PATCH=$((KERNEL_VERSION_PATCH + 0))
-
-    if [ $KERNEL_VERSION_MAJOR -gt 2 ]; then
-        message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-    else
-        if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -gt 6 ]]; then
-            message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-        else
-            if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -ge 6 && $KERNEL_VERSION_PATCH -ge 36 ]]; then
-                message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-            else
-                message_warning "Linux kernel need to be updated"
-            fi
-        fi
-    fi
-
-    #Check glibc version 2.13
-    if [ -x "$(command -v ldd)" ]; then
-        LDD_VERSION=$(ldd --version | head -1 | awk -F' ' '{print $NF}')
-        LDD_VERSION_MAJOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $1}')
-        LDD_VERSION_MAJOR=$((LDD_VERSION_MAJOR + 0))
-        LDD_VERSION_MINOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $2}')
-        LDD_VERSION_MINOR=$((LDD_VERSION_MINOR + 0))
-
-        if [ $LDD_VERSION_MAJOR -gt 2 ]; then
-            message_ok "GLibC version is OK ${LDD_VERSION}"
-        else
-            if [[ $LDD_VERSION_MAJOR -eq 2 && $LDD_VERSION_MINOR -ge 13 ]]; then
-                message_ok "GLibC version is OK ${LDD_VERSION}"
-            else
-                message_warning "Glibc need to be updated"
-            fi
-        fi
-    else
-        message_optional "Command ldd not found"
-    fi
-
     #Set swappiness to 1
     update_sysctl "vm.swappiness" "1"
     message_ok "Swappiness set to 1"
