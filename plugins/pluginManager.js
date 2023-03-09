@@ -1523,6 +1523,37 @@ var pluginManager = function pluginManager() {
 
     };
 
+    /**
+    * Checks if any item in object tree and subrtree is true. Recursive.
+    * @param {object} myOb - object
+    * @returns {boolean} true or false
+    **/
+    function hasAnyValueTrue(myOb) {
+        if (typeof myOb === 'object' && Object.keys(myOb) && Object.keys(myOb).length > 0) {
+            var value = false;
+            for (var key in myOb) {
+                value = value || hasAnyValueTrue(myOb[key]);
+            }
+            return value;
+        }
+        else {
+            return !!myOb;
+        }
+    }
+    this.isAnyMasked = function() {
+        if (masking && masking.apps) {
+            for (var app in masking.apps) {
+                if (masking.apps[app] && masking.apps[app].masking) {
+                    return hasAnyValueTrue(masking.apps[app].masking);
+                }
+            }
+            return false;
+        }
+        else {
+            return false;
+        }
+    };
+
     this.getMaskingSettings = function(appID) {
         if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));

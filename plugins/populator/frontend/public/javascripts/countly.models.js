@@ -896,7 +896,7 @@
         };
 
         this.startSessionForAb = function() {
-            this.createUsersForAB(getRandomInt(1, countlyPopulator.getUserAmount() * 10));
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {

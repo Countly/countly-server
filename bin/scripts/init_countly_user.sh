@@ -3,6 +3,7 @@
 #get current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 COUNTLY_DIR="$( cd "$DIR"/../../ && pwd )"
+
 #check if user not created yet
 if [ "$(getent passwd countly)x" == 'x' ]; then
     #create countly user
