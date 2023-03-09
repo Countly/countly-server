@@ -379,6 +379,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
     elif [ -f /etc/lsb-release ]; then
         #install latest mongodb
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+        UBUNTU_RELEASE="$(lsb_release -cs)"
 
         if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
             echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
@@ -386,13 +387,6 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
         fi
 
         wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-
-        if [ "$UBUNTU_YEAR" == "22" ]; then
-            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
-            dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
-            rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-        fi
-
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
         apt-get update
         DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
