@@ -117,6 +117,7 @@
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
+                    var self = this;
                     CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
@@ -131,6 +132,7 @@
                                 message: CV.i18n('management-users.removed-message'),
                                 type: 'success'
                             });
+                            self.$emit('refresh-table');
                         });
                     }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
@@ -773,13 +775,14 @@
         methods: {
             refresh: function() {
                 var self = this;
-                countlyUserManagement.fetchUsers()
-                    .then(function() {
-                        var usersObj = countlyUserManagement.getUsers();
-                        self.users = [];
-                        self.fillOutUsers(usersObj);
-                    })
-                    .catch(function() {});
+                setTimeout(function() {
+                    countlyUserManagement.fetchUsers()
+                        .then(function() {
+                            var usersObj = countlyUserManagement.getUsers();
+                            self.users = [];
+                            self.fillOutUsers(usersObj);
+                        }).catch(function() {});
+                }, 100);
             },
             createUser: function() {
                 this.drawerSettings.editMode = false;
