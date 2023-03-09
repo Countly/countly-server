@@ -569,7 +569,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -619,7 +619,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -661,7 +661,7 @@
                 this.$store.dispatch("countlyDataManager/changeCategory", {
                     category: cat,
                     events: rows.map(function(ev) {
-                        return ev.key;
+                        return countlyCommon.unescapeHtml(ev.key);
                     })
                 });
             },
@@ -1065,19 +1065,23 @@
                 data.is_visible = data.is_visible === undefined ? true : data.is_visible;
                 data.description = countlyCommon.unescapeHtml(data.description);
                 data.e = countlyCommon.unescapeHtml(data.e);
-                data.key = countlyCommon.unescapeHtml(data.key);
+                if (data.key) {
+                    data.key = countlyCommon.unescapeHtml(data.key);
+                }
                 data.categoryName = countlyCommon.unescapeHtml(data.categoryName);
                 data.name = countlyCommon.unescapeHtml(data.name);
-                Object.keys(data.sg).forEach(function(key) {
-                    var decodedKey = countlyCommon.unescapeHtml(key);
-                    if (data.sg[key].name) {
-                        data.sg[key].name = countlyCommon.unescapeHtml(data.sg[key].name);
-                    }
-                    if (decodedKey !== key) {
-                        data.sg[decodedKey] = data.sg[key];
-                        delete data.sg[key];
-                    }
-                });
+                if (data.sg) {
+                    Object.keys(data.sg).forEach(function(key) {
+                        var decodedKey = countlyCommon.unescapeHtml(key);
+                        if (data.sg[key].name) {
+                            data.sg[key].name = countlyCommon.unescapeHtml(data.sg[key].name);
+                        }
+                        if (decodedKey !== key) {
+                            data.sg[decodedKey] = data.sg[key];
+                            delete data.sg[key];
+                        }
+                    });
+                }
                 self.openDrawer("events", data);
             });
             this.$root.$on('dm-open-edit-transform-drawer', function(doc) {

@@ -2,9 +2,7 @@
     <div class="cly-vue-data-manager__mci bg-white">
         <div class="cly-vue-data-manager__mci--block bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-px-4"
             v-if="!editing">
-            <div class="text-medium">
-                {{category.name}}
-            </div>
+            <div class="text-medium" v-html="category.name"></div>
             <div class="bu-is-flex">
                 <div @click="removeCategory" class="bu-mr-3"><i class="el-icon-delete color-cool-gray-50 bu-is-clickable"></i></div>
                 <div @click="editCategory"><i class="el-icon-edit color-cool-gray-50 bu-is-clickable"></i></div>
