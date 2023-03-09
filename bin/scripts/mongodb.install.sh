@@ -327,7 +327,7 @@ if [ $# -eq 0 ]; then
 
         echo "[mongodb-org-6.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_RELEASE}/mongodb-org/6.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/6.0/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
