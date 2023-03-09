@@ -52,10 +52,10 @@ else
         else grep -i "release 7" /etc/redhat-release;
             echo " Upgrading GCC in RHEL 7"
             yum update -y
-            yum install centos-release-scl -y
+            yum install -y centos-release-scl
             yum group install -y "Development Tools"
-            yum install devtoolset-8 -y
-            yum install devtoolset-8-gcc* -y
+            yum install -y devtoolset-8
+            yum install -y devtoolset-8-gcc*
             #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
@@ -63,7 +63,7 @@ else
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading GCC in Ubuntu"
         apt-get install -y software-properties-common
-        add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        add-apt-repository -y ppa:ubuntu-toolchain-r/test
         apt-get install -y build-essential gcc-8
         update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
         update-alternatives --set gcc "/usr/bin/gcc-8"
@@ -84,10 +84,10 @@ else
         else grep -i "release 7" /etc/redhat-release ;
             echo " Upgrading G++ in RHEL 7"
             yum update -y
-            yum install centos-release-scl -y
+            yum install -y centos-release-scl
             yum group install -y "Development Tools"
-            yum install devtoolset-8 -y
-            yum install devtoolset-8-gcc* -y
+            yum install -y devtoolset-8
+            yum install -y devtoolset-8-gcc*
             #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
@@ -95,7 +95,7 @@ else
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading G++ in Ubuntu"
         apt-get install -y software-properties-common
-        add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        add-apt-repository -y ppa:ubuntu-toolchain-r/test
         apt-get install -y build-essential g++-8
         update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
         update-alternatives --set g++ "/usr/bin/g++-8"

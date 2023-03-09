@@ -5,9 +5,9 @@ totalm=$(free -m | awk '/^Mem:/{print $2}')
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
     if [ -f /etc/lsb-release ]; then
-        apt install sudo -y
+        apt install -y sudo
     elif [ -f /etc/redhat-release ]; then
-        yum install sudo -y
+        yum install -y sudo
     fi
 fi
 
