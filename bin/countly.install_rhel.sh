@@ -14,22 +14,22 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-sudo yum -y install wget openssl-devel make git sqlite unzip bzip2
+sudo yum install -y wget openssl-devel make git sqlite unzip bzip2
 
 sudo yum install -y python3-pip
 sudo pip3 install pip --upgrade
 sudo pip3 install meld3
 sudo pip3 install supervisor --ignore-installed meld3
-sudo yum -y install python3-setuptools
+sudo yum install -y python3-setuptools
 
-sudo yum -y install python3-policycoreutils
-sudo yum -y group install "Development Tools"
+sudo yum install -y python3-policycoreutils
+sudo yum group install -y "Development Tools"
 
 if [ ! -f "/etc/centos-release" ]; then
     sudo dnf -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_MAJOR}.noarch.rpm"
 fi
 
-sudo yum -y install epel-release
+sudo yum install -y epel-release
 
 # see https://github.com/koalaman/shellcheck/issues/1871
 wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
@@ -50,12 +50,12 @@ cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 if [[ "$CENTOS_MAJOR" = "9" ]]; then
     sudo rpm -ivh https://pkgs.dyn.su/el8/base/x86_64/ipa-gothic-fonts-003.03-15.el8.noarch.rpm
 else
-    sudo yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
-    sudo yum -y install ipa-gothic-fonts
+    sudo yum install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
+    sudo yum install -y ipa-gothic-fonts
 fi
 
 #Install dependancies required by the puppeteer
-sudo yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
+sudo yum install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
 #Install nss after installing above dependencies
 sudo yum update nss -y
 
@@ -73,7 +73,7 @@ elif [ ! -f "/usr/bin/node" ]; then
 fi
 
 #install nginx
-sudo yum -y install nginx
+sudo yum install -y nginx
 
 set +e
 sudo useradd www-data
@@ -83,7 +83,7 @@ set -e
 sudo chown -R www-data:www-data /var/lib/nginx
 
 #install sendmail
-sudo yum -y install sendmail
+sudo yum install -y sendmail
 sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
 #install npm modules

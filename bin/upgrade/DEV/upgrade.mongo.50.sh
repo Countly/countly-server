@@ -62,7 +62,7 @@ if [ -x "$(command -v mongo)" ]; then
         fi
         #uninstall mognodb
         apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools python3-apt
-        apt-get install -y python3-apt
+        apt-get install -y  python3-apt
     fi
 fi
 
@@ -113,7 +113,7 @@ if [ -f /etc/lsb-release ]; then
 fi
 
 if [ -f /etc/redhat-release ]; then
-    #Restoring systemd unit file 
+    #Restoring systemd unit file
     \cp -f /usr/lib/systemd/system/mongod.service.bak /usr/lib/systemd/system/mongod.service
     systemctl daemon-reload
     #mongodb might need to be started

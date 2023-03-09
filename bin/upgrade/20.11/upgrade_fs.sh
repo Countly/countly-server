@@ -21,12 +21,12 @@ then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
     # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     sudo npm install -g npm@latest;
-    
+
     if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
         rm /usr/local/bin/npm
         ln -s /usr/bin/npm /usr/local/bin/npm
     fi
-    
+
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
         curl -sL https://rpm.nodesource.com/setup_14.x | bash -
@@ -39,16 +39,16 @@ then
             yum install -y pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
         fi
     fi
-    
+
     if [ -f /etc/lsb-release ]; then
         wget -qO- https://deb.nodesource.com/setup_14.x | bash -
         apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
-        apt-get -y install bzip2 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+        apt-get install -y  bzip2 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
     fi
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
-    
+
     #removing moved files
     if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/banking.css" ]; then
         rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/banking.css";
@@ -68,10 +68,10 @@ then
     if [ -f "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css" ]; then
         rm -rf "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css";
     fi
-    
+
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
-    
+
     (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
 
     countly plugin upgrade star-rating
@@ -86,7 +86,7 @@ then
     sudo bash "$DIR/scripts/install.nghttp2.sh"
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm)
-    
+
     #enable new plugins
     countly plugin enable activity-map
     countly plugin enable config-transfer
@@ -94,7 +94,7 @@ then
     countly plugin enable data-manager
     countly plugin enable hooks
     countly plugin enable surveys
-    
+
     #get web sdk
     countly update sdk-web
 

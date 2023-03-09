@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-#apt-get install gawk -y;
+#apt-get install -y  gawk;
 
 ## each separate version number must be less than 3 digit wide !
 #function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
@@ -28,14 +28,14 @@ bash "$DIR/scripts/detect.init.sh"
 #apt-get update
 
 #if [ "$(version "$gcc_have")" -lt "$(version "$gcc_need")" ]; then
-#    apt-get -y install gcc-4.8 g++-4.8 ;
+#    apt-get install -y  gcc-4.8 g++-4.8 ;
 #    export CXX="g++-4.8" ;
 #    export CC="gcc-4.8" ;
 #    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 ;
 #fi
 
 #install new nodejs dependencies
-#apt-get install -y build-essential libkrb5-dev
+#apt-get install -y  build-essential libkrb5-dev
 
 #stop countly
 #countly stop
@@ -54,7 +54,7 @@ countly plugin enable mobile ;
 
 #replace stores with sources
 STORESTATE=$(countly plugin status stores);
-if [ "$STORESTATE" == "enabled" ] 
+if [ "$STORESTATE" == "enabled" ]
 then
     countly plugin disable stores ;
     countly plugin enable sources ;

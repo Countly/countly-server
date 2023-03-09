@@ -9,7 +9,7 @@
 YUM_CMD=$(which yum)
 APT_GET_CMD=$(which apt-get)
 if [[ ! -z "$APT_GET_CMD" ]]; then
-    apt-get install -y zip
+    apt-get install -y  zip
 elif [[ ! -z "$YUM_CMD" ]]; then
     yum install -y unzip wget
 else

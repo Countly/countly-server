@@ -19,16 +19,16 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 #update package index
 apt-get update
 
-apt-get -y install build-essential git sqlite3 unzip shellcheck
+apt-get install -y  build-essential git sqlite3 unzip shellcheck
 
 if apt-cache pkgnames | grep -q python-software-properties; then
-    apt-get -y install python-software-properties
+    apt-get install -y  python-software-properties
 else
-    apt-get -y install python3-software-properties
+    apt-get install -y  python3-software-properties
 fi
 
 if ! (command -v apt-add-repository >/dev/null) then
-    apt-get -y install software-properties-common
+    apt-get install -y  software-properties-common
 fi
 
 #add node.js repo
@@ -41,7 +41,7 @@ add-apt-repository ppa:ubuntu-toolchain-r/test -y
 #update once more after adding new repos
 apt-get update
 
-apt-get -y install gcc-4.8 g++-4.8
+apt-get install -y  gcc-4.8 g++-4.8
 
 export CXX="g++-4.8"
 export CC="gcc-4.8"
@@ -49,16 +49,16 @@ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 g++ --version
 
 #install nginx
-apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
+apt-get install -y  nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
+apt-get install -y  nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install supervisor
-apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+apt-get install -y  supervisor || (echo "Failed to install supervisor." ; exit)
 
 #install sendmail
-#apt-get -y install sendmail
+#apt-get install -y  sendmail
 
 #install npm modules
 node --version
