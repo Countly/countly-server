@@ -14,7 +14,9 @@ function mongodb_configure () {
     if ping -c 1 -6 localhost >> /dev/null 2>&1; then
         sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
         sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
-        sed -i '/bindIp/ s/$/, ::1/' ${MONGODB_CONFIG_FILE}
+        if ! (grep 'bindIp' ${MONGODB_CONFIG_FILE}| grep -q '::1' ${MONGODB_CONFIG_FILE}); then
+            sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
+        fi
     fi
 
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
@@ -56,7 +58,7 @@ endscript
 }
 EOF
 
-        sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
+            sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/lsb-release ]; then
@@ -75,7 +77,7 @@ endscript
 }
 EOF
 
-        sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
+            sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         message_ok 'Logrotate configured'
@@ -85,8 +87,7 @@ EOF
 }
 
 function disable_transparent_hugepages () {
-    if [[ $(/sbin/init --version) =~ upstart ]];
-	then
+    if [[ $(/sbin/init --version) =~ upstart ]]; then
         if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
             message_ok "Transparent hugepages is already disabled"
         else
