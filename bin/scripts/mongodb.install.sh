@@ -321,7 +321,7 @@ if [ $# -eq 0 ]; then
         CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
 
         if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
-            echo "Unsupported OS version, only support CentOS/RHEL 9 and 8"
+            echo "Unsupported OS version, only support CentOS/RHEL 8 and 9."
             exit 1
         fi
 
@@ -339,7 +339,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
         UBUNTU_RELEASE="$(lsb_release -cs)"
 
         if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
-            echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
+            echo "Unsupported OS version, only support Ubuntu 20 and 22."
             exit 1
         fi
 

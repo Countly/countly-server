@@ -5,7 +5,7 @@ set -e
 CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
 
 if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
-    echo "Unsupported OS version, only support CentOS/RHEL 9 and 8"
+    echo "Unsupported OS version, only support CentOS/RHEL 8 and 9."
     exit 1
 fi
 

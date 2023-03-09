@@ -7,7 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
 if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
-    echo "Unsupported OS version, only support Ubuntu 22 and 20"
+    echo "Unsupported OS version, only support Ubuntu 20 and 22."
     exit 1
 fi
 
