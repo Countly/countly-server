@@ -5,7 +5,7 @@ VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "$DIR/../../frontend/express/versio
 echo "Installing prerequisites"
 if [ "$1" = "zip" ]
 then
-    apt-get install -y  zip
+    apt-get install -y zip
 fi
 
 echo "Updating core"

@@ -62,9 +62,9 @@ else
     fi
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading GCC in Ubuntu"
-        apt-get install -y  software-properties-common
+        apt-get install -y software-properties-common
         add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        apt-get install -y  build-essential gcc-8
+        apt-get install -y build-essential gcc-8
         update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
         update-alternatives --set gcc "/usr/bin/gcc-8"
     fi
@@ -94,9 +94,9 @@ else
     fi
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading G++ in Ubuntu"
-        apt-get install -y  software-properties-common
+        apt-get install -y software-properties-common
         add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        apt-get install -y  build-essential g++-8
+        apt-get install -y build-essential g++-8
         update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
         update-alternatives --set g++ "/usr/bin/g++-8"
     fi

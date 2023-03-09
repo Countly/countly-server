@@ -19,7 +19,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# Run ab-testing models compilation if it's there
 	if [ -d /opt/countly/plugins/ab-testing ]; then
 		if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
-			apt-get install -y  python3-pip
+			apt-get install -y python3-pip
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip
 		fi

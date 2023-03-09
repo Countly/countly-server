@@ -9,4 +9,4 @@ iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j
 iptables-save > /etc/iptables/rules.v4
 
 #install iptables-persistent
-apt-get install -y  iptables-persistent
+apt-get install -y iptables-persistent

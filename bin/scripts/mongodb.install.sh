@@ -389,7 +389,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
         wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
         apt-get update
-        DEBIAN_FRONTEND="noninteractive" apt-get install -y  mongodb-org || (echo "Failed to install mongodb." ; exit)
+        DEBIAN_FRONTEND="noninteractive" apt-get install -y mongodb-org || (echo "Failed to install mongodb." ; exit)
     else
         echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22."
         exit 1
