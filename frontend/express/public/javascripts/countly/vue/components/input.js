@@ -1181,6 +1181,7 @@
                                 v-model="currentInput"\
                                 :class="{\'is-error\': hasError}"\
                                 :placeholder="i18n(\'common.email-example\')"\
+                                oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
                             <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
