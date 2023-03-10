@@ -185,7 +185,7 @@ class Resultor extends DoFinish {
                         result.lastRun.processed++;
                     }
                     else {
-                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                        result = this.noMessage[p.m] || (this.noMessage[p.m] = new Result());
                     }
                     rp = result.sub(p.p, undefined, PLATFORM[p.p].parent);
                     rl = rp.sub(p.pr.la || 'default');
@@ -247,9 +247,9 @@ class Resultor extends DoFinish {
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
-                    m = this.data.message(m);
-                    if (m) {
-                        result = m.result;
+                    let msg = this.data.message(m);
+                    if (msg) {
+                        result = msg.result;
                     }
                     else {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
@@ -279,9 +279,9 @@ class Resultor extends DoFinish {
                     result = m.result;
                 }
                 else {
-                    result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    result = this.noMessage[mid] || (this.noMessage[mid] = new Result());
                 }
-                result.processed[m] += mids[mid];
+                result.processed += mids[mid];
 
                 let run = result.lastRun;
                 if (run) {
