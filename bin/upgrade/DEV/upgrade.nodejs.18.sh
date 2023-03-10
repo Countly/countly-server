@@ -1,5 +1,24 @@
 #!/bin/bash
 
+#we have to check since we cannot continue unless
+if [ -f /etc/redhat-release ]; then
+    CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
+
+    if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
+        echo "Unsupported OS version, only support CentOS/RHEL 8 and 9."
+        exit 1
+    fi
+fi
+
+if [ -f /etc/lsb-release ]; then
+    UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+
+    if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+        echo "Unsupported OS version, only support Ubuntu 20 and 22."
+        exit 1
+    fi
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 sudo npm install -g npm@latest;
