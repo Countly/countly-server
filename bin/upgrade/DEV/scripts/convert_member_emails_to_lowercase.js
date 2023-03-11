@@ -102,12 +102,34 @@ function updateMemberEmails(db) {
     return new Promise((resolve, reject) => {
         db.collection("members").update(
             { email: { $ne: null } },
+            [{
+                $set: {
+                    lower_email: {
+                    $toLower: "$email"
+                    }
+                }
+            }],
+            { multi: true },
+            (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+    });
+}
+
+function updateReportEmails(db) {
+    return new Promise((resolve, reject) => {
+        db.collection("reports").update(
+            { emails: { $ne: null } },
             [
                 {
                     $set: {
-                        email: {
+                        emails: {
                             $map: {
-                                input: "$email",
+                                input: "$emails",
                                 in: { $toLower: "$$this" }
                             }
                         }
@@ -121,7 +143,8 @@ function updateMemberEmails(db) {
                 } else {
                     resolve(result);
                 }
-            });
+            }
+        );
     });
 }
 
@@ -155,6 +178,14 @@ async function context() {
     try {
         await updateMemberEmails(countlyDb);
         console.log("Members update successful.");
+    }
+    catch (err) {
+        console.error("Error updating dashboards:", err);
+    }
+
+    try {
+        await updateReportEmails(countlyDb);
+        console.log("Reports update successful.");
     }
     catch (err) {
         console.error("Error updating dashboards:", err);
