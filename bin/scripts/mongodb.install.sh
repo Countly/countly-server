@@ -413,4 +413,6 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mon
     mongodb_check
 elif [ "$1" == "check" ]; then
     mongodb_check
+elif [ "$2" == "configure" ]; then
+    mongodb_configure
 fi
