@@ -250,7 +250,7 @@ usersApi.createUser = function(params) {
         }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
-        newMember.email = newMember.email.trim();
+        newMember.email = newMember.email.trim().toString().toLowerCase();
         crypto.randomBytes(48, function(errorBuff, buffer) {
             newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
             common.db.collection('members').insert(newMember, function(err, member) {
