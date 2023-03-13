@@ -153,7 +153,7 @@
                 type: String
             }
         },
-        template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
+        template: '<div class="cly-events-breakdown-horizontal-tile bu-column">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
         <slot name="title"></slot>\

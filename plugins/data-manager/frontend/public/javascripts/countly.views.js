@@ -246,6 +246,12 @@
             },
             onSubmit: function(doc) {
                 if (doc.isEditMode) {
+                    if (!doc.status || doc.status === 'unplanned') {
+                        if (!doc.is_visible) {
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
+                        }
+                        doc.is_visible = true;
+                    }
                     this.$store.dispatch('countlyDataManager/editEvent', doc);
                 }
                 else {
@@ -1067,19 +1073,23 @@
                 data.is_visible = data.is_visible === undefined ? true : data.is_visible;
                 data.description = countlyCommon.unescapeHtml(data.description);
                 data.e = countlyCommon.unescapeHtml(data.e);
-                data.key = countlyCommon.unescapeHtml(data.key);
+                if (data.key) {
+                    data.key = countlyCommon.unescapeHtml(data.key);
+                }
                 data.categoryName = countlyCommon.unescapeHtml(data.categoryName);
                 data.name = countlyCommon.unescapeHtml(data.name);
-                Object.keys(data.sg).forEach(function(key) {
-                    var decodedKey = countlyCommon.unescapeHtml(key);
-                    if (data.sg[key].name) {
-                        data.sg[key].name = countlyCommon.unescapeHtml(data.sg[key].name);
-                    }
-                    if (decodedKey !== key) {
-                        data.sg[decodedKey] = data.sg[key];
-                        delete data.sg[key];
-                    }
-                });
+                if (data.sg) {
+                    Object.keys(data.sg).forEach(function(key) {
+                        var decodedKey = countlyCommon.unescapeHtml(key);
+                        if (data.sg[key].name) {
+                            data.sg[key].name = countlyCommon.unescapeHtml(data.sg[key].name);
+                        }
+                        if (decodedKey !== key) {
+                            data.sg[decodedKey] = data.sg[key];
+                            delete data.sg[key];
+                        }
+                    });
+                }
                 self.openDrawer("events", data);
             });
             this.$root.$on('dm-open-edit-transform-drawer', function(doc) {

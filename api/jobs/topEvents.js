@@ -170,7 +170,7 @@ class TopEventsJob extends job.Job {
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
             await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({ app_id: app._id }, (error, result) => error ? rej(error) : res(result)));
-            if (eventMap && eventMap instanceof Array && eventMap.length >= TopEventsJob.TOTAL_EVENT_COUNT) {
+            if (eventMap && eventMap instanceof Array) {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
                     const sessionData = {};
@@ -216,12 +216,6 @@ class TopEventsJob extends job.Job {
         done();
     }
 }
-
-/**
- * The total count of events for calculating TopEvents widget must be 5 or more.
- * @property {number}
- */
-TopEventsJob.TOTAL_EVENT_COUNT = 5;
 
 /**
  * TopEvents collection name.

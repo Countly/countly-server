@@ -1,3 +1,19 @@
+## Version 22.09.17
+Fixes:
+- [attribution] Fixed user permissions to view notes in Attribution plugin.
+- [core] Added undefined checks for rights functions
+- [core] Fixes for install scripts
+- [core] Ingress file for baremetal/unmanaged k8 setup
+- [reports] email reports unsubscribe code generation aes-256-ctr encryption replaced with aes-256-gcm
+- [views] Prevent errors on empty segmentation values in views SER-590
+
+Enterprise fixes:
+- [ab-testing] Fix ab testing python38
+- [data-manager] Auto enable/disable global masking setting on enabling/disabling masking.
+- [data-manager] Fix drawer opening issue
+- [groups] Showing correct user count in each group.
+- [users] Showing in users profile only those cohorts user is currently in. 
+
 ## Version 22.09.16
 Fixes:
 - [dashboard] fixed incorrectly changing widgets with number visualisation
