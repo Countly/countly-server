@@ -1012,28 +1012,28 @@ exports.hasAdminAccess = function(member, app_id) {
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
-    var hasAppSpecificRight = (member.permission && member.permission.c && member.permission.c[app_id] && member.permission.c[app_id].allowed[feature]);
+    var hasAppSpecificRight = (member.permission && member.permission.c && member.permission.c[app_id] && member.permission.c[app_id].allowed && member.permission.c[app_id].allowed[feature]);
     var hasGlobalAdminRight = member.global_admin;
     var hasAppAdminRight = member.permission && member.permission.c && member.permission.c[app_id] && member.permission.c[app_id].all;
     return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasReadRight = function(feature, app_id, member) {
-    var hasAppSpecificRight = (member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed[feature]);
+    var hasAppSpecificRight = (member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed && member.permission.r[app_id].allowed[feature]);
     var hasGlobalAdminRight = member.global_admin;
     var hasAppAdminRight = member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].all;
     return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasUpdateRight = function(feature, app_id, member) {
-    var hasAppSpecificRight = (member.permission && member.permission.u && member.permission.u[app_id] && member.permission.u[app_id].allowed[feature]);
+    var hasAppSpecificRight = (member.permission && member.permission.u && member.permission.u[app_id] && member.permission.u[app_id].allowed && member.permission.u[app_id].allowed[feature]);
     var hasGlobalAdminRight = member.global_admin;
     var hasAppAdminRight = member.permission && member.permission.u && member.permission.u[app_id] && member.permission.u[app_id].all;
     return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasDeleteRight = function(feature, app_id, member) {
-    var hasAppSpecificRight = (member.permission && member.permission.d && member.permission.d[app_id] && member.permission.d[app_id].allowed[feature]);
+    var hasAppSpecificRight = (member.permission && member.permission.d && member.permission.d[app_id] && member.permission.d[app_id].allowed && member.permission.d[app_id].allowed[feature]);
     var hasGlobalAdminRight = member.global_admin;
     var hasAppAdminRight = member.permission && member.permission.d && member.permission.d[app_id] && member.permission.d[app_id].all;
     return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
