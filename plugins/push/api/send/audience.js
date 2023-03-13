@@ -654,7 +654,7 @@ class Pusher extends PusherPopper {
 
         let batchSize = DEFAULTS.queue_insert_batch,
             steps = await this.steps(),
-            stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
+            stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps, {allowDiskUse: true}).stream(),
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
             result = new Result(),
