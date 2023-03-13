@@ -246,6 +246,12 @@
             },
             onSubmit: function(doc) {
                 if (doc.isEditMode) {
+                    if (!doc.status || doc.status === 'unplanned') {
+                        if (!doc.is_visible) {
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
+                        }
+                        doc.is_visible = true;
+                    }
                     this.$store.dispatch('countlyDataManager/editEvent', doc);
                 }
                 else {
