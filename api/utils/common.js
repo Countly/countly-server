@@ -1308,6 +1308,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argState && argProperties[arg].trim && (argProperties[arg].type === 'String' || argProperties[arg].type === 'URL') && args[arg]) {
+                args[arg] = args[arg].trim();
+            }
+
             if (argProperties[arg].custom) {
                 let err = argProperties[arg].custom(args[arg]);
                 if (err) {
