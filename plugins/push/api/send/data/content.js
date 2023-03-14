@@ -68,7 +68,7 @@ class Content extends Validatable {
             buttons: {
                 type: {
                     url: {type: 'URL', required: true, trim: true},
-                    title: {type: 'String', required: true},
+                    title: {type: 'String', required: true, trim: true},
                     pers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
                 },
                 array: true,
