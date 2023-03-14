@@ -45,7 +45,7 @@
     "csurf": "1.11.0",
     "csvtojson": "2.0.10",
     "docdash": "2.0.1",
-    "ejs": "3.1.8",
+    "ejs": "3.1.9",
     "errorhandler": "1.5.1",
     "express": "4.18.2",
     "express-rate-limit": "6.7.0",
