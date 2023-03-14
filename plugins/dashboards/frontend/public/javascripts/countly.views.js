@@ -1214,7 +1214,20 @@
                 }
             },
             savedGrid: function() {
-                return this.grid.save(false);
+                var savedGrids = this.grid.save(false);
+                if (localStorage.getItem('recently_removed_cohort_widgets' + this.$route.params.dashboardId)) {
+                    var widgetIds = JSON.parse(localStorage.getItem('recently_removed_cohort_widgets' + this.$route.params.dashboardId));
+                    savedGrids = savedGrids.filter((gridItem) => {
+                        if (widgetIds.includes(gridItem.id)) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+                    localStorage.removeItem('recently_removed_cohort_widgets' + this.$route.params.dashboardId);
+                }
+
+                return savedGrids;
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
