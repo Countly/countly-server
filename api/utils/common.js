@@ -768,9 +768,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
         }
         if (args[arg] !== void 0) {
-
             if (argProperties[arg].type) {
-                if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
+                if (argProperties[arg].type === 'Number') {
+                    if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'String') {
+                    if (argState && argProperties[arg].trim && args[arg]) {
+                        args[arg] = args[arg].trim();
+                    }
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -815,6 +829,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                     else {
+                        if (argState && argProperties[arg].trim && args[arg]) {
+                            args[arg] = args[arg].trim();
+                        }
                         let { URL } = require('url');
                         try {
                             new URL(args[arg]);
