@@ -1841,6 +1841,15 @@ const processRequest = (params) => {
                             }
                         }
 
+                        if (typeof params.qstring.get_index === "string") {
+                            try {
+                                params.qstring.get_index = JSON.parse(params.qstring.get_index);
+                            }
+                            catch (ex) {
+                                params.qstring.get_index = null;
+                            }
+                        }
+
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
                                 countlyApi.data.exports.fromDatabase({

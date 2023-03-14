@@ -1,14 +1,17 @@
 #!/bin/bash
 
 #check if authentication is required
-isAuth=$(mongo --eval "db.getUsers()" | grep -v "connecting" | grep "auth")
+isAuth=0
+if grep -Eq '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
+    isAuth=1
+fi
 
 #check if we have previous upgrade needed
 FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
 VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
 
-if ! [ -z "$isAuth" ] ; then
-     echo "Since authentication is enabled, we cannot verify if you need to run this upgrade script"
+if [ "$isAuth" -eq "1" ]; then
+    echo "Since authentication is enabled, we cannot verify if you need to run this upgrade script"
     echo ""
     echo "Please run this command with authentication parameters:"
     echo ""
@@ -30,7 +33,7 @@ fi
 if [ -x "$(command -v mongo)" ]; then
     if echo "$VER" | grep -q -i "5.0" ; then
         if echo "$FEATVER" | grep -q -i "4.4" ; then
-            echo "run this command to ugprade to 5.0";
+            echo "run this command to upgrade to 5.0";
             echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"5.0\\\" } )\"";
         else
             echo "We already have version 5.0";
@@ -45,13 +48,21 @@ if [ -x "$(command -v mongo)" ]; then
     fi
 
     if [ -f /etc/redhat-release ]; then
+        #backup of systemd unit file and mongod.conf file
+        \cp /usr/lib/systemd/system/mongod.service /usr/lib/systemd/system/mongod.service.bak
+        \cp -f /etc/mongod.conf /etc/mongod.conf.bak
         #uninstall mognodb
         yum erase -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
     fi
 
     if [ -f /etc/lsb-release ]; then
+        UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+        if [ "$UBUNTU_YEAR" == "22" ]; then
+            sed -i "s/#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
+        fi
         #uninstall mognodb
-        apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+        apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools python3-apt
+        apt-get install -y python3-apt
     fi
 fi
 
@@ -81,19 +92,13 @@ gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-5.0.asc" > /etc/yum.repos.d/mongodb-org-5.0.repo
     fi
-    if [ -f /etc/mongod.conf.rpmsave ]; then
-        mv -f /etc/mongod.conf.rpmsave /etc/mongod.conf.rpmsave.bak
-    fi
     yum install -y mongodb-org
-    if [ -f /etc/mongod.conf.rpmsave ]; then
-        mv -f /etc/mongod.conf.rpmsave /etc/mongod.conf
-    fi
+    \cp -f /etc/mongod.conf.bak /etc/mongod.conf
 fi
 
 if [ -f /etc/lsb-release ]; then
     #install latest mongodb
 	wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
-    UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
     if [ "$UBUNTU_YEAR" == "16" ]; then
         echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
@@ -108,6 +113,9 @@ if [ -f /etc/lsb-release ]; then
 fi
 
 if [ -f /etc/redhat-release ]; then
+    #Restoring systemd unit file 
+    \cp -f /usr/lib/systemd/system/mongod.service.bak /usr/lib/systemd/system/mongod.service
+    systemctl daemon-reload
     #mongodb might need to be started
     if grep -q -i "release 6" /etc/redhat-release ; then
         service mongod restart || echo "mongodb service does not exist"
@@ -127,8 +135,8 @@ fi
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
 
-if ! [ -z "$isAuth" ] ; then
-    echo "run this command with authentication to ugprade to 5.0"
+if [ "$isAuth" -eq "1" ]; then
+    echo "run this command with authentication to upgrade to 5.0"
     echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"5.0\\\" } )\""
 elif ! mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))" ; then
     echo "Could not connect to MongodB, run this command when Mongo is up and running"

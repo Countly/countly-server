@@ -31,7 +31,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# install monngodb tools to have mongoexport
 	if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
 	    wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.5.4.deb
-            apt install ./mongodb-database-tools-*-100.5.4.deb
+            apt install -y --allow-downgrades ./mongodb-database-tools-*-100.5.4.deb
 	    rm ./mongodb-database-tools-*-100.5.4.deb
 	else
             wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-rhel70-x86_64-100.5.4.rpm

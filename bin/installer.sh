@@ -46,12 +46,4 @@ else
     fi
 fi
 
-DATE=$(date +%Y-%m-%d:%H:%M:%S)
-if [[ ! -z "$APT_GET_CMD" ]]; then
-    bash countly/bin/countly.install.sh 2>&1 | tee "countly/log/countly-install-$DATE.log"
-elif [[ ! -z "$YUM_CMD" ]]; then
-    bash countly/bin/countly.install_rhel.sh 2>&1 | tee "countly/log/countly-install-$DATE.log"
-else
-    echo "error can't install Countly"
-    exit 1;
-fi
+bash countly/bin/countly.install.sh

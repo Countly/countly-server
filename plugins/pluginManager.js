@@ -753,19 +753,24 @@ var pluginManager = function pluginManager() {
                     name: plugs[i].name,
                     get: function(pathTo, callback) {
                         var pluginName = this.name;
-                        app.get(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
-                                callback(req, res, next);
-                            }
-                            else {
-                                next();
-                            }
-                        });
+                        if (!callback) {
+                            app.get(pathTo);
+                        }
+                        else {
+                            app.get(pathTo, function(req, res, next) {
+                                if (pluginConfig[pluginName]) {
+                                    callback(req, res, next);
+                                }
+                                else {
+                                    next();
+                                }
+                            });
+                        }
                     },
                     post: function(pathTo, callback) {
                         var pluginName = this.name;
                         app.post(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
@@ -774,9 +779,30 @@ var pluginManager = function pluginManager() {
                         });
                     },
                     use: function(pathTo, callback) {
+                        if (!callback) {
+                            callback = pathTo;
+                            pathTo = '/';//fallback to default
+                        }
+
                         var pluginName = this.name;
                         app.use(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName]) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
+                                callback(req, res, next);
+                            }
+                            else {
+                                next();
+                            }
+                        });
+                    },
+                    all: function(pathTo, callback) {
+                        if (!callback) {
+                            callback = pathTo;
+                            pathTo = '/';//fallback to default
+                        }
+
+                        var pluginName = this.name;
+                        app.all(pathTo, function(req, res, next) {
+                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                 callback(req, res, next);
                             }
                             else {
@@ -1725,6 +1751,37 @@ var pluginManager = function pluginManager() {
         masking.isLoaded = Date.now().valueOf();
         return;
 
+    };
+
+    /**
+    * Checks if any item in object tree and subrtree is true. Recursive.
+    * @param {object} myOb - object
+    * @returns {boolean} true or false
+    **/
+    function hasAnyValueTrue(myOb) {
+        if (typeof myOb === 'object' && Object.keys(myOb) && Object.keys(myOb).length > 0) {
+            var value = false;
+            for (var key in myOb) {
+                value = value || hasAnyValueTrue(myOb[key]);
+            }
+            return value;
+        }
+        else {
+            return !!myOb;
+        }
+    }
+    this.isAnyMasked = function() {
+        if (masking && masking.apps) {
+            for (var app in masking.apps) {
+                if (masking.apps[app] && masking.apps[app].masking) {
+                    return hasAnyValueTrue(masking.apps[app].masking);
+                }
+            }
+            return false;
+        }
+        else {
+            return false;
+        }
     };
 
     this.getMaskingSettings = function(appID) {

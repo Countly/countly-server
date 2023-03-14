@@ -110,11 +110,8 @@
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
-                <template slot="empty" v-if="!isLoading">
+                <template slot="empty">
                     <cly-empty-datatable></cly-empty-datatable>
-                </template>
-                <template slot="empty" v-if="isLoading">
-                    <div class="cly-vue-eldatatable__empty-slot"></div>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>

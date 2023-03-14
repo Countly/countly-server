@@ -20,7 +20,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.setConfigs("views", {
         view_limit: 50000,
-        view_name_limit: 100,
+        view_name_limit: 128,
         segment_value_limit: 10,
         segment_limit: 100
     });
@@ -1892,23 +1892,28 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
-                    currEvent.segmentation[segKey] = tmpSegVal;
 
-                    if (viewInfo.segments[segKey]) {
-                        if (viewInfo.segments[segKey][tmpSegVal]) {
-                            segmentList.push(segKey);
-                        }
-                        else {
-                            if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                delete currEvent.segmentation[segKey];
+                    if (tmpSegVal) {
+                        currEvent.segmentation[segKey] = tmpSegVal;
+                        if (viewInfo.segments[segKey]) {
+                            if (viewInfo.segments[segKey][tmpSegVal]) {
+                                segmentList.push(segKey);
                             }
                             else {
-                                viewInfo.segments[segKey][segKey] = true;
-                                segmentList.push(segKey);
-                                addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                save_structure = true;
+                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
+                                    delete currEvent.segmentation[segKey];
+                                }
+                                else {
+                                    viewInfo.segments[segKey][segKey] = true;
+                                    segmentList.push(segKey);
+                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
+                                    save_structure = true;
+                                }
                             }
                         }
+                    }
+                    else {
+                        delete currEvent.segmentation[segKey];
                     }
                 }
             }
