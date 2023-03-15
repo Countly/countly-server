@@ -86,7 +86,7 @@ sudo apt-get -y install sendmail
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install -g npm@6.14.13; npm install; npm install argon2 --build-from-source; )
+( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
 sudo bash "$DIR/scripts/mongodb.install.sh"
