@@ -1,5 +1,25 @@
 #!/bin/bash
 
+#we have to check since we cannot continue unless
+if [ -f /etc/redhat-release ]; then
+    CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
+
+    if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
+        echo "Unsupported OS version, only support CentOS/RHEL 8 and 9."
+        exit 1
+    fi
+fi
+
+if [ -f /etc/lsb-release ]; then
+    UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+    UBUNTU_RELEASE="$(lsb_release -cs)"
+
+    if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+        echo "Unsupported OS version, only support Ubuntu 20 and 22."
+        exit 1
+    fi
+fi
+
 #check if authentication is required
 isAuth=0
 if grep -Eq '^\s*authorization\s*:\s*enabled' /etc/mongod.conf; then
@@ -63,30 +83,14 @@ fi
 
 if [ -f /etc/redhat-release ]; then
     #install latest mongodb
-
     #select source based on release
-	if grep -q -i "release 6" /etc/redhat-release ; then
-        echo "[mongodb-org-6.0]
+    echo "[mongodb-org-6.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/6.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/6.0/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
-    elif grep -q -i "release 7" /etc/redhat-release ; then
-        echo "[mongodb-org-6.0]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/6.0/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
-    elif grep -q -i "release 8" /etc/redhat-release ; then
-        echo "[mongodb-org-6.0]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/6.0/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
-    fi
+
     yum install -y mongodb-org
     \cp -f /etc/mongod.conf.bak /etc/mongod.conf
 fi
@@ -94,41 +98,22 @@ fi
 if [ -f /etc/lsb-release ]; then
     #install latest mongodb
 	wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-    UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-    if [ "$UBUNTU_YEAR" == "16" ]; then
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-    elif [ "$UBUNTU_YEAR" == "18" ]; then
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-    elif [ "$UBUNTU_YEAR" == "22" ]; then
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-    else
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-    fi
+    echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
     apt-get update
     #install mongodb
-    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
+    apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
 fi
 
 if [ -f /etc/redhat-release ]; then
-    #Restoring systemd unit file 
+    #Restoring systemd unit file
     \cp -f /usr/lib/systemd/system/mongod.service.bak /usr/lib/systemd/system/mongod.service
     systemctl daemon-reload
-    #mongodb might need to be started
-    if grep -q -i "release 6" /etc/redhat-release ; then
-        service mongod restart || echo "mongodb service does not exist"
-    else
-        systemctl restart mongod || echo "mongodb systemctl job does not exist"
-    fi
 fi
 
-if [ -f /etc/lsb-release ]; then
-    if [[ $(/sbin/init --version) =~ upstart ]]; then
-        restart mongod || echo "mongodb upstart job does not exist"
-    else
-        systemctl restart mongod || echo "mongodb systemctl job does not exist"
-    fi
-fi
+#mongodb might need to be started
+systemctl restart mongod || echo "mongodb systemctl job does not exist"
+
 #nc not available on latest centos
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 mongosh --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
