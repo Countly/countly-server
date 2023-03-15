@@ -1110,14 +1110,6 @@
                 // delete doc.transformType;
                 doc.name = countlyCommon.unescapeHtml(doc.name);
                 doc.transformResult = countlyCommon.unescapeHtml(doc.transformResult);
-                if (Array.isArray(doc.transformTarget)) {
-                    doc.transformTarget = doc.transformTarget.map(function(val) {
-                        return countlyCommon.unescapeHtml(val);
-                    });
-                }
-                else {
-                    doc.transformTarget = countlyCommon.unescapeHtml(doc.transformTarget);
-                }
                 if (doc.actionType === 'value') {
                     doc.actionType = 'change-value';
                 }
