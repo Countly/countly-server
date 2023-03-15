@@ -1,3 +1,20 @@
+## Version 22.09.18
+Fixes:
+- [users] Fix for having occasional wrong Export failures with description that user is missing.
+- [push] Trimming incoming strings/urls for messages
+- [push] Fix for crash on connection error
+- [crashes] Fix binary images not saved correctly in crashes document
+- [crashes] Fix `Show binary images` action not showing in crashgroup dropdown
+- [events] Change minimum needed events for top events
+- [user-management] Fix for incorrect page refresh issue
+- [views] Fix for views were not recorded in cases when there is action with new view name in the same request.
+
+Enterprise fixes:
+- [ab-testing] Updated installation scripts for centos/rhel based linux
+- [data-manager] Fix for changing the visibility of unplanned events
+- [data-manager] Check event map before assigning values
+- [users] Fix for incorrect property check during load
+
 ## Version 22.09.17
 Fixes:
 - [attribution] Fixed user permissions to view notes in Attribution plugin.

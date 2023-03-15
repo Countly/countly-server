@@ -14,7 +14,17 @@ function mongodb_configure () {
     if ping -c 1 -6 localhost >> /dev/null 2>&1; then
         sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
         sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
-        sed -i '/bindIp/ s/$/, ::1/' ${MONGODB_CONFIG_FILE}
+        if ! (grep 'bindIp' ${MONGODB_CONFIG_FILE}| grep -q '::1' ${MONGODB_CONFIG_FILE}); then
+            sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
+        fi
+    fi
+    #Ubuntu22 :facepalm:
+    if ping -c 1 -6 ip6-localhost >> /dev/null 2>&1; then
+        sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
+        if ! (grep 'bindIp' ${MONGODB_CONFIG_FILE}| grep -q '::1' ${MONGODB_CONFIG_FILE}); then
+            sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
+        fi
     fi
 
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
@@ -413,4 +423,6 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mon
     mongodb_check
 elif [ "$1" == "check" ]; then
     mongodb_check
+elif [ "$1" == "configure" ]; then
+    mongodb_configure
 fi
