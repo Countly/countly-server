@@ -196,6 +196,25 @@ usersApi.createUser = function(params) {
 
     //adding backwards compatability
     newMember.permission = newMember.permission || {};
+
+    // Make sure that permission object has '_' field
+    if (!('_' in newMember.permission)) {
+        newMember.permission._ = {
+            a: [],
+            u: [],
+        };
+    }
+    // Make sure that permission._ has 'a' and 'u' fields
+    else if (('_' in newMember.permission)) {
+        if (!('a' in newMember.permission)) {
+            newMember.permission._.a = [];
+        }
+
+        if (!('u' in newMember.permission)) {
+            newMember.permission._.u = [];
+        }
+    }
+
     if (newMember.admin_of) {
         if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
             newMember.permission.c = newMember.permission.c || {};
@@ -207,6 +226,7 @@ usersApi.createUser = function(params) {
                 newMember.permission.r[newMember.admin_of[i]] = newMember.permission.r[newMember.admin_of[i]] || {all: true, allowed: {}};
                 newMember.permission.u[newMember.admin_of[i]] = newMember.permission.u[newMember.admin_of[i]] || {all: true, allowed: {}};
                 newMember.permission.d[newMember.admin_of[i]] = newMember.permission.d[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission._.a.push(newMember.admin_of[i]);
             }
         }
         delete newMember.admin_of;
@@ -217,6 +237,7 @@ usersApi.createUser = function(params) {
             newMember.permission.r = newMember.permission.r || {};
             for (let i = 0; i < newMember.user_of.length; i++) {
                 newMember.permission.r[newMember.user_of[i]] = newMember.permission.r[newMember.user_of[i]] || {all: true, allowed: {}};
+                newMember.permission._.u.push(newMember.user_of[i]);
             }
         }
         delete newMember.user_of;
