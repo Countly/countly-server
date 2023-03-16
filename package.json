@@ -67,7 +67,7 @@
     "jsonwebtoken": "9.0.0",
     "later": "1.2.0",
     "lodash": "4.17.21",
-    "lru-cache": "7.18.3",
+    "lru-cache": "8.0.3",
     "mcc-mnc-list": "1.1.10",
     "method-override": "3.0.0",
     "moment": "2.29.4",
