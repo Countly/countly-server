@@ -602,20 +602,21 @@
                     return changedKey === key;
                 });
             },
-            addChangeKey: function(key
-                //value, parts
-            ) {
-                // var index = this.changeKeys.indexOf(key);
-                // if (index > -1) {
-                //     this.changeKeys.splice(index, 1);
-                // }
-                // var pluginsData = countlyPlugins.getConfigsData();
-                // if (pluginsData[parts[0]][parts[1]] !== value) {
-                //     this.changeKeys.push(key);
-                // }
-                var self = this;
-                if (!this.isChangeKeyFound(key)) {
-                    self.changeKeys.push(key);
+            addChangeKey: function(key, value, parts) {
+                var pluginsData = countlyPlugins.getConfigsData();
+                if (!pluginsData[parts[0]]) {
+                    if (!this.isChangeKeyFound(key)) {
+                        this.changeKeys.push(key);
+                    }
+                }
+                else {
+                    var index = this.changeKeys.indexOf(key);
+                    if (index > -1) {
+                        this.changeKeys.splice(index, 1);
+                    }
+                    if (pluginsData[parts[0]][parts[1]] !== value) {
+                        this.changeKeys.push(key);
+                    }
                 }
             },
             compare: function(editedObject, selectedApp) {
@@ -676,9 +677,6 @@
              */
 
             onChange: function(key, value, isInitializationCall) {
-                if (key === 'consolidate') {
-                    //todo: do something
-                }
                 var parts = key.split(".");
                 this.updateAppSettings(key, value, parts);
                 this.updateChangeByLevel(value, parts);
