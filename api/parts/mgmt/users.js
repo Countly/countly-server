@@ -196,6 +196,14 @@ usersApi.createUser = function(params) {
 
     //adding backwards compatability
     newMember.permission = newMember.permission || {};
+
+    if (!newMember.permission._) {
+        newMember.permission._ = {
+            a: newMember.admin_of ? [newMember.admin_of] : [],
+            u: newMember.user_of ? [newMember.user_of] : []
+        };
+    }
+
     if (newMember.admin_of) {
         if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
             newMember.permission.c = newMember.permission.c || {};
