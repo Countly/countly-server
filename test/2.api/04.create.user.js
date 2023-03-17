@@ -153,4 +153,79 @@ describe('Creating user', function() {
                 });
         });
     });
+    describe('permission', async() => {
+        it('should generate correct permission object if no permission object provided', async() => {
+            const params = JSON.stringify({
+                full_name: testUtils.name,
+                username: `${testUtils.username}_permission`,
+                password: testUtils.password,
+                email: `${testUtils.email}_permission`,
+            });
+
+            const response = await request.get(`/i/users/create?&api_key=${API_KEY_ADMIN}&args=params`);
+            const userId = response.body._id;
+
+            should(response.status).equal(200);
+            should(response.body.permission).eql({
+                _: { a: [], u: [] },
+                c: {},
+                r: {},
+                u: {},
+                d: {},
+            });
+
+            await request
+                .get(`/i/users/delete?api_key=${API_KEY_ADMIN}&args=${JSON.stringify({ user_ids: [userId] })}`);
+        });
+        it(`should generate correct permission object if 'admin_of' provided`, async() => {
+            const APP_KEY = testUtils.get('APP_KEY');
+            const params = JSON.stringify({
+                full_name: testUtils.name,
+                username: `${testUtils.username}_permission`,
+                password: testUtils.password,
+                email: `${testUtils.email}_permission`,
+                admin_of: [APP_KEY],
+            });
+
+            const response = await request.get(`/i/users/create?&api_key=${API_KEY_ADMIN}&args=params`);
+            const userId = response.body._id;
+
+            should(response.status).equal(200);
+            should(response.body.permission).eql({
+                _: { a: [], u: [] },
+                c: { [APP_KEY]: { all: true, allowed: {} } },
+                r: { [APP_KEY]: { all: true, allowed: {} } },
+                u: { [APP_KEY]: { all: true, allowed: {} } },
+                d: { [APP_KEY]: { all: true, allowed: {} } },
+            });
+
+            await request
+                .get(`/i/users/delete?api_key=${API_KEY_ADMIN}&args=${JSON.stringify({ user_ids: [userId] })}`);
+        });
+        it(`should generate correct permission object if 'user_of' provided`, async() => {
+            const APP_KEY = testUtils.get('APP_KEY');
+            const params = JSON.stringify({
+                full_name: testUtils.name,
+                username: `${testUtils.username}_permission`,
+                password: testUtils.password,
+                email: `${testUtils.email}_permission`,
+                user_of: [APP_KEY],
+            });
+
+            const response = await request.get(`/i/users/create?&api_key=${API_KEY_ADMIN}&args=params`);
+            const userId = response.body._id;
+
+            should(response.status).equal(200);
+            should(response.body.permission).eql({
+                _: { a: [], u: [APP_KEY] },
+                c: {},
+                r: { [APP_KEY]: { all: true, allowed: {} } },
+                u: {},
+                d: {},
+            });
+
+            await request
+                .get(`/i/users/delete?api_key=${API_KEY_ADMIN}&args=${JSON.stringify({ user_ids: [userId] })}`);
+        });
+    });
 });
