@@ -607,8 +607,8 @@
                 if (index > -1) {
                     this.changeKeys.splice(index, 1);
                 }
-                var pluginsData = countlyPlugins.getConfigsData();
-                if (pluginsData[parts[0]][parts[1]] !== value) {
+                var pluginsData = countlyGlobal.apps[this.selectedApp].plugins;
+                if (!pluginsData[parts[0]] || pluginsData[parts[0]][parts[1]] !== value) {
                     this.changeKeys.push(key);
                 }
             },
