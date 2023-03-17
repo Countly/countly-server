@@ -602,14 +602,20 @@
                     return changedKey === key;
                 });
             },
-            addChangeKey: function(key, value, parts) {
-                var index = this.changeKeys.indexOf(key);
-                if (index > -1) {
-                    this.changeKeys.splice(index, 1);
-                }
-                var pluginsData = countlyPlugins.getConfigsData();
-                if (pluginsData[parts[0]][parts[1]] !== value) {
-                    this.changeKeys.push(key);
+            addChangeKey: function(key
+                //value, parts
+            ) {
+                // var index = this.changeKeys.indexOf(key);
+                // if (index > -1) {
+                //     this.changeKeys.splice(index, 1);
+                // }
+                // var pluginsData = countlyPlugins.getConfigsData();
+                // if (pluginsData[parts[0]][parts[1]] !== value) {
+                //     this.changeKeys.push(key);
+                // }
+                var self = this;
+                if (!this.isChangeKeyFound(key)) {
+                    self.changeKeys.push(key);
                 }
             },
             compare: function(editedObject, selectedApp) {
@@ -668,7 +674,11 @@
              * @param {Boolean} isInitializationCall used by plugins with nested properties to initialize/prepare plugin 
              * config object while not counting it as state change.
              */
+
             onChange: function(key, value, isInitializationCall) {
+                if (key === 'consolidate') {
+                    //todo: do something
+                }
                 var parts = key.split(".");
                 this.updateAppSettings(key, value, parts);
                 this.updateChangeByLevel(value, parts);
@@ -696,6 +706,10 @@
                             this.appSettings[i] = app.appManagementViews[i];
                         }
                         for (var j in app.appManagementViews[i].inputs) {
+                            if (j === 'consolidate') {
+                                this.appSettings[i].inputs[j].value = this.getConsolidatedApps();
+                                continue;
+                            }
                             var parts = j.split(".");
                             if (parts.length === 2) {
                                 if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
@@ -735,10 +749,18 @@
                         var appSettingKeys = Object.keys(app.appManagementViews);
                         for (var i = 0; i < appSettingKeys.length; i++) {
                             if (self.changes[appSettingKeys[i]]) {
-                                var subKeys = Object.keys(app.appManagementViews[appSettingKeys[i]].inputs);
-                                for (var j = 0; j < subKeys.length; j++) {
-                                    if (!self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]]) {
-                                        self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]] = app.appManagementViews[appSettingKeys[i]].inputs[subKeys[j]].value;
+                                if (appSettingKeys[i] === 'consolidate') {
+                                    self.changes[appSettingKeys[i]] = {
+                                        selectedApps: self.changes[appSettingKeys[i]] || [],
+                                        initialApps: countlyGlobal.apps[self.selectedApp].plugins.consolidate || []
+                                    };
+                                }
+                                else {
+                                    var subKeys = Object.keys(app.appManagementViews[appSettingKeys[i]].inputs);
+                                    for (var j = 0; j < subKeys.length; j++) {
+                                        if (!self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]]) {
+                                            self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]] = app.appManagementViews[appSettingKeys[i]].inputs[subKeys[j]].value;
+                                        }
                                     }
                                 }
                             }
@@ -762,7 +784,24 @@
                                     countlyGlobal.apps[self.selectedApp].plugins = {};
                                 }
                                 for (var key in self.changes) {
-                                    countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
+                                    if (key === 'consolidate') {
+                                        //self app can only be updated through other apps
+                                        //countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key].selectedApps;
+                                        for (var appKey of self.changes[key].selectedApps) {
+                                            if (!countlyGlobal.apps[appKey].plugins) {
+                                                countlyGlobal.apps[appKey].plugins = {};
+                                            }
+                                            if (!countlyGlobal.apps[appKey].plugins[key]) {
+                                                countlyGlobal.apps[appKey].plugins[key] = [self.selectedApp];
+                                            }
+                                            if (!countlyGlobal.apps[appKey].plugins[key].includes(self.selectedApp)) {
+                                                countlyGlobal.apps[appKey].plugins[key].push(self.selectedApp);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
+                                    }
                                 }
                                 self.resetChanges();
                             },
@@ -782,6 +821,17 @@
                         });
                     }
                 });
+            },
+            getConsolidatedApps: function() {
+                var self = this;
+                return Object.keys(countlyGlobal.apps).filter(function(key) {
+                    if (key === self.selectedApp) {
+                        return false;
+                    }
+                    if (countlyGlobal.apps[key].plugins && countlyGlobal.apps[key].plugins.consolidate && countlyGlobal.apps[key].plugins.consolidate.length) {
+                        return countlyGlobal.apps[key].plugins.consolidate.includes(self.selectedApp);
+                    }
+                }) || [];
             }
         },
         mounted: function() {
