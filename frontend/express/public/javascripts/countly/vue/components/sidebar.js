@@ -15,6 +15,7 @@
                             apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                         }
                         apps = apps.map(function(a) {
+                            a.image = countlyGlobal.path + "appimages/" + a._id + ".png";
                             a.label = a.name;
                             a.value = a._id;
                             return a;
