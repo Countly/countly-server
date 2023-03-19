@@ -199,7 +199,7 @@ usersApi.createUser = function(params) {
 
     if (!newMember.permission._) {
         newMember.permission._ = {
-            a: newMember.admin_of ? [newMember.admin_of] : [],
+            a: newMember.admin_of || [],
             u: newMember.user_of ? [newMember.user_of] : []
         };
     }
