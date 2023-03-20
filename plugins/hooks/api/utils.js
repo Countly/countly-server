@@ -2,7 +2,6 @@ const common = require('../../../api/utils/common.js');
 const utils = {};
 
 utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
-    const db = common.db;
     console.log("update rule trigger time,", hookID);
     if (!hookID) {
         return;
