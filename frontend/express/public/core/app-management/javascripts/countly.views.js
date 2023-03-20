@@ -603,20 +603,13 @@
                 });
             },
             addChangeKey: function(key, value, parts) {
-                var pluginsData = countlyPlugins.getConfigsData();
-                if (!pluginsData[parts[0]]) {
-                    if (!this.isChangeKeyFound(key)) {
-                        this.changeKeys.push(key);
-                    }
+                var index = this.changeKeys.indexOf(key);
+                if (index > -1) {
+                    this.changeKeys.splice(index, 1);
                 }
-                else {
-                    var index = this.changeKeys.indexOf(key);
-                    if (index > -1) {
-                        this.changeKeys.splice(index, 1);
-                    }
-                    if (pluginsData[parts[0]][parts[1]] !== value) {
-                        this.changeKeys.push(key);
-                    }
+                var pluginsData = countlyGlobal.apps[this.selectedApp].plugins;
+                if (!pluginsData[parts[0]] || pluginsData[parts[0]][parts[1]] !== value) {
+                    this.changeKeys.push(key);
                 }
             },
             compare: function(editedObject, selectedApp) {
