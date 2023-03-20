@@ -743,7 +743,7 @@
                                 if (appSettingKeys[i] === 'consolidate') {
                                     self.changes[appSettingKeys[i]] = {
                                         selectedApps: self.changes[appSettingKeys[i]] || [],
-                                        initialApps: countlyGlobal.apps[self.selectedApp].plugins.consolidate || []
+                                        initialApps: self.getConsolidatedApps() || []
                                     };
                                 }
                                 else {
@@ -778,6 +778,22 @@
                                     if (key === 'consolidate') {
                                         //self app can only be updated through other apps
                                         //countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key].selectedApps;
+                                        var removedSourceApps = self.changes.consolidate.selectedApps
+                                            .filter(function(x) {
+                                                return !self.changes.consolidate.initialApps.includes(x);
+                                            })
+                                            .concat(self.changes.consolidate.initialApps.filter(function(x) {
+                                                return !self.changes.consolidate.selectedApps.includes(x);
+                                            }));
+                                        for (var removalAppKey of removedSourceApps) {
+                                            if (!countlyGlobal.apps[removalAppKey].plugins || !countlyGlobal.apps[removalAppKey].plugins[key]) {
+                                                continue;
+                                            }
+                                            var removalIndex = countlyGlobal.apps[removalAppKey].plugins[key].indexOf(self.selectedApp);
+                                            if (removalIndex > -1) {
+                                                countlyGlobal.apps[removalAppKey].plugins[key].splice(removalIndex, 1);
+                                            }
+                                        }
                                         for (var appKey of self.changes[key].selectedApps) {
                                             if (!countlyGlobal.apps[appKey].plugins) {
                                                 countlyGlobal.apps[appKey].plugins = {};
