@@ -482,7 +482,7 @@
                     this.query = this.$route.params.filter;
                     this.executeQuery();
                 }
-                if (!(this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
+                if (!(this.$route && this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
                     window.location = '#/manage/db';
                 }
             }
