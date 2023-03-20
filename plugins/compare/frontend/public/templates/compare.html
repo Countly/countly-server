@@ -36,7 +36,7 @@
     </div>
     <cly-section>
     <div>
-      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading" category="events"></cly-chart-time>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" :val-formatter="formatChartValue" v-loading="isChartLoading" category="events"></cly-chart-time>
     </div>
     </cly-section>
     <cly-section>
