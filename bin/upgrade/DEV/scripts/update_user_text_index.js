@@ -4,10 +4,10 @@ asyncjs = require('async');
 pluginManager.dbConnection().then((countlyDb) => {
   countlyDb.collection('apps').find({}).toArray(function (err, apps) {
     function upgrade(app, done) {
-      countlyDb.collection('app_users' + app._id).dropIndex({ "name": "text", "email": "text" });
+      countlyDb.collection('app_users' + app._id).dropIndex("name_text_email_text");
       countlyDb.collection('app_users' + app._id).createIndex(
-        { "name": "text", "email": "text", "did": "text", "uid": "text" },
-        { background: true },
+        { "name": "text", "email": "text", "did": "text", "uid": "text", "username":"text" },
+        { background: true , default_language: "none"  },
         function (err, result) {
           if (err) {
             console.log(err);
