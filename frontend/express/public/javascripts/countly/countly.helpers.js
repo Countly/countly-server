@@ -296,6 +296,9 @@
     * });
     */
     CountlyHelpers.notify = function(msg) {
+        if (typeof msg === "string") {
+            msg = {message: msg};
+        }
         var payload = {};
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
