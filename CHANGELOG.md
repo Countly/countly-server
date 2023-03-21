@@ -1,3 +1,22 @@
+## Version 22.09.19
+Fixes:
+- [consolidate] Fixed app settings change for consolidate plugin
+- [core] Fixed default permission object creation in case user is created via API call
+- [core] Fixes for 'Unknown country flag image'
+- [core] Fixes for showing app image.
+- [core] crypto.getRandomValues is replaced with get-random-values package
+- [db-viewer] Fixed full download for aggregation result.
+- [events] Show duration formatted in minutes and seconds in graph
+- [push] Fixes for dealing with streaming issues
+- [users] Fix for having occasional wrong Export failures with description that user is missing.
+
+Enterprise fixes:
+- [ab-testing] Workflow fixes regarding working with real-time cohorts
+- [cohorts] Corrected exited user count for cases when users are exited in parallel proceses.
+- [cohorts] Fixes to deal with ab-testing rules for cohorts.
+- [drill] Null checks for bookmark updates
+- [formulas] Allow range date picker for no-bucket case formula widget
+
 ## Version 22.09.18
 Fixes:
 - [users] Fix for having occasional wrong Export failures with description that user is missing.
