@@ -42,7 +42,7 @@
         <div class="cly-vue-daterp__calendars-col" v-if="isVisible && customRangeSelection">
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
                 <el-tabs v-model="rangeMode" @tab-click="handleTabChange">
-                    <el-tab-pane name="inBetween" v-if="isRangeModeEnabled('inBetween')">
+                    <el-tab-pane name="inBetween">
                         <template slot="label">
                             <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
                         </template>
@@ -64,7 +64,7 @@
                             </template>
                         </div>
                     </el-tab-pane>
-                    <el-tab-pane name="since" v-if="isRangeModeEnabled('since')">
+                    <el-tab-pane name="since">
                         <template slot="label">
                             <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.since')}}</span>
                         </template>
@@ -72,7 +72,7 @@
                             <el-input size="small" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
                         </div>
                     </el-tab-pane>
-                    <el-tab-pane name="inTheLast" v-if="isRangeModeEnabled('inTheLast')">
+                    <el-tab-pane name="inTheLast">
                         <template slot="label">
                             <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
                         </template>
@@ -85,7 +85,7 @@
                             </el-select>
                         </div>
                     </el-tab-pane>
-                    <el-tab-pane name="onm" v-if="allowOnSelection && isRangeModeEnabled('onm')">
+                    <el-tab-pane name="onm" v-if="allowOnSelection">
                         <template slot="label"><span class="text-medium font-weight-bold">{{i18n('common.time-period-select.on')}}</span></template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :class="{'is-error': onmInput.raw.invalid0}" v-model="onmInput.raw.text" @blur="handleOnmBlur"></el-input>

@@ -730,10 +730,6 @@
                 },
                 required: false
             },
-            disabledRangeModes: {
-                type: [Array, Boolean],
-                default: false
-            },
             popClass: {
                 type: String
             }
@@ -1025,9 +1021,6 @@
                     });
                     this.doClose();
                 }
-            },
-            isRangeModeEnabled: function(mode) {
-                return this.disabledRangeModes && !this.disabledRangeModes.includes(mode);
             }
         },
         beforeDestroy: function() {
