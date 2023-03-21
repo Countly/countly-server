@@ -686,6 +686,10 @@ var pluginManager = function pluginManager() {
         return used;
     };
 
+    this.returnEventsCopy = function() {
+        return JSON.parse(JSON.stringify(events));
+    };
+
     /**
     * Dispatch specific event on api side and wait until all event handlers have processed the event (legacy)
     * @param {string} event - event to dispatch
