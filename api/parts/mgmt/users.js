@@ -435,7 +435,7 @@ usersApi.updateUser = async function(params) {
         updatedMember.username = updatedMember.username.trim();
     }
     if (updatedMember.email) {
-        updatedMember.email = updatedMember.email.trim();
+        updatedMember.email = updatedMember.email.trim().toString().toLowerCase();
     }
 
     if (params.qstring.args.member_image && params.qstring.args.member_image === 'delete') {

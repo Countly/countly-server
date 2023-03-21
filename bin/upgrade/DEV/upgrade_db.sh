@@ -34,6 +34,8 @@ then
     nodejs "$SCRIPTS/scripts/add_cohort_creation_info.js"
     nodejs "$SCRIPTS/scripts/add_funnel_creator.js"
     nodejs "$SCRIPTS/scripts/push_hash.js"
+    nodejs "$SCRIPTS/scripts/convert_member_emails_to_lowercase.js"
+
     
     if [ "$1" != "combined" ]; then
         countly upgrade;
