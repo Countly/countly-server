@@ -13,6 +13,7 @@ var common = {},
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
     mongodb = require('mongodb'),
+    getRandomValues = require('get-random-values'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -2628,7 +2629,7 @@ common.reviver = (key, value) => {
 };
 
 /**
- * Shuffle string using crypto.getRandomValues
+ * Shuffle string using getRandomValues
  * @param {string} text - text to be shuffled
  * @returns {string} shuffled password
  */
@@ -2651,7 +2652,7 @@ common.shuffleString = function(text) {
  * @returns {string} random string from charset
  */
 common.getRandomValue = function(charSet, length = 1) {
-    const randomValues = crypto.getRandomValues(new Uint8Array(charSet.length));
+    const randomValues = getRandomValues(new Uint8Array(charSet.length));
     let randomValue = "";
 
     if (length > charSet.length) {
