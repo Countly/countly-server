@@ -9,7 +9,7 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
-    { hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+    { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
@@ -196,6 +196,14 @@ usersApi.createUser = function(params) {
 
     //adding backwards compatability
     newMember.permission = newMember.permission || {};
+
+    if (!newMember.permission._) {
+        newMember.permission._ = {
+            a: newMember.admin_of || [],
+            u: newMember.user_of ? [newMember.user_of] : []
+        };
+    }
+
     if (newMember.admin_of) {
         if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
             newMember.permission.c = newMember.permission.c || {};
@@ -925,7 +933,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filteredAppIds = appIds.filter((appId) => {
-            if (hasAdminAccess(params.member, appId)) {
+            if (hasAdminAccess(params.member, appId) || hasReadRight('core', appId, params.member)) {
                 return true;
             }
             return false;

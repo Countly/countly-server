@@ -53,7 +53,7 @@
                             -
                         </template>
                     </el-table-column>
-                    <el-table-column v-if="field !== '_id'" min-width="150" v-for="field in fields" prop="field" :label="field">
+                    <el-table-column v-if="field !== '_id'" min-width="150" v-for="field in fields" :prop="field" :label="field">
                         <template v-slot="rowScope">
                             <span>{{ rowScope.row[field] }}</span>
                         </template>

@@ -602,10 +602,14 @@
                     return changedKey === key;
                 });
             },
-            addChangeKeyIfNotFound: function(key) {
-                var self = this;
-                if (!this.isChangeKeyFound(key)) {
-                    self.changeKeys.push(key);
+            addChangeKey: function(key, value, parts) {
+                var index = this.changeKeys.indexOf(key);
+                if (index > -1) {
+                    this.changeKeys.splice(index, 1);
+                }
+                var pluginsData = countlyGlobal.apps[this.selectedApp].plugins;
+                if (!pluginsData[parts[0]] || pluginsData[parts[0]][parts[1]] !== value) {
+                    this.changeKeys.push(key);
                 }
             },
             compare: function(editedObject, selectedApp) {
@@ -669,7 +673,7 @@
                 this.updateAppSettings(key, value, parts);
                 this.updateChangeByLevel(value, parts);
                 if (!isInitializationCall) {
-                    this.addChangeKeyIfNotFound(key);
+                    this.addChangeKey(key, value, parts);
                 }
                 this.appSettings = Object.assign({}, this.appSettings);
             },

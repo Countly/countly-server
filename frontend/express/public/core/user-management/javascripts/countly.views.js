@@ -117,6 +117,7 @@
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
+                    var self = this;
                     CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
@@ -131,6 +132,7 @@
                                 message: CV.i18n('management-users.removed-message'),
                                 type: 'success'
                             });
+                            self.$emit('refresh-table');
                         });
                     }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
@@ -649,9 +651,23 @@
                                 for (var type in types) {
                                     for (var feature in this.features) {
                                         // TODO: these checks will be converted to helper method
-                                        permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet]) {
+                                            permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        }
+                                        else {
+                                            permissionSet[types[type]].all = false;
+                                        }
+
                                         if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all || (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            if (permissionSet[types[type]].all) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all;
+                                            }
+                                            else if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet] && this.user.permission[types[type]][appFromSet].allowed) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            }
+                                            else {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = false;
+                                            }
                                         }
                                     }
                                 }
@@ -759,13 +775,14 @@
         methods: {
             refresh: function() {
                 var self = this;
-                countlyUserManagement.fetchUsers()
-                    .then(function() {
-                        var usersObj = countlyUserManagement.getUsers();
-                        self.users = [];
-                        self.fillOutUsers(usersObj);
-                    })
-                    .catch(function() {});
+                setTimeout(function() {
+                    countlyUserManagement.fetchUsers()
+                        .then(function() {
+                            var usersObj = countlyUserManagement.getUsers();
+                            self.users = [];
+                            self.fillOutUsers(usersObj);
+                        }).catch(function() {});
+                }, 100);
             },
             createUser: function() {
                 this.drawerSettings.editMode = false;

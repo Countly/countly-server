@@ -110,6 +110,9 @@ plugins.register("/i/data-manager/category/create", function(ob) {
         try {
             let appId = ob.params.qstring.app_id;
             let categories = JSON.parse(ob.params.qstring.categories);
+            if (!categories?.length) {
+                throw new Error('categories cannot be empty');
+            }
             const docs = categories.map(cat=>{
                 return {
                     app: appId,

@@ -71,11 +71,30 @@ countlyModel.create = function(fetchValue) {
     };
     //Private Properties
     var _Db = {},
+        _period = null,
         _metas = {},
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
         _totalUsersObj = {},
         _prevTotalUsersObj = {};
+
+    /**
+    * Get the current period Object for the model
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @return {module:api/lib/countly.common.periodObj} period object
+    */
+    countlyMetric.getPeriod = function() {
+        return _period;
+    };
+
+    /**
+    * Set period object for the model to use, for overriding calls to common methods
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {module:api/lib/countly.common.periodObj} period - set period Object used by the model
+    */
+    countlyMetric.setPeriod = function(period) {
+        _period = period;
+    };
 
     /**
     * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -488,6 +507,10 @@ countlyModel.create = function(fetchValue) {
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getNumber = function(metric, isSparklineNotRequired) {
+        var periodObject = null;
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         metric = metric || _metrics[0];
         var metrics = [metric];
         //include other default metrics for data correction
@@ -498,7 +521,7 @@ countlyModel.create = function(fetchValue) {
         if (metric === "n") {
             metrics.push("u");
         }
-        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users });
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users }, periodObject);
         if (isSparklineNotRequired) {
             return data[metric];
         }
@@ -516,7 +539,7 @@ countlyModel.create = function(fetchValue) {
             }
 
             return obj;
-        });
+        }, periodObject);
         for (let i in data) {
             if (sparkLines[i]) {
                 data[i].sparkline = sparkLines[i].split(",").map(function(item) {
@@ -534,10 +557,14 @@ countlyModel.create = function(fetchValue) {
     */
     countlyMetric.getTimelineData = function() {
         var dataProps = [];
+        var periodObject = null;
         for (let i = 0; i < _metrics.length; i++) {
             dataProps.push({ name: _metrics[i] });
         }
-        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps);
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
+        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps, periodObject);
         var ret = {};
         for (let i = 0; i < data.length; i++) {
             ret[data[i]._id] = {};

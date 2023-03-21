@@ -896,7 +896,7 @@
         };
 
         this.startSessionForAb = function() {
-            this.createUsersForAB(getRandomInt(1, countlyPopulator.getUserAmount() * 10));
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {
@@ -1829,7 +1829,7 @@
 
         if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
             generateWidgets(function() {
-                generateRetention(template, function() {
+                generateRetention(template && template.up, function() {
                     generateCampaigns(function() {
                         // Generate campaigns conversion for web
                         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {

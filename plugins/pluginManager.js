@@ -122,12 +122,15 @@ var pluginManager = function pluginManager() {
                 if (api && self.getConfig("api").sync_plugins) {
                     self.checkPlugins(db);
                 }
+                if (self.getConfig("data-manager").enableDataMasking) {
+                    self.fetchMaskingConf({"db": db});
+                }
             }
             else if (callback) {
                 callback();
             }
         });
-        this.fetchMaskingConf({"db": db});
+
     };
 
     /**
@@ -1419,7 +1422,7 @@ var pluginManager = function pluginManager() {
 
         if (db_name === "countly") {
             var wrapped = client.db(db_name);
-            await this.fetchMaskingConf({db: wrapped});
+            //await this.fetchMaskingConf({db: wrapped});
             return wrapped;
         }
         else {
@@ -1464,6 +1467,37 @@ var pluginManager = function pluginManager() {
         masking.isLoaded = Date.now().valueOf();
         return;
 
+    };
+
+    /**
+    * Checks if any item in object tree and subrtree is true. Recursive.
+    * @param {object} myOb - object
+    * @returns {boolean} true or false
+    **/
+    function hasAnyValueTrue(myOb) {
+        if (typeof myOb === 'object' && Object.keys(myOb) && Object.keys(myOb).length > 0) {
+            var value = false;
+            for (var key in myOb) {
+                value = value || hasAnyValueTrue(myOb[key]);
+            }
+            return value;
+        }
+        else {
+            return !!myOb;
+        }
+    }
+    this.isAnyMasked = function() {
+        if (masking && masking.apps) {
+            for (var app in masking.apps) {
+                if (masking.apps[app] && masking.apps[app].masking) {
+                    return hasAnyValueTrue(masking.apps[app].masking);
+                }
+            }
+            return false;
+        }
+        else {
+            return false;
+        }
     };
 
     this.getMaskingSettings = function(appID) {

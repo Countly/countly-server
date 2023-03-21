@@ -1458,7 +1458,31 @@ const processRequest = (params) => {
                                         common.returnMessage(params, 400, error);
                                     }
                                     else if (parseInt(size) === 0) {
-                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                        //export does not exist. lets check out export collection.
+                                        var eid = filename[0].split(".");
+                                        eid = eid[0];
+
+                                        var cursor = common.db.collection("exports").find({"_eid": eid}, {"_eid": 0, "_id": 0});
+                                        var options = {"type": "stream", "filename": eid + ".json", params: params};
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Disposition': 'inline; filename="' + eid + '.json'
+                                        });
+                                        options.streamOptions = {};
+                                        if (options.type === "stream" || options.type === "json") {
+                                            options.streamOptions.transform = function(doc) {
+                                                doc._id = doc.__id;
+                                                delete doc.__id;
+                                                return JSON.stringify(doc);
+                                            };
+                                        }
+
+                                        options.output = options.output || function(stream) {
+                                            countlyApi.data.exports.stream(options.params, stream, options);
+                                        };
+                                        options.output(cursor);
+
+
                                     }
                                     else {
                                         countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
@@ -3191,11 +3215,24 @@ function processUser(params, initiator, done, try_times) {
                         //even if paralel request already inserted uid
                         //this insert will fail
                         //but we will retry again and fetch new inserted document
-                        common.db.collection('app_users' + params.app_id).insert({
+                        var doc = {
                             _id: params.app_user_id,
                             uid: uid,
                             did: params.qstring.device_id
-                        }, {ignore_errors: [11000]}, function() {
+                        };
+                        if (params && params.href) {
+                            doc.first_req_get = (params.href + "") || "";
+                        }
+                        else {
+                            doc.first_req_get = "";
+                        }
+                        if (params && params.req && params.req.body) {
+                            doc.first_req_post = (params.req.body + "") || "";
+                        }
+                        else {
+                            doc.first_req_post = "";
+                        }
+                        common.db.collection('app_users' + params.app_id).insert(doc, {ignore_errors: [11000]}, function() {
                             restartRequest(params, initiator, done, try_times, resolve);
                         });
                     }

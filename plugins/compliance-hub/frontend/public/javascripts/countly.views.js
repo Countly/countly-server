@@ -150,9 +150,6 @@
                         label: this.i18n("consent.opt-o")
                     }
                 ],
-                selectedfilter1: 'all',
-                selectedfilter0: 'sessions',
-                selectedfilterforConsent: 'i',
             };
         },
         beforeCreate: function() {
@@ -160,12 +157,27 @@
             this.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
         },
         computed: {
-            selectedfilterforMetrics: {
+            selectedfilterforConsent: {
                 get: function() {
-                    return this.selectedfilter0;
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].type;
                 },
                 set: function(newValue) {
-                    this.selectedfilter0 = newValue;
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'type',
+                        value: newValue,
+                    });
+                    this.initializeStoreData();
+                }
+            },
+            selectedfilterforMetrics: {
+                get: function() {
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].change;
+                },
+                set: function(newValue) {
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'change',
+                        value: newValue,
+                    });
                     this.initializeStoreData();
                 }
             },
@@ -190,7 +202,6 @@
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
                     self.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
-
                 });
             },
             tableRowClickHandler: function(row) {

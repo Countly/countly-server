@@ -3354,6 +3354,43 @@
             $(".select-items").hide();
         });
     };
+    /**
+     * Shuffle string using crypto.getRandomValues
+     * @param {string} text - text to be shuffled
+     * @returns {string} shuffled password
+     */
+    CountlyHelpers.shuffleString = function(text) {
+        var j, x, i;
+        for (i = text.length; i; i--) {
+            j = Math.floor(Math.random() * i);
+            x = text[i - 1];
+            text[i - 1] = text[j];
+            text[j] = x;
+        }
+
+        return text.join("");
+
+    };
+    /**
+     * Gets a random string from given character set string with given length
+     * @param {string} charSet - charSet string
+     * @param {number} length - length of the random string. default 1 
+     * @returns {string} random string from charset
+     */
+    CountlyHelpers.getRandomValue = function(charSet, length = 1) {
+        const randomValues = crypto.getRandomValues(new Uint8Array(charSet.length));
+        let randomValue = "";
+
+        if (length > charSet.length) {
+            length = charSet.length;
+        }
+
+        for (let i = 0; i < length; i++) {
+            randomValue += charSet[randomValues[i] % charSet.length];
+        }
+
+        return randomValue;
+    };
 
     /**
     * Generate random password
@@ -3376,30 +3413,20 @@
         }
 
         //1 char
-        text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+        text.push(this.getRandomValue(upchars));
         //1 number
-        text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+        text.push(this.getRandomValue(numbers));
         //1 special char
         if (!no_special) {
-            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+            text.push(this.getRandomValue(specials));
             length--;
         }
 
-        var j, x, i;
         //5 any chars
-        for (i = 0; i < Math.max(length - 2, 5); i++) {
-            text.push(all.charAt(Math.floor(Math.random() * all.length)));
-        }
+        text.push(this.getRandomValue(all, Math.max(length - 2, 5)));
 
         //randomize order
-        for (i = text.length; i; i--) {
-            j = Math.floor(Math.random() * i);
-            x = text[i - 1];
-            text[i - 1] = text[j];
-            text[j] = x;
-        }
-
-        return text.join("");
+        return this.shuffleString(text);
     };
 
     /**

@@ -95,7 +95,7 @@
                     condition: JSON.stringify(condition)
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         updateCondition: function(id, condition) {
             return CV.$.ajax({
@@ -254,7 +254,8 @@
             state: function() {
                 return {
                     all: [],
-                    isTableLoading: true
+                    isTableLoading: true,
+                    conditionError: ''
                 };
             },
             getters: {
@@ -263,6 +264,9 @@
                 },
                 isTableLoading: function(_state) {
                     return _state.isTableLoading;
+                },
+                conditionError: function(state) {
+                    return state.conditionError;
                 }
             },
             mutations: {
@@ -271,6 +275,9 @@
                 },
                 setTableLoading: function(state, value) {
                     state.isTableLoading = value;
+                },
+                setConditionError: function(state, value) {
+                    state.conditionError = value;
                 }
             },
             actions: {
@@ -278,7 +285,11 @@
                     context.commit("setAll", conditions);
                 },
                 create: function(context, condition) {
-                    return countlyRemoteConfig.service.createCondition(condition);
+                    return countlyRemoteConfig.service.createCondition(condition).catch(function(err) {
+                        if (err && err.responseJSON && err.responseJSON.result) {
+                            context.commit("setConditionError", err.responseJSON.result);
+                        }
+                    });
                 },
                 update: function(context, condition) {
                     var id = condition._id;

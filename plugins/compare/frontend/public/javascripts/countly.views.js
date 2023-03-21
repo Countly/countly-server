@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCompareEvents, CV*/
+/* global countlyVue, countlyCompareEvents, CV, countlyCommon*/
 (function() {
     var FEATURE_NAME = "compare";
     var CompareEventsTable = countlyVue.views.create({
@@ -54,6 +54,9 @@
                 this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
+            },
+            formatDuration: function(value) {
+                return countlyCommon.formatSecond(value);
             }
         },
     });
@@ -80,6 +83,12 @@
                 this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
                 this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
+            },
+            formatChartValue: function(value) {
+                if (this.selectedMetric === "Duration") {
+                    return countlyCommon.formatSecond(value);
+                }
+                return countlyCommon.getShortNumber(value);
             }
         },
         computed: {

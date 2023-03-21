@@ -14,7 +14,22 @@
         methods: {
             refresh: function(force) {
                 this.$store.dispatch('countlyLanguage/fetchAll', force);
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.appRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('languages.table.language').toUpperCase()] = tableData[i].langs;
+                    item[CV.i18n('common.table.total-sessions').toUpperCase()] = tableData[i].t + " | " + tableData[i].tPerc + "%";
+                    item[CV.i18n('common.table.total-users').toUpperCase()] = tableData[i].u + " | " + tableData[i].uPerc + "%";
+                    item[CV.i18n('common.table.new-users').toUpperCase()] = tableData[i].n + " | " + tableData[i].nPerc + "%";
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         },
         computed: {
             data: function() {
