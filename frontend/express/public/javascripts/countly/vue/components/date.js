@@ -1027,7 +1027,12 @@
                 }
             },
             isRangeModeEnabled: function(mode) {
-                return this.disabledRangeModes && !this.disabledRangeModes.includes(mode);
+				if (this.disabledRangeModes) {
+					return this.disabledRangeModes && !this.disabledRangeModes.includes(mode);
+				}
+				else {
+					return true;
+				}
             }
         },
         beforeDestroy: function() {
