@@ -162,32 +162,39 @@ var pluginManager = function pluginManager() {
                 }
                 configs = res;
                 delete configs._id;
-                self.checkConfigs(db, configs, defaultConfigs, callback);
-
-                pluginConfig = res.plugins || {}; //currently enabled plugins
-                var installPlugins = [];
-                for (var z = 0; z < plugins.length; z++) {
-                    if (typeof pluginConfig[plugins[z]] === 'undefined') {
-                        pluginConfig[plugins[z]] = true;
-                        installPlugins.push(plugins[z]);
+                self.checkConfigs(db, configs, defaultConfigs, function() {
+                    pluginConfig = res.plugins || {}; //currently enabled plugins
+                    var installPlugins = [];
+                    for (var z = 0; z < plugins.length; z++) {
+                        if (typeof pluginConfig[plugins[z]] === 'undefined') {
+                            pluginConfig[plugins[z]] = true;
+                            installPlugins.push(plugins[z]);
+                        }
                     }
-                }
-                Promise.each(installPlugins, function(name) {
-                    return new Promise(function(resolve) {
-                        self.processPluginInstall(db, name, function() {
-                            resolve();
+                    Promise.each(installPlugins, function(name) {
+                        return new Promise(function(resolve) {
+                            self.processPluginInstall(db, name, function() {
+                                resolve();
+                            });
                         });
+                    }).then(function() {
+                        if (callback) {
+                            callback();
+                        }
+                    }).catch(function(rejection) {
+                        console.log(rejection);
+                        if (callback) {
+                            callback();
+                        }
                     });
-                }).then(function() {
+                    /*if (api && self.getConfig("api").sync_plugins) {
+						self.checkPlugins(db);
+					}*/
 
+                    if (self.getConfig("data-manager").enableDataMasking) {
+                        self.fetchMaskingConf({"db": db});
+                    }
                 });
-                /*if (api && self.getConfig("api").sync_plugins) {
-                    self.checkPlugins(db);
-                }*/
-
-                if (self.getConfig("data-manager").enableDataMasking) {
-                    self.fetchMaskingConf({"db": db});
-                }
 
             }
             else if (callback) {
