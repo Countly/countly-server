@@ -180,6 +180,7 @@ class Sender {
                     reject = rej;
                 }),
                 last = Date.now(),
+                finalTimeout,
                 /**
                  * Periodic check to ensure mongo stream is closed once no more data is sent
                  */
@@ -192,7 +193,17 @@ class Sender {
                         last = null;
                         pushes.unpipe(connector);
                         connector.end();
-                        // connector.destroy(new PushError('Streaming timeout'));
+                        finalTimeout = setTimeout(() => {
+                            try {
+                                if (connector) {
+                                    connector.destroy(new PushError('Streaming timeout'));
+                                }
+                                finalTimeout = setTimeout(() => resolve(), 10000);
+                            }
+                            catch (e) {
+                                this.log.e('Streaming timeout: connection destruction error', e);
+                            }
+                        }, 5 * 60 * 1000);
                     }
                     else {
                         setTimeout(check, 10000);
@@ -249,6 +260,8 @@ class Sender {
             });
 
             await promise;
+
+            clearTimeout(finalTimeout);
 
             this.log.i('<<<<<<<<<< done sending');
         }
