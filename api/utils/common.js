@@ -1371,6 +1371,17 @@ common.validateArgs = function(args, argProperties, returnErrors) {
 };
 
 /**
+* Validate email address
+* @param {string} email - email address to validate
+* @returns {boolean} true if valid and false if invalid
+*/
+common.validateEmail = function(email) {
+    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+    return re.test(email);
+};
+
+
+/**
 * Fix event keys before storing in database by removing dots and $ from the string, removing other prefixes and limiting length
 * @param {string} eventKey - key value to fix
 * @returns {string|false} escaped key or false if not possible to use key at all
