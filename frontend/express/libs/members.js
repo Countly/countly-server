@@ -165,10 +165,11 @@ function sha512Hash(str, addSalt) {
  * @param {Function} callback | Callback function
  */
 function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
-    if (username && common.validateEmail(username.toString().toLocaleLowerCase())) {
-        username = username.toString().toLocaleLowerCase();
+    var emailVal = null;
+    if (username && typeof username === 'string') {
+        emailVal = username.toString().toLocaleLowerCase();
     }
-    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
+    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": emailVal}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
                 verifyArgon2Hash(member.password, password).then(match => {

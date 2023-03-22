@@ -1376,15 +1376,7 @@ common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
 
-/**
-* Validate email address
-* @param {string} email - email address to validate
-* @returns {boolean} true if valid and false if invalid
-*/
-common.validateEmail = function(email) {
-    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-    return re.test(email);
-};
+
 
 
 /**
