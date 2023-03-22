@@ -250,7 +250,7 @@ usersApi.createUser = function(params) {
         }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
-        newMember.email = newMember.email.trim();
+        newMember.email = newMember.email.trim().toString().toLowerCase();
         crypto.randomBytes(48, function(errorBuff, buffer) {
             newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
             common.db.collection('members').insert(newMember, function(err, member) {
@@ -435,7 +435,7 @@ usersApi.updateUser = async function(params) {
         updatedMember.username = updatedMember.username.trim();
     }
     if (updatedMember.email) {
-        updatedMember.email = updatedMember.email.trim();
+        updatedMember.email = updatedMember.email.trim().toString().toLowerCase();
     }
 
     if (params.qstring.args.member_image && params.qstring.args.member_image === 'delete') {

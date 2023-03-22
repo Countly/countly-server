@@ -60,7 +60,7 @@
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required|email" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.email" :placeholder="i18n('management-users.enter-email')"></el-input>
+                    <el-input v-model="drawerScope.editedObject.email" oninput="this.value = this.value.toLowerCase();" :placeholder="i18n('management-users.enter-email')"></el-input>
                   </validation-provider>
                 </div>
               </div>
