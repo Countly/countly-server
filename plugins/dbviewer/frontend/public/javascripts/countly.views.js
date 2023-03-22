@@ -111,7 +111,7 @@
             },
             watch: {
                 selectedCollection: function(newVal) {
-                    if (!this.$route || !this.$route.params || !this.$route.params.filter) {
+                    if (!this.$route || !this.$route.params || !this.$route.params.query) {
                         this.collection = newVal;
                         this.queryFilter = null;
                         this.projectionEnabled = false;
@@ -124,7 +124,7 @@
                     }
                     else {
                         this.collection = newVal;
-                        app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.filter, false);
+                        app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.query, false);
                         this.tableStore.dispatch("fetchDbviewerTable");
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
@@ -160,6 +160,7 @@
                     this.openFormDialog("queryFilter", _.extend({
                         filter: this.queryFilter || "",
                         projectionEnabled: this.projectionEnabled || false,
+                        projection: this.projection || [],
                         fields: this.projection || [],
                         sortEnabled: this.sortEnabled || false,
                         sort: this.sort || ""
@@ -178,7 +179,7 @@
                     this.projectionEnabled = formData.projectionEnabled;
                     // query
                     this.queryFilter = formData.filter;
-                    this.updatePath(this.queryFilter);
+                    this.updatePath({"filter": this.queryFilter, "projection": this.projection, "sort": this.sort, "projectionEnabled": this.projectionEnabled, "sortEnabled": this.sortEnabled, "isDescentSort": this.isDescentSort});
                     // fire the request!
                     this.fetch(true);
                 },
@@ -243,17 +244,17 @@
                 tableRowClassName: function() {
                     return 'bu-is-clickable';
                 },
-                updatePath: function(filter) {
+                updatePath: function(query) {
                     if (this.collection && this.db) {
-                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection + "/" + filter;
+                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
                         if (this.index) {
-                            window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection + "/" + filter;
+                            window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
                         }
                     }
                 },
                 onCollectionChange: function() {
-                    if (this.$route && this.$route.params && this.$route.params.filter) {
-                        delete this.$route.params.filter;
+                    if (this.$route && this.$route.params && this.$route.params.query) {
+                        delete this.$route.params.query;
                     }
                 }
             },
@@ -320,9 +321,13 @@
                 if (!this.db) {
                     this.db = 'countly';
                 }
-
-                if (this.$route.params && this.$route.params.filter) {
-                    this.queryFilter = this.$route.params.filter;
+                if (this.$route.params && this.$route.params.query && JSON.parse(this.$route.params.query)) {
+                    this.queryFilter = JSON.parse(this.$route.params.query).filter;
+                    this.sort = JSON.parse(this.$route.params.query).sort;
+                    this.projection = JSON.parse(this.$route.params.query).projection;
+                    this.projectionEnabled = JSON.parse(this.$route.params.query).projectionEnabled;
+                    this.sortEnabled = JSON.parse(this.$route.params.query).sortEnabled;
+                    this.isDescentSort = JSON.parse(this.$route.params.query).isDescentSort;
                 }
 
                 if (!this.collection) {
@@ -473,13 +478,13 @@
                         self.queryLoading = false;
                     }
                 },
-                updatePath: function(filter) {
-                    window.location.hash = "#/manage/db/aggregate/countly/" + this.collection + "/" + filter;
+                updatePath: function(query) {
+                    window.location.hash = "#/manage/db/aggregate/countly/" + this.collection + "/" + query;
                 },
             },
             created: function() {
-                if (this.$route && this.$route.params && this.$route.params.filter) {
-                    this.query = this.$route.params.filter;
+                if (this.$route && this.$route.params && this.$route.params.query) {
+                    this.query = this.$route.params.query;
                     this.executeQuery();
                 }
                 if (!(this.$route && this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
@@ -507,11 +512,11 @@
             this.renderWhenReady(DBViewerMainView);
         });
 
-        app.route('/manage/db/:db/:collection/*filter', 'dbs', function(db, collection, filter) {
+        app.route('/manage/db/:db/:collection/*query', 'dbs', function(db, collection, query) {
             DBViewerMainView.params = {
                 db: db,
                 collection: collection,
-                filter: filter
+                query: query
             };
             this.renderWhenReady(DBViewerMainView);
         });
@@ -533,12 +538,12 @@
             this.renderWhenReady(DBViewerMainView);
         });
 
-        app.route('/manage/db/indexes/:db/:collection/*filter', 'dbs', function(db, collection, filter) {
+        app.route('/manage/db/indexes/:db/:collection/*query', 'dbs', function(db, collection, query) {
             DBViewerMainView.params = {
                 db: db,
                 collection: collection,
                 index: true,
-                filter: filter
+                query: query
             };
             this.renderWhenReady(DBViewerMainView);
         });
@@ -551,11 +556,11 @@
             this.renderWhenReady(DBViewerAggregateView);
         });
 
-        app.route('/manage/db/aggregate/:db/:collection/*filter', 'dbs', function(db, collection, filter) {
+        app.route('/manage/db/aggregate/:db/:collection/*query', 'dbs', function(db, collection, query) {
             DBViewerAggregateView.params = {
                 db: db,
                 collection: collection,
-                filter: filter
+                query: query
             };
             this.renderWhenReady(DBViewerAggregateView);
         });
