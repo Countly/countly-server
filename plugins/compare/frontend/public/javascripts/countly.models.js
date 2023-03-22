@@ -126,7 +126,17 @@
                     series.push(ob);
                 }
             }
-            return {series: series};
+            var lineOptions = {series: series};
+            if (context.state.selectedGraphMetric === "dur") {
+                lineOptions.yAxis = {
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+            }
+            return lineOptions;
         },
         getLegendData: function(selectedEvents, groupData, map) {
             var lineLegend = {};

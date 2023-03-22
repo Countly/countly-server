@@ -165,7 +165,7 @@ var CountryView = countlyVue.views.create({
                 title = CV.i18n('common.table.new-users');
             }
             for (var k = 0; k < table.length; k++) {
-                var cc = "<img src='" + countlyGlobal.path + "/images/flags/" + table[k].code + ".png'/><p class='number'>" + table[k][selectedProperty] + "</p><p>" + title + "</p>";
+                var cc = "<img src='" + countlyGlobal.path + "/images/flags/" + (table[k].code || "unknown") + ".png'/><p class='number'>" + table[k][selectedProperty] + "</p><p>" + title + "</p>";
                 geoChart.push([{"v": table[k].country, "f": table[k].countryTranslated}, table[k][selectedProperty], cc]);
             }
             return geoChart;
@@ -183,7 +183,7 @@ var CountryView = countlyVue.views.create({
 
             this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
-                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + this.data.table[z].code + ".svg";
+                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + (this.data.table[z].code || "unknown") + ".svg";
             }
             return this.data.table;
         },

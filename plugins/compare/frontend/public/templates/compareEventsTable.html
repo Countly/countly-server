@@ -29,7 +29,7 @@
         <el-table-column sortable="true" prop="dur" :label="i18n('compare.events.duration')">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.dur}}
+              {{formatDuration(rowScope.row.dur)}}
             </div>
           </template>
         </el-table-column>
