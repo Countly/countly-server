@@ -311,4 +311,26 @@
 			border-top: 1px;
 		}
 	}
+
+	.crashes-overview {
+		&__refresh {
+			font-size: 18px;
+			color: #a7aeb8;
+			margin-left: 10px;
+			&--enabled {
+			  font-size: 14px;
+			  color: #333c48;
+			}
+			&--enabled-color {
+			  font-size: 14px;
+			  color: #0064de;
+			  margin-left: 5px;
+			}
+			&--disabled {
+			  font-size: 14px;
+			  color: #333c48;
+			  margin-left: 10px;
+			}
+		}		
+	}
 }

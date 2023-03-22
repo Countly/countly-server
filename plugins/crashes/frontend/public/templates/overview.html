@@ -1,4 +1,4 @@
-<div>
+<div class="crashes-overview">
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="crash-groups">
             <span slot="label">{{i18n("crashes.crash-groups")}}</span>
@@ -8,6 +8,21 @@
                         {{i18n("crashes.crash-groups")}}
                         <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
                     </h2>
+                </template>
+                <template v-slot:header-right>
+                    <div v-if="autoRefresh" class="bu-level-item">
+                        <span class="crashes-overview__refresh--enabled">{{i18n('crashes.auto-refresh-is')}}</span>
+                        <span class="crashes-overview__refresh--enabled-color">{{i18n('crashes.enabled')}}</span>
+                        <span v-tooltip.top-left="getRefreshTooltip()" class="bu-ml-1 bu-mr-2 crashes-overview__tooltip ion-help-circled"></span>
+                        <el-button @click="stopAutoRefresh()"><i class="bu-ml-2 fa fa-stop-circle"></i> {{i18n('crashes.auto-refresh-stop')}}
+                        </el-button>
+                    </div>
+                    <div v-else-if="!autoRefresh" class="bu-level-item">
+                        <el-switch v-model="autoRefresh">
+                        </el-switch>
+                        <span class="crashes-overview__refresh--disabled">{{i18n('crashes.auto-refresh')}}</span>
+                        <span v-tooltip.left="getRefreshTooltip()" class="bu-ml-2 crashes-overview__tooltip ion-help-circled"></span>
+                    </div>
                 </template>
             </cly-header>
             <cly-main>

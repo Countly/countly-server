@@ -434,7 +434,8 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
-                hasDrillPermission: countlyAuth.validateRead('drill')
+                hasDrillPermission: countlyAuth.validateRead('drill'),
+                autoRefresh: true
             };
         },
         computed: {
@@ -523,15 +524,17 @@
         },
         methods: {
             refresh: function() {
-                var query = {};
-                if (this.crashgroupsFilter.query) {
-                    query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
-                }
+                if (this.autoRefresh) {
+                    var query = {};
+                    if (this.crashgroupsFilter.query) {
+                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                    }
 
-                return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                    this.$store.dispatch("countlyCrashes/overview/refresh")
-                ]);
+                    return Promise.all([
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
+                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                    ]);
+                }
             },
             handleSelectionChange: function(selectedRows) {
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
@@ -594,7 +597,18 @@
                 }
 
                 return item1.latest_version.localeCompare(item2.latest_version);
+            },
+            getRefreshTooltip: function() {
+                return this.i18n('crashes.auto-refresh-help');
+            },
+            stopAutoRefresh: function() {
+                this.autoRefresh = false;
             }
+        },
+        watch: {
+            autoRefresh: function(newValue) {
+                localStorage.setItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID, newValue);
+            },
         },
         beforeCreate: function() {
             var query = {};
@@ -608,6 +622,16 @@
             return Promise.all([
                 this.$store.dispatch("countlyCrashes/overview/refresh")
             ]);
+        },
+        mounted: function() {
+            var autoRefreshState = localStorage.getItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID);
+            if (autoRefreshState) {
+                this.autoRefresh = autoRefreshState === "true";
+            }
+            else {
+                localStorage.setItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID, true);
+                this.autoRefresh = true;
+            }
         }
     });
 
