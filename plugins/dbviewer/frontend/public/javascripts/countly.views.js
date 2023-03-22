@@ -395,7 +395,8 @@
                     collection: (this.$route.params && this.$route.params.collection),
                     aggregationResult: [{'_id': 'query_not_executed_yet'}],
                     queryLoading: false,
-                    fields: []
+                    fields: [],
+                    collectionName: ''
                 };
             },
             methods: {
@@ -435,12 +436,29 @@
                         });
                         self.queryLoading = false;
                     }
+                },
+                getCollectionName: function() {
+                    var self = this;
+                    if (this.db && this.collection) {
+                        countlyDBviewer.initialize("all")
+                            .then(function() {
+                                var dbs = countlyDBviewer.getData();
+                                var currentDb = dbs.find(function(db) {
+                                    return db.name === self.db;
+                                }) || {};
+                                var [key] = Object.entries(currentDb.collections || {}).find(function([, value]) {
+                                    return value === self.collection;
+                                });
+                                self.collectionName = key || '';
+                            });
+                    }
                 }
             },
             created: function() {
                 if (!(this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
                     window.location = '#/manage/db';
                 }
+                this.getCollectionName();
             }
         });
 
