@@ -169,6 +169,9 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
     if (username && typeof username === 'string') {
         emailVal = username.toString().toLocaleLowerCase();
     }
+    else {
+        emailVal = username;
+    }
     countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": emailVal}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
