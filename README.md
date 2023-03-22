@@ -3,7 +3,9 @@
 
 <p align="right">
 
-[![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](https://count.ly/github/install-on-digital-ocean.svg)](http://do.count.ly)
+![CI](https://github.com/countly/countly-server/actions/workflows/main.yml/badge.svg)
+![CodeQL Analysis](https://github.com/countly/countly-server/actions/workflows/codeql-analysis.yml/badge.svg)
+
 
 </p>
 

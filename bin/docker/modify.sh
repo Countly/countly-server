@@ -19,7 +19,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# Run ab-testing models compilation if it's there
 	if [ -d /opt/countly/plugins/ab-testing ]; then
 		if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
-			apt-get -y install python3-pip
+			apt-get install -y python3-pip
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip
 		fi
@@ -31,7 +31,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# install monngodb tools to have mongoexport
 	if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
 	    wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.5.4.deb
-            apt install ./mongodb-database-tools-*-100.5.4.deb
+            apt install -y --allow-downgrades ./mongodb-database-tools-*-100.5.4.deb
 	    rm ./mongodb-database-tools-*-100.5.4.deb
 	else
             wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-rhel70-x86_64-100.5.4.rpm
@@ -39,4 +39,3 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	    rm ./mongodb-database-tools-*-100.5.4.rpm
 	fi
 fi
-

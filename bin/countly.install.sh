@@ -5,13 +5,24 @@ totalm=$(free -m | awk '/^Mem:/{print $2}')
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
     if [ -f /etc/lsb-release ]; then
-        apt install sudo -y
+        apt install -y sudo
     elif [ -f /etc/redhat-release ]; then
-        yum install sudo -y
+        yum install -y sudo
     fi
 fi
 
 sudo bash "$DIR/scripts/init_countly_user.sh"
+cd "$DIR/../"
+
+sudo su countly -c "/bin/bash $DIR/scripts/check_countly_user_permissions.sh > /dev/null 2>&1"
+
+if [ ! -f ./permission_test_file.txt ]; then
+    PARENT_DIR=$(cd ./../ && pwd)
+    echo "Permission error, you cannot install Countly under ${PARENT_DIR}."
+    exit 1
+else
+    sudo rm -f ./permission_test_file.txt
+fi
 
 if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM"

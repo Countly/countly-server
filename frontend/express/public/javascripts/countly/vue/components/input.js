@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _, _merge */
+/* global Vue, CV, countlyGlobal, $, _ */
 
 (function(countlyVue) {
 
@@ -394,12 +394,13 @@
                     },
                     success: function() {
                         //since countlyGlobal.member does not updates automatically till refresh
-                        var updatedSortMap = {
-                            [self.persistColumnOrderKey]: {
-                                reorderSortMap: sortMap
-                            }
-                        };
-                        countlyGlobal.member.columnOrder = _merge({}, countlyGlobal.member.columnOrder, updatedSortMap);
+                        if (!countlyGlobal.member.columnOrder) {
+                            countlyGlobal.member.columnOrder = {};
+                        }
+                        if (!countlyGlobal.member.columnOrder[self.persistColumnOrderKey]) {
+                            countlyGlobal.member.columnOrder[self.persistColumnOrderKey] = {};
+                        }
+                        countlyGlobal.member.columnOrder[self.persistColumnOrderKey].reorderSortMap = sortMap;
                     }
                 });
             }

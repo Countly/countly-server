@@ -47,7 +47,8 @@
             url: countlyCommon.API_PARTS.data.r + '/users/all',
             dataType: "json",
             data: {
-                app_id: countlyCommon.ACTIVE_APP_ID
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                "preventRequestAbort": true
             },
             success: function(json) {
                 _users = json;

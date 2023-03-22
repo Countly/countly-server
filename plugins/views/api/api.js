@@ -20,7 +20,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.setConfigs("views", {
         view_limit: 50000,
-        view_name_limit: 100,
+        view_name_limit: 128,
         segment_value_limit: 10,
         segment_limit: 100
     });
@@ -1482,6 +1482,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 options.upsert = false;
                             }
                             common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                                if (err2) {
+                                    log.e(err);
+                                }
                                 if (view2 && view2.value) {
                                     callback(err, view2.value);
                                     common.readBatcher.invalidate(collection, query, {}, false);
@@ -1505,6 +1508,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         options.upsert = false;
                     }
                     common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
+                        if (err) {
+                            log.e(err);
+                        }
                         if (view && view.value) {
                             callback(err, view.value);
                         }
@@ -1739,8 +1745,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             if (haveVisit) {
                                 common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
                                     for (let p = 0; p < results.length; p++) {
-                                        var currEvent = results[p];
-                                        recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                        if (results[p]) {
+                                            var currEvent = results[p];
+                                            recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                        }
                                     }
                                 });
                             }
@@ -1750,6 +1758,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
                             }
 
+                        }, function(onfail) {
+                            log.e(JSON.stringify(onfail || ""));
+                        }).catch(function(rejection) {
+                            log.e(rejection);
                         });
                         resolve();
                     });
@@ -1827,6 +1839,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         currEvent.viewAlias = escapedMetricVal;
                         resolve(currEvent);
                     }
+                    else {
+                        resolve(false);
+                    }
                 });
             }
             else if (currEvent.segmentation.view) {
@@ -1835,6 +1850,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (view) {
                         currEvent.viewAlias = common.db.encode(view._id + "");
                         resolve(currEvent);
+                    }
+                    else {
+                        resolve(false);
                     }
                 });
             }
@@ -1892,23 +1910,28 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
-                    currEvent.segmentation[segKey] = tmpSegVal;
 
-                    if (viewInfo.segments[segKey]) {
-                        if (viewInfo.segments[segKey][tmpSegVal]) {
-                            segmentList.push(segKey);
-                        }
-                        else {
-                            if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                delete currEvent.segmentation[segKey];
+                    if (tmpSegVal) {
+                        currEvent.segmentation[segKey] = tmpSegVal;
+                        if (viewInfo.segments[segKey]) {
+                            if (viewInfo.segments[segKey][tmpSegVal]) {
+                                segmentList.push(segKey);
                             }
                             else {
-                                viewInfo.segments[segKey][segKey] = true;
-                                segmentList.push(segKey);
-                                addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                save_structure = true;
+                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
+                                    delete currEvent.segmentation[segKey];
+                                }
+                                else {
+                                    viewInfo.segments[segKey][segKey] = true;
+                                    segmentList.push(segKey);
+                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
+                                    save_structure = true;
+                                }
                             }
                         }
+                    }
+                    else {
+                        delete currEvent.segmentation[segKey];
                     }
                 }
             }

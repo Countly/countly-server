@@ -159,12 +159,10 @@ chmod a+x ldd.sh
 function install_missing_dependencies() {
     executable="${1}"
     # Loop through and install missing dependencies.
-    while true
-    do
+    while true; do
         finished=true
         # Loop through each of the missing libraries for this round.
-        while read -r line
-        do
+        while read -r line; do
             # Parse the various library listing formats.
             if [[ "$line" == *"/"* ]]; then
                 # Extract the filename when a path is present (e.g. /lib64/).
@@ -231,8 +229,7 @@ popd > /dev/null
 
 # Print out the success status message and exit.
 
-if version="$(google-chrome-stable --version)"
-then
+if version="$(google-chrome-stable --version)"; then
     echo "Successfully installed google-chrome-stable, ${version}."
     exit 0
 else

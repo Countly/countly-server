@@ -120,7 +120,7 @@ countlyEvents.processEvents = function(params) {
                         }
                         for (var z = 0; z < myValues.length; z++) {
                             try {
-                                tmpSegVal = currEvent.segmentation[segKey][z] + "";
+                                tmpSegVal = myValues[z] + "";
                                 tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
 
                                 if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
