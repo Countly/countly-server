@@ -12,19 +12,7 @@
             </span>
         </template>
         <template v-slot:header-right>
-            <div v-if="autoRefresh" class="bu-level-item">
-                <span class="cly-vue-logger__refresh--enabled">{{i18n('logger.auto-refresh-is')}}</span>
-                <span class="cly-vue-logger__refresh--enabled-color">{{i18n('logger.enabled')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-                <el-button @click="stopAutoRefresh()"><i class="fa fa-stop-circle"></i> {{i18n('logger.auto-refresh-stop')}}
-                </el-button>
-            </div>
-            <div v-else="autoRefresh" class="bu-level-item">
-                <el-switch v-model="autoRefresh">
-                </el-switch>
-                <span class="cly-vue-logger__refresh--disabled">{{i18n('logger.auto-refresh')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-            </div>
+            <cly-auto-refresh-toggle ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
         </template>
     </cly-header>
     <cly-main>

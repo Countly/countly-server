@@ -434,8 +434,7 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
-                hasDrillPermission: countlyAuth.validateRead('drill'),
-                autoRefresh: true
+                hasDrillPermission: countlyAuth.validateRead('drill')
             };
         },
         computed: {
@@ -524,7 +523,7 @@
         },
         methods: {
             refresh: function() {
-                if (this.autoRefresh) {
+                if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
                     if (this.crashgroupsFilter.query) {
                         query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
@@ -598,17 +597,6 @@
 
                 return item1.latest_version.localeCompare(item2.latest_version);
             },
-            getRefreshTooltip: function() {
-                return this.i18n('crashes.auto-refresh-help');
-            },
-            stopAutoRefresh: function() {
-                this.autoRefresh = false;
-            }
-        },
-        watch: {
-            autoRefresh: function(newValue) {
-                localStorage.setItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID, newValue);
-            },
         },
         beforeCreate: function() {
             var query = {};
@@ -622,16 +610,6 @@
             return Promise.all([
                 this.$store.dispatch("countlyCrashes/overview/refresh")
             ]);
-        },
-        mounted: function() {
-            var autoRefreshState = localStorage.getItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID);
-            if (autoRefreshState) {
-                this.autoRefresh = autoRefreshState === "true";
-            }
-            else {
-                localStorage.setItem("auto_refresh_crashes_" + countlyCommon.ACTIVE_APP_ID, true);
-                this.autoRefresh = true;
-            }
         }
     });
 
