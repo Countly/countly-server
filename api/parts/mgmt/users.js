@@ -196,6 +196,14 @@ usersApi.createUser = function(params) {
 
     //adding backwards compatability
     newMember.permission = newMember.permission || {};
+
+    if (!newMember.permission._) {
+        newMember.permission._ = {
+            a: newMember.admin_of || [],
+            u: newMember.user_of ? [newMember.user_of] : []
+        };
+    }
+
     if (newMember.admin_of) {
         if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
             newMember.permission.c = newMember.permission.c || {};
@@ -250,7 +258,7 @@ usersApi.createUser = function(params) {
         }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
-        newMember.email = newMember.email.trim();
+        newMember.email = newMember.email.trim().toString().toLowerCase();
         crypto.randomBytes(48, function(errorBuff, buffer) {
             newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
             common.db.collection('members').insert(newMember, function(err, member) {
@@ -435,7 +443,7 @@ usersApi.updateUser = async function(params) {
         updatedMember.username = updatedMember.username.trim();
     }
     if (updatedMember.email) {
-        updatedMember.email = updatedMember.email.trim();
+        updatedMember.email = updatedMember.email.trim().toString().toLowerCase();
     }
 
     if (params.qstring.args.member_image && params.qstring.args.member_image === 'delete') {

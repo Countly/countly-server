@@ -312,6 +312,9 @@
     * });
     */
     CountlyHelpers.notify = function(msg) {
+        if (typeof msg === "string") {
+            msg = {message: msg};
+        }
         var payload = {};
         var persistent = msg.persistent;
         payload.text = msg.message;

@@ -818,6 +818,8 @@ function transformAppVersion(inpVersion) {
                                     return item._id === crashgroupJson.lrid;
                                 });
 
+                                crashgroupJson.binary_images = latestCrash && latestCrash.binary_images;
+
                                 var crashes = [{
                                     _id: crashgroupJson.lrid,
                                     os: crashgroupJson.os,

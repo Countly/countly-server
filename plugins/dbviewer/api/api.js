@@ -7,6 +7,7 @@ var common = require('../../../api/utils/common.js'),
     taskManager = require('../../../api/utils/taskmanager.js'),
     { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
+const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
 var spawn = require('child_process').spawn,
@@ -94,7 +95,7 @@ var spawn = require('child_process').spawn,
         **/
         function objectIdCheck(doc) {
             if (typeof doc === "string") {
-                doc = JSON.parse(doc);
+                doc = EJSON.parse(doc);
             }
             for (var key in doc) {
                 if (doc[key] && typeof doc[key].toHexString !== "undefined" && typeof doc[key].toHexString === "function") {
@@ -139,13 +140,13 @@ var spawn = require('child_process').spawn,
             var sort = params.qstring.sort || "{}";
 
             try {
-                sort = JSON.parse(sort);
+                sort = EJSON.parse(sort);
             }
             catch (SyntaxError) {
                 sort = {};
             }
             try {
-                filter = JSON.parse(filter);
+                filter = EJSON.parse(filter);
             }
             catch (SyntaxError) {
                 filter = {};
@@ -157,7 +158,7 @@ var spawn = require('child_process').spawn,
                 filter._id = new RegExp(sSearch);
             }
             try {
-                projection = JSON.parse(projection);
+                projection = EJSON.parse(projection);
             }
             catch (SyntaxError) {
                 projection = {};
@@ -175,7 +176,7 @@ var spawn = require('child_process').spawn,
                     var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return JSON.stringify(objectIdCheck(doc));
+                            return EJSON.stringify(objectIdCheck(doc));
                         }
                     });
                     var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
@@ -301,7 +302,7 @@ var spawn = require('child_process').spawn,
                             type: "dbviewer",
                             force: params.qstring.save_report || false,
                             gridfs: true,
-                            meta: JSON.stringify({
+                            meta: EJSON.stringify({
                                 db: dbNameOnParam,
                                 collection: params.qstring.collection,
                                 aggregation: aggregation
@@ -415,7 +416,7 @@ var spawn = require('child_process').spawn,
             else if (isContainDb && params.qstring.aggregation) {
                 if (params.member.global_admin) {
                     try {
-                        let aggregation = JSON.parse(params.qstring.aggregation);
+                        let aggregation = EJSON.parse(params.qstring.aggregation);
                         aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
@@ -427,7 +428,7 @@ var spawn = require('child_process').spawn,
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             try {
-                                let aggregation = JSON.parse(params.qstring.aggregation);
+                                let aggregation = EJSON.parse(params.qstring.aggregation);
                                 aggregate(params.qstring.collection, aggregation);
                             }
                             catch (e) {
