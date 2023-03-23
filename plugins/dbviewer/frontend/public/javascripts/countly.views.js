@@ -396,7 +396,7 @@
                     aggregationResult: [{'_id': 'query_not_executed_yet'}],
                     queryLoading: false,
                     fields: [],
-                    collectionName: ''
+                    collectionName: (this.$route.params && this.$route.params.collection),
                 };
             },
             methods: {
@@ -440,17 +440,16 @@
                 getCollectionName: function() {
                     var self = this;
                     if (this.db && this.collection) {
-                        countlyDBviewer.initialize("all")
-                            .then(function() {
-                                var dbs = countlyDBviewer.getData();
-                                var currentDb = dbs.find(function(db) {
-                                    return db.name === self.db;
-                                }) || {};
-                                var [key] = Object.entries(currentDb.collections || {}).find(function([, value]) {
-                                    return value === self.collection;
+                        var dbs = countlyDBviewer.getData();
+                        if (dbs.length) {
+                            this.collectionName = countlyDBviewer.getName(this.db, this.collection);
+                        }
+                        else {
+                            countlyDBviewer.initialize()
+                                .then(function() {
+                                    self.collectionName = countlyDBviewer.getName(self.db, self.collection);
                                 });
-                                self.collectionName = key || '';
-                            });
+                        }
                     }
                 }
             },

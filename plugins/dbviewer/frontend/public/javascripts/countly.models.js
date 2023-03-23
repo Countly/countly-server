@@ -144,6 +144,17 @@
     countlyDBviewer.getDocument = function() {
         return _document;
     };
+
+    countlyDBviewer.getName = function(db, collection) {
+        var currentDb = _data.find(function(dbObj) {
+            return dbObj.name === db;
+        }) || {};
+        var [key] = Object.entries(currentDb.collections || {}).find(function([, value]) {
+            return value === collection;
+        });
+        return key || collection;
+    };
+
     countlyDBviewer.getMongoTopData = function(callback) {
         return $.ajax({
             type: "GET",
