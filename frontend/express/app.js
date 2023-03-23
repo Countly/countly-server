@@ -866,7 +866,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            licenseNotification, licenseError;
+            licenseNotification, licenseError, isMyCountly = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -892,6 +892,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 }
                 catch (e) {
                     log.e('Failed to parse notify', e);
+                }
+            }
+
+            if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+                const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+                try {
+                    if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+                        isMyCountly = true;
+                    }
+                }
+                catch (e) {
+                    isMyCountly = false;
                 }
             }
 
@@ -940,7 +952,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
-                }
+                },
+                mycountly: isMyCountly,
             };
 
             var toDashboard = {
