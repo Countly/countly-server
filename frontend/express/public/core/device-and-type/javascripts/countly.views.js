@@ -384,7 +384,7 @@ var GridComponent = countlyVue.views.create({
                 "carriers": this.i18n("carriers.title"),
                 "devices": this.i18n("devices.title"),
                 "browser": this.i18n("browser.title"),
-                "device_type": this.i18n("device_type.device_types"),
+                "device_type": this.i18n("device_type.title"),
             },
             tableMap: {
                 "u": this.i18n("common.table.total-users"),

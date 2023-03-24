@@ -798,7 +798,7 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
                 default: ""
             }
         },
@@ -912,7 +912,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
             }
         },
         computed: {
@@ -970,7 +970,7 @@
                 }
             },
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
             },
             reportInfo: {
                 type: Object

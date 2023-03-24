@@ -584,7 +584,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
-
         var facetLine = [];
 
         if (settings.sortcol !== 'name') {
@@ -2232,7 +2231,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: data.custom_period || params.qstring.period
+                        period: JSON.stringify(data.custom_period) || params.qstring.period
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member
