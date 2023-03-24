@@ -91,13 +91,13 @@ tracker.enable = function() {
     };
     //set static device id if domain is defined
     if (domain) {
-        config.device_id = domain;
+        config.device_id = stripTrailingSlash((domain + "").split("://").pop());
     }
     Countly.init(config);
 
     //change device id if is it not domain
     if (domain && Countly.get_device_id() !== domain) {
-        Countly.change_id(domain, true);
+        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
     }
     else if (!domain) {
         checkDomain();
@@ -140,13 +140,13 @@ tracker.enableDashboard = function() {
     };
     //set static device id if domain is defined
     if (domain) {
-        config.device_id = domain;
+        config.device_id = stripTrailingSlash((domain + "").split("://").pop());
     }
     Countly.init(config);
 
     //change device id if is it not domain
     if (domain && Countly.get_device_id() !== domain) {
-        Countly.change_id(domain, true);
+        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
     }
     else if (!domain) {
         checkDomain();
@@ -381,7 +381,10 @@ var checkDomain = function() {
     if (!domain && domain !== plugins.getConfig("api").domain) {
         domain = plugins.getConfig("api").domain;
         if (Countly && isEnabled) {
-            Countly.change_id(domain, true);
+            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
+            Countly.userData.set("domain", domain);
+            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+            Countly.userData.save();
         }
     }
     else if (!domain) {
