@@ -1611,7 +1611,21 @@ var ipLogger = common.log('ip:api');
 * @returns {string} ip address
 */
 common.getIpAddress = function(req) {
-    var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
+    var ipAddress = "";
+    if (req) {
+        if (req.headers) {
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'];
+        }
+        else if (req.connection && req.connection.remoteAddress) {
+            ipAddress = req.connection.remoteAddress;
+        }
+        else if (req.socket && req.socket.remoteAddress) {
+            ipAddress = req.socket.remoteAddress;
+        }
+        else if (req.connection && req.connection.socket && req.connection.socket.remoteAddress) {
+            ipAddress = req.connection.socket.remoteAddress;
+        }
+    }
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
