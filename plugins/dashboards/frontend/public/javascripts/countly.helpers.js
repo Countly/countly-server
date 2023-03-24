@@ -948,6 +948,9 @@
                     }
                 }
                 else {
+                    if (period === "0days") {
+                        return CV.i18n("common.all-time");
+                    }
                     var periodNames = countlyCommon.convertToTimePeriodObj(period);
                     return periodNames.longName;
                 }

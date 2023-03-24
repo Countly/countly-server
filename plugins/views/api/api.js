@@ -251,7 +251,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
-
+        if (params.qstring.period && params.qstring.period.indexOf('since') !== -1) {
+            params.qstring.period = JSON.parse(params.qstring.period);
+        }
         var dates = [];
         var calcUvalue = [];
         var calcUvalue2 = [];
@@ -308,6 +310,24 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
+        var parsedPeriod = period;
+
+        if (typeof period === 'string') {
+            try {
+                parsedPeriod = JSON.parse(period);
+            }
+            catch (error) {
+                parsedPeriod = period;
+            }
+        }
+        if (typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) {
+            try {
+                period = JSON.stringify([periodObj.start, periodObj.end]);
+            }
+            catch (error) {
+                //
+            }
+        }
 
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
