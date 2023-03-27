@@ -885,7 +885,7 @@ const processRequest = (params) => {
                                     return;
                                 }
                                 //check for duplicates
-                                var overview_map = {};
+                                var overview_map = Object.create(null);
                                 for (let p = 0; p < update_array.overview.length; p++) {
                                     if (!overview_map[update_array.overview[p].eventKey]) {
                                         overview_map[update_array.overview[p].eventKey] = {};
