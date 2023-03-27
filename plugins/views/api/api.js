@@ -311,6 +311,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var selectMap = {};
         var projector;
         var parsedPeriod = period;
+        var periodsToBeConverted = ["months", "weeks", "days"];
 
         if (typeof period === 'string') {
             try {
@@ -320,7 +321,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 parsedPeriod = period;
             }
         }
-        if (typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) {
+        if ((typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) || periodsToBeConverted.some(x=>period.includes(x))) {
             try {
                 period = JSON.stringify([periodObj.start, periodObj.end]);
             }
@@ -2243,7 +2244,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var params = ob.params;
             var data = ob.widget;
             var allApps = data.apps;
-
+            var customPeriod = data.custom_period;
+            if (typeof customPeriod === 'object') {
+                customPeriod = JSON.stringify(data.custom_period);
+            }
             if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
                 var paramsObj = {
@@ -2251,7 +2255,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: JSON.stringify(data.custom_period) || params.qstring.period
+                        period: customPeriod || params.qstring.period
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member

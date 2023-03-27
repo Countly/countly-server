@@ -800,6 +800,11 @@
             value: {
                 type: [Array, String, Object, Boolean],
                 default: ""
+            },
+            disabledShortcuts: {
+                type: Array,
+                default: null,
+                required: false,
             }
         },
         data: function() {
