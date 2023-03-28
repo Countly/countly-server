@@ -436,7 +436,8 @@
                     collection: (this.$route.params && this.$route.params.collection),
                     aggregationResult: [{'_id': 'query_not_executed_yet'}],
                     queryLoading: false,
-                    fields: []
+                    fields: [],
+                    collectionName: (this.$route.params && this.$route.params.collection),
                 };
             },
             methods: {
@@ -483,6 +484,20 @@
                 updatePath: function(query) {
                     window.location.hash = "#/manage/db/aggregate/countly/" + this.collection + "/" + query;
                 },
+                getCollectionName: function() {
+                    var self = this;
+                    if (this.db && this.collection) {
+                        var dbs = countlyDBviewer.getData();
+                        if (dbs.length) {
+                            this.collectionName = countlyDBviewer.getName(this.db, this.collection);
+                        }
+                        else {
+                            countlyDBviewer.initialize()
+                                .then(function() {
+                                    self.collectionName = countlyDBviewer.getName(self.db, self.collection);
+                                });
+                        }
+                    }
             },
             created: function() {
                 if (this.$route && this.$route.params && this.$route.params.query) {
@@ -492,6 +507,7 @@
                 if (!(this.$route && this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
                     window.location = '#/manage/db';
                 }
+                this.getCollectionName();
             }
         });
 
