@@ -138,8 +138,8 @@ var HomeViewView = countlyVue.views.create({
             for (var z = 0; z < forOrdering.length; z++) {
                 if (forOrdering[z].size && forOrdering[z].size === 6) {
                     if (z + 1 < forOrdering.length && forOrdering[z + 1].size === 6) {
-                        forOrdering[z].classes = "bu-pr-1";
-                        forOrdering[z + 1].classes = "bu-pl-3";
+                        forOrdering[z].classes = "bu-pr-3";
+                        forOrdering[z + 1].classes = "bu-pl-1";
                         forOrdering[z] = {"itemgroup": true, data: [forOrdering[z], forOrdering[z + 1]] };
                         forOrdering.splice(z + 1, 1);
                     }
