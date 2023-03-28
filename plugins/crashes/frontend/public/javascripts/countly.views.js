@@ -523,15 +523,17 @@
         },
         methods: {
             refresh: function() {
-                var query = {};
-                if (this.crashgroupsFilter.query) {
-                    query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
-                }
+                if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
+                    var query = {};
+                    if (this.crashgroupsFilter.query) {
+                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                    }
 
-                return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                    this.$store.dispatch("countlyCrashes/overview/refresh")
-                ]);
+                    return Promise.all([
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
+                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                    ]);
+                }
             },
             handleSelectionChange: function(selectedRows) {
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
@@ -594,7 +596,7 @@
                 }
 
                 return item1.latest_version.localeCompare(item2.latest_version);
-            }
+            },
         },
         beforeCreate: function() {
             var query = {};
