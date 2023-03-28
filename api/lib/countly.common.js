@@ -992,7 +992,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
-* @param {number} maxItems - amount of items to return, default 3
+* @param {number} maxItems - amount of items to return, default 3, if -1 return all
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
 * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
