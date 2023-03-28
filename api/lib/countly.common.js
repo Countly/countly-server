@@ -1062,7 +1062,9 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         maxItems = rangeNames.length;
     }
 
-    barData = barData.slice(0, maxItems);
+    if (maxItems !== -1) {
+        barData = barData.slice(0, maxItems);
+    }
 
     return underscore.sortBy(barData, function(obj) {
         return -obj.value;

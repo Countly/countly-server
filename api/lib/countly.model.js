@@ -446,7 +446,9 @@ countlyModel.create = function(fetchValue) {
                 maxItems = topUsers.length;
             }
 
-            barData = barData.slice(0, maxItems);
+            if (maxItems !== -1) {
+                barData = barData.slice(0, maxItems);
+            }
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;
