@@ -178,7 +178,24 @@ describe('Testing event settings', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property("overview", [{"eventKey": "test2", "eventProperty": "count"}, {"eventKey": "test1", "eventProperty": "count"}]);
+                    ob.should.have.property("overview", [
+                        {
+                            "eventKey": "test2",
+                            "eventProperty": "count",
+                            "order": 0,
+                            "is_event_group": false,
+                            "eventName": "test2",
+                            "propertyName": "Count"
+                        },
+                        {
+                            "eventKey": "test1",
+                            "eventProperty": "count",
+                            "order": 1,
+                            "is_event_group": false,
+                            "eventName": "test1",
+                            "propertyName": "Count"
+                        }
+                    ]);
                     done();
 
                 });
@@ -208,7 +225,16 @@ describe('Testing event settings', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property("overview", [{"eventKey": "test2", "eventProperty": "count"}]);
+                    ob.should.have.property("overview", [
+                        {
+                            "eventKey": "test2",
+                            "eventProperty": "count",
+                            "order": 0,
+                            "is_event_group": false,
+                            "eventName": "test2",
+                            "propertyName": "Count"
+                        }
+                    ]);
                     ob.map.should.have.property("test2", {"name": "My Test name", "desc": "My desc"});
                     ob.map.should.have.property("test1", {"is_visible": false});
                     done();
