@@ -3245,7 +3245,7 @@ var AppRouter = Backbone.Router.extend({
      * @param {object} View - plugin view
      */
     addAppManagementView: function(plugin, title, View) {
-        if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
             this.appManagementViews[plugin] = {title: title, view: View};
         }
     },
@@ -3257,7 +3257,7 @@ var AppRouter = Backbone.Router.extend({
      * @param {Array} inputs - plugin inputs
      */
     addAppManagementInput: function(plugin, title, inputs) {
-        if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
             this.appManagementViews[plugin] = {title: title, inputs: inputs};
         }
     },
