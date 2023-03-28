@@ -251,7 +251,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
-
+        if (params.qstring.period && params.qstring.period.indexOf('since') !== -1) {
+            params.qstring.period = JSON.parse(params.qstring.period);
+        }
         var dates = [];
         var calcUvalue = [];
         var calcUvalue2 = [];
@@ -308,6 +310,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
+        var parsedPeriod = period;
+        var periodsToBeConverted = ["months", "weeks", "days"];
+
+        if (typeof period === 'string') {
+            try {
+                parsedPeriod = JSON.parse(period);
+            }
+            catch (error) {
+                parsedPeriod = period;
+            }
+        }
+        if ((typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) || periodsToBeConverted.some(x=>period.includes(x))) {
+            try {
+                period = JSON.stringify([periodObj.start, periodObj.end]);
+            }
+            catch (error) {
+                //
+            }
+        }
 
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
@@ -584,7 +605,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
-
         var facetLine = [];
 
         if (settings.sortcol !== 'name') {
@@ -2224,7 +2244,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var params = ob.params;
             var data = ob.widget;
             var allApps = data.apps;
-
+            var customPeriod = data.custom_period;
+            if (typeof customPeriod === 'object') {
+                customPeriod = JSON.stringify(data.custom_period);
+            }
             if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
                 var paramsObj = {
@@ -2232,7 +2255,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: data.custom_period || params.qstring.period
+                        period: customPeriod || params.qstring.period
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member

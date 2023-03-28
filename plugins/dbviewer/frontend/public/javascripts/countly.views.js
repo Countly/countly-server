@@ -445,12 +445,12 @@
                 },
                 executeQuery: function() {
                     var self = this;
-                    this.updatePath(this.query);
 
                     try {
                         var query = JSON.stringify(JSON.parse(this.query));
                         this.queryLoading = true;
                         countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
+                            self.updatePath(self.query);
                             if (res) {
                                 self.aggregationResult = res.aaData;
                                 if (res.aaData.length) {
@@ -464,7 +464,9 @@
                                 }
                                 CountlyHelpers.notify({
                                     message,
-                                    type: "error"
+                                    type: "error",
+                                    sticky: false,
+                                    clearAll: true
                                 });
                             }
                         });
