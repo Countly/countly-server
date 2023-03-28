@@ -498,6 +498,7 @@
                                 });
                         }
                     }
+                }
             },
             created: function() {
                 if (this.$route && this.$route.params && this.$route.params.query) {
