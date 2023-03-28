@@ -140,7 +140,16 @@ describe('Testing event settings', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property("overview", [{"eventKey": "test2", "eventProperty": "count"}]);
+                    ob.should.have.property("overview", [
+                        {
+                            "eventKey": "test2",
+                            "eventProperty": "count",
+                            "order": 0,
+                            "is_event_group": false,
+                            "eventName": "test2",
+                            "propertyName": "Count"
+                        }
+                    ]);
                     done();
                 });
         });
