@@ -1621,7 +1621,7 @@ common.getIpAddress = function(req) {
     var ipAddress = "";
     if (req) {
         if (req.headers) {
-            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'];
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
         }
         else if (req.connection && req.connection.remoteAddress) {
             ipAddress = req.connection.remoteAddress;
@@ -1636,7 +1636,7 @@ common.getIpAddress = function(req) {
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
-    if (req.headers['x-real-ip']) {
+    if (req?.headers?.['x-real-ip']) {
         ips.push(req.headers['x-real-ip']);
     }
 
