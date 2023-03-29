@@ -127,6 +127,7 @@
             var xAxisData = [];
             var obj = {};
             var xAxis = {};
+            var yAxis = [];
             var legend = {};
             var series = [];
             var obCount = {};
@@ -154,28 +155,56 @@
                 }
             }
             xAxis.data = xAxisData;
+            var graphPointsLen = 0;
             if (count > 0) {
+                graphPointsLen++;
                 obCount.name = labels.count;
                 obCount.data = arrCount;
                 obCount.color = "#017AFF";
                 series.push(obCount);
+                var countYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(countYAxisObj);
             }
             if (sum > 0) {
+                graphPointsLen++;
                 obSum.name = labels.sum;
                 obSum.data = arrSum;
                 obSum.color = "#F96300";
                 series.push(obSum);
+                var sumYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(sumYAxisObj);
             }
             if (dur > 0) {
+                graphPointsLen++;
                 obDuration.name = labels.dur;
                 obDuration.data = arrDuration;
                 obDuration.color = "#FF9382";
+                if (graphPointsLen > 1) {
+                    obDuration.yAxisIndex = graphPointsLen - 1;
+                }
                 series.push(obDuration);
+                var durYAxisObj = {
+                    type: 'value',
+                    alignTicks: true,
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+                yAxis.push(durYAxisObj);
             }
             legend.show = false;
             obj.legend = legend;
             obj.series = series;
             obj.xAxis = xAxis;
+            obj.yAxis = yAxis;
             context.commit('setBarData', obj);
         },
         clearEventsObject: function(obj) {
@@ -363,6 +392,8 @@
             else {
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
+            segments.sort();
+            segments.push("segment");
             return segments;
         },
         getLegendData: function(context) {

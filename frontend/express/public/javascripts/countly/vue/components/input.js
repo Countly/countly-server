@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _, _merge */
+/* global Vue, CV, countlyGlobal, $, _ */
 
 (function(countlyVue) {
 
@@ -394,12 +394,13 @@
                     },
                     success: function() {
                         //since countlyGlobal.member does not updates automatically till refresh
-                        var updatedSortMap = {
-                            [self.persistColumnOrderKey]: {
-                                reorderSortMap: sortMap
-                            }
-                        };
-                        countlyGlobal.member.columnOrder = _merge({}, countlyGlobal.member.columnOrder, updatedSortMap);
+                        if (!countlyGlobal.member.columnOrder) {
+                            countlyGlobal.member.columnOrder = {};
+                        }
+                        if (!countlyGlobal.member.columnOrder[self.persistColumnOrderKey]) {
+                            countlyGlobal.member.columnOrder[self.persistColumnOrderKey] = {};
+                        }
+                        countlyGlobal.member.columnOrder[self.persistColumnOrderKey].reorderSortMap = sortMap;
                     }
                 });
             }
@@ -1181,6 +1182,7 @@
                                 v-model="currentInput"\
                                 :class="{\'is-error\': hasError}"\
                                 :placeholder="i18n(\'common.email-example\')"\
+                                oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
                             <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\

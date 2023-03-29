@@ -387,7 +387,7 @@ countlyModel.create = function(fetchValue) {
     * Get bar data for metric
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, or use date, for higher level metric without segments
-    * @param {number} maxItems - amount of top items to return
+    * @param {number} maxItems - amount of top items to return, if -1 return all
     * @param {string} metric - name of the to use for ordering and returning
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
@@ -446,7 +446,9 @@ countlyModel.create = function(fetchValue) {
                 maxItems = topUsers.length;
             }
 
-            barData = barData.slice(0, maxItems);
+            if (maxItems !== -1) {
+                barData = barData.slice(0, maxItems);
+            }
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;
@@ -507,6 +509,10 @@ countlyModel.create = function(fetchValue) {
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getNumber = function(metric, isSparklineNotRequired) {
+        var periodObject = null;
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         metric = metric || _metrics[0];
         var metrics = [metric];
         //include other default metrics for data correction
@@ -517,7 +523,7 @@ countlyModel.create = function(fetchValue) {
         if (metric === "n") {
             metrics.push("u");
         }
-        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users });
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users }, periodObject);
         if (isSparklineNotRequired) {
             return data[metric];
         }
@@ -535,7 +541,7 @@ countlyModel.create = function(fetchValue) {
             }
 
             return obj;
-        });
+        }, periodObject);
         for (let i in data) {
             if (sparkLines[i]) {
                 data[i].sparkline = sparkLines[i].split(",").map(function(item) {

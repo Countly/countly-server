@@ -29,7 +29,7 @@ RUN apt-get update && \
 	cd /usr/src && \
 	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
 	tar -xf Python-3.8.12.tar.xz && \
-	apt-get install build-essential sudo zlib1g-dev libssl1.1 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev -y && \
+	apt-get install -y build-essential sudo zlib1g-dev libssl1.1 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
 	cd Python-3.8.12 && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \

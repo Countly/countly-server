@@ -13,6 +13,7 @@ var common = {},
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
     mongodb = require('mongodb'),
+    getRandomValues = require('get-random-values'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -772,9 +773,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
         }
         if (args[arg] !== void 0) {
-
             if (argProperties[arg].type) {
-                if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
+                if (argProperties[arg].type === 'Number') {
+                    if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'String') {
+                    if (argState && argProperties[arg].trim && args[arg]) {
+                        args[arg] = args[arg].trim();
+                    }
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -819,6 +834,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                     else {
+                        if (argState && argProperties[arg].trim && args[arg]) {
+                            args[arg] = args[arg].trim();
+                        }
                         let { URL } = require('url');
                         try {
                             new URL(args[arg]);
@@ -1326,6 +1344,32 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].regex) {
+                try {
+                    var re = new RegExp(argProperties[arg].regex);
+                    if (!re.test(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push(arg + " is not correct format");
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                catch (ex) {
+                    if (returnErrors) {
+                        returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
@@ -1375,6 +1419,9 @@ common.blockResponses = function(params) {
 common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
+
+
+
 
 /**
 * Custom API response handler callback
@@ -1571,11 +1618,25 @@ var ipLogger = common.log('ip:api');
 * @returns {string} ip address
 */
 common.getIpAddress = function(req) {
-    var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
+    var ipAddress = "";
+    if (req) {
+        if (req.headers) {
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
+        }
+        else if (req.connection && req.connection.remoteAddress) {
+            ipAddress = req.connection.remoteAddress;
+        }
+        else if (req.socket && req.socket.remoteAddress) {
+            ipAddress = req.socket.remoteAddress;
+        }
+        else if (req.connection && req.connection.socket && req.connection.socket.remoteAddress) {
+            ipAddress = req.connection.socket.remoteAddress;
+        }
+    }
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
-    if (req.headers['x-real-ip']) {
+    if (req?.headers?.['x-real-ip']) {
         ips.push(req.headers['x-real-ip']);
     }
 
@@ -2589,6 +2650,44 @@ common.reviver = (key, value) => {
 };
 
 /**
+ * Shuffle string using getRandomValues
+ * @param {string} text - text to be shuffled
+ * @returns {string} shuffled password
+ */
+common.shuffleString = function(text) {
+    var j, x, i;
+    for (i = text.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = text[i - 1];
+        text[i - 1] = text[j];
+        text[j] = x;
+    }
+
+    return text.join("");
+};
+
+/**
+ * Gets a random string from given character set string with given length
+ * @param {string} charSet - charSet string
+ * @param {number} length - length of the random string. default 1 
+ * @returns {string} random string from charset
+ */
+common.getRandomValue = function(charSet, length = 1) {
+    const randomValues = getRandomValues(new Uint8Array(charSet.length));
+    let randomValue = "";
+
+    if (length > charSet.length) {
+        length = charSet.length;
+    }
+
+    for (let i = 0; i < length; i++) {
+        randomValue += charSet[randomValues[i] % charSet.length];
+    }
+
+    return randomValue;
+};
+
+/**
     * Generate random password
     * @param {number} length - length of the password
     * @param {boolean} no_special - do not include special characters
@@ -2609,29 +2708,20 @@ common.generatePassword = function(length, no_special) {
     }
 
     //1 char
-    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+    text.push(this.getRandomValue(upchars));
     //1 number
-    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    text.push(this.getRandomValue(numbers));
     //1 special char
     if (!no_special) {
-        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        text.push(this.getRandomValue(specials));
         length--;
     }
 
-    var j, x, i;
     //5 any chars
-    for (i = 0; i < Math.max(length - 2, 5); i++) {
-        text.push(all.charAt(Math.floor(Math.random() * all.length)));
-    }
+    text.push(this.getRandomValue(all, Math.max(length - 2, 5)));
 
     //randomize order
-    for (i = text.length; i; i--) {
-        j = Math.floor(Math.random() * i);
-        x = text[i - 1];
-        text[i - 1] = text[j];
-        text[j] = x;
-    }
-    return text.join("");
+    return this.shuffleString(text);
 };
 
 /**

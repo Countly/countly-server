@@ -798,8 +798,13 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
                 default: ""
+            },
+            disabledShortcuts: {
+                type: Array,
+                default: null,
+                required: false,
             }
         },
         data: function() {
@@ -912,7 +917,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
             }
         },
         computed: {
@@ -948,6 +953,9 @@
                     }
                 }
                 else {
+                    if (period === "0days") {
+                        return CV.i18n("common.all-time");
+                    }
                     var periodNames = countlyCommon.convertToTimePeriodObj(period);
                     return periodNames.longName;
                 }
@@ -970,7 +978,7 @@
                 }
             },
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
             },
             reportInfo: {
                 type: Object

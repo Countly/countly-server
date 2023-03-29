@@ -713,6 +713,7 @@ countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProp
 * @param {object} data - countly metric model data
 * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
 * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} periodObject - period object override
 * @returns {object} object with sparkleline data for each property
 * @example
 * var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
@@ -737,8 +738,8 @@ countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProp
 *   "avg-events":"1.6222222222222222,1.5555555555555556,1.6,1.6363636363636365,1.6486486486486487,1,1,1,1,1,1.8333333333333333,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.4137931034482758,1,1,1,1"
 * }
 */
-countlyCommon.getSparklineData = function(data, props, clearObject) {
-    var _periodObj = countlyCommon.periodObj;
+countlyCommon.getSparklineData = function(data, props, clearObject, periodObject) {
+    var _periodObj = periodObject || countlyCommon.periodObj;
     var sparkLines = {};
     for (let p in props) {
         sparkLines[p] = [];
@@ -1005,7 +1006,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
-* @param {number} maxItems - amount of items to return, default 3
+* @param {number} maxItems - amount of items to return, default 3, if -1 return all
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
 * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
@@ -1075,7 +1076,9 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         maxItems = rangeNames.length;
     }
 
-    barData = barData.slice(0, maxItems);
+    if (maxItems !== -1) {
+        barData = barData.slice(0, maxItems);
+    }
 
     return underscore.sortBy(barData, function(obj) {
         return -obj.value;
@@ -1544,6 +1547,7 @@ countlyCommon.timeString = function(timespent) {
 * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
 * @param {object} totalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
 * @param {object} prevTotalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden for previous period
+* @param {object} periodObject period object override for calculation
 * @returns {object} dashboard data object
 * @example
 * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
@@ -1558,7 +1562,7 @@ countlyCommon.timeString = function(timespent) {
 *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
 * }
 */
-countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj, prevTotalUserOverrideObj) {
+countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj, prevTotalUserOverrideObj, periodObject) {
     /**
     * Clear object, bu nulling out predefined properties, that does not exist
     * @param {object} obj - object to clear
@@ -1582,7 +1586,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
         return obj;
     }
 
-    var _periodObj = countlyCommon.periodObj,
+    var _periodObj = periodObject || countlyCommon.periodObj,
         dataArr = {},
         tmp_x,
         tmp_y,

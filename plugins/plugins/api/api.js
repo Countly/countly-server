@@ -199,7 +199,12 @@ var plugin = {},
                 var allPlugins = res.plugins;
                 allPlugins = allPlugins || {};
 
-                var pluginList = plugins.getPlugins(true);
+                var pluginList = plugins.getPlugins();//get list of plugins from plugin manager. Should have all available plugins there.
+                for (var zz in allPlugins) {
+                    if (pluginList.indexOf(zz) === -1) {
+                        delete allPlugins[zz];
+                    }
+                }
 
                 for (var z = 0; z < pluginList.length; z++) {
                     if (typeof allPlugins[pluginList[z]] === 'undefined') {

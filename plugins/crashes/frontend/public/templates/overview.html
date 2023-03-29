@@ -1,4 +1,4 @@
-<div>
+<div class="crashes-overview">
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="crash-groups">
             <span slot="label">{{i18n("crashes.crash-groups")}}</span>
@@ -8,6 +8,9 @@
                         {{i18n("crashes.crash-groups")}}
                         <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
                     </h2>
+                </template>
+                <template v-slot:header-right>
+                    <cly-auto-refresh-toggle ref="crashesAutoRefreshToggle" feature="crashes" :default-value="true"></cly-auto-refresh-toggle>
                 </template>
             </cly-header>
             <cly-main>

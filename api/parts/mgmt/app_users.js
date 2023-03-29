@@ -981,7 +981,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                 if (single_user === true) {
                                     //update user document
                                     common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
-                                        if (!err4 && res1.result && res1.result.n !== 0 && res1.result.nModified !== 0) {
+                                        if (!err4 && res1.result && res1.result.nMatched !== 0) { //check against nMatched for cases when there is already false record of export file(to do not fail)
                                             plugins.dispatch("/systemlogs", {
                                                 params: params,
                                                 action: "export_app_user",
@@ -1008,6 +1008,9 @@ usersApi.export = function(app_id, query, params, callback) {
                                                     export_folder: export_folder
                                                 }
                                             });
+                                            if (res1 && res1.result) {
+                                                log.e(JSON.stringify(res1.result));
+                                            }
                                             callDeleteExport(export_filename, params, app_id, eid, "Exporting failed. User does not exist. Unable to clean exported data", "Exporting failed. User does not exist. Partially exported data deleted.", callback);
                                         }
                                     });
