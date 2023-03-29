@@ -342,7 +342,7 @@ var spawn = require('child_process').spawn,
         * @param {function} callback - callback method includes boolean variable as argument  
         * @returns {function} returns callback
          */
-        function userHasAccess(parameters, collection, appId, callback) {
+        async function userHasAccess(parameters, collection, appId, callback) {
             if (typeof appId === "function") {
                 callback = appId;
                 appId = null;
@@ -359,12 +359,17 @@ var spawn = require('child_process').spawn,
             }
             else {
                 var userApps = getUserApps(parameters.member);
-                for (let i = 0; i < userApps.length; i++) {
-                    //if collection is in the apps of user
-                    if (collection.indexOf(userApps[i]) > 0 && hasReadRight(FEATURE_NAME, userApps[i], parameters.member)) {
-                        return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                //go through all apps of user and check if any of them has access to collection
+                var result = await Promise.all(userApps.map(function(id) {
+                    if (hasReadRight(FEATURE_NAME, id, parameters.member)) {
+                        return new Promise(function(resolve) {
+                            dbUserHasAccessToCollection(parameters, collection, id, resolve);
+                        });
                     }
-                }
+                }));
+                return callback(result.some(function(val) {
+                    return val;
+                }));
             }
             return callback(false);
         }
