@@ -60,3 +60,5 @@ spec:
             value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
           - name: COUNTLY_CONFIG_HOSTNAME
             value: countly.example.com
+          - name: NODE_OPTIONS
+            value: "--max-old-space-size=2048"  
