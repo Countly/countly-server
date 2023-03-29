@@ -387,7 +387,7 @@ countlyModel.create = function(fetchValue) {
     * Get bar data for metric
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, or use date, for higher level metric without segments
-    * @param {number} maxItems - amount of top items to return
+    * @param {number} maxItems - amount of top items to return, if -1 return all
     * @param {string} metric - name of the to use for ordering and returning
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
@@ -446,7 +446,9 @@ countlyModel.create = function(fetchValue) {
                 maxItems = topUsers.length;
             }
 
-            barData = barData.slice(0, maxItems);
+            if (maxItems !== -1) {
+                barData = barData.slice(0, maxItems);
+            }
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;
