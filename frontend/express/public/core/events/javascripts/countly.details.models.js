@@ -379,7 +379,6 @@
             var segments = [];
             if (res.meta && res.meta.segments.length > 0) {
                 segments = res.meta.segments.slice();
-                segments.push("segment");
                 context.commit('setHasSegments', true);
             }
             else {
