@@ -392,6 +392,8 @@
             else {
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
+            segments.sort();
+            segments.push("segment");
             return segments;
         },
         getLegendData: function(context) {
