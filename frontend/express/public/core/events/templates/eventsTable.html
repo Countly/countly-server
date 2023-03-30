@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading">
+    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading" :exportFormat="formatExportTable">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
