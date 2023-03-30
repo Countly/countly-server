@@ -23,8 +23,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             try {
                                 let eventKey = common.fixEventKey(event);
                                 let collection = "drill_events" + crypto.createHash('sha1').update(eventKey + app._id).digest('hex');
-                                var drill_events = await drillDb.collection(collection).find().toArray();
-                                if (drill_events.length == 0) {
+                                var drill_events = await drillDb.collection(collection).count();
+                                if (drill_events == 0) {
                                     obj.events.push(event);
                                 }
                             }
