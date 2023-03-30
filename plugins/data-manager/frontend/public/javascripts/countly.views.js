@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
+/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers, _ */
 
 (function() {
 
@@ -252,7 +252,9 @@
                         }
                         doc.is_visible = true;
                     }
-                    this.$store.dispatch('countlyDataManager/editEvent', doc);
+                    if (!(_.isEqual(doc, this.$refs.eventDrawer.initialEditedObject))) {
+                        this.$store.dispatch('countlyDataManager/editEvent', doc);
+                    }
                 }
                 else {
                     this.$store.dispatch('countlyDataManager/saveEvent', doc);
@@ -299,7 +301,9 @@
             onSubmit: function(doc) {
                 if (doc.isEditMode) {
                     doc.app_id = countlyCommon.ACTIVE_APP_ID;
-                    this.$store.dispatch('countlyDataManager/editEventGroups', doc);
+                    if (!(_.isEqual(doc, this.$refs.eventGroupDrawer.initialEditedObject))) {
+                        this.$store.dispatch('countlyDataManager/editEventGroups', doc);
+                    }
                 }
                 else {
                     doc.app_id = countlyCommon.ACTIVE_APP_ID;
