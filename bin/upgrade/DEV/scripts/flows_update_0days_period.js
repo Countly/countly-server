@@ -7,7 +7,7 @@
 
 var app_list = [];//add app ids, if none added will run on all apps
 
-var pluginManager = require('./../../../plugins/pluginManager.js');
+var pluginManager = require('./../../../../plugins/pluginManager.js');
 var Promise = require("bluebird");
 
 function getAppList(options, callback) {
