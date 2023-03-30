@@ -176,7 +176,12 @@ var spawn = require('child_process').spawn,
                     var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return EJSON.stringify(objectIdCheck(doc));
+                            try {
+                                return EJSON.stringify(objectIdCheck(doc));
+                            }
+                            catch (SyntaxError) {
+                                return JSON.stringify(objectIdCheck(doc));
+                            }
                         }
                     });
                     var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
@@ -302,7 +307,7 @@ var spawn = require('child_process').spawn,
                             type: "dbviewer",
                             force: params.qstring.save_report || false,
                             gridfs: true,
-                            meta: EJSON.stringify({
+                            meta: JSON.stringify({
                                 db: dbNameOnParam,
                                 collection: params.qstring.collection,
                                 aggregation: aggregation
