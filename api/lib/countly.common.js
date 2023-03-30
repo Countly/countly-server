@@ -71,11 +71,11 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
 
 /**
 * Returns a period object used by all time related data calculation functions
+* @param {moment} prmPeriod period to be calculated
 * @returns {timeObject} time object
 **/
-function getPeriodObject() {
+function getPeriodObject(prmPeriod) {
     var startTimestamp, endTimestamp, periodObject, cycleDuration;
-
     periodObject = {
         start: 0,
         end: 0,
@@ -97,38 +97,40 @@ function getPeriodObject() {
         reqZeroDbDateIds: []
     };
 
+    var period = prmPeriod || _period;
+
     endTimestamp = _currMoment.clone().endOf("day");
 
-    if (_period.since) {
-        _period = [_period.since, Date.now()];
+    if (period.since) {
+        period = [period.since, Date.now()];
     }
 
-    if (_period && typeof _period === 'string' && _period.indexOf(",") !== -1) {
+    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
         try {
-            _period = JSON.parse(_period);
+            period = JSON.parse(period);
         }
         catch (SyntaxError) {
             console.log("period JSON parse failed");
-            _period = "30days";
+            period = "30days";
         }
     }
 
-    if (Array.isArray(_period)) {
-        if ((_period[0] + "").length === 10) {
-            _period[0] *= 1000;
+    if (Array.isArray(period)) {
+        if ((period[0] + "").length === 10) {
+            period[0] *= 1000;
         }
-        if ((_period[1] + "").length === 10) {
-            _period[1] *= 1000;
+        if ((period[1] + "").length === 10) {
+            period[1] *= 1000;
         }
         var fromDate, toDate;
 
-        if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
-            fromDate = moment(_period[0]);
-            toDate = moment(_period[1]);
+        if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
+            fromDate = moment(period[0]);
+            toDate = moment(period[1]);
         }
         else {
-            fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
-            toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            fromDate = moment(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
         }
 
         startTimestamp = fromDate.clone().startOf("day");
@@ -167,7 +169,7 @@ function getPeriodObject() {
             });
         }
     }
-    else if (_period === "month") {
+    else if (period === "month") {
         startTimestamp = _currMoment.clone().startOf("year");
         cycleDuration = moment.duration(1, "year");
         periodObject.dateString = "MMM";
@@ -179,7 +181,7 @@ function getPeriodObject() {
             previousPeriod: _currMoment.year() - 1
         });
     }
-    else if (_period === "day") {
+    else if (period === "day") {
         startTimestamp = _currMoment.clone().startOf("month");
         cycleDuration = moment.duration(1, "month");
         periodObject.dateString = "D MMM";
@@ -191,7 +193,19 @@ function getPeriodObject() {
             previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
         });
     }
-    else if (_period === "hour") {
+    else if (period === "prevMonth") {
+        startTimestamp = _currMoment.clone().subtract(1, "month").startOf("month");
+        endTimestamp = _currMoment.clone().subtract(1, "month").endOf("month");
+        cycleDuration = moment.duration(1, "month");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().subtract(1, "month").endOf("month").date(),
+            periodMin: 1,
+            activePeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(2, "month").format("YYYY.M")
+        });
+    }
+    else if (period === "hour") {
         startTimestamp = _currMoment.clone().startOf("day");
         cycleDuration = moment.duration(1, "day");
         Object.assign(periodObject, {
@@ -202,7 +216,7 @@ function getPeriodObject() {
             previousPeriod: _currMoment.clone().subtract(1, "day").format("YYYY.M.D")
         });
     }
-    else if (_period === "yesterday") {
+    else if (period === "yesterday") {
         let yesterday = _currMoment.clone().subtract(1, "day");
 
         startTimestamp = yesterday.clone().startOf("day");
@@ -216,8 +230,8 @@ function getPeriodObject() {
             previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
         });
     }
-    else if (/([0-9]+)days/.test(_period)) {
-        let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+    else if (/([0-9]+)days/.test(period)) {
+        let nDays = parseInt(/([0-9]+)days/.exec(period)[1]);
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }
@@ -228,8 +242,8 @@ function getPeriodObject() {
             isSpecialPeriod: true
         });
     }
-    else if (/([0-9]+)weeks/.test(_period)) {
-        let nDays = parseInt(/([0-9]+)weeks/.exec(_period)[1]) * 7;
+    else if (/([0-9]+)weeks/.test(period)) {
+        let nDays = parseInt(/([0-9]+)weeks/.exec(period)[1]) * 7;
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }
@@ -240,8 +254,8 @@ function getPeriodObject() {
             isSpecialPeriod: true
         });
     }
-    else if (/([0-9]+)months/.test(_period)) {
-        let nDays = parseInt(/([0-9]+)months/.exec(_period)[1]) * 30;
+    else if (/([0-9]+)months/.test(period)) {
+        let nDays = parseInt(/([0-9]+)months/.exec(period)[1]) * 30;
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }
@@ -1994,6 +2008,15 @@ countlyCommon.fixPercentageDelta = function(items, totalPercent) {
     items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 1);
 
     return items;
+};
+
+/**
+* Calculate period function
+* @param {object} period - given period
+* @returns {object} returns {@link countlyCommon.periodObj}
+*/
+countlyCommon.calculatePeriodObject = function(period) {
+    return getPeriodObject(period);
 };
 
 module.exports = countlyCommon;

@@ -6,8 +6,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
-    echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
+if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 20 and 22."
     exit 1
 fi
 
@@ -16,34 +16,34 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 sudo apt-get update
 
-sudo apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
+sudo apt-get install -y wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
 
 if [[ "$UBUNTU_YEAR" = "22" ]]; then
-    sudo apt-get -y install python2 python2-dev
+    sudo apt-get install -y python2 python2-dev
 
     if [[ ! -h /usr/bin/python ]]; then
         sudo ln -s /usr/bin/python2.7 /usr/bin/python
         sudo ln -s /usr/bin/python2-config /usr/bin/python-config
     fi
 else
-    sudo apt-get -y install python
+    sudo apt-get install -y python
 fi
 
 #Install GCC && G++> 7 version
-sudo apt-get -y install software-properties-common
-sudo apt-get -y install gcc g++ make
+sudo apt-get install -y software-properties-common
+sudo apt-get install -y gcc g++ make
 
 #Install dependancies required by the puppeteer
-sudo apt-get -y install libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
+sudo apt-get install -y libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
 
 if sudo apt-cache pkgnames | grep -q python-software-properties; then
-    sudo apt-get -y install python-software-properties
+    sudo apt-get install -y python-software-properties
 else
-    sudo apt-get -y install python3-software-properties
+    sudo apt-get install -y python3-software-properties
 fi
 
 if ! (command -v apt-add-repository >/dev/null) then
-    sudo apt-get -y install software-properties-common
+    sudo apt-get install -y software-properties-common
 fi
 
 #install nginx
@@ -51,14 +51,14 @@ echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
 sudo apt-get update
-sudo apt-get -y install nginx
+sudo apt-get install -y nginx
 
 #install node.js
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_14.x | sudo -E bash -
+wget -qO- https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get update
-sudo apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
+sudo apt-get install -y nodejs || (echo "Failed to install nodejs." ; exit)
 
 set +e
 NODE_JS_CMD=$(which nodejs)
@@ -69,20 +69,20 @@ fi
 
 #if npm is not installed, install it too
 if ! (command -v npm >/dev/null) then
-    sudo apt-get -y install npm
+    sudo apt-get install -y npm
 fi
 
 #install supervisor
 if [ "$INSIDE_DOCKER" != "1" ]; then
-    sudo apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+    sudo apt-get install -y supervisor || (echo "Failed to install supervisor." ; exit)
     cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 fi
 
 #install numactl
-sudo apt-get -y install numactl
+sudo apt-get install -y numactl
 
 #install sendmail
-sudo apt-get -y install sendmail
+sudo apt-get install -y sendmail
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
@@ -94,7 +94,7 @@ sudo bash "$DIR/scripts/mongodb.install.sh"
 if [ "$INSIDE_DOCKER" == "1" ]; then
     bash "$DIR/commands/docker/mongodb.sh" &
 
-    until mongo --eval "db.stats()" | grep "collections"; do
+    until mongosh --eval "db.stats()" | grep "collections"; do
         echo
         echo "waiting for MongoDB to allocate files..."
         sleep 1

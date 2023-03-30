@@ -69,7 +69,7 @@
 					<div></div>
 					<div>
 						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress-or-username"></p>
-						<input type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<input type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" oninput="this.value = this.value.toLowerCase();" />
 						</div>
 					<div>
 						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>

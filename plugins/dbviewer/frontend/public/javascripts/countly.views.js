@@ -111,10 +111,23 @@
             },
             watch: {
                 selectedCollection: function(newVal) {
-                    this.collection = newVal;
-                    app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
-                    this.tableStore.dispatch("fetchDbviewerTable");
-                    store.set('dbviewer_app_filter', this.appFilter);
+                    if (!this.$route || !this.$route.params || !this.$route.params.query) {
+                        this.collection = newVal;
+                        this.queryFilter = null;
+                        this.projectionEnabled = false;
+                        this.projection = [];
+                        this.sortEnabled = false;
+                        this.sort = "";
+                        app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
+                        this.tableStore.dispatch("fetchDbviewerTable");
+                        store.set('dbviewer_app_filter', this.appFilter);
+                    }
+                    else {
+                        this.collection = newVal;
+                        app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.query, false);
+                        this.tableStore.dispatch("fetchDbviewerTable");
+                        store.set('dbviewer_app_filter', this.appFilter);
+                    }
                 }
             },
             methods: {
@@ -138,12 +151,16 @@
                     case 'indexes':
                         window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection;
                         break;
+                    case 'data':
+                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection;
+                        break;
                     }
                 },
                 showFilterPopup: function(options) {
                     this.openFormDialog("queryFilter", _.extend({
                         filter: this.queryFilter || "",
                         projectionEnabled: this.projectionEnabled || false,
+                        projection: this.projection || [],
                         fields: this.projection || [],
                         sortEnabled: this.sortEnabled || false,
                         sort: this.sort || ""
@@ -162,6 +179,7 @@
                     this.projectionEnabled = formData.projectionEnabled;
                     // query
                     this.queryFilter = formData.filter;
+                    this.updatePath({"filter": this.queryFilter, "projection": this.projection, "sort": this.sort, "projectionEnabled": this.projectionEnabled, "sortEnabled": this.sortEnabled, "isDescentSort": this.isDescentSort});
                     // fire the request!
                     this.fetch(true);
                 },
@@ -171,6 +189,7 @@
                     this.projection = [];
                     this.sortEnabled = false;
                     this.sort = "";
+                    app.navigate("#/manage/db/" + this.db + "/" + this.selectedCollection);
                     this.fetch(true);
                 },
                 clearFilters: function() {
@@ -200,7 +219,8 @@
                         sort: sort,
                         collection: this.collection,
                         db: this.db,
-                        url: "/o/export/db"
+                        url: "/o/export/db",
+                        get_index: this.index
                     };
                     return apiQueryData;
                 },
@@ -223,6 +243,19 @@
                 },
                 tableRowClassName: function() {
                     return 'bu-is-clickable';
+                },
+                updatePath: function(query) {
+                    if (this.collection && this.db) {
+                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
+                        if (this.index) {
+                            window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
+                        }
+                    }
+                },
+                onCollectionChange: function() {
+                    if (this.$route && this.$route.params && this.$route.params.query) {
+                        delete this.$route.params.query;
+                    }
                 }
             },
             computed: {
@@ -287,6 +320,14 @@
 
                 if (!this.db) {
                     this.db = 'countly';
+                }
+                if (this.$route.params && this.$route.params.query && JSON.parse(this.$route.params.query)) {
+                    this.queryFilter = JSON.parse(this.$route.params.query).filter;
+                    this.sort = JSON.parse(this.$route.params.query).sort;
+                    this.projection = JSON.parse(this.$route.params.query).projection;
+                    this.projectionEnabled = JSON.parse(this.$route.params.query).projectionEnabled;
+                    this.sortEnabled = JSON.parse(this.$route.params.query).sortEnabled;
+                    this.isDescentSort = JSON.parse(this.$route.params.query).isDescentSort;
                 }
 
                 if (!this.collection) {
@@ -410,6 +451,7 @@
                         var query = JSON.stringify(JSON.parse(this.query));
                         this.queryLoading = true;
                         countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
+                            self.updatePath(self.query);
                             if (res) {
                                 self.aggregationResult = res.aaData;
                                 if (res.aaData.length) {
@@ -423,7 +465,9 @@
                                 }
                                 CountlyHelpers.notify({
                                     message,
-                                    type: "error"
+                                    type: "error",
+                                    sticky: false,
+                                    clearAll: true
                                 });
                             }
                         });
@@ -436,6 +480,9 @@
                         });
                         self.queryLoading = false;
                     }
+                },
+                updatePath: function(query) {
+                    window.location.hash = "#/manage/db/aggregate/countly/" + this.collection + "/" + query;
                 },
                 getCollectionName: function() {
                     var self = this;
@@ -454,7 +501,11 @@
                 }
             },
             created: function() {
-                if (!(this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
+                if (this.$route && this.$route.params && this.$route.params.query) {
+                    this.query = this.$route.params.query;
+                    this.executeQuery();
+                }
+                if (!(this.$route && this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
                     window.location = '#/manage/db';
                 }
                 this.getCollectionName();
@@ -480,6 +531,15 @@
             this.renderWhenReady(DBViewerMainView);
         });
 
+        app.route('/manage/db/:db/:collection/*query', 'dbs', function(db, collection, query) {
+            DBViewerMainView.params = {
+                db: db,
+                collection: collection,
+                query: query
+            };
+            this.renderWhenReady(DBViewerMainView);
+        });
+
         app.route('/manage/db/:db/:collection', 'dbs', function(db, collection) {
             DBViewerMainView.params = {
                 db: db,
@@ -497,6 +557,16 @@
             this.renderWhenReady(DBViewerMainView);
         });
 
+        app.route('/manage/db/indexes/:db/:collection/*query', 'dbs', function(db, collection, query) {
+            DBViewerMainView.params = {
+                db: db,
+                collection: collection,
+                index: true,
+                query: query
+            };
+            this.renderWhenReady(DBViewerMainView);
+        });
+
         app.route('/manage/db/aggregate/:db/:collection', 'dbs', function(db, collection) {
             DBViewerAggregateView.params = {
                 db: db,
@@ -505,6 +575,14 @@
             this.renderWhenReady(DBViewerAggregateView);
         });
 
+        app.route('/manage/db/aggregate/:db/:collection/*query', 'dbs', function(db, collection, query) {
+            DBViewerAggregateView.params = {
+                db: db,
+                collection: collection,
+                query: query
+            };
+            this.renderWhenReady(DBViewerAggregateView);
+        });
 
         app.addMenu("management", {code: "db", permission: FEATURE_NAME, url: "#/manage/db", text: "dbviewer.title", priority: 120});
     }

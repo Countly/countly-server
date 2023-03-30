@@ -95,7 +95,8 @@
                     collection: collection,
                     aggregation: aggregation,
                     app_id: app_id,
-                    type: "json"
+                    type: "json",
+                    "preventRequestAbort": true
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {

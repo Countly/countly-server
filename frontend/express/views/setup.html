@@ -59,7 +59,7 @@
                 </div>
                 <div>
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
-                    <input autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email adress" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
+                    <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email adress" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
                     <label id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
                 </div>
                 <div>

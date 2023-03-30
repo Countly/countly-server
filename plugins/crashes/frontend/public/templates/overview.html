@@ -1,4 +1,4 @@
-<div>
+<div class="crashes-overview">
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="crash-groups">
             <span slot="label">{{i18n("crashes.crash-groups")}}</span>
@@ -8,6 +8,9 @@
                         {{i18n("crashes.crash-groups")}}
                         <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
                     </h2>
+                </template>
+                <template v-slot:header-right>
+                    <cly-auto-refresh-toggle ref="crashesAutoRefreshToggle" feature="crashes" :default-value="true"></cly-auto-refresh-toggle>
                 </template>
             </cly-header>
             <cly-main>
@@ -34,7 +37,7 @@
                             <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable></el-table-column>
                             <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
                             <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable :sort-method="appVersionSort"></el-table-column>
                         </template>
                     </template>
                     <template v-slot:bottomline="scope">

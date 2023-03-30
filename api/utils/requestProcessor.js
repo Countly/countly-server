@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('request');
+const request = require('countly-request');
 
 var loaded_configs_time = 0;
 
@@ -1860,6 +1860,15 @@ const processRequest = (params) => {
                             }
                             catch (ex) {
                                 params.qstring.formatFields = null;
+                            }
+                        }
+
+                        if (typeof params.qstring.get_index === "string") {
+                            try {
+                                params.qstring.get_index = JSON.parse(params.qstring.get_index);
+                            }
+                            catch (ex) {
+                                params.qstring.get_index = null;
                             }
                         }
 

@@ -82,7 +82,6 @@
                 switch: true,
                 isTablePaused: true,
                 logsData: [],
-                autoRefresh: false,
                 isLoading: false,
                 isTurnedOff: false,
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -147,12 +146,6 @@
             getTitleTooltip: function() {
                 return this.i18n('logger.description');
             },
-            getRefreshTooltip: function() {
-                return this.i18n('logger.auto-refresh-help');
-            },
-            stopAutoRefresh: function() {
-                this.autoRefresh = false;
-            },
             fetchRequestLogs: function(isRefreshing) {
                 var vm = this;
 
@@ -168,7 +161,7 @@
                     });
             },
             refresh: function() {
-                if (this.autoRefresh) {
+                if (this.$refs && this.$refs.loggerAutoRefreshToggle && this.$refs.loggerAutoRefreshToggle.autoRefresh) {
                     this.fetchRequestLogs(true);
                 }
             },

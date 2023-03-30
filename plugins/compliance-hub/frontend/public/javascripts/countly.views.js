@@ -601,6 +601,7 @@
         priority: 3,
         title: CV.i18n("consent.title"),
         name: 'Consent',
+        pluginName: "compliance-hub",
         permission: "compliance_hub",
         component: countlyVue.components.create({
             template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
@@ -620,8 +621,7 @@
                 if (userDetails.uid) {
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
-            },
-
+            }
         }),
         vuex: [{
             clyModel: countlyConsentManager
@@ -658,6 +658,6 @@
         renderedView.params = params;
         this.renderWhenReady(renderedView);
     });
-    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
+    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", pluginName: "compliance-hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
 
 })();
