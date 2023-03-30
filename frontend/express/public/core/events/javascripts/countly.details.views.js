@@ -59,6 +59,7 @@
             },
             formatExportTable: function(data0) {
                 var data = [];
+                data0 = data0 || [];
                 var cols = ["curr_segment", "count", "sum", "dur"];
                 if (this.selectedSegment !== "segment") {
                     cols = [{"key": "curr_segment", "label": this.i18n("events.table.segmentation")}];
