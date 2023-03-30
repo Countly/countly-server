@@ -9,8 +9,6 @@ const pluginManager = require('../../../plugins/pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto');
 
-console.log("List of events that have no data for each app:");
-
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
 
     var empty_event_list = [];
@@ -18,7 +16,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     try {
         var apps = await countlyDb.collection('apps').find({}, {_id: 1, name: 1}).toArray();
         if (apps.length == 0) {
-            console.log("No events");
+            console.log("No apps");
         }
         else {
             for (const app of apps) {
@@ -57,7 +55,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         console.log(err);
     }
     finally {
-        console.log(empty_event_list);
+        console.log(JSON.stringify(empty_event_list));
         countlyDb.close();
         drillDb.close();
     }
