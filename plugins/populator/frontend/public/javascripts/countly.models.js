@@ -1822,7 +1822,6 @@
             }
         }
 
-        // if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
         generateWidgets(function() {
             generateRetention(template && template.up, function() {
                 generateCampaigns(function() {
@@ -1837,7 +1836,6 @@
                 });
             });
         });
-        // }
 
         if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             abExampleName = "Pricing" + abExampleCount++;
