@@ -9,24 +9,26 @@ pluginManager.dbConnection().then(async(countlyDb) => {
     async function update(cohort) {
         try {
             var log = await countlyDb.collection('systemlogs').findOne({ 'i._id': cohort._id, 'a': "cohort_added" });
-            requests.push({
-                'updateOne': {
-                    'filter': { '_id': cohort._id },
-                    'update': {
-                        '$set': {'creator': log.user_id, 'created_at': log.ts}
+            if (log) {
+                requests.push({
+                    'updateOne': {
+                        'filter': { '_id': cohort._id },
+                        'update': {
+                            '$set': {'creator': log.user_id, 'created_at': log.ts}
+                        }
                     }
+                });
+                if (requests.length === 500) {
+                    //Execute per 500 operations and re-init
+                    console.log("Flushing changes:" + requests.length);
+                    try {
+                        await countlyDb.collection('cohorts').bulkWrite(requests);
+                    }
+                    catch (err) {
+                        console.error(err);
+                    }
+                    requests = [];
                 }
-            });
-            if (requests.length === 500) {
-                //Execute per 500 operations and re-init
-                console.log("Flushing changes:" + requests.length);
-                try {
-                    await countlyDb.collection('cohorts').bulkWrite(requests);
-                }
-                catch (err) {
-                    console.error(err);
-                }
-                requests = [];
             }
         }
         catch (err) {
