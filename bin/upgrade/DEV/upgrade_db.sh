@@ -38,6 +38,7 @@ then
     nodejs "$SCRIPTS/scripts/flows_update_0days_period.js"
     nodejs "$SCRIPTS/scripts/update_app_users.js"
     nodejs "$SCRIPTS/scripts/convert_member_emails_to_lowercase.js"
+    nodejs "$SCRIPTS/scripts/update_user_text_index.js"
 
     if [ "$1" != "combined" ]; then
         countly upgrade;
