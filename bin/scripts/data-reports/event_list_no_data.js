@@ -1,3 +1,10 @@
+/**
+ *  Return list of events that have no data in drill_events collection for each app
+ *  Server: countly
+ *  Path: $(countly dir)/bin/scripts/data-reports
+ *  Command: node event_list_no_data.js
+ */
+
 const pluginManager = require('../../../plugins/pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto');
