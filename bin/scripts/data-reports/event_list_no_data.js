@@ -9,7 +9,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     var empty_event_list = [];
 
     try {
-        var apps = await countlyDb.collection('apps').find().toArray();
+        var apps = await countlyDb.collection('apps').find({}, {_id: 1, name: 1}).toArray();
         if (apps.length == 0) {
             console.log("No events");
         }
