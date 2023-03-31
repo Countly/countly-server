@@ -13,7 +13,6 @@ metadata:
   name: countly-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.global-static-ip-name: "countly-static-ip"
 spec:
   tls:
   - hosts:
