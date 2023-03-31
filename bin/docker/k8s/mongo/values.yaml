@@ -40,7 +40,7 @@ copyConfigImage:
 # Specs for the MongoDB image
 image:
   repository: mongo
-  tag: 3.6.12
+  tag: 6.0.5
   pullPolicy: IfNotPresent
 
 # Additional environment variables to be set in the container
