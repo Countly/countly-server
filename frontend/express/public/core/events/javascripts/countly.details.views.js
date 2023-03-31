@@ -56,6 +56,41 @@
             },
             formatDurNumber: function(val) {
                 return countlyCommon.formatSecond(val);
+            },
+            formatExportTable: function(data0) {
+                var data = [];
+                data0 = data0 || [];
+                var cols = ["curr_segment", "count", "sum", "dur"];
+                if (this.selectedSegment !== "segment") {
+                    cols = [{"key": "curr_segment", "label": this.i18n("events.table.segmentation")}];
+                }
+                else {
+                    cols = [{"key": "date", "label": this.i18n("date")}];
+                }
+                if (this.isColumnAllowed("count")) {
+                    cols.push({"key": "c", "label": this.labels.count});
+                }
+                if (this.isColumnAllowed("sum")) {
+                    cols.push({"key": "s", "label": this.labels.sum});
+                }
+                if (this.isColumnAllowed("AvgSum")) {
+                    cols.push({"key": "avgSum", "label": this.i18n("events.table.avg-sum")});
+                }
+                if (this.isColumnAllowed("dur")) {
+                    cols.push({"key": "dur", "label": this.labels.dur});
+                }
+                if (this.isColumnAllowed("AvgDur")) {
+                    cols.push({"key": "avgDur", "label": this.i18n("events.table.avg-dur")});
+                }
+
+                for (var p = 0; p < data0.length; p++) {
+                    var temp = {};
+                    for (var q = 0; q < cols.length; q++) {
+                        temp[cols[q].label] = data0[p][cols[q].key];
+                    }
+                    data.push(temp);
+                }
+                return data;
             }
         },
     });
