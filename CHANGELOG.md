@@ -1,8 +1,9 @@
 ## Version 23.03
 Improvements:
 - [crashes] auto-refresh toggle on the Crash Overview page
-- [dashboard] case insensitive member emails
+- [members] case insensitive member emails
 - [datepicker] various date filtering and date picker related improvements
+- [dbviewer] added showing beautified collection name
 - [dbviewer] added query linking to dbviewer
 - [dbviewer] extended json queries to allow querying Date field through API
 - [dbviewer] fix check for specific collection access
@@ -18,7 +19,8 @@ Improvements:
 - [os] added Centos/RHEL 9 and Ubuntu 22 support, deprecated Ubuntu 18, Centos/RHEL 6, 7
 - [plugins] plugin toggling without restarting nodejs process
 - [process] countly running under countly user and installing npm dependencies as countly user
-- [ui] Fixed copying api key field on sidebar menu
+- [ui] fixed copying api key field on sidebar menu
+- [ui] fixed incorrect total number in PIE graph when there are only 2 items
 - [ui] show average duration for events
 - [ui] store table column order settings in database
 
