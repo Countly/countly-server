@@ -1,52 +1,41 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: countly-frontend
+  name: countly-ingestion
 spec:
   ports:
-  - port: 6001
+  - port: 3001
     protocol: TCP
-    targetPort: 6001
+    targetPort: 3001
   selector:
-    app: countly-frontend
+    app: countly-ingestion
   type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: countly-frontend-deployment
+  name: countly-ingestion-deployment
 spec:
   selector:
     matchLabels:
-      app: countly-frontend
+      app: countly-ingestion
   replicas: 1
   template:
     metadata:
       labels:
-        app: countly-frontend
+        app: countly-ingestion
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - mongo
-                - mongodb-replicaset
-            topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: countly-frontend
-        image: countly/frontend:23.03
-#        image: gcr.io/countly-01/frontend:23.03     # Enterprise Edition
+      - name: countly-ingestion
+        image: countly/api:23.03
+#        image: gcr.io/countly-01/api:23.03     # Enterprise Edition
         imagePullPolicy: Always
         ports:
-        - containerPort: 6001
+        - containerPort: 3001
         readinessProbe:
           httpGet:
-            path: /ping
-            port: 6001
+            path: /o/ping
+            port: 3001
           initialDelaySeconds: 300
           periodSeconds: 30
           timeoutSeconds: 30
