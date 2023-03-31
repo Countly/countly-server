@@ -42,7 +42,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         }
                     }
                     else {
-                        console.log("No events");
+                        //console.log("No events");
                     }
                 }
                 catch (err) {
