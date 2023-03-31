@@ -1881,25 +1881,21 @@
                 processUserForAb(users[userAmountIndex]);
             }
         }
-        if ((countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) || countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                createUser();
-            }
-        }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function() {
-                generateRetention(template && template.up, function() {
-                    generateCampaigns(function() {
-                        // Generate campaigns conversion for web
-                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            setTimeout(reportConversions, timeout);
-                        }
-                        setTimeout(processUsers, timeout);
-                    });
+        generateWidgets(function() {
+            generateRetention(template && template.up, function() {
+                generateCampaigns(function() {
+                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                        createUser();
+                    }
+                    // Generate campaigns conversion for web
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        setTimeout(reportConversions, timeout);
+                    }
+                    setTimeout(processUsers, timeout);
                 });
             });
-        }
+        });
 
         if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             abExampleName = "Pricing" + abExampleCount++;
