@@ -9,6 +9,7 @@ Improvements:
 - [dbviewer] index information downloading
 - [dependencies] new xlsx streaming library
 - [dependencies] switched from request to got providing compatability layer for existing plugins
+- [events] fixed exporting columns from table
 - [events] sort segment values alphabetically
 - [events] support array type for event segments
 - [mongodb] switched to MongoDB 6.0 as main version
