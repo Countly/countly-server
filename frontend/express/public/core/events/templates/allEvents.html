@@ -39,6 +39,21 @@
 			  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
 				<el-option v-for="item in availableSegments" :key="item.value" :value="item.value" :label="item.label">
 				</el-option>
+				<el-option-group
+					v-model="omittedSegments"
+					v-if="omittedSegments.options.length"
+					:key="omittedSegments.label"
+					:label="omittedSegments.label"
+					:disabled="true"
+					class="cly-vue-events-omitted-segments"
+				>
+					<el-option 
+						v-for="item in omittedSegments.options" 
+						:key="item.value" 
+						:value="item.value" 
+						:label="item.label">
+					</el-option>
+				</el-option-group>
 			  </el-select>
 			</div>
 			<div class="bu-is-align-items-center bu-is-flex">
