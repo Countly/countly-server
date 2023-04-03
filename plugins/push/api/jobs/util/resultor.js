@@ -370,7 +370,7 @@ class Resultor extends DoFinish {
 
                 let count = this.noMessage[mid].processed;
                 delete this.noMessage[mid];
-                return this.db.collection('push').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
             }));
 
         if (this.toDelete.length) {
