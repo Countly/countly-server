@@ -660,8 +660,22 @@ appsApi.deleteApp = function(params) {
                 $pull: {
                     'apps': appId,
                     'admin_of': appId,
-                    'user_of': appId
+                    'user_of': appId,
+                    'permission._.a': appId,
+                },
+                $unset: {
+                    [`permission.c.${appId}`]: '',
+                    [`permission.r.${appId}`]: '',
+                    [`permission.u.${appId}`]: '',
+                    [`permission.d.${appId}`]: '',
                 }
+            }, {multi: true}, function() {});
+
+            // Member permission._.u is nested array so it has to be queried to remove 'appId' from it
+            common.db.collection('members').update({
+                'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+            }, {
+                $pull: { 'permission._.u.$': appId },
             }, {multi: true}, function() {});
 
             deleteAppData(appId, true, params, app);
