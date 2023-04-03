@@ -1039,7 +1039,7 @@
                     item[CV.i18n('crashes.device').toUpperCase()] = tableData[i].device;
                     item[CV.i18n('crashes.app_version').toUpperCase()] = tableData[i].app_version;
                     item[CV.i18n('crashes.user').toUpperCase()] = tableData[i].user && tableData[i].user.name || tableData[i].uid;
-                    item[CV.i18n('crashes.crashed').toUpperCase()] = tableData[i].name;
+                    item[CV.i18n('crashes.detail').toUpperCase()] = tableData[i].name;
 
                     table.push(item);
                 }

@@ -498,6 +498,21 @@
                                 });
                         }
                     }
+                },
+                formatExportTable: function() {
+                    var tableData = this.aggregationResult;
+                    var table = [];
+                    for (var i = 0; i < tableData.length; i++) {
+                        var item = {};
+                        item._ID = tableData[i]._id;
+                        for (var j = 0; j < this.fields.length; j++) {
+                            if (this.fields[j] !== "_id") {
+                                item[this.fields[j].toUpperCase()] = tableData[i][this.fields[j]];
+                            }
+                        }
+                        table.push(item);
+                    }
+                    return table;
                 }
             },
             created: function() {
