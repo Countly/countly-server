@@ -317,3 +317,28 @@
 .cly-vue-listbox.is-expandable {
     z-index: 2001;
 }
+
+.cly-vue-events-omitted-segments {
+    .el-select-group {
+        &__title {
+            color: #A7AEB8;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            line-height: 16px;
+            padding: 8px;
+            margin: 8px;
+        }
+    }
+    .el-select-dropdown {
+        &__item {
+            color: #81868D;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 16px;
+            padding: 8px;
+            margin: 8px;
+        }
+    }
+}

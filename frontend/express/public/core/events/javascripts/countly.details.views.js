@@ -194,6 +194,22 @@
                 }
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters["countlyAllEvents/omittedSegments"];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
+            },
             selectedEventName: function() {
                 var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];
                 if (eventName) {
