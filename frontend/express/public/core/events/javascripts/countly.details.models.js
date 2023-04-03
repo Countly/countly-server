@@ -26,7 +26,7 @@
             var series = [];
             var yAxis = [];
             var graphPointsLen = 0;
-            if (sum > 0) {
+            if (sum !== 0) {
                 graphPointsLen++;
             }
             if (count > 0) {
@@ -48,7 +48,7 @@
                 };
                 yAxis.push(countYAxisObj);
             }
-            if (sum > 0) {
+            if (sum !== 0) {
                 var sumObj = {
                     name: labels.sum,
                     data: graphData[1],
@@ -168,7 +168,7 @@
                 };
                 yAxis.push(countYAxisObj);
             }
-            if (sum > 0) {
+            if (sum !== 0) {
                 graphPointsLen++;
                 obSum.name = labels.sum;
                 obSum.data = arrSum;
@@ -706,7 +706,7 @@
                 legendData.push(count);
             }
             var sum = {};
-            if (currentSum > 0) {
+            if (currentSum !== 0) {
                 sum.name = labels.sum;
                 sum.value = countlyCommon.formatNumber(currentSum);
                 sum.trend = changeSum.trend === "u" ? "up" : "down";
