@@ -6,19 +6,15 @@ Improvements:
 - [dbviewer] added showing beautified collection name
 - [dbviewer] added query linking to dbviewer
 - [dbviewer] extended json queries to allow querying Date field through API
-- [dbviewer] fix check for specific collection access
 - [dbviewer] index information downloading
 - [dependencies] new xlsx streaming library
-- [dependencies] switched from request to got providing compatability layer for existing plugins
 - [events] fixed exporting columns from table
 - [events] sort segment values alphabetically
 - [events] support array type for event segments
 - [mongodb] switched to MongoDB 6.0 as main version
 - [networking] full ipv6 support
 - [nodejs] switched to NodeJS 18 as main version
-- [os] added Centos/RHEL 9 and Ubuntu 22 support, deprecated Ubuntu 18, Centos/RHEL 6, 7
 - [plugins] plugin toggling without restarting nodejs process
-- [process] countly running under countly user and installing npm dependencies as countly user
 - [ui] fixed copying api key field on sidebar menu
 - [ui] fixed incorrect total number in PIE graph when there are only 2 items
 - [ui] show average duration for events
@@ -44,6 +40,14 @@ Enterprise Improvements:
 - [users] dynamically calculated properties like age and engagement score that are now also segmentable
 - [users] expirable user properties that are removed after set period
 - [users] new text indexes to include searching device id and uid
+
+Security:
+- [dbviewer] fix check for specific collection access
+- [dependencies] switched from request to got providing compatability layer for existing plugins
+- [dependencies] updated dependencies versions which had vulnerabilities
+- [nodejs] switched to NodeJS 18 as main version, NodeJS 14 is EOL soon
+- [os] added Centos/RHEL 9 and Ubuntu 22 support, deprecated Ubuntu 18, Centos/RHEL 6, 7
+- [process] countly running under countly user and installing npm dependencies as countly user
 
 ## Version 22.09.19
 Fixes:
