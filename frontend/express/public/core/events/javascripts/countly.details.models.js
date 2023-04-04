@@ -7,7 +7,6 @@
             var graphData = [[], [], []];
             var labels = context.state.labels;
             var count = 0;
-            var sum = 0;
             var dur = 0;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
@@ -16,17 +15,17 @@
                 if (chartData[i].c) {
                     count += chartData[i].c;
                 }
-                if (chartData[i].s) {
-                    sum += chartData[i].s;
-                }
                 if (chartData[i].dur) {
                     dur += chartData[i].dur;
                 }
             }
+            var showSumGraph = graphData[1].some(function(item) {
+                return item !== 0;
+            });
             var series = [];
             var yAxis = [];
             var graphPointsLen = 0;
-            if (sum !== 0) {
+            if (showSumGraph) {
                 graphPointsLen++;
             }
             if (count > 0) {
@@ -48,7 +47,7 @@
                 };
                 yAxis.push(countYAxisObj);
             }
-            if (sum !== 0) {
+            if (showSumGraph) {
                 var sumObj = {
                     name: labels.sum,
                     data: graphData[1],
@@ -135,25 +134,24 @@
             var obDuration = {};
             var labels = context.state.labels;
             var count = 0;
-            var sum = 0;
             var dur = 0;
             var maxLength = eventData.chartData.length > 15 ? 15 : eventData.chartData.length;
             for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
                 arrSum.push(eventData.chartData[i].s);
-
                 arrDuration.push(eventData.chartData[i].dur);
+
                 xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
                 if (eventData.chartData[i].c) {
                     count += eventData.chartData[i].c;
-                }
-                if (eventData.chartData[i].s) {
-                    sum += eventData.chartData[i].s;
                 }
                 if (eventData.chartData[i].dur) {
                     dur += eventData.chartData[i].dur;
                 }
             }
+            var showSumGraph = arrSum.some(function(item) {
+                return item !== 0;
+            });
             xAxis.data = xAxisData;
             var graphPointsLen = 0;
             if (count > 0) {
@@ -168,7 +166,7 @@
                 };
                 yAxis.push(countYAxisObj);
             }
-            if (sum !== 0) {
+            if (showSumGraph) {
                 graphPointsLen++;
                 obSum.name = labels.sum;
                 obSum.data = arrSum;
@@ -412,7 +410,12 @@
                 legendData.push(count);
             }
             var sum = {};
-            if (eventsOverview.sum.total > 0) {
+            let sumGraphObj = eventsOverview.sum || {};
+            let sumGraphData = sumGraphObj.sparkline || [];
+            var showSumGraph = sumGraphData.some(function(item) {
+                return item !== 0;
+            });
+            if (showSumGraph) {
                 sum.name = labels.sum;
                 sum.value = countlyCommon.formatNumber(eventsOverview.sum.total);
                 sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
@@ -706,7 +709,14 @@
                 legendData.push(count);
             }
             var sum = {};
-            if (currentSum !== 0) {
+            let eventsOverview = context.state.selectedEventsOverview || {};
+            let sumGraphObj = eventsOverview.sum || {};
+            let sumGraphData = sumGraphObj.sparkline || [];
+            var showSumGraph = sumGraphData.some(function(item) {
+                return item !== 0;
+            });
+
+            if (showSumGraph) {
                 sum.name = labels.sum;
                 sum.value = countlyCommon.formatNumber(currentSum);
                 sum.trend = changeSum.trend === "u" ? "up" : "down";
