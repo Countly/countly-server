@@ -83,6 +83,10 @@ Countly has a [well-defined API](https://api.count.ly), that reads and writes da
 
 Countly is extensible using the plugin architecture. If you would like to modify any exiting feature by extending it or changing it, or if you would like to add completely new capabilities to Countly you can modify existing plugins or create new ones. We suggest [you read this document](https://support.count.ly/hc/en-us/articles/360036862392-Introduction) if you would like to start with plugin development.
 
+## 💚 Community
+
+We have a new Discord Server (new as of Apr 2023) for our community 🎉 [Please join us](https://discord.gg/countly) for any support requests, feature ideas, to showcase the application you are working on and for some occasional fun :)
+
 ## 🔒 Security
 
 Security is very important to us. If you discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
