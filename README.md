@@ -47,7 +47,7 @@ This repository includes server-side part of Countly, with the following feature
 * Email reports and alerts
 * Hooks to send the data to external parties via email or webhooks
 * Data Manager to plan and manage events and event segmentations
-* Compliance Hub for consent collection and data subject requests (plus SDK support for consent-based initialization)
+* Compliance Hub for consent collection and data subject request management
 * User, application and permission management
 * Read and write APIs
 * Plugin based architecture for easy customization
@@ -59,8 +59,8 @@ This repository includes server-side part of Countly, with the following feature
 Countly can collect and visualize data from mobile, web and desktop applications. Using the write-API you can send data into Countly from any source. For more information please check the below resources: 
 
 * [List of Countly SDKs, documentation and download information](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
-* [SDK development guide](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs) to build your own SDK
-* [Countly Server Write API](https://api.count.ly/reference/i) to send data into Countly from any source
+* [SDK development guide to build your own SDK](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
+* [Countly Server Write API to send data into Countly from any source](https://api.count.ly/reference/i)
 
 ## 🛠️ Installing and upgrading Countly server
 
