@@ -1,3 +1,17 @@
+## Version 23.03.1
+Fixes:
+- [export] Fixes for app_user export to not prevent exporting if an export already exists
+- [export] Fix toinclude headers for exporting from data for xlsx
+- [events] Fix to show graph and total for negative sum values
+- [core] Fix for imprpving tab key navigation on login screen
+- [core] UI fixes for equal gaps between sections
+- [core] Fixed table column headers in several places to be more user friendly
+- [push] Fixing crash on no such message
+
+Enterprise fixes:
+- [nps] Fix issue for invalid graph for yearly period
+- [cohorts] Fix for editing a cohort where cohortId was empty when opening the drawer
+
 ## Version 23.03
 Improvements:
 - [crashes] auto-refresh toggle on the Crash Overview page
