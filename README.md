@@ -1,5 +1,5 @@
 <p align="center">
-  <img style="max-width:200px;" src="https://cms.count.ly/uploads/countly_logo_69b54a0b19.png?updated_at=2023-03-24T14:46:29.519Z"/>
+  <img width="200px" src="https://cms.count.ly/uploads/countly_logo_69b54a0b19.png?updated_at=2023-03-24T14:46:29.519Z"/>
 </p>
 
 <hr>
