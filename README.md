@@ -15,9 +15,9 @@
 
 ## 🌟 What is Countly?
 
-Countly is a product analytics platform that helps teams track, analyze and act-on their user actions and behaviour on mobile, web and desktop applications. 
+Countly is a product analytics platform that helps teams track, analyze and act on their user actions and behaviour on mobile, web and desktop applications. 
 
-Countly tracks 1.5B unique identities on more than 16,000 applications via 2,000+ servers worldwide. It securely processes billions of data points every day in the cloud and on-premises, enabling teams of all sizes to build better applications and engaging experiences while maintaining full control over their product analytics data flow.
+Countly is used to track 1.5B unique identities on more than 16,000 applications via 2,000+ servers worldwide. It securely processes billions of data points every day in the cloud and on-premises, enabling teams of all sizes to build better applications and engaging experiences while maintaining full control over their product analytics data flow.
 
 One-minute video introduction to Countly Community Edition (opens Youtube):
 
@@ -27,7 +27,7 @@ One-minute video introduction to Countly Community Edition (opens Youtube):
 
 * **Community Edition** — Essential plugins/features and a free-to-use, open source, non-commercial license. Available as self-hosted. Suitable for individuals and small organizations.
 * **Enterprise Edition:** — Offers a wider range of plugins/features, granular data, an SLA, and direct support. Available as self-hosted or Countly hosted/managed. Suitable for medium and large organizations.
-* **myCountly** — Our SaaS platform that is live for alpha testing. Offers some Enterprise features as core features, and some others as add-ons. Everyone gets their dedicated and fully-managed Countly server(s) in the location they choose. Suitable for individuals, small and medium organizations.  
+* **myCountly** — Our SaaS platform that is live for alpha testing. Offers some Enterprise features as core features, and some others as add-ons. Everyone gets their dedicated and fully-managed Countly server(s) in the region they choose. Suitable for individuals, small and medium organizations.  
 
 For a detailed comparison of Community and Enterprise Editions [please check here](https://countly.com/pricing). To join the myCountly wait list [please visit this page](https://countly.com/mycountly).
 
@@ -37,7 +37,6 @@ Also, please note that SDKs of Countly are the same for all editions.
 
 This repository includes server-side part of Countly, with the following features: 
 
-* Support for mobile, web, and desktop app types
 * Session, view and event collection and reporting
 * Crash/error reporting for iOS, Android, React Native, Flutter, NodeJS, Unity, Java and Javascript
 * Rich and interactive push notifications for iOS and Android
@@ -59,12 +58,12 @@ This repository includes server-side part of Countly, with the following feature
 Countly can collect and visualize data from mobile, web and desktop applications. Using the write-API you can send data into Countly from any source. For more information please check the below resources: 
 
 * [List of Countly SDKs, documentation and download information](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
-* [SDK development guide to build your own SDK](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
+* [SDK development guide to build your own SDK](https://support.count.ly/hc/en-us/articles/360037753291-SDK-development-guide)
 * [Countly Server Write API to send data into Countly from any source](https://api.count.ly/reference/i)
 
 ## 🛠️ Installing and upgrading Countly server
 
-Countly installation script assumes it is running on a fresh, decent Ubuntu/CentOS/RHEL Linux without any services listening on port 80 or 443 (which should also be open to incoming traffic), and takes care of every library and software required to be installed for Countly to run.
+Countly installation script assumes it is running on a fresh Ubuntu/CentOS/RHEL Linux without any services listening on port 80 or 443 (which should also be open to incoming traffic), and takes care of every library and software required to be installed for Countly to run.
 
 There are several ways to install Countly:
 
