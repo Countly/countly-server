@@ -862,50 +862,8 @@ usersApi.export = function(app_id, query, params, callback) {
             }
 
             var export_folder = path.resolve(__dirname, './../../../export');
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-
-            export_folder = path.resolve(__dirname, './../../../export/AppUser');
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-
             export_folder = path.resolve(__dirname, './../../../export/AppUser/appUser_' + app_id + '_' + eid);
             var export_id = 'appUser_' + app_id + '_' + eid;
-            if (fs.existsSync(export_folder + '.tar.gz')) {
-                callback({
-                    message: 'There is exported data for given users on server.Delete it to start new',
-                    filename: 'appUser_' + app_id + '_' + eid + '.tar.gz'
-                }, "");
-                return;
-            }
-
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-            else {
-                callback({
-                    message: 'There is ongoing export data on server with the same users.Wait till finish or delete it to start new',
-                    filename: 'appUser_' + app_id + '_' + eid
-                }, "");
-                return;
-            }
             var export_filename = 'appUser_' + app_id + '_' + eid;
 
             var dbargs = [];
