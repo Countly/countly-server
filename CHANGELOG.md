@@ -1,9 +1,9 @@
 ## Version 23.03.1
 Fixes:
 - [export] Fixes for app_user export to not prevent exporting if an export already exists
-- [export] Fix toinclude headers for exporting from data for xlsx
+- [export] Fix to include headers for exporting from data for xlsx
 - [events] Fix to show graph and total for negative sum values
-- [core] Fix for imprpving tab key navigation on login screen
+- [core] Fix for improving tab key navigation on login screen
 - [core] UI fixes for equal gaps between sections
 - [core] Fixed table column headers in several places to be more user friendly
 - [push] Fixing crash on no such message
