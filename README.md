@@ -41,6 +41,7 @@ This repository includes server-side part of Countly, with the following feature
 * Session, view and event collection and reporting
 * Crash/error reporting for iOS, Android, React Native, Flutter, NodeJS, Unity, Java and Javascript
 * Rich and interactive push notifications for iOS and Android
+* Remote configuration to adjust your app's logic, appearance, and behavior on the fly
 * In-app ratings with customizable widgets
 * Built in reports and customizable dashboards
 * Email reports and alerts
