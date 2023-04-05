@@ -1,13 +1,11 @@
 <p align="center">
-  <img width="200px" src="https://cms.count.ly/uploads/countly_logo_69b54a0b19.png?updated_at=2023-03-24T14:46:29.519Z"/>
+  <img width="auto" src="https://cms.count.ly/uploads/countly_github_56791635fe.png?updated_at=2023-04-05T09:56:43.491Z"/>
 </p>
-
-<hr>
 
 ![CI](https://github.com/countly/countly-server/actions/workflows/main.yml/badge.svg)
 ![CodeQL Analysis](https://github.com/countly/countly-server/actions/workflows/codeql-analysis.yml/badge.svg)
 
-## 🔗 Quick Links
+## 🔗 Quick links
 
 * [Countly Website](https://countly.com)
 * [Countly Server installation guide](https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server)
@@ -21,7 +19,7 @@ Countly is a product analytics platform that helps teams track, analyze and act-
 
 Countly tracks 1.5B unique identities on more than 16,000 applications via 2,000+ servers worldwide. It securely processes billions of data points every day in the cloud and on-premises, enabling teams of all sizes to build better applications and engaging experiences while maintaining full control over their product analytics data flow.
 
-One minute video introduction to Countly Community Edition (opens Youtube);
+One-minute video introduction to Countly Community Edition (opens Youtube):
 
 [![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png?v3)](https://youtu.be/htKeh9bsZwA)
 
@@ -57,7 +55,7 @@ This repository includes server-side part of Countly, with the following feature
 
 ## 📈 What can Countly track?
 
-Countly can collect and visualize data from mobile, web and desktop applications. Using the write API you can send data into Countly from any source. For more information please check the below resources: 
+Countly can collect and visualize data from mobile, web and desktop applications. Using the write-API you can send data into Countly from any source. For more information please check the below resources: 
 
 * [List of Countly SDKs, documentation and download information](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
 * [SDK development guide](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs) to build your own SDK
@@ -81,7 +79,7 @@ If you want to upgrade Countly from a previous version, please take a look at [u
 
 ## 🧩 API, extensibility and plugins
 
-Countly has a [well defined API](https://api.count.ly), that reads and writes data from/to the Countly backend. Countly dashboard is built using the read API, so it's possible to fetch any information you see on the dashboard using the API.
+Countly has a [well-defined API](https://api.count.ly), that reads and writes data from/to the Countly backend. Countly dashboard is built using the read API, so it's possible to fetch any information you see on the dashboard using the API.
 
 Countly is extensible using the plugin architecture. If you would like to modify any exiting feature by extending it or changing it, or if you would like to add completely new capabilities to Countly you can modify existing plugins or create new ones. We suggest [you read this document](https://support.count.ly/hc/en-us/articles/360036862392-Introduction) if you would like to start with plugin development.
 
@@ -91,9 +89,9 @@ Security is very important to us. If you discover any issue regarding security, 
 
 ## 🏗️ Built with
 
-* **MongoDB** One of the most popular NoSQL databases
-* **NodeJS** An open-source, cross-platform JavaScript runtime environment
-* **Linux** What we all love using ;-)
+* **MongoDB** — One of the most popular NoSQL databases
+* **NodeJS** — An open-source, cross-platform JavaScript runtime environment
+* **Linux** — What we all love using ;-)
 
 Plus lots of [open source libraries](https://support.count.ly/hc/en-us/articles/360037092232-Open-source-components)!         
 
@@ -109,12 +107,12 @@ Also, you are encouraged to read an extended contribution section on [how to con
 
 ## 👍 Badges
 
-If you liked Countly, [why not use one of our badges](https://count.ly/brand-assets) and give a link back to us, so others know about this wonderful platform? 
+If you like Countly, why not use one of our badges and give a link back to us?
 
-<a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg?v2" alt="Countly - Product Analytics" /></a>
+<a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg?v2" alt="Countly - Product Analytics" /></a>
 
-    <a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg" alt="Countly - Product Analytics" /></a>
+    <a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg" alt="Countly - Product Analytics" /></a>
 
-<a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg?v2" alt="Countly - Product Analytics" /></a>
+<a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg?v2" alt="Countly - Product Analytics" /></a>
 
-    <a href="https://count.ly/f/badge" rel="nofollow"   ><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg" alt="Countly - Product Analytics" /></a>
+    <a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg" alt="Countly - Product Analytics" /></a>
