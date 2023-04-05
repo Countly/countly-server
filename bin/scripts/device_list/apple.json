@@ -211,6 +211,8 @@
     "MacPro7,1": "Mac Pro (from 2019)",
     "MacPro6,1": "Mac Pro (from 2013)",
     "MacPro5,1": "Mac Pro Server (from 2010)",
+    "Mac14,3": "Mac mini (2023)",
+    "Mac14,12": "Mac mini (2023)",
     "Macmini9,1": "Mac mini (M1, 2020)",
     "Macmini8,1": "Mac mini (2018)",
     "Macmini7,1": "Mac mini (Late 2014)",
@@ -279,5 +281,11 @@
     "MacBookAir4,1": "MacBook Air (11-inch, Mid 2011)",
     "MacBookAir3,2": "MacBook Air (13-inch, Late 2010)",
     "MacBookAir3,1": "MacBook Air (11-inch, Late 2010)",
-    "MacBookAir2,1": "MacBook Air (Mid 2009)"
+    "MacBookAir2,1": "MacBook Air (Mid 2009)",
+    "Mac14,7": "MacBook Pro (13-inch, M2, 2022)",
+    "Mac14,6": "MacBook Pro (16-inch, 2023)",
+    "Mac14,10": "MacBook Pro (16-inch, 2023)",
+    "Mac14,5": "MacBook Pro (14-inch, 2023)",
+    "Mac14,9": "MacBook Pro (14-inch, 2023)",
+    "Mac14,2": "MacBook Air (M2, 2022)"
 }
