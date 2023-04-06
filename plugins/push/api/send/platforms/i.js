@@ -647,7 +647,7 @@ class APN extends Base {
             pushes.forEach((p, i) => {
                 // this.log.d('%d: sending', i);
                 if (i % 200 === 0) {
-                    this.log.d('state', this.session.state);
+                    this.log.d('[%d] %j / %j', i, this.session.closed, this.session.destroyed);
                 }
                 if (nonRecoverableError) {
                     nonRecoverableError.addLeft(p._id, one);
@@ -659,108 +659,119 @@ class APN extends Base {
                     this.log.e('No message %s', p.m);
                 }
 
-                let content = this.template(p.m).compile(p),
-                    stream = this.session.request(this.headersSecondWithToken(p.t)),
-                    status,
-                    data = '';
-                stream.on('error', err => {
-                    if (!nonRecoverableError) {
-                        nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
-                    }
-                    else {
-                        nonRecoverableError.addAffected(p._id, one);
-                    }
-                });
-                stream.on('frameError', (type, code, id) => {
-                    this.log.e('stream frameError %d, %d, %d', type, code, id);
-                });
-                stream.on('timeout', () => {
-                    this.log.e('stream timeout');
-                    if (!nonRecoverableError) {
-                        nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
-                    }
-                    else {
-                        nonRecoverableError.addAffected(p._id, one);
-                    }
-                    streamDone();
-                });
-                stream.on('response', function(headers) {
-                    status = headers[':status'];
-                    // self.log.d('%d: status %d: %j', i, status, self.session.state);
-                    if (status === 200) {
-                        oks.push(p._id);
-                        stream.destroy();
-                        streamDone();
-                    }
-                    else if (status === 410) {
-                        stream.destroy();
-                        error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
-                        streamDone();
-                    }
-                    else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
-                        stream.destroy();
-                        this.session.destroy();
+                try {
+                    let content = this.template(p.m).compile(p),
+                        stream = this.session.request(this.headersSecondWithToken(p.t)),
+                        status,
+                        data = '';
+                    stream.on('error', err => {
                         if (!nonRecoverableError) {
-                            nonRecoverableError = new ConnectionError(`APN Server Error: ${status}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                            nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                         }
                         else {
                             nonRecoverableError.addAffected(p._id, one);
                         }
-                    }
-                    else if (status === 400 || status === 403 || status === 429) {
-                        // handle in on('end') because we need response error code
-                    }
-                });
-                stream.on('data', dt => {
-                    data += dt;
-                });
-                stream.on('end', () => {
-                    if (status === 400 || status === 403 || status === 429) {
-                        try {
-                            let json = JSON.parse(data);
-                            if (status === 400) {
-                                if (json.reason) {
-                                    if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
-                                        error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                    });
+                    stream.on('frameError', (type, code, id) => {
+                        this.log.e('[%d] stream frameError %d, %d, %d', i, type, code, id);
+                    });
+                    stream.on('timeout', () => {
+                        this.log.e('[%d] stream timeout', i);
+                        if (!nonRecoverableError) {
+                            nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                        }
+                        else {
+                            nonRecoverableError.addAffected(p._id, one);
+                        }
+                        streamDone();
+                    });
+                    stream.on('response', function(headers) {
+                        status = headers[':status'];
+                        if (status === 200) {
+                            oks.push(p._id);
+                            stream.destroy();
+                            streamDone();
+                        }
+                        else if (status === 410) {
+                            self.log.d('%d: status %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            stream.destroy();
+                            error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
+                            streamDone();
+                        }
+                        else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
+                            self.log.e('%d: APN returned error %d, destroying session', i, status);
+                            stream.destroy();
+                            self.session.destroy();
+                            if (!nonRecoverableError) {
+                                nonRecoverableError = new ConnectionError(`APN Server Error: ${status}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                            }
+                            else {
+                                nonRecoverableError.addAffected(p._id, one);
+                            }
+                        }
+                        else if (status === 400 || status === 403 || status === 429) {
+                            self.log.d('[%d]: status %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            // handle in on('end') because we need response error code
+                        }
+                    });
+                    stream.on('data', dt => {
+                        data += dt;
+                    });
+                    stream.on('end', () => {
+                        if (status === 400 || status === 403 || status === 429) {
+                            self.log.d('[%d]: end %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            try {
+                                let json = JSON.parse(data);
+                                if (status === 400) {
+                                    if (json.reason) {
+                                        if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
+                                            error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                                        }
+                                        else {
+                                            error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                        }
                                     }
                                     else {
-                                        error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                        self.log.e('provider returned %d: %j', status, json);
+                                        error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                     }
                                 }
-                                else {
+                                else if (status === 403) {
+                                    if (!nonRecoverableError) {
+                                        nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
+                                    }
+                                    else {
+                                        nonRecoverableError.addAffected(p._id, one);
+                                    }
+                                }
+                                else if (status === 429) {
                                     self.log.e('provider returned %d: %j', status, json);
                                     error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
-                            }
-                            else if (status === 403) {
-                                if (!nonRecoverableError) {
-                                    nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
-                                }
                                 else {
-                                    nonRecoverableError.addAffected(p._id, one);
+                                    throw new PushError('IMPOSSIBRU');
                                 }
                             }
-                            else if (status === 429) {
-                                self.log.e('provider returned %d: %j', status, json);
+                            catch (e) {
+                                self.log.e('provider returned %d: %s', status, data, e);
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                             }
-                            else {
-                                throw new PushError('IMPOSSIBRU');
-                            }
+                            streamDone();
                         }
-                        catch (e) {
-                            self.log.e('provider returned %d: %s', status, data, e);
-                            error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                        }
-                        streamDone();
+                    });
+                    stream.setEncoding('utf-8');
+                    stream.setTimeout(10000, () => {
+                        self.log.w('[%d]: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
+                        stream.close(HTTP2.constants.NGHTTP2_CANCEL);
+                    });
+                    stream.end(content);
+                }
+                catch (err) {
+                    this.log.e('[%d] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', i, self.session.closed, self.session.destroyed, err);
+                    if (!nonRecoverableError) {
+                        nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                     }
-                });
-                stream.setEncoding('utf-8');
-                stream.setTimeout(10000, () => {
-                    self.log.w('%d: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
-                    stream.close(HTTP2.constants.NGHTTP2_CANCEL);
-                });
-                stream.end(content);
+                }
             });
         }));
     }
@@ -796,8 +807,16 @@ class APN extends Base {
 
                     let session = HTTP2.connect(this.authority, this.sessionOptions);
 
+                    session.setTimeout(10000);
+
                     session.on('error', err => {
                         this.log.e('session error', err);
+                        reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
+                        session.destroy();
+                    });
+
+                    session.on('timeout', err => {
+                        this.log.e('session timeout', err);
                         reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
                         session.destroy();
                     });
@@ -813,7 +832,7 @@ class APN extends Base {
                         });
                         stream.on('response', headers => {
                             let status = headers[':status'];
-                            this.log.d('provider returned %d', status);
+                            this.log.d('first request provider returned %d', status);
                             if (status === 403 || status === 400) {
                                 if (status === 400) {
                                     this.session = session;
