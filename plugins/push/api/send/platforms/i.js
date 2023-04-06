@@ -625,6 +625,7 @@ class APN extends Base {
                  * Called on stream completion, returns results for this batch
                  */
                 streamDone = () => {
+                    this.log.d('streamDone %j %j %j %j', oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, pushes.length);
                     if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) === pushes.length) {
                         let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
@@ -645,26 +646,28 @@ class APN extends Base {
 
             this.log.d('sending %d streams', pushes.length);
             pushes.forEach((p, i) => {
-                // this.log.d('%d: sending', i);
+                self.log.d('[%s]: sending %s', p._id, p._id);
                 if (i % 200 === 0) {
-                    this.log.d('[%d] %j / %j', i, this.session.closed, this.session.destroyed);
+                    self.log.d('[%s] %j / %j', p._id, self.session.closed, self.session.destroyed);
                 }
                 if (nonRecoverableError) {
+                    self.log.d('[%s]: nonRecoverableError', p._id);
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
                 }
 
-                if (!this.messages[p.m]) {
-                    this.log.e('No message %s', p.m);
+                if (!self.messages[p.m]) {
+                    self.log.e('No message %s', p.m);
                 }
 
                 try {
-                    let content = this.template(p.m).compile(p),
-                        stream = this.session.request(this.headersSecondWithToken(p.t)),
+                    let content = self.template(p.m).compile(p),
+                        stream = self.session.request(self.headersSecondWithToken(p.t)),
                         status,
                         data = '';
                     stream.on('error', err => {
+                        self.log.d('[%s]: stream error', p._id, err);
                         if (!nonRecoverableError) {
                             nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                         }
@@ -673,10 +676,10 @@ class APN extends Base {
                         }
                     });
                     stream.on('frameError', (type, code, id) => {
-                        this.log.e('[%d] stream frameError %d, %d, %d', i, type, code, id);
+                        self.log.e('[%s] stream frameError %d, %d, %d', p._id, type, code, id);
                     });
                     stream.on('timeout', () => {
-                        this.log.e('[%d] stream timeout', i);
+                        self.log.e('[%s] stream timeout %s', p._id);
                         if (!nonRecoverableError) {
                             nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                         }
@@ -688,18 +691,21 @@ class APN extends Base {
                     stream.on('response', function(headers) {
                         status = headers[':status'];
                         if (status === 200) {
+                            self.log.d('[%s] response done %d', p._id, status);
                             oks.push(p._id);
                             stream.destroy();
                             streamDone();
+                            self.log.d('[%s] response done %d', p._id, status);
                         }
                         else if (status === 410) {
-                            self.log.d('%d: status %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: status %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
                             stream.destroy();
                             error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
                             streamDone();
+                            self.log.d('[%s] response done %d', p._id, status);
                         }
                         else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
-                            self.log.e('%d: APN returned error %d, destroying session', i, status);
+                            self.log.e('[%s]: APN returned error %d, destroying session', p._id, status);
                             stream.destroy();
                             self.session.destroy();
                             if (!nonRecoverableError) {
@@ -710,7 +716,7 @@ class APN extends Base {
                             }
                         }
                         else if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%d]: status %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: status %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
                             // handle in on('end') because we need response error code
                         }
                     });
@@ -718,8 +724,9 @@ class APN extends Base {
                         data += dt;
                     });
                     stream.on('end', () => {
+                        self.log.d('[%s] end %s', p._id, status);
                         if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%d]: end %d: %j / %j', i, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: end %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
                             try {
                                 let json = JSON.parse(data);
                                 if (status === 400) {
@@ -732,7 +739,7 @@ class APN extends Base {
                                         }
                                     }
                                     else {
-                                        self.log.e('provider returned %d: %j', status, json);
+                                        self.log.e('[%s] provider returned %d: %j', p._id, status, json);
                                         error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                     }
                                 }
@@ -745,7 +752,7 @@ class APN extends Base {
                                     }
                                 }
                                 else if (status === 429) {
-                                    self.log.e('provider returned %d: %j', status, json);
+                                    self.log.e('[%s] provider returned %d: %j', p._id, status, json);
                                     error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                                 else {
@@ -761,13 +768,14 @@ class APN extends Base {
                     });
                     stream.setEncoding('utf-8');
                     stream.setTimeout(10000, () => {
-                        self.log.w('[%d]: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
+                        self.log.w('[%s]: cancelling stream on timeout', p._id);
                         stream.close(HTTP2.constants.NGHTTP2_CANCEL);
                     });
                     stream.end(content);
+                    self.log.d('[%s]: sent %s', p._id, content);
                 }
                 catch (err) {
-                    this.log.e('[%d] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', i, self.session.closed, self.session.destroyed, err);
+                    self.log.e('[%s] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', p._id, self.session.closed, self.session.destroyed, err);
                     if (!nonRecoverableError) {
                         nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                     }
