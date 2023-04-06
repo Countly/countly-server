@@ -161,7 +161,7 @@ class Resultor extends DoFinish {
                 results.forEach(res => {
                     let id, token;
                     if (typeof res === 'string') {
-                        this.log.d('Ok for %s', id);
+                        // this.log.d('Ok for %s', id);
                         id = res;
                     }
                     else {

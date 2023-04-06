@@ -807,7 +807,7 @@ class APN extends Base {
 
                     let session = HTTP2.connect(this.authority, this.sessionOptions);
 
-                    session.setTimeout(10000);
+                    // session.setTimeout(10000);
 
                     session.on('error', err => {
                         this.log.e('session error', err);
@@ -817,7 +817,7 @@ class APN extends Base {
 
                     session.on('timeout', err => {
                         this.log.e('session timeout', err);
-                        reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
+                        reject(new ConnectionError(err && err.message || 'Session timeout', ERROR.CONNECTION_PROVIDER));
                         session.destroy();
                     });
 
