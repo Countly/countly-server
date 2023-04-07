@@ -876,6 +876,141 @@
         }
     });
 
+    var SDKConfigComponent = countlyVue.views.BaseView.extend({
+        template: "#remote-config-sdk",
+        computed: {
+            getData: function() {
+                var params = this.$store.getters["countlyRemoteConfig/sdk/all"];
+                var data = {};
+                if (params.parameters && params.parameters.length) {
+                    data = params.parameters[0].default_value || {};
+                }
+                for (var key in this.configs) {
+                    if (this.diff.indexOf(key) === -1) {
+                        this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                    }
+                }
+                return this.configs;
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyRemoteConfig/sdk/isTableLoading"];
+            }
+        },
+        data: function() {
+            return {
+                groups: {
+                    global: {
+                        label: "Global control",
+                        list: ["tracking"]
+                    },
+                    features: {
+                        label: "SDK features",
+                        list: ["crashes", "views"]
+                    },
+                    settings: {
+                        label: "SDK settings",
+                        list: ["heartbeat", "event_queue", "request_queue"]
+                    }
+                },
+                configs: {
+                    tracking: {
+                        type: "switch",
+                        name: "SDK Tracking",
+                        description: "Enable or disable whole SDK and all of its features",
+                        default: true,
+                        value: null
+                    },
+                    crashes: {
+                        type: "switch",
+                        name: "Crashes",
+                        description: "Enable or disable automatic tracking of unhandled crashes",
+                        default: true,
+                        value: null
+                    },
+                    views: {
+                        type: "switch",
+                        name: "Views",
+                        description: "Enable or disable automatic tracking of views",
+                        default: true,
+                        value: null
+                    },
+                    heartbeat: {
+                        type: "number",
+                        name: "Heartbeat",
+                        description: "How often to send heartbeat to server in seconds",
+                        default: 60,
+                        value: null
+                    },
+                    request_queue: {
+                        type: "number",
+                        name: "Request Queue Size",
+                        description: "How many requests to store in queue, if SDK cannot connect to server",
+                        default: 1000,
+                        value: null
+                    },
+                    event_queue: {
+                        type: "number",
+                        name: "Event Queue Size",
+                        description: "How many events to store in queue before they would be batched and sent to server",
+                        default: 10,
+                        value: null
+                    },
+                },
+                diff: []
+            };
+        },
+        methods: {
+            onChange: function(key, value) {
+                this.configs[key].value = value;
+                if (this.diff.indexOf(key) === -1) {
+                    this.diff.push(key);
+                }
+                else {
+                    var params = this.$store.getters["countlyRemoteConfig/sdk/all"];
+                    var data = {};
+                    if (params.parameters && params.parameters.length) {
+                        data = params.parameters[0].default_value || {};
+                    }
+                    if (typeof data[key] !== "undefined") {
+                        if (data[key] === value) {
+                            this.diff.splice(this.diff.indexOf(key), 1);
+                        }
+                    }
+                    else if (this.configs[key].default === value) {
+                        this.diff.splice(this.diff.indexOf(key), 1);
+                    }
+                }
+            },
+            save: function() {
+                var params = this.$store.getters["countlyRemoteConfig/sdk/all"];
+                var data = {};
+                if (params.parameters && params.parameters.length) {
+                    data = params.parameters[0] || {};
+                }
+                data.default_value = data.default_value || {};
+                for (var i = 0; i < this.diff.length; i++) {
+                    data.default_value[this.diff[i]] = this.configs[this.diff[i]].value;
+                }
+                this.diff = [];
+                var self = this;
+                this.$store.dispatch("countlyRemoteConfig/sdk/update", data).then(function() {
+                    self.$store.dispatch("countlyRemoteConfig/sdkInitialize");
+                });
+            },
+            unpatch: function() {
+                this.diff = [];
+                var params = this.$store.getters["countlyRemoteConfig/sdk/all"];
+                var data = {};
+                if (params.parameters && params.parameters.length) {
+                    data = params.parameters[0].default_value || {};
+                }
+                for (var key in this.configs) {
+                    this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                }
+            }
+        }
+    });
+
     var MainComponent = countlyVue.views.BaseView.extend({
         template: "#remote-config-main",
         data: function() {
@@ -895,6 +1030,12 @@
                     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/conditions"
                 });
             }
+            tabs.push({
+                title: "SDK Configuration",
+                name: "sdk_config",
+                component: SDKConfigComponent,
+                route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/sdk"
+            });
             return {
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "parameters",
                 tabs: tabs
@@ -905,6 +1046,7 @@
             this.$store.dispatch("countlyRemoteConfig/initialize").then(function() {
                 self.$store.dispatch("countlyRemoteConfig/parameters/setTableLoading", false);
                 self.$store.dispatch("countlyRemoteConfig/conditions/setTableLoading", false);
+                self.$store.dispatch("countlyRemoteConfig/sdk/setTableLoading", false);
             });
         },
         methods: {
@@ -927,6 +1069,7 @@
                     main: "/remote-config/templates/main.html",
                     parameters: "/remote-config/templates/parameters.html",
                     conditions: "/remote-config/templates/conditions.html",
+                    sdk: "/remote-config/templates/sdk.html",
                 }
             }
         ];
