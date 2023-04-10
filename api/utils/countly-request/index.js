@@ -134,7 +134,7 @@ module.exports.post = function(uri, options, callback) {
             .then(response => {
                 params.callback(null, response, response.body);
             })
-            .catch(error => { 
+            .catch(error => {
                 // Call the callback with the error
                 params.callback(error);
             });
