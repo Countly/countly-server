@@ -13,6 +13,7 @@ var common = {},
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
     mongodb = require('mongodb'),
+    getRandomValues = require('get-random-values'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -380,6 +381,7 @@ common.isNumber = function(n) {
 * This default Countly behavior of type conversion for storing proeprties accepted through API requests
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
+* @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
 * @returns {varies} converted value
 * @example
 * common.convertToType(1) //outputs 1
@@ -387,11 +389,11 @@ common.isNumber = function(n) {
 * common.convertToType("test") //outputs "test"
 * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
 */
-common.convertToType = function(value) {
+common.convertToType = function(value, preventParsingToNumber) {
     //handle array values
     if (Array.isArray(value)) {
         for (var i = 0; i < value.length; i++) {
-            value[i] = common.convertToType(value[i]);
+            value[i] = common.convertToType(value[i], true);
         }
         return value;
     }
@@ -404,7 +406,10 @@ common.convertToType = function(value) {
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
-        if (value.length && value.length <= 16) {
+        if (preventParsingToNumber) {
+            return value;
+        }
+        else if (value.length && value.length <= 16) {
             //convert to number
             return parseFloat(value);
         }
@@ -1415,6 +1420,9 @@ common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
 
+
+
+
 /**
 * Custom API response handler callback
 * @typedef APICallback
@@ -1610,11 +1618,25 @@ var ipLogger = common.log('ip:api');
 * @returns {string} ip address
 */
 common.getIpAddress = function(req) {
-    var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
+    var ipAddress = "";
+    if (req) {
+        if (req.headers) {
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
+        }
+        else if (req.connection && req.connection.remoteAddress) {
+            ipAddress = req.connection.remoteAddress;
+        }
+        else if (req.socket && req.socket.remoteAddress) {
+            ipAddress = req.socket.remoteAddress;
+        }
+        else if (req.connection && req.connection.socket && req.connection.socket.remoteAddress) {
+            ipAddress = req.connection.socket.remoteAddress;
+        }
+    }
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
-    if (req.headers['x-real-ip']) {
+    if (req?.headers?.['x-real-ip']) {
         ips.push(req.headers['x-real-ip']);
     }
 
@@ -2628,7 +2650,7 @@ common.reviver = (key, value) => {
 };
 
 /**
- * Shuffle string using crypto.getRandomValues
+ * Shuffle string using getRandomValues
  * @param {string} text - text to be shuffled
  * @returns {string} shuffled password
  */
@@ -2651,7 +2673,7 @@ common.shuffleString = function(text) {
  * @returns {string} random string from charset
  */
 common.getRandomValue = function(charSet, length = 1) {
-    const randomValues = crypto.getRandomValues(new Uint8Array(charSet.length));
+    const randomValues = getRandomValues(new Uint8Array(charSet.length));
     let randomValue = "";
 
     if (length > charSet.length) {
@@ -3095,6 +3117,24 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
         }
+        if (ob1 && ob1.$set && ob1.$unset) {
+            for (let key in ob1.$unset) {
+                if (key.startsWith("engagement.")) {
+                    if (ob1.$set[key + ".sd"]) {
+                        delete ob1.$set[key + ".sd"];
+                    }
+                    if (ob1.$set[key + ".sc"]) {
+                        delete ob1.$set[key + ".sc"];
+                    }
+                    if (ob1.$inc[key + ".sd"]) {
+                        delete ob1.$inc[key + ".sd"];
+                    }
+                    if (ob1.$inc[key + ".sc"]) {
+                        delete ob1.$inc[key + ".sc"];
+                    }
+                }
+            }
+        }
     }
 
     return ob1;
@@ -3421,5 +3461,43 @@ class DataTable {
 }
 
 common.DataTable = DataTable;
+
+/**
+ * Assign license check results to request (and session if present)
+ * 
+ * @param {object} req request
+ * @param {object|undefined} check check results
+ */
+common.licenseAssign = function(req, check) {
+    if (check && check.error) {
+        req.licenseError = check.error;
+        if (req.session) {
+            req.session.licenseError = req.licenseError;
+        }
+    }
+    if (check && check.notify && check.notify.length) {
+        req.licenseNotification = JSON.stringify(check.notify);
+        if (req.session) {
+            req.session.licenseNotification = req.licenseNotification;
+        }
+    }
+};
+
+/**
+* Standard number formatter, taken from frontend's countly.common.js
+
+* @memberof countlyCommon
+* @param {number} x - number to format
+* @returns {string} formatted number
+* @example
+* //outputs 1,234,567
+* countlyCommon.formatNumber(1234567);
+*/
+common.formatNumber = function(x) {
+    x = parseFloat(parseFloat(x).toFixed(2));
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+};
 
 module.exports = common;

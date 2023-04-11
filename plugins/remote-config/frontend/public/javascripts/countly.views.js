@@ -166,7 +166,7 @@
                     id: "disallowOperator",
                     params: {
                         selector: function(operator) {
-                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset"].includes(operator.id);
+                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset", "cly.beginswith"].includes(operator.id);
                         }
                     }
                 })]
@@ -782,7 +782,23 @@
             },
             tableRowClassName: function() {
                 return "bu-is-clickable";
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.$store.getters["countlyRemoteConfig/parameters/all"];
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('remote-config.parameter').toUpperCase()] = tableData[i].parameter_key + (this.isDrillEnabled ? this.getNumberOfConditionsText(tableData[i].conditions) : "");
+                    item[CV.i18n('remote-config.parameter.status').toUpperCase()] = tableData[i].status;
+                    item[CV.i18n('remote-config.description').toUpperCase()] = tableData[i].description === "-" ? "" : tableData[i].description;
+                    item[CV.i18n('remote-config.parameter.created').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].ts).text;
+                    item[CV.i18n('remote-config.parameter.ab.status').toUpperCase()] = tableData[i].abStatus;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         }
     });
 
@@ -937,5 +953,5 @@
         mainView.params = params;
         this.renderWhenReady(mainView);
     });
-    app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
+    app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, pluginName: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
 })();

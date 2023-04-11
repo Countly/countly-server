@@ -10,7 +10,7 @@ fi
 export LANGUAGE=en_US.UTF-8 ; export LC_ALL=en_US.UTF-8;
 
 # Install compiler
-yum groupinstall "Development Tools" -y
+yum groupinstall -y "Development Tools"
 
 # Install Python 2.7
 cd /usr/src
@@ -23,7 +23,7 @@ make altinstall
 ln -sf /usr/local/bin/python2.7 /usr/bin/python2.7
 
 # Install pip for Python 2.7
-yum install python-pip -y
+yum install -y python-pip
 cd /usr/src
 wget https://bootstrap.pypa.io/get-pip.py
 python2.7 get-pip.py

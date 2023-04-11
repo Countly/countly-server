@@ -30,7 +30,7 @@ var versionInfo = require('./version.info'),
     fs = require('fs'),
     path = require('path'),
     jimp = require('jimp'),
-    request = require('request'),
+    request = require('countly-request'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
     formidable = require('formidable'),
@@ -865,7 +865,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
-        var configs = plugins.getConfig("frontend", member.settings);
+        var configs = plugins.getConfig("frontend", member.settings),
+            licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -880,6 +881,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
+            }
+            if (req.session.licenseNotification) {
+                try {
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
+                }
+                catch (e) {
+                    log.e('Failed to parse notify', e);
+                }
             }
 
             member._id += "";
@@ -912,10 +925,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 member: member,
                 config: req.config,
                 security: plugins.getConfig("security"),
-                plugins: plugins.getPlugins(),
+                plugins: plugins.getPlugins(true),
+                pluginsFull: plugins.getPlugins(),
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
+                licenseNotification,
+                licenseError,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
@@ -951,8 +967,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 frontend_app: versionInfo.frontend_app,
                 frontend_server: versionInfo.frontend_server,
                 production: configs.production || false,
-                pluginsSHA: sha1Hash(plugins.getPlugins()),
-                plugins: plugins.getPlugins(),
+                pluginsSHA: sha1Hash(plugins.getPlugins(true)),
+                plugins: plugins.getPlugins(true),
                 config: req.config,
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
@@ -1690,6 +1706,39 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         else {
             res.send(false);
             return false;
+        }
+    });
+
+    app.post(countlyConfig.path + '/user/settings/column-order', function(req, res) {
+        if (!req.session.uid) {
+            return res.end();
+        }
+
+        if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
+            let reorderSortMapKey = `columnOrder.${req.body.columnOrderKey}.reorderSortMap`;
+            let tableSortMapKey = `columnOrder.${req.body.columnOrderKey}.tableSortMap`;
+
+            if (!req.body.tableSortMap) {
+                tableSortMapKey = undefined;
+            }
+            if (!req.body.reorderSortMap) {
+                reorderSortMapKey = undefined;
+            }
+
+            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, {
+                '$set': {
+                    [reorderSortMapKey]: req.body.reorderSortMap,
+                    [tableSortMapKey]: req.body.tableSortMap
+                }
+            }, { safe: true, upsert: true }, function(err, member) {
+                if (member && !err) {
+                    return res.send(true);
+                }
+                return res.send(false);
+            });
+        }
+        else {
+            return res.send(false);
         }
     });
 

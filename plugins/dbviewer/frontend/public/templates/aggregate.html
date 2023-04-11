@@ -11,7 +11,7 @@
     </cly-header>
     <cly-main>
         <div class="bu-is-size-5">
-            {{ i18n('dbviewer.execute-aggregation') }} <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+            {{ i18n('dbviewer.execute-aggregation', collectionName) }} <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </div>
         <cly-section class="bg-white bu-p-5 bu-mt-4 dbviewer-aggregate__query-area">
             <el-input
@@ -26,7 +26,7 @@
             </div>
         </cly-section>
         <cly-section>
-            <cly-datatable-n :rows="aggregationResult" :preventDefaultSort="true">
+            <cly-datatable-n :rows="aggregationResult" :prevent-default-sort="true">
                 <template v-slot="scope">
                     <el-table-column prop="_id" label="_id" min-width="250" fixed>
                         <template v-slot="rowScope">

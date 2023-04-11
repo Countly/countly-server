@@ -1,3 +1,87 @@
+## Version 23.03.1
+Fixes:
+- [export] Fixes for app_user export to not prevent exporting if an export already exists
+- [export] Fix to include headers for exporting from data for xlsx
+- [events] Fix to show graph and total for negative sum values
+- [core] Fix for improving tab key navigation on login screen
+- [core] UI fixes for equal gaps between sections
+- [core] Fixed table column headers in several places to be more user friendly
+- [push] Fixing crash on no such message
+
+Enterprise fixes:
+- [nps] Fix issue for invalid graph for yearly period
+- [cohorts] Fix for editing a cohort where cohortId was empty when opening the drawer
+
+## Version 23.03
+Improvements:
+- [crashes] auto-refresh toggle on the Crash Overview page
+- [members] case insensitive member emails
+- [datepicker] various date filtering and date picker related improvements
+- [dbviewer] added showing beautified collection name
+- [dbviewer] added query linking to dbviewer
+- [dbviewer] extended json queries to allow querying Date field through API
+- [dbviewer] index information downloading
+- [dependencies] new xlsx streaming library
+- [events] fixed exporting columns from table
+- [events] sort segment values alphabetically
+- [events] support array type for event segments
+- [mongodb] switched to MongoDB 6.0 as main version
+- [networking] full ipv6 support
+- [nodejs] switched to NodeJS 18 as main version
+- [plugins] plugin toggling without restarting nodejs process
+- [ui] fixed copying api key field on sidebar menu
+- [ui] fixed incorrect total number in PIE graph when there are only 2 items
+- [ui] show average duration for events
+- [ui] store table column order settings in database
+
+Enterprise Improvements:
+- [ad] fixed Active Directory plugin fetchs the groups limited to 100 count, increased to 999
+- [cohorts] can't edit cohort segments anymore, can only duplicate cohort
+- [data-manager] list user property values for list big list and array types in data manager
+- [drill] added Survey/NPS/Rating "Widget Name" to filters
+- [drill] changes for making event segment names readable
+- [drill] clean unused values for meta data
+- [drill] fixes for meta regeneration to reduce used memory for this process
+- [event-timeline] Improvements to speed up and use less resources on rechecking event timeline
+- [funnels] improved time calculation between steps for same session funnels
+- [funnels] ui improvements for display time duration for steps and longer step names
+- [gateway] updated to new ui
+- [license] license manager to show data about license its expiration and usage of licensed metrics
+- [sessions] auto close unended sessions to properly calculate sesison durations, bounces and other post session metrics
+- [surveys] changes to fix multiple questions having same id issue
+- [surveys] review section
+- [users] add seconds to event table in users
+- [users] dynamically calculated properties like age and engagement score that are now also segmentable
+- [users] expirable user properties that are removed after set period
+- [users] new text indexes to include searching device id and uid
+
+Security:
+- [dbviewer] fix check for specific collection access
+- [dependencies] switched from request to got providing compatability layer for existing plugins
+- [dependencies] updated dependencies versions which had vulnerabilities
+- [nodejs] switched to NodeJS 18 as main version, NodeJS 14 is EOL soon
+- [os] added Centos/RHEL 9 and Ubuntu 22 support, deprecated Ubuntu 18, Centos/RHEL 6, 7
+- [process] countly running under countly user and installing npm dependencies as countly user
+
+## Version 22.09.19
+Fixes:
+- [consolidate] Fixed app settings change for consolidate plugin
+- [core] Fixed default permission object creation in case user is created via API call
+- [core] Fixes for 'Unknown country flag image'
+- [core] Fixes for showing app image.
+- [core] crypto.getRandomValues is replaced with get-random-values package
+- [db-viewer] Fixed full download for aggregation result.
+- [events] Show duration formatted in minutes and seconds in graph
+- [push] Fixes for dealing with streaming issues
+- [users] Fix for having occasional wrong Export failures with description that user is missing.
+
+Enterprise fixes:
+- [ab-testing] Workflow fixes regarding working with real-time cohorts
+- [cohorts] Corrected exited user count for cases when users are exited in parallel proceses.
+- [cohorts] Fixes to deal with ab-testing rules for cohorts.
+- [drill] Null checks for bookmark updates
+- [formulas] Allow range date picker for no-bucket case formula widget
+
 ## Version 22.09.18
 Fixes:
 - [users] Fix for having occasional wrong Export failures with description that user is missing.

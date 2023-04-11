@@ -64,7 +64,7 @@
 				<form method="POST" id="remember-password-form">
 					<div>
 						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
-						<input id="remember-password-email" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
+						<input id="remember-password-email" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email" oninput="this.value = this.value.toLowerCase();"/>
 					</div>
 					<% if (typeof inject_template.form != "undefined") { %>
 						<%- inject_template.form %>

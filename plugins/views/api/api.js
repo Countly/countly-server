@@ -251,7 +251,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
-
+        if (params.qstring.period && params.qstring.period.indexOf('since') !== -1) {
+            params.qstring.period = JSON.parse(params.qstring.period);
+        }
         var dates = [];
         var calcUvalue = [];
         var calcUvalue2 = [];
@@ -308,6 +310,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
+        var parsedPeriod = period;
+        var periodsToBeConverted = ["months", "weeks", "days"];
+
+        if (typeof period === 'string') {
+            try {
+                parsedPeriod = JSON.parse(period);
+            }
+            catch (error) {
+                parsedPeriod = period;
+            }
+        }
+        if ((typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) || periodsToBeConverted.some(x=>period.includes(x))) {
+            try {
+                period = JSON.stringify([periodObj.start, periodObj.end]);
+            }
+            catch (error) {
+                //
+            }
+        }
 
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
@@ -410,6 +431,26 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 else {
                     groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
                     groupBy0.u = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                }
+            }
+            pipeline.push({$group: groupBy0});
+        }
+        else if (period === "prevMonth") { //previous month
+            var prevmonth = now.subtract(1, "month").format('YYYY:M');
+            monthNumber = prevmonth.split(':');
+            thisYear = now.format('YYYY');
+            pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
+
+            groupBy0 = {_id: "$vw"};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                if (settings.levels.daily[i] !== 'u') {
+                    groupBy0[settings.levels.daily[i]] = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                }
+                else {
+                    groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
                 }
             }
             pipeline.push({$group: groupBy0});
@@ -564,7 +605,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
-
         var facetLine = [];
 
         if (settings.sortcol !== 'name') {
@@ -1507,7 +1547,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         }
     }
-    plugins.register("/session/post", function(ob) {
+    plugins.register("/session/post", async function(ob) {
         var params = ob.params;
         var user = params.app_user;
         if (user && user.vc) {
@@ -1550,42 +1590,46 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             if (user.lv) {
                 var segmentation = {name: user.lv, exit: 1};
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                    if (err) {
-                        log.e(err);
-                    }
-                    if (view) {
-                        if (parseInt(user.vc) === 1) {
-                            segmentation.bounce = 1;
+                await new Promise(function(resolve) {
+                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
+                        if (err) {
+                            log.e(err);
                         }
-                        params.viewsNamingMap = params.viewsNamingMap || {};
-                        params.viewsNamingMap[segmentation.name] = view._id;
-                        recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                        if (view) {
+                            if (parseInt(user.vc) === 1) {
+                                segmentation.bounce = 1;
+                            }
+                            params.viewsNamingMap = params.viewsNamingMap || {};
+                            params.viewsNamingMap[segmentation.name] = view._id;
+                            recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
 
-                        if (segmentation.exit || segmentation.bounce) {
-                            plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            if (segmentation.exit || segmentation.bounce) {
+                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            }
                         }
-                    }
+                        resolve();
+                    });
                 });
             }
             checkViewQuery(ob.updates, 0, 0);
             //update unique view vount for session
-            common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
-                if (err) {
-                    log.e(err);
-                }
-                data = data || [];
-                data = data[0] || {};
+            await new Promise(function(resolve) {
+                common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
+                    if (err) {
+                        log.e(err);
+                    }
+                    data = data || [];
+                    data = data[0] || {};
 
-                for (var key in data) {
-                    if (key !== "_id") {
-                        if (data[key].ts >= user.ls) {
-                            recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                    for (var key in data) {
+                        if (key !== "_id") {
+                            if (data[key].ts >= user.ls) {
+                                recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                            }
                         }
                     }
-                }
-
-
+                    resolve();
+                });
             });
         }
     });
@@ -2200,7 +2244,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var params = ob.params;
             var data = ob.widget;
             var allApps = data.apps;
-
+            var customPeriod = data.custom_period;
+            if (typeof customPeriod === 'object') {
+                customPeriod = JSON.stringify(data.custom_period);
+            }
             if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
                 var paramsObj = {
@@ -2208,7 +2255,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: data.custom_period || params.qstring.period
+                        period: customPeriod || params.qstring.period
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member

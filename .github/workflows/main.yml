@@ -42,7 +42,7 @@ jobs:
 
       - name: Mongo version
         shell: bash
-        run: mongo --version
+        run: mongosh --version
 
       - name: ShellCheck
         shell: bash

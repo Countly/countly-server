@@ -24,6 +24,7 @@
                         v-model="selectedCollection"
                         :searchable="true"
                         :options="preparedCollectionList"
+                        @change="onCollectionChange"
                     >
                     </cly-listbox>
                 </div>
@@ -41,6 +42,7 @@
                         <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
                             <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
                             <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>
+                            <el-dropdown-item command="data">{{ i18n('dbviewer.data') }}</el-dropdown-item>
                         </cly-more-options>
                     </div>
                 </div>

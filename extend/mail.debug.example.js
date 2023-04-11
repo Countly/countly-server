@@ -1,7 +1,6 @@
 //file should be placed in countly/extend
 //edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
 var nodemailer = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
 
 //debug logging
 var bunyan = require('bunyan');
@@ -13,7 +12,7 @@ var email = "email@company.com";
 
 module.exports = function(mail) {
     //define this if you need to send email from some third party service
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: "myhost",
         secureConnection: true,
         port: 2525,
@@ -23,7 +22,7 @@ module.exports = function(mail) {
         },
         debug: true,
         logger: log,
-    }));
+    });
 
     mail.sendMail = function(message, callback) {
         message.from = company + " <" + email + ">";

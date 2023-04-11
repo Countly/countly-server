@@ -16,26 +16,33 @@ var mail = {},
 if (config.mail && config.mail.transport) {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
 }
+else if (config.mail && config.mail.config) {
+    mail.smtpTransport = nodemailer.createTransport(config.mail.config);
+}
 else {
-    mail.smtpTransport = nodemailer.createTransport(require('nodemailer-sendmail-transport')({path: "/usr/sbin/sendmail"}));
+    mail.smtpTransport = nodemailer.createTransport({
+        sendmail: true,
+        newline: 'unix',
+        path: '/usr/sbin/sendmail'
+    });
 }
 
 /*
  Use the below transport to send mails through Gmail
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: 'localhost',
         port: 25,
         auth: {
             user: 'username',
             pass: 'password'
         }
-    }));
+    });
 */
 /*
  Use the below transport to send mails through your own SMTP server
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: "smtp.gmail.com", // hostname
         secureConnection: true, // use SSL
         port: 465, // port for secure SMTP
@@ -88,8 +95,8 @@ mail.sendMessage = function(to, subject, message, callback) {
 * Send localized email with params
 * @param {string} lang - locale to use in email (to get values from properties)
 * @param {string} to - where to send email
-* @param {string} subject - key from localization files to use as subject
-* @param {string} message - key from localization files to use as email message
+* @param {string|string[]} subject - key from localization files to use as subject; array of [key, var0, var1, ...] kind in case the property needs variable substitution
+* @param {string|string[]} message - key from localization files to use as email message; array of [key, var0, var1, ...] kind in case the property needs variable substitution
 * @param {function} callback - function to call when its done
 **/
 mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
@@ -100,7 +107,19 @@ mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
             }
         }
         else {
-            mail.sendMessage(to, properties[subject], properties[message], callback);
+            if (Array.isArray(subject)) {
+                subject = localize.format(properties[subject[0]] || subject[0], subject.slice(1));
+            }
+            else {
+                subject = properties[subject] || subject;
+            }
+            if (Array.isArray(message)) {
+                message = localize.format(properties[message[0]] || message[0], message.slice(1));
+            }
+            else {
+                message = properties[message] || message;
+            }
+            mail.sendMessage(to, subject, message, callback);
         }
     });
 };

@@ -296,45 +296,45 @@
                     });
                 };
 
-                crashMeta.initialize().then(function() {
-                    if (window.countlyQueryBuilder) {
-                        filterProperties.push({
-                            id: "app_version",
-                            name: "App Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getAppVersions
-                        });
-                        filterProperties.push({
-                            id: "opengl",
-                            name: "OpenGL Version",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("opengl")
-                        });
-                        filterProperties.push({
-                            id: "orientation",
-                            name: "Orientation",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("orientation")
-                        });
-                        filterProperties.push({
-                            id: "os",
-                            name: "Platform",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("os")
-                        });
-                        filterProperties.push({
-                            id: "cpu",
-                            name: "CPU",
-                            type: countlyQueryBuilder.PropertyType.LIST,
-                            group: "Detail",
-                            getValueList: getFilterValues("cpu")
-                        });
-                    }
-                });
+                crashMeta.initialize();
+
+                if (window.countlyQueryBuilder) {
+                    filterProperties.push({
+                        id: "app_version",
+                        name: "App Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getAppVersions
+                    });
+                    filterProperties.push({
+                        id: "opengl",
+                        name: "OpenGL Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("opengl")
+                    });
+                    filterProperties.push({
+                        id: "orientation",
+                        name: "Orientation",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("orientation")
+                    });
+                    filterProperties.push({
+                        id: "os",
+                        name: "Platform",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("os")
+                    });
+                    filterProperties.push({
+                        id: "cpu",
+                        name: "CPU",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getFilterValues("cpu")
+                    });
+                }
             }
 
             return {
@@ -446,6 +446,13 @@
                         query = countlyCrashes.modifyExistsQueries(newValue.query);
                     }
 
+                    if (newValue.query) {
+                        app.navigate("#/crashes/filter/" + JSON.stringify({ query: newValue.query }));
+                    }
+                    else {
+                        app.navigate("#/crashes", true);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
@@ -516,10 +523,17 @@
         },
         methods: {
             refresh: function() {
-                return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter.query)}),
-                    this.$store.dispatch("countlyCrashes/overview/refresh")
-                ]);
+                if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
+                    var query = {};
+                    if (this.crashgroupsFilter.query) {
+                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                    }
+
+                    return Promise.all([
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
+                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                    ]);
+                }
             },
             handleSelectionChange: function(selectedRows) {
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
@@ -575,10 +589,27 @@
                         }
                     });
                 }
-            }
+            },
+            appVersionSort: function(item1, item2) {
+                if (item1.latest_version_for_sort && item2.latest_version_for_sort) {
+                    return item1.latest_version_for_sort.localeCompare(item2.latest_version_for_sort);
+                }
+
+                return item1.latest_version.localeCompare(item2.latest_version);
+            },
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/overview/refresh");
+            var query = {};
+            if (this.$route.params && this.$route.params.query) {
+                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
+
+                this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
+                this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
+            }
+
+            return Promise.all([
+                this.$store.dispatch("countlyCrashes/overview/refresh")
+            ]);
         }
     });
 
@@ -1008,7 +1039,7 @@
                     item[CV.i18n('crashes.device').toUpperCase()] = tableData[i].device;
                     item[CV.i18n('crashes.app_version').toUpperCase()] = tableData[i].app_version;
                     item[CV.i18n('crashes.user').toUpperCase()] = tableData[i].user && tableData[i].user.name || tableData[i].uid;
-                    item[CV.i18n('crashes.crashed').toUpperCase()] = tableData[i].name;
+                    item[CV.i18n('crashes.detail').toUpperCase()] = tableData[i].name;
 
                     table.push(item);
                 }
@@ -1290,7 +1321,7 @@
         })
     });
 
-    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addMenu("improve", {code: "crashes", permission: FEATURE_NAME, text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
     app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
     if (app.configurationsView) {
@@ -1306,6 +1337,24 @@
 
     app.route("/crashes", "crashes", function() {
         this.renderWhenReady(getOverviewView());
+    });
+
+    app.route("/crashes/filter/*query", "crashes", function(rawQuery) {
+        var parsedQuery = null;
+
+        try {
+            parsedQuery = JSON.parse(rawQuery);
+        }
+        catch (err) {
+            // no need to do anything, default parsedQuery is null
+        }
+
+        var view = getOverviewView();
+        view.params = {
+            query: parsedQuery
+        };
+
+        this.renderWhenReady(view);
     });
 
     app.route("/crashes/:group", "crashgroup", function(group) {

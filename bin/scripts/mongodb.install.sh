@@ -66,7 +66,7 @@ endscript
 }
 EOF
 
-        sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
+            sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/lsb-release ]; then
@@ -85,7 +85,7 @@ endscript
 }
 EOF
 
-        sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
+            sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         message_ok 'Logrotate configured'
@@ -95,8 +95,7 @@ EOF
 }
 
 function disable_transparent_hugepages () {
-    if [[ $(/sbin/init --version) =~ upstart ]];
-	then
+    if [[ $(/sbin/init --version) =~ upstart ]]; then
         if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
             message_ok "Transparent hugepages is already disabled"
         else
@@ -255,50 +254,6 @@ function mongodb_check() {
     #Check logrotation
     mongodb_logrotate
 
-    #Check kernel version 2.6.36
-    KERNEL_VERSION=$(uname -r | awk -F'-' '{print $1}')
-    KERNEL_VERSION_MAJOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $1}')
-    KERNEL_VERSION_MAJOR=$((KERNEL_VERSION_MAJOR + 0))
-    KERNEL_VERSION_MINOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $2}')
-    KERNEL_VERSION_MINOR=$((KERNEL_VERSION_MINOR + 0))
-    KERNEL_VERSION_PATCH=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $3}')
-    KERNEL_VERSION_PATCH=$((KERNEL_VERSION_PATCH + 0))
-
-    if [ $KERNEL_VERSION_MAJOR -gt 2 ]; then
-        message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-    else
-        if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -gt 6 ]]; then
-            message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-        else
-            if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -ge 6 && $KERNEL_VERSION_PATCH -ge 36 ]]; then
-                message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
-            else
-                message_warning "Linux kernel need to be updated"
-            fi
-        fi
-    fi
-
-    #Check glibc version 2.13
-    if [ -x "$(command -v ldd)" ]; then
-        LDD_VERSION=$(ldd --version | head -1 | awk -F' ' '{print $NF}')
-        LDD_VERSION_MAJOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $1}')
-        LDD_VERSION_MAJOR=$((LDD_VERSION_MAJOR + 0))
-        LDD_VERSION_MINOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $2}')
-        LDD_VERSION_MINOR=$((LDD_VERSION_MINOR + 0))
-
-        if [ $LDD_VERSION_MAJOR -gt 2 ]; then
-            message_ok "GLibC version is OK ${LDD_VERSION}"
-        else
-            if [[ $LDD_VERSION_MAJOR -eq 2 && $LDD_VERSION_MINOR -ge 13 ]]; then
-                message_ok "GLibC version is OK ${LDD_VERSION}"
-            else
-                message_warning "Glibc need to be updated"
-            fi
-        fi
-    else
-        message_optional "Command ldd not found"
-    fi
-
     #Set swappiness to 1
     update_sysctl "vm.swappiness" "1"
     message_ok "Swappiness set to 1"
@@ -370,48 +325,39 @@ function mongodb_check() {
 if [ $# -eq 0 ]; then
     #install latest mongodb
     if [ -f /etc/redhat-release ]; then
-        CENTOS_RELEASE="$(rpm --eval '%{centos_ver}')"
+        #install latest mongodb
+        CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
 
-        if [[ "$CENTOS_RELEASE" != "7" && "$CENTOS_RELEASE" != "8" ]]; then
-            echo "Unsupported OS version, only support CentOS/RHEL 8 and 7"
+        if [[ "$CENTOS_MAJOR" != "8" && "$CENTOS_MAJOR" != "9" ]]; then
+            echo "Unsupported OS version, only support CentOS/RHEL 8 and 9."
             exit 1
         fi
 
-        echo "[mongodb-org-4.4]
+        echo "[mongodb-org-6.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_RELEASE}/mongodb-org/4.4/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/6.0/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
 
         yum install -y mongodb-org
-    fi
-
-    if [ -f /etc/lsb-release ]; then
+    elif [ -f /etc/lsb-release ]; then
+        #install latest mongodb
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+        UBUNTU_RELEASE="$(lsb_release -cs)"
 
-        if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
-            echo "Unsupported OS version, only support Ubuntu 22, 20 and 18"
+        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
+            echo "Unsupported OS version, only support Ubuntu 20 and 22."
             exit 1
         fi
 
-        #mongodb 4.4 is not supported officially on Ubuntu 22
-        if [[ "$UBUNTU_YEAR" == "22" ]]; then
-            #we can install binaries of Ubuntu 20 if we pre-install required libssl
-            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
-            dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb ;
-            rm -rf libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
-            UBUNTU_RELEASE="focal"
-        else
-            UBUNTU_RELEASE="$(lsb_release -cs)"
-        fi
-
-        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
-        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
-
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
         apt-get update
-        DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
+        DEBIAN_FRONTEND="noninteractive" apt-get install -y mongodb-org || (echo "Failed to install mongodb." ; exit)
+    else
+        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22."
+        exit 1
     fi
 
     #backup config and remove configuration to prevent duplicates

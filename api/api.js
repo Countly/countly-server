@@ -37,6 +37,9 @@ plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+    if (common.drillDb) {
+        common.drillReadBatcher = new ReadBatcher(common.drillDb);
+    }
 
     let workers = [];
 
@@ -51,12 +54,13 @@ plugins.connectToAllDatabases().then(function() {
     plugins.setConfigs("api", {
         domain: "",
         safe: false,
-        session_duration_limit: 120,
+        session_duration_limit: 86400,
         country_data: true,
         city_data: true,
         event_limit: 500,
         event_segmentation_limit: 100,
         event_segmentation_value_limit: 1000,
+        array_list_limit: 10,
         metric_limit: 1000,
         sync_plugins: false,
         session_cooldown: 15,

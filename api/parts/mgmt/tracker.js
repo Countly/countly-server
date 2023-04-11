@@ -13,7 +13,7 @@ var tracker = {},
     countlyConfig = require("../../../frontend/express/config.js"),
     versionInfo = require('../../../frontend/express/version.info'),
     ip = require('./ip.js'),
-    request = require('request'),
+    request = require('countly-request'),
     cluster = require('cluster'),
     os = require('os'),
     fs = require('fs'),
@@ -23,7 +23,8 @@ var tracker = {},
     app = "386012020c7bf7fcb2f1edf215f1801d6146913f",
     url = "https://stats.count.ly",
     plugins = require('../../../plugins/pluginManager.js'),
-    offlineMode = plugins.getConfig("api").offline_mode;
+    offlineMode = plugins.getConfig("api").offline_mode,
+    domain = plugins.getConfig("api").domain;
 
 
 //update configs
@@ -77,7 +78,7 @@ var isEnabled = false;
 * Enable tracking for this server
 **/
 tracker.enable = function() {
-    Countly.init({
+    var config = {
         app_key: (versionInfo.trial) ? trial : server,
         url: url,
         app_version: versionInfo.version,
@@ -85,8 +86,23 @@ tracker.enable = function() {
         interval: 10000,
         fail_timeout: 600,
         session_update: 120,
+        remote_config: true,
         debug: (logger.getLevel("tracker:server") === "debug")
-    });
+    };
+    //set static device id if domain is defined
+    if (domain) {
+        config.device_id = stripTrailingSlash((domain + "").split("://").pop());
+    }
+    Countly.init(config);
+
+    //change device id if is it not domain
+    if (domain && Countly.get_device_id() !== domain) {
+        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
+    }
+    else if (!domain) {
+        checkDomain();
+    }
+
     isEnabled = true;
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         Countly.track_errors();
@@ -112,7 +128,7 @@ tracker.enable = function() {
 * Enable tracking for dashboard process
 **/
 tracker.enableDashboard = function() {
-    Countly.init({
+    var config = {
         app_key: (versionInfo.trial) ? trial : server,
         url: url,
         app_version: versionInfo.version,
@@ -121,7 +137,20 @@ tracker.enableDashboard = function() {
         fail_timeout: 600,
         session_update: 120,
         debug: (logger.getLevel("tracker:server") === "debug")
-    });
+    };
+    //set static device id if domain is defined
+    if (domain) {
+        config.device_id = stripTrailingSlash((domain + "").split("://").pop());
+    }
+    Countly.init(config);
+
+    //change device id if is it not domain
+    if (domain && Countly.get_device_id() !== domain) {
+        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
+    }
+    else if (!domain) {
+        checkDomain();
+    }
     isEnabled = true;
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         Countly.track_errors();
@@ -149,7 +178,7 @@ tracker.reportUserEvent = function(id, event, level) {
     if (isEnabled && countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none") {
         Countly.request({
             app_key: app,
-            devide_id: id,
+            device_id: id,
             events: JSON.stringify([event])
         });
     }
@@ -219,10 +248,10 @@ function collectServerData() {
         if (res && res.storageEngine && res.storageEngine.name) {
             Countly.userData.set("db_engine", res.storageEngine.name);
         }
-        getDomain(function(err, domain) {
+        getDomain(function(err, domainname) {
             if (!err) {
-                Countly.userData.set("domain", domain);
-                Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+                Countly.userData.set("domain", domainname);
+                Countly.user_details({"name": stripTrailingSlash((domainname + "").split("://").pop())});
             }
             getDistro(function(err2, distro) {
                 if (!err2) {
@@ -346,5 +375,21 @@ function stripTrailingSlash(str) {
     }
     return str;
 }
+
+//check every hour if domain was provided
+var checkDomain = function() {
+    if (!domain && domain !== plugins.getConfig("api").domain) {
+        domain = plugins.getConfig("api").domain;
+        if (Countly && isEnabled) {
+            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
+            Countly.userData.set("domain", domain);
+            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+            Countly.userData.save();
+        }
+    }
+    else if (!domain) {
+        setTimeout(checkDomain, 3600000);
+    }
+};
 
 module.exports = tracker;
