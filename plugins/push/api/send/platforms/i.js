@@ -579,6 +579,13 @@ class APN extends Base {
     }
 
     /**
+     * A getter for Base to check if running a rety worth a shot
+     */
+    get cannotRetry() {
+        return !this.session || this.session.closed || this.session.destroyed;
+    }
+
+    /**
      * Send push notifications
      * 
      * @param {Object[]} pushesData pushes to send
@@ -587,6 +594,7 @@ class APN extends Base {
      */
     send(pushesData, length) {
         if (!this.session) {
+            this.log.i('Reconnecting to APN');
             return this.connect().then(ok => {
                 if (ok) {
                     return this.send(pushesData, length);
@@ -594,12 +602,18 @@ class APN extends Base {
                 else {
                     return ok;
                 }
+            }).catch(err => {
+                this.log.e('Failed to reconnect to APN, rejecting %d pushes', pushesData && pushesData.length, err);
+                err.addAffected(pushesData.map(p => p._id), length);
+                this.send_push_fail(err);
+                throw err;
             });
         }
         return this.with_retries(pushesData, length, (pushes, bytes, attempt) => new Promise((resolve, reject) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let self = this,
+                session = this.session,
                 nonRecoverableError,
                 recoverableErrors = 0,
                 oks = [],
@@ -624,19 +638,22 @@ class APN extends Base {
                 /**
                  * Called on stream completion, returns results for this batch
                  */
-                streamDone = () => {
-                    this.log.d('streamDone %j %j %j %j', oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, pushes.length);
-                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) === pushes.length) {
+                streamDone = session.streamDone = function() {
+                    session.streamDoneCount--;
+                    self.log.d('streamDone (left %j) %j %j %j %j %j', session.streamDoneCount, oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, nonRecoverableError && nonRecoverableError.affected.length || 0, pushes.length);
+                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) + (nonRecoverableError && nonRecoverableError.affected.length || 0) === pushes.length) {
                         let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
-                            this.send_results(oks, bytes - errored);
+                            self.send_results(oks, bytes - errored);
                         }
                         for (let k in errors) {
                             errored += errors[k].affectedBytes;
-                            this.send_push_error(errors[k]);
+                            self.send_push_error(errors[k]);
                         }
                         if (nonRecoverableError) {
+                            self.send_push_fail(nonRecoverableError);
                             reject(nonRecoverableError);
+                            delete self.session;
                         }
                         else {
                             resolve();
@@ -644,11 +661,26 @@ class APN extends Base {
                     }
                 };
 
+            // session.handleError = function(err) {
+            //     if (!(err instanceof ConnectionError)) {
+            //         err = nonRecoverableError = new ConnectionError(`SessionClosedOrDestroyed`, ERROR.CONNECTION_PROVIDER);
+            //     }
+            //     else {
+            //         nonRecoverableError = err;
+            //     }
+
+            //     while (session.streamDoneCount-- > 0) {
+            //         streamDone
+            //     }
+            // }
+
+            session.streamDoneCount = 0;
             this.log.d('sending %d streams', pushes.length);
             pushes.forEach((p, i) => {
+                session.streamDoneCount = (session.streamDoneCount || 0) + 1;
                 self.log.d('[%s]: sending %s', p._id, p._id);
                 if (i % 200 === 0) {
-                    self.log.d('[%s] %j / %j', p._id, self.session.closed, self.session.destroyed);
+                    self.log.d('[%s] %j / %j', p._id, session.closed, session.destroyed);
                 }
                 if (nonRecoverableError) {
                     self.log.d('[%s]: nonRecoverableError', p._id);
@@ -661,19 +693,31 @@ class APN extends Base {
                     self.log.e('No message %s', p.m);
                 }
 
+                if (session.closed || session.destroyed || session.goawayed) {
+                    if (!nonRecoverableError) {
+                        nonRecoverableError = new ConnectionError(`SessionClosedOrDestroyed`, ERROR.CONNECTION_PROVIDER).addLeft(p._id, one);
+                    }
+                    else {
+                        nonRecoverableError.addLeft(p._id, one);
+                    }
+                    streamDone();
+                    return;
+                }
+
                 try {
                     let content = self.template(p.m).compile(p),
-                        stream = self.session.request(self.headersSecondWithToken(p.t)),
+                        stream = session.request(self.headersSecondWithToken(p.t)),
                         status,
                         data = '';
                     stream.on('error', err => {
-                        self.log.d('[%s]: stream error', p._id, err);
+                        self.log.e('[%s]: stream error %j %j / %j', p._id, session.state, session.closed, session.destroyed, err);
                         if (!nonRecoverableError) {
-                            nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                            nonRecoverableError = new ConnectionError(`APN Stream Error: ${err && err.message || 'check logs'}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                         }
                         else {
                             nonRecoverableError.addAffected(p._id, one);
                         }
+                        streamDone();
                     });
                     stream.on('frameError', (type, code, id) => {
                         self.log.e('[%s] stream frameError %d, %d, %d', p._id, type, code, id);
@@ -698,7 +742,7 @@ class APN extends Base {
                             self.log.d('[%s] response done %d', p._id, status);
                         }
                         else if (status === 410) {
-                            self.log.d('[%s]: status %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
                             stream.destroy();
                             error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
                             streamDone();
@@ -707,7 +751,7 @@ class APN extends Base {
                         else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
                             self.log.e('[%s]: APN returned error %d, destroying session', p._id, status);
                             stream.destroy();
-                            self.session.destroy();
+                            session && session.destroy();
                             if (!nonRecoverableError) {
                                 nonRecoverableError = new ConnectionError(`APN Server Error: ${status}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                             }
@@ -716,7 +760,7 @@ class APN extends Base {
                             }
                         }
                         else if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%s]: status %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
                             // handle in on('end') because we need response error code
                         }
                     });
@@ -726,7 +770,7 @@ class APN extends Base {
                     stream.on('end', () => {
                         self.log.d('[%s] end %s', p._id, status);
                         if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%s]: end %d: %j / %j', p._id, status, self.session.closed, self.session.destroyed);
+                            self.log.d('[%s]: end %d: %j / %j', p._id, status, session.closed, session.destroyed);
                             try {
                                 let json = JSON.parse(data);
                                 if (status === 400) {
@@ -775,10 +819,14 @@ class APN extends Base {
                     self.log.d('[%s]: sent %s', p._id, content);
                 }
                 catch (err) {
-                    self.log.e('[%s] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', p._id, self.session.closed, self.session.destroyed, err);
+                    self.log.e('[%s] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', p._id, session.closed, session.destroyed, err);
                     if (!nonRecoverableError) {
                         nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                     }
+                    else {
+                        nonRecoverableError.addAffected(p._id, one);
+                    }
+                    streamDone();
                 }
             });
         }));
@@ -818,15 +866,47 @@ class APN extends Base {
                     // session.setTimeout(10000);
 
                     session.on('error', err => {
-                        this.log.e('session error', err);
+                        this.log.e('session error %d', session.streamDoneCount, err);
                         reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
-                        session.destroy();
                     });
 
-                    session.on('timeout', err => {
-                        this.log.e('session timeout', err);
+                    session.on('timeout', (err, lastStreamId, opaqueData) => {
+                        try {
+                            this.log.e('session timeout %d', session.streamDoneCount, err, lastStreamId, opaqueData, opaqueData && opaqueData.toString('utf-8'));
+                        }
+                        catch (e) {
+                            this.log.e('session timeout %d', session.streamDoneCount, err, lastStreamId, opaqueData);
+                        }
+                        while (session.streamDoneCount-- > 0) {
+                            session.streamDone();
+                        }
+                        session.goawayed = true;
+                        delete this.session;
                         reject(new ConnectionError(err && err.message || 'Session timeout', ERROR.CONNECTION_PROVIDER));
-                        session.destroy();
+                        // session.destroy();
+                    });
+
+                    session.on('close', err => {
+                        this.log.e('session close %d', session.streamDoneCount, err);
+                        while (session.streamDoneCount-- > 0) {
+                            session.streamDone();
+                        }
+                        session.goawayed = true;
+                        delete this.session;
+                        // session.destroy();
+                        reject(new ConnectionError(err && err.message || 'Session close', ERROR.CONNECTION_PROVIDER));
+                        this.log.e('session closed %d', session.streamDoneCount, err);
+                    });
+
+                    session.on('goaway', err => {
+                        this.log.e('session goaway %d', session.streamDoneCount, err);
+                        while (session.streamDoneCount-- > 0) {
+                            session.streamDone();
+                        }
+                        session.goawayed = true;
+                        delete this.session;
+                        reject(new ConnectionError(err && err.message || 'Session goaway', ERROR.CONNECTION_PROVIDER));
+                        // session.destroy();
                     });
 
                     session.on('connect', () => {
