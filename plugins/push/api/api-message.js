@@ -829,6 +829,7 @@ module.exports.all = async params => {
         app_id: {type: 'ObjectID', required: true},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        kind: { required: true, type: 'String[]', in: () => Object.values(TriggerKind) },
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -859,6 +860,10 @@ module.exports.all = async params => {
         }
         else {
             query['triggers.kind'] = TriggerKind.Plain;
+        }
+
+        if (data.kind && data.kind.length) {
+            query['triggers.kind'] = {$in: data.kind};
         }
 
         if (data.sSearch) {
