@@ -1,3 +1,21 @@
+## Version 23.03.2
+Fixes:
+- [core] Fixes for table export to have valid columns.
+- [core] Update user and group permission when an app is deleted
+- [crashes] Fix stacktrace section condition check
+- [dashboards] Fixes for ustom date selection on analytics widgets
+- [events] Sorting of numberic segmentation in events table
+
+Enterprise fixes:
+- [ab-testing] Fixes for real time cohort trigger on ab test.
+- [cohorts] Fixes for realtime cohort recording
+- [crash_symbolication] Reset symbol files when closing drawer
+- [data-manager] Changing the visibility of an unplanned event
+- [data-manager] Fixes for user properties drawers
+- [funnels] Fixed bugs with funnel not displaying from report result.
+- [surveys] Fixes to show single day  NPS graph
+- [users] Fixes for displaying object type properties in users table
+
 ## Version 23.03.1
 Fixes:
 - [export] Fixes for app_user export to not prevent exporting if an export already exists
