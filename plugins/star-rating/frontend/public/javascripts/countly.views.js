@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -244,6 +244,32 @@
             }
         },
         methods: {
+            parseTargetingForExport: function(widget) {
+                var targeting = countlyCohorts.getSegmentationDescription(widget);
+                var html = targeting.behavior;
+                var div = document.createElement('div');
+                div.innerHTML = html;
+                return div.textContent || div.innerText || "";
+            },
+            formatExportFunction: function() {
+                var tableData = this.widgets;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+
+                    item[CV.i18n('feedback.status').toUpperCase()] = tableData[i].status ? "Active" : "Inactive";
+                    item[CV.i18n('feedback.ratings-widget-name').toUpperCase()] = tableData[i].popup_header_text;
+                    item[CV.i18n('feedback.widget-id').toUpperCase()] = tableData[i]._id;
+                    item[CV.i18n('feedback.targeting').toUpperCase()] = this.parseTargetingForExport(tableData[i].targeting).trim();
+                    item[CV.i18n('feedback.rating-score').toUpperCase()] = tableData[i].ratingScore;
+                    item[CV.i18n('feedback.responses').toUpperCase()] = tableData[i].ratingsCount;
+                    item[CV.i18n('feedback.pages').toUpperCase()] = tableData[i].target_pages;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
             goWidgetDetail: function(id) {
                 window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
             },

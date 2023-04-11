@@ -15,7 +15,7 @@
       <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
       </cly-notification>
     </div>
-    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table" ref="table" @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
+    <cly-datatable-n :rows="tableRows" :exportFormat="formatExportFunction" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table" ref="table" @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
       <template v-slot:default="scope">
         <el-table-column type="expand" min-width="50">
           <template v-slot="props">

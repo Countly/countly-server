@@ -168,6 +168,7 @@ exports.convertData = function(data, type) {
     case "xlsx":
         obj = flattenArray(data);
         var stream = new XLSXTransformStream();
+        stream.write(obj.fields);
         for (var k = 0; k < obj.data.length; k++) {
             var arr1 = [];
             for (var z = 0; z < obj.fields.length; z++) {
