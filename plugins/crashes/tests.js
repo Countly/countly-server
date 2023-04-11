@@ -3055,6 +3055,42 @@ describe('Testing Crashes', function() {
         });
     });
 
+    describe('Crash binary images', async() => {
+        it('should save crash binary images correctly', async() => {
+            const crashData = {
+                "_architecture": "arm64",
+                "_binary_images": {
+                    "CountlyTestApp-iOS": {
+                        "bn": "countlyTestApp-iOS",
+                        "la": "0x104C80000",
+                        "id": "757F024F-EA35-3322-9E77-3AE793023AC3"
+                    }
+                },
+                "_error": "CoreFoundation                      0x00000001e5669ebc <redacted> + 252\nlibobjc.A.dylib                     0x00000001e4839a50 objc_exception_throw + 56\nCoreFoundation                      0x00000001e55e1384 _CFArgv + 0\nCoreFoundation                      0x00000001e557157c <redacted> + 0\nCountlyTestApp-iOS                  0x0000000104c8910c CountlyTestApp-iOS + 37132\nCountlyTestApp-iOS                  0x0000000104c9a8c0 CountlyTestApp-iOS + 108736\nUIKitCore                           0x0000000212b62458 <redacted> + 1348\nUIKitCore                           0x0000000212b626bc <redacted> + 268\nUIKitCore                           0x000000021296087c <redacted> + 296\nUIKitCore                           0x000000021294e878 <redacted> + 384\nUIKitCore                           0x000000021297d880 <redacted> + 132\nCoreFoundation                      0x00000001e55f96bc <redacted> + 32\nCoreFoundation                      0x00000001e55f4350 <redacted> + 412\nCoreFoundation                      0x00000001e55f48f0 <redacted> + 1264\nCoreFoundation                      0x00000001e55f40e0 CFRunLoopRunSpecific + 436\nGraphicsServices                    0x00000001e786d584 GSEventRunModal + 100\nUIKitCore                           0x0000000212954c00 UIApplicationMain + 212\nCountlyTestApp-iOS                  0x0000000104ca2c3c CountlyTestApp-iOS + 142396\nlibdyld.dylib                       0x00000001e50b2bb4 <redacted> + 4",
+                "_executable_name": "CountlyTestApp-iOS",
+                "_os_version": "12.0.0",
+                "_app_version": "77.0.0",
+                "_os": "iOS",
+                "_build_uuid": "757F024F-EA35-3322-9E77-3AE793023AC3"
+            };
+
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
+            const crashGroupQuery = JSON.stringify({
+                os: crashData._os,
+                latest_version: crashData._app_version,
+            });
+            let crashGroupResponse = await request
+                .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
+            const crashGroup = crashGroupResponse.body.aaData[0];
+            crashGroupResponse = await request
+                .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&group=${crashGroup._id}`);
+
+            const crash = crashGroupResponse.body.data[0];
+
+            crash.binary_images.should.equal(JSON.stringify(crashData._binary_images));
+        });
+    });
+
     describe('Reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};

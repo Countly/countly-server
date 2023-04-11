@@ -290,6 +290,7 @@
 
     app.addSubMenu("management", {code: "populate", permission: FEATURE_NAME, url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
     countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "populator",
         beforeCreate: function() {
             var self = this;
             countlyPopulator.getTemplates(function(templates) {

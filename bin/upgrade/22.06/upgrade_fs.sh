@@ -20,7 +20,7 @@ if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
     CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    
+
     if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
         rm /usr/local/bin/npm
         ln -s /usr/bin/npm /usr/local/bin/npm
@@ -28,11 +28,11 @@ then
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
-    
+
     #removing files
     bash "$CUR/scripts/remove_old_files.sh"
     rm -f "$DIR/../frontend/express/public/robots.txt"
-    
+
 # Checking GCC version and Installing it to match the compatibility version
 GCC_VERSION_CURRENT="$(gcc -dumpversion)"
 REQ_GCC_VERSION="8.0.0"
@@ -45,21 +45,21 @@ else
             echo " Upgrading GCC in RHEL 8"
             dnf -y group install "Development Tools"
         else grep -i "release 7" /etc/redhat-release;
-            echo " Upgrading GCC in RHEL 7"       
+            echo " Upgrading GCC in RHEL 7"
             yum update -y
-            yum install centos-release-scl -y
-            yum -y group install "Development Tools"
-            yum install devtoolset-8 -y
-            yum install devtoolset-8-gcc* -y
+            yum install -y centos-release-scl
+            yum group install -y "Development Tools"
+            yum install -y devtoolset-8
+            yum install -y devtoolset-8-gcc*
             #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
     fi
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading GCC in Ubuntu"
-        apt-get -y install software-properties-common
-        add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        apt-get -y install build-essential gcc-8 
+        apt-get install -y software-properties-common
+        add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        apt-get install -y build-essential gcc-8
         update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
         update-alternatives --set gcc "/usr/bin/gcc-8"
     fi
@@ -77,40 +77,40 @@ else
             echo " Upgrading G++ in RHEL 8"
             dnf -y group install "Development Tools"
         else grep -i "release 7" /etc/redhat-release ;
-            echo " Upgrading G++ in RHEL 7"      
+            echo " Upgrading G++ in RHEL 7"
             yum update -y
-            yum install centos-release-scl -y
-            yum -y group install "Development Tools"
-            yum install devtoolset-8 -y
-            yum install devtoolset-8-gcc* -y
+            yum install -y centos-release-scl
+            yum group install -y "Development Tools"
+            yum install -y devtoolset-8
+            yum install -y devtoolset-8-gcc*
             #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
     fi
     if [ -f /etc/lsb-release ]; then
         echo " Upgrading G++ in Ubuntu"
-        apt-get -y install software-properties-common
-        add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        apt-get -y install build-essential g++-8
+        apt-get install -y software-properties-common
+        add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        apt-get install -y build-essential g++-8
         update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
         update-alternatives --set g++ "/usr/bin/g++-8"
     fi
 fi
 
     (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
-    
+
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"
-    
+
     #enable new plugins
     countly plugin enable data-manager
     countly plugin enable heatmaps
-    
+
     #disable old plugins
     countly plugin disable EChartMap
     countly plugin disable restrict
     countly plugin disable assistant
-    
+
     #get web sdk
     countly update sdk-web
 

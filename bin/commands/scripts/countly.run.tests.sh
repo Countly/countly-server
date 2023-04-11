@@ -8,7 +8,7 @@ countly config "drill.record_meta" "true"
 
 countly restart
 
-until nc -z 127.0.0.1 3001; do echo Waiting for Countly; sleep 1; done
+until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
 
 #install test dependencies
 ( cd "$DIR/../../../" ; sudo npm install --unsafe-perm )

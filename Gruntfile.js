@@ -79,7 +79,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/codemirror.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.min.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/json2.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsonlint.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',

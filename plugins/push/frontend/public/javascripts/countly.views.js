@@ -2465,6 +2465,7 @@
     countlyVue.container.registerData("/app/settings", {
         _id: "push",
         inputs: {},
+        permission: featureName,
         title: CV.i18n('push-notification.title'),
         component: PushNotificationAppConfigView
     });
@@ -2777,6 +2778,7 @@
             id: "createMessageDropdownItemWrapper",
             name: "createMessageDropdownItemWrapper",
             command: "CREATE_PUSH_NOTIFICATION",
+            pluginName: "push",
             component: CreateMessageDropdownItemWrapper,
             click: function() {
                 this.openDrawer("pushNotificationDrawer", {});
@@ -2791,6 +2793,7 @@
         return {
             id: "pushNotificationDrawer",
             name: "pushNotificationDrawer",
+            pluginName: "push",
             component: PushNotificationDrawerWrapper,
             type: countlyPushNotification.service.TypeEnum.ONE_TIME,
         };
@@ -2823,6 +2826,7 @@
             type: 'push',
             label: CV.i18n('push-notification.title'),
             priority: 6,
+            pluginName: "push",
             primary: true,
             getter: function(widget) {
                 return widget.widget_type === "push";

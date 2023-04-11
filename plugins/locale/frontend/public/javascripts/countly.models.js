@@ -157,6 +157,8 @@
             }
         });
     };
-    countlyLanguage.service.loadLangMap(); //calling language map load. used for other plugins
+    if (CountlyHelpers.isPluginEnabled("locale")) {
+        countlyLanguage.service.loadLangMap(); //calling language map load. used for other plugins
+    }
 
 }(window.countlyLanguage = window.countlyLanguage || {}));

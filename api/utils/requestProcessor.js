@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('request');
+const request = require('countly-request');
 
 var loaded_configs_time = 0;
 
@@ -884,8 +884,30 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, "You can't add more than 12 items in overview");
                                     return;
                                 }
+                                //sanitize overview
+                                var allowedEventKeys = event.list;
+                                var allowedProperties = ['dur', 'sum', 'count'];
+                                var propertyNames = {
+                                    'dur': 'Dur',
+                                    'sum': 'Sum',
+                                    'count': 'Count'
+                                };
+                                for (let i = 0; i < update_array.overview.length; i++) {
+                                    update_array.overview[i].order = i;
+                                    update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
+                                    update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
+                                    if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
+                                        update_array.overview.splice(i, 1);
+                                        i = i - 1;
+                                    }
+                                    else {
+                                        update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
+                                        update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
+                                        update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                    }
+                                }
                                 //check for duplicates
-                                var overview_map = {};
+                                var overview_map = Object.create(null);
                                 for (let p = 0; p < update_array.overview.length; p++) {
                                     if (!overview_map[update_array.overview[p].eventKey]) {
                                         overview_map[update_array.overview[p].eventKey] = {};
@@ -1458,7 +1480,31 @@ const processRequest = (params) => {
                                         common.returnMessage(params, 400, error);
                                     }
                                     else if (parseInt(size) === 0) {
-                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                        //export does not exist. lets check out export collection.
+                                        var eid = filename[0].split(".");
+                                        eid = eid[0];
+
+                                        var cursor = common.db.collection("exports").find({"_eid": eid}, {"_eid": 0, "_id": 0});
+                                        var options = {"type": "stream", "filename": eid + ".json", params: params};
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Disposition': 'inline; filename="' + eid + '.json'
+                                        });
+                                        options.streamOptions = {};
+                                        if (options.type === "stream" || options.type === "json") {
+                                            options.streamOptions.transform = function(doc) {
+                                                doc._id = doc.__id;
+                                                delete doc.__id;
+                                                return JSON.stringify(doc);
+                                            };
+                                        }
+
+                                        options.output = options.output || function(stream) {
+                                            countlyApi.data.exports.stream(options.params, stream, options);
+                                        };
+                                        options.output(cursor);
+
+
                                     }
                                     else {
                                         countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
@@ -1814,6 +1860,15 @@ const processRequest = (params) => {
                             }
                             catch (ex) {
                                 params.qstring.formatFields = null;
+                            }
+                        }
+
+                        if (typeof params.qstring.get_index === "string") {
+                            try {
+                                params.qstring.get_index = JSON.parse(params.qstring.get_index);
+                            }
+                            catch (ex) {
+                                params.qstring.get_index = null;
                             }
                         }
 
@@ -3191,11 +3246,24 @@ function processUser(params, initiator, done, try_times) {
                         //even if paralel request already inserted uid
                         //this insert will fail
                         //but we will retry again and fetch new inserted document
-                        common.db.collection('app_users' + params.app_id).insert({
+                        var doc = {
                             _id: params.app_user_id,
                             uid: uid,
                             did: params.qstring.device_id
-                        }, {ignore_errors: [11000]}, function() {
+                        };
+                        if (params && params.href) {
+                            doc.first_req_get = (params.href + "") || "";
+                        }
+                        else {
+                            doc.first_req_get = "";
+                        }
+                        if (params && params.req && params.req.body) {
+                            doc.first_req_post = (params.req.body + "") || "";
+                        }
+                        else {
+                            doc.first_req_post = "";
+                        }
+                        common.db.collection('app_users' + params.app_id).insert(doc, {ignore_errors: [11000]}, function() {
                             restartRequest(params, initiator, done, try_times, resolve);
                         });
                     }

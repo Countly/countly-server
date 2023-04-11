@@ -1,3 +1,255 @@
+## Version 23.03.1
+Fixes:
+- [export] Fixes for app_user export to not prevent exporting if an export already exists
+- [export] Fix to include headers for exporting from data for xlsx
+- [events] Fix to show graph and total for negative sum values
+- [core] Fix for improving tab key navigation on login screen
+- [core] UI fixes for equal gaps between sections
+- [core] Fixed table column headers in several places to be more user friendly
+- [push] Fixing crash on no such message
+
+Enterprise fixes:
+- [nps] Fix issue for invalid graph for yearly period
+- [cohorts] Fix for editing a cohort where cohortId was empty when opening the drawer
+
+## Version 23.03
+Improvements:
+- [crashes] auto-refresh toggle on the Crash Overview page
+- [members] case insensitive member emails
+- [datepicker] various date filtering and date picker related improvements
+- [dbviewer] added showing beautified collection name
+- [dbviewer] added query linking to dbviewer
+- [dbviewer] extended json queries to allow querying Date field through API
+- [dbviewer] index information downloading
+- [dependencies] new xlsx streaming library
+- [events] fixed exporting columns from table
+- [events] sort segment values alphabetically
+- [events] support array type for event segments
+- [mongodb] switched to MongoDB 6.0 as main version
+- [networking] full ipv6 support
+- [nodejs] switched to NodeJS 18 as main version
+- [plugins] plugin toggling without restarting nodejs process
+- [ui] fixed copying api key field on sidebar menu
+- [ui] fixed incorrect total number in PIE graph when there are only 2 items
+- [ui] show average duration for events
+- [ui] store table column order settings in database
+
+Enterprise Improvements:
+- [ad] fixed Active Directory plugin fetchs the groups limited to 100 count, increased to 999
+- [cohorts] can't edit cohort segments anymore, can only duplicate cohort
+- [data-manager] list user property values for list big list and array types in data manager
+- [drill] added Survey/NPS/Rating "Widget Name" to filters
+- [drill] changes for making event segment names readable
+- [drill] clean unused values for meta data
+- [drill] fixes for meta regeneration to reduce used memory for this process
+- [event-timeline] Improvements to speed up and use less resources on rechecking event timeline
+- [funnels] improved time calculation between steps for same session funnels
+- [funnels] ui improvements for display time duration for steps and longer step names
+- [gateway] updated to new ui
+- [license] license manager to show data about license its expiration and usage of licensed metrics
+- [sessions] auto close unended sessions to properly calculate sesison durations, bounces and other post session metrics
+- [surveys] changes to fix multiple questions having same id issue
+- [surveys] review section
+- [users] add seconds to event table in users
+- [users] dynamically calculated properties like age and engagement score that are now also segmentable
+- [users] expirable user properties that are removed after set period
+- [users] new text indexes to include searching device id and uid
+
+Security:
+- [dbviewer] fix check for specific collection access
+- [dependencies] switched from request to got providing compatability layer for existing plugins
+- [dependencies] updated dependencies versions which had vulnerabilities
+- [nodejs] switched to NodeJS 18 as main version, NodeJS 14 is EOL soon
+- [os] added Centos/RHEL 9 and Ubuntu 22 support, deprecated Ubuntu 18, Centos/RHEL 6, 7
+- [process] countly running under countly user and installing npm dependencies as countly user
+
+## Version 22.09.19
+Fixes:
+- [consolidate] Fixed app settings change for consolidate plugin
+- [core] Fixed default permission object creation in case user is created via API call
+- [core] Fixes for 'Unknown country flag image'
+- [core] Fixes for showing app image.
+- [core] crypto.getRandomValues is replaced with get-random-values package
+- [db-viewer] Fixed full download for aggregation result.
+- [events] Show duration formatted in minutes and seconds in graph
+- [push] Fixes for dealing with streaming issues
+- [users] Fix for having occasional wrong Export failures with description that user is missing.
+
+Enterprise fixes:
+- [ab-testing] Workflow fixes regarding working with real-time cohorts
+- [cohorts] Corrected exited user count for cases when users are exited in parallel proceses.
+- [cohorts] Fixes to deal with ab-testing rules for cohorts.
+- [drill] Null checks for bookmark updates
+- [formulas] Allow range date picker for no-bucket case formula widget
+
+## Version 22.09.18
+Fixes:
+- [users] Fix for having occasional wrong Export failures with description that user is missing.
+- [push] Trimming incoming strings/urls for messages
+- [push] Fix for crash on connection error
+- [crashes] Fix binary images not saved correctly in crashes document
+- [crashes] Fix `Show binary images` action not showing in crashgroup dropdown
+- [events] Change minimum needed events for top events
+- [user-management] Fix for incorrect page refresh issue
+- [views] Fix for views were not recorded in cases when there is action with new view name in the same request.
+
+Enterprise fixes:
+- [ab-testing] Updated installation scripts for centos/rhel based linux
+- [data-manager] Fix for changing the visibility of unplanned events
+- [data-manager] Check event map before assigning values
+- [users] Fix for incorrect property check during load
+
+## Version 22.09.17
+Fixes:
+- [attribution] Fixed user permissions to view notes in Attribution plugin.
+- [core] Added undefined checks for rights functions
+- [core] Fixes for install scripts
+- [core] Ingress file for baremetal/unmanaged k8 setup
+- [reports] email reports unsubscribe code generation aes-256-ctr encryption replaced with aes-256-gcm
+- [views] Prevent errors on empty segmentation values in views SER-590
+
+Enterprise fixes:
+- [ab-testing] Fix ab testing python38
+- [data-manager] Auto enable/disable global masking setting on enabling/disabling masking.
+- [data-manager] Fix drawer opening issue
+- [groups] Showing correct user count in each group.
+- [users] Showing in users profile only those cohorts user is currently in. 
+
+## Version 22.09.16
+Fixes:
+- [dashboard] fixed incorrectly changing widgets with number visualisation
+- [core] Fix decoding of special characters in ui
+- [core] Fix for vulnerable password generation
+- [core] Sanitize file names for localisation and themes
+- [hooks] Fix calling of localhost
+- [data-manager] fixed bug in category change for events
+- [install] run wget without sudo during installation
+- [populator] Fix for empty users created for ab-testing
+- [settings] Fix for API settings missing from app level configuration
+
+Enterprise fixes:
+- [data-manager] Fix bug in changing visibility for event
+- [cohorts] Fixed element sizes of cohort steps, inside cohort creation form
+- [ab-testing] Change python3 to python3.8 for CentOS 8
+- [ab-testing] Set default timezone for models installation scripts
+- [drill] Send segmentation request as POST
+
+## Version 22.09.15
+Fixes:
+- [compliance-hub] use 'change' instead of 'after' for filter
+- [core] app user export to database (not using filesystem anymore) !!!changes export format!!!
+- [core] do not fetch masking config if masking is not enabled
+- [core] fixed parsing of special characters in event keys
+- [core] only use custom period when set explicitly in model file
+- [core] set activePeriod as current day in periodObject if single day selected
+- [dashboards] fixed bug with not fully loaded graphs for events and crashes for some periods
+- [data-manager] fixed localization for data masking toggle
+- [dbviewer] correct read access check fixed
+- [dbviewer] fixed server error on invalid queries
+- [events] fixed display bug in the all events view for events with ampersand in its name enterprise
+- [install] do not overwrite supervisord.conf in upgrades
+- [install] online and offline setups for CentOS/RHEL 7
+- [networking] support for ipv6
+- [period] end date was set as 00:00Am in custom period selections
+- [populator] added UI check for maximum time input that prevents non-number inputs
+- [populator] populating with template create SDK requests with template document properties
+- [push] fixed wrong error deserialization
+- [security] deepExtend manual object copy replaced with lodash merge
+- [security] jquery validation xss vulnerability fix
+- [UI] graph notes back link is fixed
+
+Enterprise fixes:
+- [ab-testing] Fixes for setup.
+- [active-directory] Remove tlsKey for active directory  client
+- [cohorts] Fixes for displaying special characters
+- [data-manager] Ability to mask device id
+- [data-manager] [users]  Fixes for & in events name
+- [drill] Added index on eventTimeline collection for field app to have faster deletion on app delete/clear.
+- [drill] Fixed bug in timeline on single event deletion.
+- [drill] Make sure only preset values are used in meta regeneration and no new values are added.
+- [drill] Meta cleanup endpoint and function in drill. Clears out wrongly saved infromation in meta about user properties.
+- [retention] Fixes for showing cohort names in retention view.
+- [retention] Retention label set according to selected result type.
+- [revenue] Null check for revenue widgets
+- [users]  Fixes for displaying special characters
+- [users] sidebar properties value change after page has loaded
+
+## Version 22.09.14
+Fixes:
+- [core] Always use random initialization vector if not provided for encryption
+- [core] Fix incorrect changing of platform to Windows Phone 10 for Windows 10 
+- [dashboards] Fix incorrect data & fluctations of visualisation in analytics widgets
+
+Enterprise fixes:
+- [attribution] express-user-agent npm module replaced with ua-parser-js
+- [drill] Adding ability to pass additional ids for views and events tracking
+- [retention] Fix for cohort queries not working in retention breakdown
+- [ldap] Allow enabling of disabling tls
+- [active_directory] Pass tlsOptions to active directory when tls is enabled
+- [data-manager] Remove unnecessary loading of big lists into memory
+- [funnels] Fix Last update time not shown for cached funnels
+- [okta] Update version for got dependency
+
+## Version 22.09.13
+Fixes:
+- [compliance-hub] Fix consent history filter
+- [core] Fixes for dashboard date picker in for different timezones
+- [core] Fixes to correctly select single day in date picker
+- [core] Improve permission check in member drawer
+- [remote-config] changes for remote config invalid condition scenario
+- [server-stats] Fixed localization
+- [star-ratings] Fixed issue with submit button
+
+Enterprise fixes:
+- [cohort] Prevent errors in segmentation filter in case of invalid cohort name.
+- [data-manager] Fix for Invalid values on opening form when editing transformation with regexp in data manager
+
+## Version 22.09.12
+Fixes:
+- [core] fix for users with appListSort
+- [crashes] smart stack preprocessing to remove dynamic content
+- [report-manager] Prevent server crashing on invalid comment value upon saving long task
+
+Enterprise fixes:
+- [crash_symbolication] display symbolicate option for javascript stacktraces
+- [drill] do not call sorting function on cohorts. (As it is object, not array )
+- [drill] Fix bug with not loading values in query builder for custom properties
+- [drill] prevent server error if for segmentation calculation are passed values, which are not type is not string
+- [funnels] time between steps is ofsetted
+
+## Version 22.09.11
+Fixes:
+- [compliance-hub] Fixes for table export.
+- [core] Local table export improvements to allow sorting. 
+- [data-manager] Fixes for event transformation drawer.
+- [dbviewer] Storing aggregation pipeline results in reports if they take long to calculate.
+- [plugins] Update internal-events endpoint access right
+- [push] App filter for consent removal
+- [push] Better network error handling, less batching logging, moving timeout checks to mongo stream
+- [push] Proper error message and scheduling for no audience case
+- [push] Sending approval emails again on message edits, leaving submitted props on edits
+- [report manager] Improved filtering of reports to allow filter by App and owner.
+- [views] Correct path usage in dashboard to prevent errors in case countly  root is in subfolder.
+
+Enterprise fixes:
+- [ab-testing] AB testing bayesian models compilation fixed
+- [attribution] Fixed issues with invalid url after edit
+- [attribution] Fixes for platform recording 
+- [cohorts] Bugfix for cohort data merging on user merge.
+- [cohorts] Fixed issues for realtime cohort update on requests with only user properties
+- [concurrent-users] Number visualization widget
+- [data-manager] Fixes for biglist handling on install
+- [data-manager] User property handling fixes
+- [drill] Improved cohort filtering in query builder
+- [flows] Fixed issue with resetting settings on install
+- [flows] Valid range selection on calculating flows
+- [oidc] allow provide custom text for Login button
+- [oidc] make sure email is lower case
+- [oidc] precreate config file on install, if it does not exist
+- [push_approver] Allowing global admin approvers to be notified about messages
+- [users] not showing exported filename path in exported file.
+
+
 ## Version 22.09.10
 Fixes:
 - [logger] removing potentially sensitive info from headers

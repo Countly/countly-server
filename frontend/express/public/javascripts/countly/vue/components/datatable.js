@@ -274,7 +274,7 @@
                 if (elTableSorting.order) {
                     this.updateControlParams({
                         sort: [{
-                            field: elTableSorting.prop,
+                            field: elTableSorting.column.sortBy || elTableSorting.prop,
                             type: elTableSorting.order === "ascending" ? "asc" : "desc"
                         }]
                     });
@@ -337,6 +337,7 @@
             },
             setControlParams: function() {
                 if (this.persistKey) {
+                    var self = this;
                     var localControlParams = {};
                     localControlParams.page = this.controlParams.page;
                     localControlParams.perPage = this.controlParams.perPage;
@@ -350,7 +351,16 @@
                             "columnOrderKey": this.persistKey,
                             _csrf: countlyGlobal.csrf_token
                         },
-                        success: function() { }
+                        success: function() {
+                            //since countlyGlobal.member does not updates automatically till refresh
+                            if (!countlyGlobal.member.columnOrder) {
+                                countlyGlobal.member.columnOrder = {};
+                            }
+                            if (!countlyGlobal.member.columnOrder[self.persistKey]) {
+                                countlyGlobal.member.columnOrder[self.persistKey] = {};
+                            }
+                            countlyGlobal.member.columnOrder[self.persistKey].tableSortMap = self.controlParams.selectedDynamicCols;
+                        }
                     });
                 }
             }
@@ -678,19 +688,47 @@
                     return this.formatExportFunction();
                 }
             },
+            getOrderedDataForExport: function() {
+                var currentArray = this.localSearchedRows;
+                if (this.controlParams.sort.length > 0) {
+                    var sorting = this.controlParams.sort[0],
+                        dir = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray = currentArray.slice();
+                    currentArray.sort(function(a, b) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
+                            return -dir;
+                        }
+                        if (priA > priB) {
+                            return dir;
+                        }
+                        return 0;
+                    });
+                }
+                return currentArray;
+            },
             formatExportFunction: function() {
-                if (this.rows && this.rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                var rows = this.getOrderedDataForExport();
+                if (rows && rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
                     var table = [];
                     var columns = this.$refs.elTable.columns;
                     columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
-                    for (var r = 0; r < this.rows.length; r++) {
+                    for (var r = 0; r < rows.length; r++) {
                         var item = {};
                         for (var c = 0; c < columns.length; c++) {
                             var property;
                             if (columns[c].columnKey && columns[c].columnKey.length) {
                                 var columnKey = columns[c].columnKey;
                                 if (columnKey.includes(".")) {
-                                    property = this.rows[r];
+                                    property = rows[r];
                                     var dotSplittedArr = columnKey.split(".");
                                     for (var i = 0; i < dotSplittedArr.length; i++) {
                                         if (property[dotSplittedArr[i]]) {
@@ -699,11 +737,11 @@
                                     }
                                 }
                                 else {
-                                    property = this.rows[r][columnKey];
+                                    property = rows[r][columnKey];
                                 }
                             }
                             else {
-                                property = this.rows[r][columns[c].property];
+                                property = rows[r][columns[c].property];
                             }
                             item[columns[c].label.toUpperCase()] = property;
                         }

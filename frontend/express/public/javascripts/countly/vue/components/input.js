@@ -379,6 +379,7 @@
                 if (!this.persistColumnOrderKey) {
                     return;
                 }
+                var self = this;
                 var sortMap = {};
                 this.sortedOptions.forEach(function(val, idx) {
                     sortMap[val.value] = idx;
@@ -391,7 +392,16 @@
                         "columnOrderKey": this.persistColumnOrderKey,
                         _csrf: countlyGlobal.csrf_token
                     },
-                    success: function() { }
+                    success: function() {
+                        //since countlyGlobal.member does not updates automatically till refresh
+                        if (!countlyGlobal.member.columnOrder) {
+                            countlyGlobal.member.columnOrder = {};
+                        }
+                        if (!countlyGlobal.member.columnOrder[self.persistColumnOrderKey]) {
+                            countlyGlobal.member.columnOrder[self.persistColumnOrderKey] = {};
+                        }
+                        countlyGlobal.member.columnOrder[self.persistColumnOrderKey].reorderSortMap = sortMap;
+                    }
                 });
             }
         },
@@ -463,10 +473,11 @@
                                     :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
+                                    :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -1171,6 +1182,7 @@
                                 v-model="currentInput"\
                                 :class="{\'is-error\': hasError}"\
                                 :placeholder="i18n(\'common.email-example\')"\
+                                oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
                             <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\

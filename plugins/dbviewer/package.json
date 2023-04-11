@@ -19,6 +19,8 @@
     "mongo",
     "database"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "bson": "^5.1.0"
+  },
   "private": true
 }

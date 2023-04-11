@@ -13,6 +13,7 @@ var common = {},
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
     mongodb = require('mongodb'),
+    getRandomValues = require('get-random-values'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -380,6 +381,7 @@ common.isNumber = function(n) {
 * This default Countly behavior of type conversion for storing proeprties accepted through API requests
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
+* @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
 * @returns {varies} converted value
 * @example
 * common.convertToType(1) //outputs 1
@@ -387,11 +389,11 @@ common.isNumber = function(n) {
 * common.convertToType("test") //outputs "test"
 * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
 */
-common.convertToType = function(value) {
+common.convertToType = function(value, preventParsingToNumber) {
     //handle array values
     if (Array.isArray(value)) {
         for (var i = 0; i < value.length; i++) {
-            value[i] = common.convertToType(value[i]);
+            value[i] = common.convertToType(value[i], true);
         }
         return value;
     }
@@ -404,7 +406,10 @@ common.convertToType = function(value) {
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
-        if (value.length && value.length <= 16) {
+        if (preventParsingToNumber) {
+            return value;
+        }
+        else if (value.length && value.length <= 16) {
             //convert to number
             return parseFloat(value);
         }
@@ -768,9 +773,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
         }
         if (args[arg] !== void 0) {
-
             if (argProperties[arg].type) {
-                if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
+                if (argProperties[arg].type === 'Number') {
+                    if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'String') {
+                    if (argState && argProperties[arg].trim && args[arg]) {
+                        args[arg] = args[arg].trim();
+                    }
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -814,14 +833,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
-                    else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
-                        if (returnErrors) {
-                            returnObj.errors.push("Invalid url string " + arg);
-                            returnObj.result = false;
-                            argState = false;
+                    else {
+                        if (argState && argProperties[arg].trim && args[arg]) {
+                            args[arg] = args[arg].trim();
                         }
-                        else {
-                            return false;
+                        let { URL } = require('url');
+                        try {
+                            new URL(args[arg]);
+                        }
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid url string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -1316,6 +1344,32 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].regex) {
+                try {
+                    var re = new RegExp(argProperties[arg].regex);
+                    if (!re.test(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push(arg + " is not correct format");
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                catch (ex) {
+                    if (returnErrors) {
+                        returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
@@ -1365,6 +1419,9 @@ common.blockResponses = function(params) {
 common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
+
+
+
 
 /**
 * Custom API response handler callback
@@ -1561,11 +1618,25 @@ var ipLogger = common.log('ip:api');
 * @returns {string} ip address
 */
 common.getIpAddress = function(req) {
-    var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
+    var ipAddress = "";
+    if (req) {
+        if (req.headers) {
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
+        }
+        else if (req.connection && req.connection.remoteAddress) {
+            ipAddress = req.connection.remoteAddress;
+        }
+        else if (req.socket && req.socket.remoteAddress) {
+            ipAddress = req.socket.remoteAddress;
+        }
+        else if (req.connection && req.connection.socket && req.connection.socket.remoteAddress) {
+            ipAddress = req.connection.socket.remoteAddress;
+        }
+    }
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
-    if (req.headers['x-real-ip']) {
+    if (req?.headers?.['x-real-ip']) {
         ips.push(req.headers['x-real-ip']);
     }
 
@@ -2405,6 +2476,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 update.$set.last_req = params.request_hash;
+                if (params.href && user.last_req_get !== params.href) {
+                    update.$set.last_req_get = (params.href + "") || "";
+                }
+                if (params.req && params.req.body && user.last_req_post !== params.req.body) {
+                    update.$set.last_req_post = (params.req.body + "") || "";
+                }
+                if (!user.req_count || user.req_count < 100) {
+                    if (!update.$inc) {
+                        update.$inc = {};
+                    }
+                    update.$inc.req_count = 1;
+                }
             }
         }
 
@@ -2567,6 +2650,44 @@ common.reviver = (key, value) => {
 };
 
 /**
+ * Shuffle string using getRandomValues
+ * @param {string} text - text to be shuffled
+ * @returns {string} shuffled password
+ */
+common.shuffleString = function(text) {
+    var j, x, i;
+    for (i = text.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = text[i - 1];
+        text[i - 1] = text[j];
+        text[j] = x;
+    }
+
+    return text.join("");
+};
+
+/**
+ * Gets a random string from given character set string with given length
+ * @param {string} charSet - charSet string
+ * @param {number} length - length of the random string. default 1 
+ * @returns {string} random string from charset
+ */
+common.getRandomValue = function(charSet, length = 1) {
+    const randomValues = getRandomValues(new Uint8Array(charSet.length));
+    let randomValue = "";
+
+    if (length > charSet.length) {
+        length = charSet.length;
+    }
+
+    for (let i = 0; i < length; i++) {
+        randomValue += charSet[randomValues[i] % charSet.length];
+    }
+
+    return randomValue;
+};
+
+/**
     * Generate random password
     * @param {number} length - length of the password
     * @param {boolean} no_special - do not include special characters
@@ -2587,29 +2708,20 @@ common.generatePassword = function(length, no_special) {
     }
 
     //1 char
-    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+    text.push(this.getRandomValue(upchars));
     //1 number
-    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    text.push(this.getRandomValue(numbers));
     //1 special char
     if (!no_special) {
-        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        text.push(this.getRandomValue(specials));
         length--;
     }
 
-    var j, x, i;
     //5 any chars
-    for (i = 0; i < Math.max(length - 2, 5); i++) {
-        text.push(all.charAt(Math.floor(Math.random() * all.length)));
-    }
+    text.push(this.getRandomValue(all, Math.max(length - 2, 5)));
 
     //randomize order
-    for (i = text.length; i; i--) {
-        j = Math.floor(Math.random() * i);
-        x = text[i - 1];
-        text[i - 1] = text[j];
-        text[j] = x;
-    }
-    return text.join("");
+    return this.shuffleString(text);
 };
 
 /**
@@ -2770,7 +2882,6 @@ common.sanitizeFilename = (filename, replacement = "") => {
  * @returns {string} sanitizedHTML - sanitized html content
  */
 common.sanitizeHTML = (html) => {
-
     const whiteList = {
         a: ["target", "title"],
         abbr: ["title"],
@@ -2869,20 +2980,34 @@ common.sanitizeHTML = (html) => {
         }
 
         const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
-
+        var doubleQuote = '"',
+            singleQuote = "'";
         let matches;
         let filteredAttributes = [];
         let allowedAttributes = Object.getOwnPropertyDescriptor(whiteList, tagName).value;
         let tagHasAttributes = false;
         while ((matches = attributesRegex.exec(tag)) !== null) {
             tagHasAttributes = true;
+            let fullAttribute = matches[0];
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-                filteredAttributes.push(`${attributeName}="${attributeValue}"`);
+
+                var attributeValueStart = fullAttribute.indexOf(attributeValue);
+                if (attributeValueStart >= 1) {
+                    var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
+                    if (attributeWithQuote.indexOf(doubleQuote) === 0) {
+                        filteredAttributes.push(`${attributeName}=${doubleQuote}${attributeValue}${doubleQuote}`);
+                    }
+                    else if ((attributeWithQuote.indexOf(singleQuote) === 0)) {
+                        filteredAttributes.push(`${attributeName}=${singleQuote}${attributeValue}${singleQuote}`);
+                    }
+                    else { //no quote
+                        filteredAttributes.push(`${attributeName}=${attributeValue}`);
+                    }
+                }
             }
         }
-        console.log("attributes", filteredAttributes);
         if (!tagHasAttributes) { //closing tag or tag without any attributes
             return tag;
         }
@@ -2989,6 +3114,24 @@ common.mergeQuery = function(ob1, ob2) {
                 if (key.startsWith("data.")) {
                     ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
                     delete ob1.$inc[key];
+                }
+            }
+        }
+        if (ob1 && ob1.$set && ob1.$unset) {
+            for (let key in ob1.$unset) {
+                if (key.startsWith("engagement.")) {
+                    if (ob1.$set[key + ".sd"]) {
+                        delete ob1.$set[key + ".sd"];
+                    }
+                    if (ob1.$set[key + ".sc"]) {
+                        delete ob1.$set[key + ".sc"];
+                    }
+                    if (ob1.$inc[key + ".sd"]) {
+                        delete ob1.$inc[key + ".sd"];
+                    }
+                    if (ob1.$inc[key + ".sc"]) {
+                        delete ob1.$inc[key + ".sc"];
+                    }
                 }
             }
         }

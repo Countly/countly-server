@@ -30,7 +30,7 @@ var versionInfo = require('./version.info'),
     fs = require('fs'),
     path = require('path'),
     jimp = require('jimp'),
-    request = require('request'),
+    request = require('countly-request'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
     formidable = require('formidable'),
@@ -354,7 +354,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         if (!loadedThemes[theme]) {
             var tempThemeFiles = {css: [], js: []};
             if (theme && theme.length) {
-                var themeDir = path.resolve(__dirname, "public/themes/" + theme + "/");
+                var themeDir = path.resolve(__dirname, "public/themes/" + common.sanitizeFilename(theme) + "/");
                 fs.readdir(themeDir, function(err, list) {
                     if (err) {
                         if (callback) {
@@ -925,7 +925,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 member: member,
                 config: req.config,
                 security: plugins.getConfig("security"),
-                plugins: plugins.getPlugins(),
+                plugins: plugins.getPlugins(true),
+                pluginsFull: plugins.getPlugins(),
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
@@ -966,8 +967,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 frontend_app: versionInfo.frontend_app,
                 frontend_server: versionInfo.frontend_server,
                 production: configs.production || false,
-                pluginsSHA: sha1Hash(plugins.getPlugins()),
-                plugins: plugins.getPlugins(),
+                pluginsSHA: sha1Hash(plugins.getPlugins(true)),
+                plugins: plugins.getPlugins(true),
                 config: req.config,
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
@@ -993,14 +994,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plgns.forEach(plugin => {
                 try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
+                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
                     toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                 }
                 catch (e) {
                     console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                 }
                 try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/stylesheets`) || [];
+                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
                     toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
                 }
                 catch (e) {

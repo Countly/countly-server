@@ -1,4 +1,4 @@
-/* global countlyAuth, countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
+/* global countlyAuth, countlyVue,CV,countlyUserActivity,app,CountlyHelpers, countlyGlobal*/
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
@@ -16,7 +16,7 @@
         },
         computed: {
             showDrillFilter: function() {
-                if (countlyAuth.validateRead('drill')) {
+                if (countlyAuth.validateRead('drill') && countlyGlobal.plugins.indexOf("drill") !== -1) {
                     return true;
                 }
                 else {
@@ -104,7 +104,7 @@
                 for (var i = 0; i < tableData.length; i++) {
                     var item = {};
                     item[CV.i18n('user-activity.table-session-count').toUpperCase()] = tableData[i].bucket;
-                    item[CV.i18n('user-activity.table-all-users').toUpperCase()] = this.formatNumber(tableData[i].all) + " | " + this.formatPercentage(tableData[i].all / tableData[i].all) + "%";
+                    item[CV.i18n('user-activity.table-all-users').toUpperCase()] = this.formatNumber(tableData[i].all) + " | " + this.formatPercentage(tableData[i].all / this.seriesTotal.all) + "%";
                     item[CV.i18n('user-activity.table-thirty-days').toUpperCase()] = tableData[i].thirtyDays + " | " + this.formatPercentage(tableData[i].thirtyDays / this.seriesTotal.thirtyDays) + "%";
                     item[CV.i18n('user-activity.table-seven-days').toUpperCase()] = this.formatNumber(tableData[i].sevenDays) + " | " + this.formatPercentage(tableData[i].sevenDays / this.seriesTotal.sevenDays) + "%";
 

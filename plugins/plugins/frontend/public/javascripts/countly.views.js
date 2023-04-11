@@ -119,7 +119,7 @@
                     data: { t: this.tryCount },
                     success: function(state) {
                         if (state.result === "completed") {
-                            self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
+                            self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.applying"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                         }
                         else if (state.result === "failed") {
                             self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true);
@@ -143,8 +143,9 @@
 
                 countlyPlugins.toggle(plugins, function(res) {
                     if (res.result === "started") {
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
-                        self.checkProcess();
+                        //self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
+                        //self.checkProcess();
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.applying"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                     }
                     else {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true);
@@ -614,27 +615,29 @@
                 if (self.searchQuery && self.searchQuery !== "") {
                     self.searchQuery = self.searchQuery.toLowerCase();
                     for (var config in self.predefinedStructure) {
-                        if (config.toLowerCase().includes(self.searchQuery)) {
+                        if (config.toLowerCase().includes(self.searchQuery) && CountlyHelpers.isPluginEnabled(config.toLowerCase())) {
                             res[config] = self.predefinedStructure[config];
                         }
                         else {
                             let groups = [];
                             // eslint-disable-next-line no-loop-func
                             self.predefinedStructure[config].groups.map(function(group) {
-                                if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
-                                    groups.push(group);
-                                }
-                                else {
-                                    let list = group.list.filter(function(item) {
-                                        let label = self.getLabelName(item, config) || "";
-                                        let helper = self.getHelperLabel(item, config) || "";
-                                        return label.toLowerCase().includes(self.searchQuery)
+                                if (CountlyHelpers.isPluginEnabled(config.toLowerCase())) {
+                                    if (group.label && CV.i18n(group.label).toLowerCase().includes(self.searchQuery)) {
+                                        groups.push(group);
+                                    }
+                                    else {
+                                        let list = group.list.filter(function(item) {
+                                            let label = self.getLabelName(item, config) || "";
+                                            let helper = self.getHelperLabel(item, config) || "";
+                                            return label.toLowerCase().includes(self.searchQuery)
                                         || helper.toLowerCase().includes(self.searchQuery);
-                                    });
-                                    if (list.length > 0) {
-                                        let tmp = group;
-                                        tmp.list = list;
-                                        groups.push(tmp);
+                                        });
+                                        if (list.length > 0) {
+                                            let tmp = group;
+                                            tmp.list = list;
+                                            groups.push(tmp);
+                                        }
                                     }
                                 }
                             });
@@ -694,6 +697,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
+                noaccess: this.$route.params && this.$route.params.noaccess || false,
                 components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
@@ -1144,7 +1148,7 @@
         groups: [
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
-            {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
+            {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit", "array_list_limit"]},
             {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
         ]
     });
@@ -1157,7 +1161,22 @@
         ]
     });
 
-    var showInAppManagment = {};
+    var showInAppManagment = {
+        "api": {
+            "safe": true,
+            "session_duration_limit": true,
+            "country_data": true,
+            "city_data": true,
+            "event_limit": true,
+            "event_segmentation_limit": true,
+            "event_segmentation_value_limit": true,
+            "metric_limit": true,
+            "session_cooldown": true,
+            "total_users": true,
+            "prevent_duplicate_requests": true,
+            "metric_changes": true,
+        }
+    };
     if (countlyAuth.validateGlobalAdmin()) {
         if (countlyGlobal.plugins.indexOf("drill") !== -1) {
             showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
@@ -1254,13 +1273,19 @@
         this.renderWhenReady(view);
     });
 
+    app.route('/account-settings/no-access', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {noaccess: true};
+        this.renderWhenReady(view);
+    });
+
     if (countlyAuth.validateGlobalAdmin()) {
         if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-            app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
+            app.addMenu("management", {code: "plugins", pluginName: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
         }
     }
     if (countlyAuth.validateGlobalAdmin()) {
-        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 30});
+        app.addMenu("management", {code: "configurations", pluginName: "plugins", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 30});
 
         var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
         var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;

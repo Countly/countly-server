@@ -112,6 +112,12 @@
                 },
                 parsed: [minDate, minDate]
             },
+            beforeInput: {
+                raw: {
+                    text: minDateText,
+                },
+                parsed: [minDate, maxDate]
+            },
             inTheLastInput: {
                 raw: {
                     text: '1',
@@ -236,11 +242,17 @@
             tableType: tableType,
             tableTypeMapper: {months: "month", weeks: "week", days: "day"},
             inputDisable: inputDisable,
+            leftSideShortcuts: [
+                {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
+                {label: CV.i18n('common.time-period-select.before'), value: "before"},
+                {label: CV.i18n('common.time-period-select.since'), value: "since"},
+                {label: CV.i18n('common.time-period-select.last-n'), value: "inTheLast"},
+                {label: CV.i18n('common.all-time'), value: "0days"},
+            ],
             globalMonthsRange: globalMonthsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
-
         return _.extend(state, getDefaultInputState(formatter));
     }
 
@@ -251,7 +263,6 @@
      * @returns {String} Range label
      */
     function getRangeLabel(state, type) {
-
         if (state.selectedShortcut === "0days") {
             return countlyVue.i18n("common.all-time");
         }
@@ -286,6 +297,9 @@
         }
         else if (state.rangeMode === 'onm') {
             return CV.i18n('common.time-period-name.on', moment(state.minDate).format("ll"));
+        }
+        else if (state.rangeMode === 'before') {
+            return CV.i18n('common.time-period-name.before', moment(state.maxDate).format("ll"));
         }
         else if (state.rangeMode === 'inTheLast') {
             var num = parseInt(state.inTheLastInput.raw.text, 10),
@@ -404,7 +418,7 @@
                 case 'inBetween':
                     this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
-                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                        inputObj = [moment().startOf("isoWeek").toDate(), moment().endOf("day").toDate()];
                     }
                     else {
                         inputObj = this.inBetweenInput.parsed;
@@ -413,7 +427,7 @@
                 case 'since':
                     this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : "day";
                     if (this.tableType === "week") {
-                        inputObj = [moment().startOf("week").toDate(), moment().endOf("day").toDate()];
+                        inputObj = [moment().startOf("isoWeek").toDate(), moment().endOf("day").toDate()];
                     }
                     else {
                         inputObj = this.sinceInput.parsed;
@@ -427,8 +441,12 @@
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
-                    this.tableType = this.inTheLastInput.raw.level.slice(0, -1) || "day";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
+                    break;
+                case 'before':
+                    this.beforeInput.parsed[0] = globalMin.toDate();
+                    inputObj = this.beforeInput.parsed;
                     break;
                 default:
                     return;
@@ -437,13 +455,30 @@
                 if (scrollToDate) {
                     this.scrollTo(scrollToDate);
                 }
+                else if (this.rangeMode === "before" && inputObj[1]) {
+                    this.scrollTo(inputObj[1]);
+                }
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
-
                 if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
+                }
+                var self = this;
+                if (this.tableType !== "month") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
                 }
             },
             setCurrentInBetween: function(minDate, maxDate) {
@@ -470,6 +505,23 @@
                     },
                     parsed: [minDate, maxDate]
                 };
+            },
+            setCurrentBefore: function(minDate, maxDate) {
+                this.beforeInput = {
+                    raw: {
+                        text: moment(maxDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
+            },
+            setCurrentInTheLast: function(minDate, maxDate) {
+                if (this.retentionConfiguration) {
+                    this.tableType = this.tableTypeMapper[this.retentionConfiguration] || "day";
+                    this.inTheLastInput.raw.level = this.retentionConfiguration ;
+                }
+                this.inTheLastInput.parsed = [minDate, maxDate];
+                var diffBetweenTwoDates = (moment(this.inTheLastInput.parsed[1]).diff(moment(this.inTheLastInput.parsed[0]), this.inTheLastInput.raw.level));
+                this.inTheLastInput.raw.text = diffBetweenTwoDates ? (diffBetweenTwoDates + 1) : 1;
             }
         },
         watch: {
@@ -490,18 +542,23 @@
             'onmInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.onmInput, 0, [0, 1]);
             },
+            'beforeInput.raw.text': function(newVal) {
+                this.tryParsing(newVal, this.beforeInput, 1);
+            },
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
-
-                    var parsed = moment().subtract(newVal.text, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
-
+                    var self = this;
+                    var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+                    if (newVal.level === "weeks") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
+                    }
                     if (newVal.text.toString() === "1" && newVal.level === "days") {
                         parsed = moment().startOf("day");
                     }
                     else if (newVal.text.toString() === "1" && newVal.level === "weeks") {
-                        parsed = moment().startOf("week");
+                        parsed = moment().startOf("isoWeek");
                     }
                     if (parsed && !parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed.isValid()) {
@@ -516,9 +573,18 @@
                     }
                     else if (newVal.level === "weeks") {
                         this.tableType = "week";
+                        this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                        setTimeout(function() {
+                            self.scrollTo(self.inTheLastInput.parsed[0]);
+                        }, 0);
                     }
                     else if (newVal.level === "days") {
+                        this.formatter = "YYYY-MM-DD";
                         this.tableType = "day";
+                        this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                        setTimeout(function() {
+                            self.scrollTo(self.inTheLastInput.parsed[0]);
+                        }, 0);
                     }
                 }
             },
@@ -532,7 +598,7 @@
             },
             handleRangePick: function(val) {
                 var firstClick = !this.rangeState.selecting,
-                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast";
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm" || this.rangeMode === "inTheLast" || this.rangeMode === "before";
 
                 if (!singleSelectRange) {
                     this.rangeMode = "inBetween";
@@ -540,8 +606,8 @@
 
                 if (firstClick) {
                     if (this.tableType === "week") {
-                        this.minDate = moment(this.minDate).startOf("week").toDate();
-                        this.maxDate = moment(this.maxDate).endOf("week").toDate();
+                        this.minDate = moment(this.minDate).startOf("isoWeek").toDate();
+                        this.maxDate = moment(this.maxDate).endOf("isoWeek").toDate();
                     }
                     this.rangeBackup = {
                         minDate: this.minDate,
@@ -555,8 +621,8 @@
                         maxDate = moment(val.minDate).endOf("day").toDate();
                     }
                     else if (this.tableType === "week") {
-                        minDate = moment(val.minDate).startOf("week").toDate();
-                        maxDate = moment(val.maxDate).endOf("week").toDate();
+                        minDate = moment(val.minDate).startOf("isoWeek").toDate();
+                        maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
                     }
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
@@ -577,6 +643,12 @@
                     }
                     else if (this.rangeMode === 'inTheLast') {
                         maxDate = moment().toDate();
+                        this.setCurrentInTheLast(minDate, maxDate);
+                    }
+                    else if (this.rangeMode === 'before') {
+                        maxDate = minDate;
+                        minDate = globalMin.toDate();
+                        this.setCurrentBefore(minDate, maxDate);
                     }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
@@ -586,16 +658,16 @@
                         maxDate = moment(val.maxDate).endOf("day").toDate();
                     }
                     else if (this.tableType === "week") {
-                        minDate = moment(val.minDate).startOf("week").toDate();
-                        maxDate = moment(val.maxDate).endOf("week").toDate();
+                        minDate = moment(val.minDate).startOf("isoWeek").toDate();
+                        maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
 
                         if (this.retentionConfiguration) {
-                            minDate = moment(val.minDate).startOf("week").toDate();
+                            minDate = moment(val.minDate).startOf("isoWeek").toDate();
                             if (this.retentionConfiguration === "weeks") {
-                                maxDate = moment(val.maxDate).endOf("week").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("week").toDate();
+                                maxDate = moment(val.maxDate).endOf("isoWeek").toDate() > moment().toDate() ? moment().endOf("day").toDate() : moment(val.maxDate).endOf("isoWeek").toDate();
                             }
                             else {
-                                maxDate = moment(val.maxDate).endOf("week").toDate();
+                                maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
                             }
                         }
                     }
@@ -690,7 +762,10 @@
                 return this.rangeState.selecting && this.rangeState.focusOn === "end";
             },
             shortcuts: function() {
-                if (this.type === "daterange" && this.displayShortcuts) {
+                if (this.moveRangeTabsToLeftSide) {
+                    return this.customDateRanges ? this.customDateRanges : this.leftSideShortcuts;
+                }
+                else if (this.type === "daterange" && this.displayShortcuts) {
                     var self = this;
                     return Object.keys(availableShortcuts).reduce(function(acc, shortcutKey) {
                         if (self.enabledShortcuts === false && self.disabledShortcuts === false) {
@@ -718,7 +793,9 @@
                 return this.type === 'date' && this.selectTime;
             },
             weekdays: function() {
-                return moment.weekdaysMin();
+                var weekdaysMin = moment.weekdaysMin();
+                var startFromMonday = [weekdaysMin[1], weekdaysMin[2], weekdaysMin[3], weekdaysMin[4], weekdaysMin[5], weekdaysMin[6], weekdaysMin[0]];
+                return startFromMonday;
             },
             warnings: function() {
                 if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
@@ -786,6 +863,11 @@
                 default: false,
                 required: false
             },
+            allowBeforeSelection: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             minInputWidth: {
                 type: Number,
                 default: -1,
@@ -816,9 +898,24 @@
                 default: null,
                 required: false
             },
+            moveRangeTabsToLeftSide: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             displayOneMode: {
                 type: String,
                 default: null,
+                required: false
+            },
+            customDateRanges: {
+                type: Array,
+                default: null,
+                required: false
+            },
+            isGlobalDatePicker: {
+                type: Boolean,
+                default: false,
                 required: false
             }
         },
@@ -858,7 +955,6 @@
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
-
                 changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
@@ -866,18 +962,18 @@
                 });
             },
             valueToInputState: function(value) {
-
                 var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
                     return shortcut.value === value;
                 });
-
+                if (this.moveRangeTabsToLeftSide) {
+                    this.customRangeSelection = false;
+                }
                 if (isShortcut) {
                     var shortcutRange = availableShortcuts[value].getRange();
                     return {
                         minDate: shortcutRange[0].toDate(),
                         maxDate: shortcutRange[1].toDate(),
-                        selectedShortcut: value,
-                        customRangeSelection: false
+                        selectedShortcut: value
                     };
                 }
 
@@ -891,7 +987,6 @@
                         selectedShortcut: null,
                         customRangeSelection: true
                     };
-
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
@@ -904,6 +999,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "inBetween" : null;
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
@@ -918,6 +1014,7 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "since" : null;
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
@@ -931,6 +1028,20 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "on" : null;
+                }
+                else if (meta.type === "before") {
+                    state.rangeMode = 'before';
+                    state.minDate = globalMin.toDate(); //new Date(this.fixTimestamp(meta.value.before, "input"));
+
+                    state.maxDate = new Date(this.fixTimestamp(meta.value.before, "input"));//meta.value.before;
+                    state.beforeInput = {
+                        raw: {
+                            text: moment(state.maxDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                    this.moveRangeTabsToLeftSide ? state.selectedShortcut = "before" : null;
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
@@ -943,6 +1054,12 @@
                         },
                         parsed: [state.minDate, state.maxDate]
                     };
+                    if (this.moveRangeTabsToLeftSide && meta.value === "0days") {
+                        state.selectedShortcut = "0days";
+                    }
+                    else if (this.moveRangeTabsToLeftSide) {
+                        state.selectedShortcut = "inTheLast";
+                    }
                 }
                 else if (availableShortcuts[value]) {
                     /*
@@ -983,18 +1100,59 @@
                         }
                         self.broadcast('ElSelectDropdown', 'updatePopper');
                         self.$forceUpdate();
-                        self.scrollTo(self.minDate);
+                        if (self.rangeMode === "before") {
+                            self.scrollTo(self.maxDate);
+                        }
+                        else {
+                            self.scrollTo(self.minDate);
+                        }
                     });
                 }
             },
             handleDropdownShow: function() {
                 this.isVisible = true;
                 this.refreshCalendarDOM();
-                if (this.retentionConfiguration && this.retentionConfiguration !== "days") {
-                    this.inputDisable = true;
+                if (this.retentionConfiguration) {
+                    this.tableType = this.tableTypeMapper[this.retentionConfiguration] || "day";
+                    if (this.retentionConfiguration !== "days") {
+                        this.inputDisable = true;
+                    }
+                }
+                if (this.isGlobalDatePicker) {
+                    try {
+                        var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
+                        var inTheLastInputLevelMapper = {"month": "months", "week": "weeks", "day": "days"};
+                        this.rangeMode = storedDateItems.rangeMode;
+                        this.tableType = storedDateItems.tableType;
+                        if (this.rangeMode === "inTheLast") {
+                            this.inTheLastInput.raw.level = inTheLastInputLevelMapper[storedDateItems.tableType];
+                            this.setCurrentInTheLast(this.minDate, this.maxDate);
+                        }
+                        else {
+                            this.tableType = "day"; //in case of chosen inBetween-montly in retention
+                        }
+                    }
+                    catch (error) {
+                        this.rangeMode = "inBetween";
+                    }
                 }
                 if (this.displayOneMode && this.displayOneMode.length) {
                     this.rangeMode = this.displayOneMode;
+                }
+                var self = this;
+                if (this.tableType !== "month") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
                 }
             },
             handleCustomRangeClick: function() {
@@ -1011,11 +1169,38 @@
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
-                if (value) {
-                    this.doCommit(value, true);
+                if (this.moveRangeTabsToLeftSide) {
+                    this.handleCustomTabChange(value);
+                }
+                else {
+                    if (value) {
+                        this.doCommit(value, true);
+                    }
                 }
             },
+            handleCustomTabChange: function(val) {
+                var self = this;
+                if (val === "0days") {
+                    this.doCommit(val, true);
+                    return;
+                }
+                this.rangeMode = val;
+                this.customRangeSelection = true;
+                setTimeout(function() {
+                    self.abortPicking();
+                    self.handleUserInputUpdate();
+                }, 0);
+            },
             handleTabChange: function() {
+                var self = this;
+                if (!this.retentionConfiguration && this.rangeMode !== "inTheLast") {
+                    this.formatter = "YYYY-MM-DD";
+                    this.tableType = "day";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
                 this.abortPicking();
                 this.handleUserInputUpdate();
             },
@@ -1025,36 +1210,12 @@
                 }
 
                 var newValue = value;
-
-                if (this.exceptionOffset) {
-                    if (mode === "output") {
-                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
-                    }
-                    else {
-                        if (this.timestampFormat === "s") {
-                            return newValue * 1000;
-                        }
-                        else {
-                            return newValue;
-                        }
-                    }
-                }
-
                 if (this.timestampFormat === "s") {
                     if (mode === "output") {
                         newValue = Math.floor(value / 1000);
                     }
                     else { // mode === "input"
                         newValue = value * 1000;
-                    }
-                }
-
-                if (this.offsetCorrection) {
-                    if (mode === "output") {
-                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
-                    }
-                    else { // mode === "input" 
-                        newValue = newValue + countlyCommon.getOffsetCorrectionForTimestamp(newValue);
                     }
                 }
                 return newValue;
@@ -1071,27 +1232,19 @@
             },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween') {
-                    var _minDate = new Date(this.minDate);
+                    //var _minDate = new Date(this.minDate.setHours(0,0));
                     var _maxDate = new Date(this.maxDate);
-
-                    // case of custom range is selected by same day
-                    if (_maxDate.getTime() - _minDate.getTime() <= 86400000) {
-                        this.exceptionOffset = false;
-                    }
-                    else {
-                        this.exceptionOffset = true;
-                        var currentDate = new Date(_maxDate.getTime());
-                        currentDate.setDate(_maxDate.getDate() - 1);
-                    }
+                    var currentDate = new Date(_maxDate.getTime());
                 }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     if (this.type === "date" && !this.selectTime) {
                         effectiveMinDate.setHours(23, 59);
+                        this.maxDate.setHours(23, 59);
                     }
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
-                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
+                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate.valueOf(), "output")
                     ], false);
                 }
                 else if (this.rangeMode === 'since') {
@@ -1102,6 +1255,9 @@
                 }
                 else if (this.rangeMode === 'onm') {
                     this.doCommit({ on: this.fixTimestamp(this.minDate.valueOf(), "output") }, false);
+                }
+                else if (this.rangeMode === 'before') {
+                    this.doCommit({ before: this.fixTimestamp(this.maxDate.valueOf(), "output") }, false);
                 }
             },
             handleDiscardClick: function() {
@@ -1143,7 +1299,9 @@
                     }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
-                    effectiveMinDate.setHours(23, 59);
+                    if (this.type === "date" && !this.selectTime) {
+                        effectiveMinDate.setHours(23, 59);
+                    }
                     this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [
@@ -1153,6 +1311,15 @@
                         isShortcut: isShortcut,
                         value: submittedVal
                     });
+
+                    if (this.isGlobalDatePicker) {
+                        if (!isShortcut) {
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, JSON.stringify({"rangeMode": this.rangeMode, "tableType": this.tableType}));
+                        }
+                        else {
+                            localStorage.setItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID, JSON.stringify({"rangeMode": "inBetween", "tableType": this.tableType}));
+                        }
+                    }
                     this.doClose();
                 }
             }
@@ -1180,7 +1347,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
+        template: '<cly-date-picker is-global-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
     Vue.component("cly-date-picker-g", globalDatepicker);

@@ -254,6 +254,15 @@ var GridComponent = countlyVue.views.create({
                     lineOptions: {xAxis: { data: dates}, "series": series}
                 };
             }
+            else if (countlyCommon && countlyCommon.periodObj && countlyCommon.periodObj.daysInPeriod === 1 && countlyCommon.periodObj.isSpecialPeriod === true) {
+                dates = [dates[0] + " 00:00", dates[0] + " 24:00"];
+                for (var z = 0; z < series.length; z++) {
+                    series[z].data.push(series[z].data[0]);
+                }
+                return {
+                    lineOptions: {xAxis: { data: dates}, "series": series}
+                };
+            }
             else {
                 return {
                     lineOptions: {"series": series}

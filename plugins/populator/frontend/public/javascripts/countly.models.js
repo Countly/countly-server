@@ -896,7 +896,7 @@
         };
 
         this.startSessionForAb = function() {
-            this.createUsersForAB(getRandomInt(1, countlyPopulator.getUserAmount() * 10));
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {
@@ -1345,10 +1345,54 @@
         }
 
         /**
-         *  Create survey widgets
+         *  Create survey widget 1
          *  @param {function} callback - callback method
          */
-        function generateSurveyWidgets(callback) {
+        function generateSurveyWidgets1(callback) {
+            createSurveyWidget("Customer support example", [
+                {
+                    "type": "radio",
+                    "question": "Were you able to find the information you were looking for?",
+                    "choices": ["Yes", "No"],
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What type of support communication methods do you prefer?",
+                    "required": true
+                },
+                {
+                    "type": "rating",
+                    "question": "How would you rate our service on a scale of 0-10?",
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 2
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets2(callback) {
             createSurveyWidget("Product Feedback example", [
                 {
                     "type": "rating",
@@ -1367,61 +1411,67 @@
                     "required": true
                 }
             ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                createSurveyWidget("User Experience example", [
-                    {
-                        "type": "rating",
-                        "question": "How satisfied are you with the look and feel of the app?",
-                        "required": true
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
-                    {
-                        "type": "text",
-                        "question": "What confused/annoyed you about the app?",
-                        "required": true
-                    },
-                    {
-                        "type": "dropdown",
-                        "question": "Which feature did you like most on new version?",
-                        "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
-                        "required": true
-                    }
-                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                    createSurveyWidget("Customer support example", [
-                        {
-                            "type": "radio",
-                            "question": "Were you able to find the information you were looking for?",
-                            "choices": ["Yes", "No"],
-                            "required": true
-                        },
-                        {
-                            "type": "text",
-                            "question": "What type of support communication methods do you prefer?",
-                            "required": true
-                        },
-                        {
-                            "type": "rating",
-                            "question": "How would you rate our service on a scale of 0-10?",
-                            "required": true
-                        }
-                    ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                        $.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID
-                            },
-                            success: function(json) {
-                                if (json && json.aaData) {
-                                    for (var i = 0; i < json.aaData.length; i++) {
-                                        surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
-                                    }
-                                }
-                                callback();
-                            },
-                            error: function() {
-                                callback();
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
                             }
-                        });
-                    });
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 3
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets3(callback) {
+            createSurveyWidget("User Experience example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the look and feel of the app?",
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What confused/annoyed you about the app?",
+                    "required": true
+                },
+                {
+                    "type": "dropdown",
+                    "question": "Which feature did you like most on new version?",
+                    "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
                 });
             });
         }
@@ -1429,7 +1479,17 @@
         generateRatingWidgets(function() {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 generateNPSWidgets(function() {
-                    generateSurveyWidgets(done);
+                    setTimeout(function() {
+                        generateSurveyWidgets1(done);
+                    }, 1000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets2(done);
+                    }, 3000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets3(done);
+                    }, 5000);
                 });
             }
             else {
@@ -1821,25 +1881,21 @@
                 processUserForAb(users[userAmountIndex]);
             }
         }
-        if ((countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) || countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                createUser();
-            }
-        }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function() {
-                generateRetention(template, function() {
-                    generateCampaigns(function() {
-                        // Generate campaigns conversion for web
-                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            setTimeout(reportConversions, timeout);
-                        }
-                        setTimeout(processUsers, timeout);
-                    });
+        generateWidgets(function() {
+            generateRetention(template && template.up, function() {
+                generateCampaigns(function() {
+                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                        createUser();
+                    }
+                    // Generate campaigns conversion for web
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        setTimeout(reportConversions, timeout);
+                    }
+                    setTimeout(processUsers, timeout);
                 });
             });
-        }
+        });
 
         if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             abExampleName = "Pricing" + abExampleCount++;
