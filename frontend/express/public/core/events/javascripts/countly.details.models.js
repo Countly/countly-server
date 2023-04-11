@@ -91,10 +91,21 @@
             var eventData = context.state.allEventsProcessed;
             var tableRows = eventData.chartData.slice();
             var labels = context.state.labels;
+            var isNumeric = function(str) {
+                if (typeof str !== "string") {
+                    return false;
+                }
+                return !isNaN(str) && !isNaN(parseInt(str));
+            };
             tableRows.forEach(function(row, i) {
                 row.dateVal = i; //because we get them all always sorted by date
-                if (row.curr_segment && typeof row.curr_segment === 'string') {
-                    row.curr_segment = countlyAllEvents.helpers.decode(row.curr_segment);
+                if (row.curr_segment) {
+                    if (isNumeric(row.curr_segment)) {
+                        row.curr_segment = parseInt(row.curr_segment);
+                    }
+                    else if (typeof row.curr_segment === 'string') {
+                        row.curr_segment = countlyAllEvents.helpers.decode(row.curr_segment);
+                    }
                 }
             });
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
