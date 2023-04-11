@@ -917,7 +917,7 @@
                     document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
                         item.style.width = '100%';
                     });
-                }, 100);
+                }, 0);
             },
             focusOnSearch: function() {
                 var self = this;

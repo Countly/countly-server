@@ -196,6 +196,22 @@
                     this.$store.dispatch("countlyAllEvents/setSegmentDescription");
                 }
             },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters["countlyAllEvents/omittedSegments"];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
+            },
             hasSegments: function() {
                 return this.$store.getters["countlyAllEvents/hasSegments"];
             },

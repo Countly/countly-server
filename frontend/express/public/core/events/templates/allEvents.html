@@ -36,10 +36,25 @@
 		  <div class="bu-is-flex cly-vue-events-all--padding">
 			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments">
 			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
-			  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
-				<el-option v-for="item in availableSegments" :key="item.value" :value="item.value" :label="item.label">
-				</el-option>
-			  </el-select>
+			  	<cly-select-x
+					search-placeholder="Search segments"
+					:options="availableSegments"
+					:searchable="true"
+					v-model="selectedSegment"
+					showSearch
+					class="cly-vue-events-all--margin"
+				>
+					<template v-slot:selectList="listScope" v-if="omittedSegments.options.length">
+						<div class="cly-vue-events-omitted-segments bu-ml-1" v-if="listScope.searchQuery == ''">
+							<div class="cly-vue-events-omitted-segments__title">
+								{{omittedSegments.label}}
+							</div>
+							<div class="cly-vue-events-omitted-segments__item" v-for="item in omittedSegments.options">
+								{{item.label}}
+							</div>
+						</div>
+					</template>
+				</cly-select-x>
 			</div>
 			<div class="bu-is-align-items-center bu-is-flex">
 			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.period')}}</span>

@@ -390,7 +390,7 @@
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
             segments.sort();
-            segments.push("segment");
+            segments.unshift("segment");
             return segments;
         },
         getLegendData: function(context) {
@@ -735,6 +735,13 @@
             lineLegend.type = "primary";
             lineLegend.data = legendData;
             return lineLegend;
+        },
+        getOmittedSegments: function(selectedEventName, res) {
+            var omittedSegments = [];
+            if (res && res.omitted_segments) {
+                omittedSegments = res.omitted_segments[selectedEventName] || [];
+            }
+            return omittedSegments.sort();
         }
     };
 
@@ -843,6 +850,7 @@
                 currentActiveSegmentation: "segment",
                 hasSegments: false,
                 availableSegments: [],
+                omittedSegments: [],
                 allEventsProcessed: {},
                 barData: {},
                 lineChartData: {},
@@ -879,6 +887,7 @@
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
                             context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
+                            context.commit("setOmittedSegments", countlyAllEvents.helpers.getOmittedSegments(context.state.selectedEventName, res));
 
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
                                 .then(function(result) {
@@ -1026,6 +1035,8 @@
                                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
+                            context.commit("setOmittedSegments", countlyAllEvents.helpers.getOmittedSegments(context.state.selectedEventName, res));
+
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
                                 .then(function(result) {
                                     if (result) {
@@ -1087,6 +1098,9 @@
             },
             setAvailableSegments: function(state, value) {
                 state.availableSegments = value;
+            },
+            setOmittedSegments: function(state, value) {
+                state.omittedSegments = value;
             },
             setAllEventsProcessed: function(state, value) {
                 state.allEventsProcessed = value;
@@ -1158,6 +1172,9 @@
             },
             availableSegments: function(_state) {
                 return _state.availableSegments;
+            },
+            omittedSegments: function(_state) {
+                return _state.omittedSegments;
             },
             allEventsProcessed: function(_state) {
                 return _state.allEventsProcessed;
