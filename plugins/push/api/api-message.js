@@ -807,9 +807,10 @@ module.exports.user = async params => {
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
- * @apiQuery {Boolean} auto Whether to return only automated messages
- * @apiQuery {Boolean} api Whether to return only API messages
- * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
+ * @apiQuery {Boolean} auto *Deprecated.* Whether to return only automated messages
+ * @apiQuery {Boolean} api *Deprecated.* Whether to return only API messages
+ * @apiQuery {String[]} kind Required. Array of message kinds (Trigger kinds) to return, overrides *auto* & *api* if set.
+ * @apiQuery {Boolean} removed Whether to return removed messages (set it to true to return removed messages)
  * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
  * @apiQuery {Number} [iDisplayStart] Skip this much messages
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
@@ -829,7 +830,7 @@ module.exports.all = async params => {
         app_id: {type: 'ObjectID', required: true},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
-        kind: { required: true, type: 'String[]', in: () => Object.values(TriggerKind) },
+        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -941,30 +942,23 @@ module.exports.all = async params => {
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
-        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
-            res = res || [];
-            res = res[0] || {};
 
-            var items = res.data || [];
-            var total = 0;
-            if (res.total && res.total[0] && res.total[0].cn) {
-                total = res.total[0].cn;
-            }
+        let res = (await common.db.collection(Message.collection).aggregate(pipeline) || [])[0] || {},
+            items = res.data || [],
+            total = res.total && res.total[0] && res.total[0].cn || 0;
 
-            common.returnOutput(params, {
-                sEcho: data.sEcho,
-                iTotalRecords: total || items.length,
-                iTotalDisplayRecords: total || items.length,
-                aaData: items || []
-            }, true);
-
-        });
-
+        common.returnOutput(params, {
+            sEcho: data.sEcho,
+            iTotalRecords: total || items.length,
+            iTotalDisplayRecords: total || items.length,
+            aaData: items
+        }, true);
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
     }
+
+    return true;
 };
 
 /**
