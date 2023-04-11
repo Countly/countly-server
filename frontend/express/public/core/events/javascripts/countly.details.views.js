@@ -29,7 +29,7 @@
             customSortSegments(a, b) {
                 a = a.curr_segment;
                 b = b.curr_segment;
-                let aRight = parseInt(a) || a;
+                var aRight = parseInt(a) || a;
                 if (typeof a === 'string') {
                     if (a.indexOf('+') !== -1) {
                         return 1;
@@ -38,7 +38,7 @@
                         aRight = parseInt(a.split('-')[1]);
                     }
                 }
-                let bRight = parseInt(b) || b;
+                var bRight = parseInt(b) || b;
                 if (typeof b === 'string') {
                     if (b.indexOf('+') !== -1) {
                         return -1;
