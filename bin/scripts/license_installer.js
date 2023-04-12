@@ -28,6 +28,9 @@ function httpRequest(url, options, data) {
                     headers: res.headers,
                     body: body
                 };
+                if (response.statusCode >= 400) {
+                    reject(new Error(`HTTP request failed with status code ${response.statusCode}: ${response.body}`));
+                }
                 resolve(response);
             });
         });
