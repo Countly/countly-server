@@ -36,6 +36,8 @@ else
 	  fi
 	done <<< "$a"
 
-	(cd /opt/countly && npx grunt dist-all)
+	if [ "${COUNTLY_CONTAINER}" == "frontend" ] || [ "${COUNTLY_CONTAINER}" == "both" ]; then
+		(cd /opt/countly && npx grunt dist-all)
+	fi
 
 fi
