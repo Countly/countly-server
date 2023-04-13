@@ -8,6 +8,42 @@ plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
 });
 
+/**
+ * @param  {Array} eventList - list of events
+ * @returns {Array} - list of events with audit logs
+ */
+async function eventsAuditLogs(eventList = []) {
+    return common.db.collection('systemlogs')
+        .aggregate([
+            {
+                '$match': {
+                    'a': { '$in': ['dm-event-edit', 'dm-event-create', 'dm-event-approve'] }
+                }
+            },
+            {
+                '$unwind': {
+                    'path': "$i.ev"
+                }
+            },
+            {
+                '$match': {
+                    'i.ev': {'$in': eventList }
+                }
+            },
+            {
+                '$sort': {'ts': -1 }
+            }, {
+                '$group': {
+                    '_id': '$i.ev',
+                    'user_id': {'$first': '$user_id'},
+                    'ts': {'$first': '$ts' },
+                    'event': {'$first': '$i.ev' }
+                }
+            }
+        ], { allowDiskUse: true })
+        .toArray();
+}
+
 try {
     if (plugins.isPluginEnabled('drill')) {
         require('./api.extended')();
@@ -23,27 +59,8 @@ plugins.register("/o/data-manager/events", function(ob) {
             let appId = ob.params.qstring.app_id;
 
             let events = await common.db.collection('events')
-                .findOne({'_id': common.db.ObjectID(appId)});
-            let auditLogs = await common.db.collection('systemlogs')
-                .aggregate([
-                    {
-                        '$match': {
-                            'a': {'$in': ['dm-event-edit', 'dm-event-create', 'dm-event-approve']},
-                            'i.ev': {'$in': events?.list || [] }
-                        }
-                    }, {
-                        '$sort': {'ts': -1 }
-                    }, {
-                        '$group': {
-                            '_id': '$i.ev',
-                            'user_id': {'$first': '$user_id'},
-                            'ts': {'$first': '$ts' },
-                            'event': {'$first': '$i.ev' }
-                        }
-                    }
-                ], { allowDiskUse: true })
-                .toArray();
-
+                .findOne({ '_id': common.db.ObjectID(appId) });
+            let auditLogs = await eventsAuditLogs(events?.list);
             let memberIds = [...auditLogs.map(al=>{
                 return al.user_id;
             }) ];
@@ -242,3 +259,5 @@ plugins.register("/i/data-manager/event/change-category", function(ob) {
     });
     return true;
 });
+
+exports.eventsAuditLogs = eventsAuditLogs;
