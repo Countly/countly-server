@@ -60,7 +60,7 @@ var versionInfo = require('./version.info'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
     { validateCreate } = require('../../api/utils/rights.js');
 
-console.log("Starting Countly", "version", pack.version);
+console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;

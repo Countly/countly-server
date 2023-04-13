@@ -12,12 +12,13 @@ const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
+const versionInfo = require('../frontend/express/version.info.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
 if (cluster.isMaster) {
-    console.log("Starting master", "version", pack.version);
+    console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
     if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
