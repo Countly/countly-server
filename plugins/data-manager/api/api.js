@@ -22,12 +22,13 @@ async function eventsAuditLogs(eventList = []) {
             },
             {
                 '$unwind': {
-                    'path': "$i.ev"
+                    'path': "$i.ev",
+                    'preserveNullAndEmptyArrays': true
                 }
             },
             {
                 '$match': {
-                    'i.ev': {'$in': eventList }
+                    'i.ev': {'$in': eventList || [] }
                 }
             },
             {
