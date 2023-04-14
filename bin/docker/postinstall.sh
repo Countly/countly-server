@@ -16,7 +16,7 @@ else
 	fi
 
 	if [[ $COUNTLY_PLUGINS == *"drill"* ]] && [[ $COUNTLY_PLUGINS != *"license"* ]]; then
-    	COUNTLY_PLUGINS=${COUNTLY_PLUGINS/drill/license,drill}
+    		COUNTLY_PLUGINS=${COUNTLY_PLUGINS/drill/license,drill}
 		echo "[docker] added license plugin: $COUNTLY_PLUGINS"
 	fi
 
