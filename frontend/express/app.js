@@ -585,6 +585,19 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {
+                //handle bakcwards compatability with formiddble v1
+                for (let i in files) {
+                    if (files[i].filepath) {
+                        files[i].path = files[i].filepath;
+                    }
+                    if (files[i].mimetype) {
+                        files[i].type = files[i].mimetype;
+                    }
+                    if (files[i].originalFilename) {
+                        files[i].name = files[i].originalFilename;
+                    }
+                }
+
                 req.files = files;
                 if (!req.body) {
                     req.body = {};

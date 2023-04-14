@@ -341,6 +341,18 @@ plugins.connectToAllDatabases().then(function() {
                 });
 
                 form.parse(req, (err, fields, files) => {
+                    //handle bakcwards compatability with formiddble v1
+                    for (let i in files) {
+                        if (files[i].filepath) {
+                            files[i].path = files[i].filepath;
+                        }
+                        if (files[i].mimetype) {
+                            files[i].type = files[i].mimetype;
+                        }
+                        if (files[i].originalFilename) {
+                            files[i].name = files[i].originalFilename;
+                        }
+                    }
                     params.files = files;
                     for (const i in fields) {
                         params.qstring[i] = fields[i];
