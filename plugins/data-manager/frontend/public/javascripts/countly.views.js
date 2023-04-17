@@ -3,6 +3,8 @@
 (function() {
 
     var FEATURE_NAME = "data_manager";
+    var SUB_FEATURE_REDACTION = FEATURE_NAME + ': Redaction';
+    var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + ': Transformations';
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
@@ -1364,5 +1366,5 @@
         this.renderWhenReady(detailView);
     });
 
-    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    app.addSubMenu("management", { code: "data-manager", permission: [FEATURE_NAME, SUB_FEATURE_REDACTION, SUB_FEATURE_TRANSFORMATIONS], pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

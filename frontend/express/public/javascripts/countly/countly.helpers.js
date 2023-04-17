@@ -12,12 +12,27 @@
 (function(CountlyHelpers) {
 
     CountlyHelpers.isPluginEnabled = function(name) {
-        if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull) && countlyGlobal.pluginsFull.indexOf(name) > -1) {
-            if (countlyGlobal.plugins && Array.isArray(countlyGlobal.plugins) && countlyGlobal.plugins.indexOf(name) !== -1) {
-                return true;
+        if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull)) {
+            if (!Array.isArray(name)) {
+                name = [name];
+            }
+            var isPluginsFull = false;
+            for (var i = 0; i < name.length; i++) {
+                if (countlyGlobal.pluginsFull.indexOf(name[i]) > -1) {
+                    isPluginsFull = true;
+                    break;
+                }
+            }
+            if (isPluginsFull && countlyGlobal.plugins && Array.isArray(countlyGlobal.plugins)) {
+                for (var j = 0; j < name.length; j++) {
+                    if (countlyGlobal.plugins.indexOf(name[j]) > -1) {
+                        return true;
+                    }
+                }
+                return false;
             }
             else {
-                return false;
+                return true;
             }
         }
         else {
