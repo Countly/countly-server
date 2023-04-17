@@ -828,6 +828,7 @@ module.exports.user = async params => {
 module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
+        platforms: {type: 'String', required: false, in: () => require('./send/platforms').platforms},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
         kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
@@ -841,30 +842,36 @@ module.exports.all = async params => {
         status: {type: 'String', required: false}
     }, true);
 
+    // backwards compatibility
+    if (!data.kind) {
+        data.kind = [];
+        if (data.api) {
+            data.kind.push(TriggerKind.API);
+        }
+        else if (data.auto) {
+            data.kind.push(TriggerKind.Event);
+            data.kind.push(TriggerKind.Cohort);
+        }
+        else {
+            data.kind.push(TriggerKind.Plain);
+        }
+    }
+
     if (data.result) {
         data = data.obj;
 
         let query = {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
+            'triggers.kind': {$in: data.kind}
         };
+
+        if (data.platforms && data.platforms.length) {
+            query.platforms = {$in: data.platforms};
+        }
 
         if (data.removed) {
             delete query.state;
-        }
-
-        if (data.auto) {
-            query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
-        }
-        else if (data.api) {
-            query['triggers.kind'] = TriggerKind.API;
-        }
-        else {
-            query['triggers.kind'] = TriggerKind.Plain;
-        }
-
-        if (data.kind && data.kind.length) {
-            query['triggers.kind'] = {$in: data.kind};
         }
 
         if (data.sSearch) {
@@ -942,6 +949,8 @@ module.exports.all = async params => {
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
+
+        console.log(pipeline);
 
         let res = (await common.db.collection(Message.collection).aggregate(pipeline) || [])[0] || {},
             items = res.data || [],
