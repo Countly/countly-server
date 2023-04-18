@@ -1,4 +1,6 @@
 const FEATURE_NAME = 'data_manager';
+const SUB_FEATURE_REDACTION = FEATURE_NAME + ': Redaction';
+const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + ': Transformations';
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
@@ -6,6 +8,8 @@ const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
 
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
+    ob.features.push(SUB_FEATURE_REDACTION);
+    ob.features.push(SUB_FEATURE_TRANSFORMATIONS);
 });
 
 try {
