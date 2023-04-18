@@ -307,6 +307,13 @@
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
+                        id: "latest_version",
+                        name: "Latest App Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getAppVersions
+                    });
+                    filterProperties.push({
                         id: "opengl",
                         name: "OpenGL Version",
                         type: countlyQueryBuilder.PropertyType.LIST,
