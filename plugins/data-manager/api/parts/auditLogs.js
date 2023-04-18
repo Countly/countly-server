@@ -1,4 +1,4 @@
-const common = require('../../../api/utils/common.js');
+const common = require('../../../../api/utils/common.js');
 
 /**
  * @param  {Array} eventList - list of events
