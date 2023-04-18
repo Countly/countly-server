@@ -976,6 +976,7 @@
     var generating = false;
     var stopCallback = null;
     var users = [];
+    var usersForAb = [];
     var userAmount = 1000;
     var totalUserCount = 0;
     var totalCountWithoutUserProps = 0;
@@ -1823,6 +1824,17 @@
             }, Math.random() * timeout);
         }
 
+            /**
+         * Create new user
+         **/
+            function createUsersForABTest() {
+                var u = new getUser(template && template.up);
+                usersForAb.push(u);
+                u.timer = setTimeout(function() {
+                    u.startSession(template);
+                }, Math.random() * timeout);
+            }
+
         var seg = {};
 
         if (template && template.name) {
@@ -1878,7 +1890,7 @@
          **/
         function processUsersForAb() {
             for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUserForAb(users[userAmountIndex]);
+                processUserForAb(usersForAb[userAmountIndex]);
             }
         }
 
@@ -1899,6 +1911,9 @@
 
         if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             abExampleName = "Pricing" + abExampleCount++;
+            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                createUsersForABTest();
+            }
             generateAbTests(function() {
                 processUsersForAb();
             });
