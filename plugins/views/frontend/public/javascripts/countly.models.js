@@ -667,6 +667,9 @@
                                 json.segments[i] = countlyCommon.decode(json.segments[i]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -827,6 +830,9 @@
                                 json.segments[z] = countlyCommon.decode(json.segments[z]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -940,6 +946,9 @@
                             json.segments[i] = countlyCommon.decode(json.segments[i]);
                         }
                         _segments = json.segments;
+                        for (let segment in _segments) {
+                            _segments[segment].sort(Intl.Collator().compare);
+                        }
                     }
                 }
             }),
