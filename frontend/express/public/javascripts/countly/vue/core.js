@@ -83,20 +83,31 @@
     };
 
     var authMixin = function(featureName) {
+        if (!Array.isArray(featureName)) {
+            featureName = [featureName];
+        }
+        var checkAuthArray = function(func) {
+            for (var i = 0; i < featureName.length; i++) {
+                if (func(featureName[i])) {
+                    return true;
+                }
+            }
+            return false;
+        };
         return {
             // uses computed mainly to prevent mutations of these values
             computed: {
                 canUserCreate: function() {
-                    return countlyAuth.validateCreate(featureName);
+                    return checkAuthArray(countlyAuth.validateCreate);
                 },
                 canUserRead: function() {
-                    return countlyAuth.validateRead(featureName);
+                    return checkAuthArray(countlyAuth.validateRead);
                 },
                 canUserUpdate: function() {
-                    return countlyAuth.validateUpdate(featureName);
+                    return checkAuthArray(countlyAuth.validateUpdate);
                 },
                 canUserDelete: function() {
-                    return countlyAuth.validateDelete(featureName);
+                    return checkAuthArray(countlyAuth.validateDelete);
                 },
                 isUserGlobalAdmin: function() {
                     return countlyAuth.validateGlobalAdmin();

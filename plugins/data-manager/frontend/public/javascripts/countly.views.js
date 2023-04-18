@@ -899,7 +899,7 @@
     var EventsView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
-            //countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.auth([FEATURE_NAME, SUB_FEATURE_TRANSFORMATIONS]),
             countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
