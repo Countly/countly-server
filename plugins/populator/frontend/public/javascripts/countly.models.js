@@ -1824,16 +1824,16 @@
             }, Math.random() * timeout);
         }
 
-            /**
-         * Create new user
+        /**
+         * Create new user for ab test
          **/
-            function createUsersForABTest() {
-                var u = new getUser(template && template.up);
-                usersForAb.push(u);
-                u.timer = setTimeout(function() {
-                    u.startSession(template);
-                }, Math.random() * timeout);
-            }
+        function createUsersForABTest() {
+            var u = new getUser(template && template.up);
+            usersForAb.push(u);
+            u.timer = setTimeout(function() {
+                u.startSession(template);
+            }, Math.random() * timeout);
+        }
 
         var seg = {};
 
