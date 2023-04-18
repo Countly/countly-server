@@ -24,7 +24,7 @@ plugins.register("/o/data-manager/events", function(ob) {
 
             let events = await common.db.collection('events')
                 .findOne({ '_id': common.db.ObjectID(appId) });
-            let auditLogs = await auditLog(events?.list);
+            let auditLogs = await auditLog.eventsAuditLogs(events?.list);
             let memberIds = [...auditLogs.map(al=>{
                 return al.user_id;
             }) ];
