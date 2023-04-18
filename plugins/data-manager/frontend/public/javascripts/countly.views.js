@@ -899,13 +899,32 @@
     var EventsView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME),
+            //countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME)) {
+                localTabs.push(
+                    {
+                        title: this.i18n('data-manager.events'),
+                        priority: 1,
+                        name: "events",
+                        component: EventsDefaultTabView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
+                    }
+                );
+                localTabs.push({
+                    priority: 3,
+                    title: CV.i18n('data-manager.event-groups'),
+                    name: "event-groups",
+                    component: EventsGroupsTabView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
+                });
+            }
             return {
                 isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
                 currentSecondaryTab: (this.$route.params && this.$route.params.secondaryTab) || "events",
@@ -921,22 +940,7 @@
                     previewTemplate: '<div class="cly-vue-data-manager__dropzone__preview bu-level bu-mx-4 bu-mt-3">\
                                       <div class="dz-filename bu-ml-2"><span data-dz-name></span></div></div>'
                 },
-                localTabs: [
-                    {
-                        title: this.i18n('data-manager.events'),
-                        priority: 1,
-                        name: "events",
-                        component: EventsDefaultTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
-                    },
-                    {
-                        priority: 3,
-                        title: CV.i18n('data-manager.event-groups'),
-                        name: "event-groups",
-                        component: EventsGroupsTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
@@ -1163,17 +1167,19 @@
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME) || countlyAuth.validateRead(SUB_FEATURE_TRANSFORMATIONS)) {
+                localTabs.push({
+                    priority: 1,
+                    title: this.i18n('data-manager.events'),
+                    name: "events",
+                    component: EventsView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
+                });
+            }
             return {
                 currentPrimaryTab: (this.$route.params && this.$route.params.primaryTab) || "events",
-                localTabs: [
-                    {
-                        priority: 1,
-                        title: this.i18n('data-manager.events'),
-                        name: "events",
-                        component: EventsView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
