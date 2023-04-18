@@ -952,7 +952,7 @@ module.exports.all = async params => {
 
         console.log(pipeline);
 
-        let res = (await common.db.collection(Message.collection).aggregate(pipeline) || [])[0] || {},
+        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
             items = res.data || [],
             total = res.total && res.total[0] && res.total[0].cn || 0;
 
