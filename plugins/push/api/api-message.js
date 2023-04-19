@@ -826,9 +826,10 @@ module.exports.user = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
+    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
-        platforms: {type: 'String', required: false, in: () => require('./send/platforms').platforms},
+        platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
         kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
@@ -866,8 +867,8 @@ module.exports.all = async params => {
             'triggers.kind': {$in: data.kind}
         };
 
-        if (data.platforms && data.platforms.length) {
-            query.platforms = {$in: data.platforms};
+        if (data.platform && data.platform.length) {
+            query.platforms = data.platform;
         }
 
         if (data.removed) {
@@ -950,12 +951,11 @@ module.exports.all = async params => {
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
 
-        console.log(pipeline);
+        console.log(JSON.stringify(pipeline));
 
         let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
             items = res.data || [],
             total = res.total && res.total[0] && res.total[0].cn || 0;
-
         common.returnOutput(params, {
             sEcho: data.sEcho,
             iTotalRecords: total || items.length,
