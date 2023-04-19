@@ -75,7 +75,7 @@ var trace = {
             seed = seed.replace(/\/.*?\//gim, "");
 
             //remove object contents like (android.app.XyzException:  Context.method() did not then call  Service.method():Object{3e13d46 u14  com.example/.Service})
-            seed = seed.replace(/Object\{.*?\}/gim, "");
+            seed = seed.replace(/\{.*?\}/gim, "");
 
             //remove protocol (http://test)
             seed = seed.replace(/[a-zA-Z]*.:\/\//gim, "/");
