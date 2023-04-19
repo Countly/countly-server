@@ -14,29 +14,6 @@ plugins.setConfigs("remote-config", {
 });
 
 (function() {
-    //for upgrade
-    /* plugins.register("/master", function() {
-        // Allow configs to load & scanner to find all jobs classes
-        common.db.collection("apps").find().toArray(function(err, res) {
-            for(var i = 0; i < res.length; i++) {
-                addParameter({
-                    qstring: {
-                        app_id: res[i]._id + "",
-                        parameter: JSON.stringify({
-                            "parameter_key":"[CLY]_SDK",
-                            "default_value":{},
-                            "description":"-",
-                            "conditions":[],
-                            "status":"Running",
-                            "expiry_dttm":null
-                        })
-                    },
-                    internal: true
-                });
-            }
-        })
-    }); */
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
@@ -254,48 +231,6 @@ plugins.setConfigs("remote-config", {
                     }
 
                     var output = {
-                        parameters: parameters.filter(p => !p.parameter_key.startsWith("[CLY]_")),
-                        conditions: conditions
-                    };
-                    common.returnOutput(params, output);
-                });
-            });
-
-            return true;
-        }
-        else if (params.qstring.method === "sdk-config") {
-            validateRead(params, FEATURE_NAME, function() {
-                params.parameter_criteria = {"parameter_key": "[CLY]_SDK"};
-                var parallelTasks = [
-                    fetchParametersFromRCDB.bind(null, params),
-                    fetchConditions.bind(null, params)
-                ];
-
-                async.parallel(parallelTasks, function(err, result) {
-                    if (err || !result) {
-                        common.returnMessage(params, 401, 'Error while fetching remote config data.');
-                        return true;
-                    }
-
-                    var parameters = result[0] || [];
-                    var conditions = result[1] || [];
-
-                    for (let i = 0; i < conditions.length; i++) {
-                        var conditionId = conditions[i]._id;
-                        conditions[i].used_in_parameters = 0;
-                        for (let j = 0; j < parameters.length; j++) {
-                            var paramConditions = parameters[j].conditions || [];
-                            var filteredCondition = paramConditions.filter(function(obj) {
-                                return obj.condition_id.toString() === conditionId.toString();
-                            });
-
-                            if (filteredCondition.length) {
-                                conditions[i].used_in_parameters++;
-                            }
-                        }
-                    }
-
-                    var output = {
                         parameters: parameters,
                         conditions: conditions
                     };
@@ -338,26 +273,6 @@ plugins.setConfigs("remote-config", {
         }
     });
 
-    plugins.register("/i/apps/create", function(ob) {
-        var res = addParameter({
-            qstring: {
-                app_id: ob.appId,
-                parameter: JSON.stringify({
-                    "parameter_key": "[CLY]_SDK",
-                    "default_value": {},
-                    "description": "-",
-                    "conditions": [],
-                    "status": "Running",
-                    "expiry_dttm": null
-                })
-            },
-            internal: true
-        });
-        if (typeof res === "string") {
-            console.error("Failed creating sdk remote config on app create", res);
-        }
-    });
-
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.outDb.collection('remoteconfig_parameters' + appId).drop(function() {});
@@ -390,13 +305,11 @@ plugins.setConfigs("remote-config", {
         var appId = params.qstring.app_id;
         var parameter = {};
 
-        if (typeof params.qstring.parameter === "string") {
-            try {
-                parameter = JSON.parse(params.qstring.parameter);
-            }
-            catch (SyntaxError) {
-                console.log('Parse parameter failed: ', params.qstring.parameter);
-            }
+        try {
+            parameter = JSON.parse(params.qstring.parameter);
+        }
+        catch (SyntaxError) {
+            console.log('Parse parameter failed: ', params.qstring.parameter);
         }
 
         var parameterKey = parameter.parameter_key;
@@ -407,7 +320,7 @@ plugins.setConfigs("remote-config", {
         }
 
         var pattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
-        if (!parameterKey.startsWith("[CLY]_") && (!parameterKey || !pattern.test(parameterKey))) {
+        if (!parameterKey || !pattern.test(parameterKey)) {
             if (params.internal) {
                 return 'Invalid parameter: parameter_key';
             }
@@ -542,7 +455,7 @@ plugins.setConfigs("remote-config", {
                     var parameterKey = param.parameter_key;
 
                     var parameterPattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
-                    if (!parameterKey.startsWith("[CLY]_") && (!parameterKey || !parameterPattern.test(parameterKey))) {
+                    if (!parameterKey || !parameterPattern.test(parameterKey)) {
                         return common.returnMessage(params, 400, 'Invalid parameter: parameter_key');
                     }
 
@@ -878,7 +791,7 @@ plugins.setConfigs("remote-config", {
         var defaultValue = parameter.default_value;
 
         var pattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
-        if (!parameterKey.startsWith("[CLY]_") && !pattern.test(parameterKey)) {
+        if (!pattern.test(parameterKey)) {
             common.returnMessage(params, 400, 'Invalid parameter: parameter_key');
             return true;
         }
@@ -927,18 +840,13 @@ plugins.setConfigs("remote-config", {
         delete parameter.valuesList;
 
         var update = {
-            $set: parameter
-        };
-        if (!parameter.parameter_key.startsWith("[CLY]_")) {
-            update.$addToSet = {
+            $set: parameter,
+            $addToSet: {
                 valuesList: {
                     $each: valuesList
                 }
-            };
-        }
-        else {
-            update.$set.valuesList = [];
-        }
+            }
+        };
 
         common.outDb.collection(collectionName).findOne({"_id": common.outDb.ObjectID(parameterId)}, function(err, beforeData) {
             if (!err) {
