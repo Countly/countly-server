@@ -3,7 +3,7 @@ const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
 const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
-
+const auditLog = require('./parts/auditLogs');
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
 });
@@ -23,27 +23,8 @@ plugins.register("/o/data-manager/events", function(ob) {
             let appId = ob.params.qstring.app_id;
 
             let events = await common.db.collection('events')
-                .findOne({'_id': common.db.ObjectID(appId)});
-            let auditLogs = await common.db.collection('systemlogs')
-                .aggregate([
-                    {
-                        '$match': {
-                            'a': {'$in': ['dm-event-edit', 'dm-event-create', 'dm-event-approve']},
-                            'i.ev': {'$in': events?.list || [] }
-                        }
-                    }, {
-                        '$sort': {'ts': -1 }
-                    }, {
-                        '$group': {
-                            '_id': '$i.ev',
-                            'user_id': {'$first': '$user_id'},
-                            'ts': {'$first': '$ts' },
-                            'event': {'$first': '$i.ev' }
-                        }
-                    }
-                ], { allowDiskUse: true })
-                .toArray();
-
+                .findOne({ '_id': common.db.ObjectID(appId) });
+            let auditLogs = await auditLog.eventsAuditLogs(events?.list);
             let memberIds = [...auditLogs.map(al=>{
                 return al.user_id;
             }) ];
