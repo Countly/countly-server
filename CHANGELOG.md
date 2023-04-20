@@ -1,3 +1,26 @@
+## Version 23.03.3
+Fixes:
+- [core] Update default plugin list for docker install
+- [core] Fix default main transport
+- [crashes] Enable filtering crashgroup by latest app version
+- [crashes] Fix issue with crash grouping not working for object hash
+
+Enterprise fixes:
+- [ab-testing] Fix issue with ab tests not getting data when using data populator
+- [cohorts] Set default times value for cohorts if not set
+- [retention] Fix a bug with bucket undefined for unbounded type in Retention
+- [funnels] Revert changes where funnels use drill as a single source of truth
+- [ad] Fix request method signature
+- [cohorts] Record realtime cohorts based on current timestamp not the one passed in request. (Helps with timing issues)
+- [cohorts] Added extended logging to help with debbuging issues.
+- [cohorts] More fixes recording incorrect counting for users falling out of cohort.
+- [event-timeline] Modify API endpoint for events table to allow session _id
+- [surveys] Add questions data of json type in seperate columns for surveys
+- [users] Change label for device ID in user profile
+- [users] Display total users as full number in users profile
+- [drill] Pass period range in app timezone for drill segmentation table
+- [data-manager] Fix events not loading on changing status
+
 ## Version 23.03.2
 Fixes:
 - [core] Fixes for table export to have valid columns.
