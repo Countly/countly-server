@@ -1,6 +1,8 @@
 ## Version 23.03.3
 Fixes:
-- [core] Update default plugin list for docker install
+- [docker] Update default plugin list for docker install
+- [docker] more lean images
+- [docker] faster pod startup time
 - [core] Fix default main transport
 - [crashes] Enable filtering crashgroup by latest app version
 - [crashes] Fix issue with crash grouping not working for object hash
