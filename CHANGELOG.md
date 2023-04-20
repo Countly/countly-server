@@ -12,10 +12,10 @@ Enterprise fixes:
 - [funnels] Revert changes where funnels use drill as a single source of truth
 - [ad] Fix request method signature
 - [cohorts] Record realtime cohorts based on current timestamp not the one passed in request. (Helps with timing issues)
-- [cohorts] Added extended logging to help with debbuging issues.
+- [cohorts] Added extended logging to help with debugging issues.
 - [cohorts] More fixes recording incorrect counting for users falling out of cohort.
 - [event-timeline] Modify API endpoint for events table to allow session _id
-- [surveys] Add questions data of json type in seperate columns for surveys
+- [surveys] Add questions data of json type in separate columns for surveys
 - [users] Change label for device ID in user profile
 - [users] Display total users as full number in users profile
 - [drill] Pass period range in app timezone for drill segmentation table
