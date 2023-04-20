@@ -46,7 +46,7 @@
                 </cly-metric-cards>
             </vue-scroll>
         </div>
-		<h5 class="bu-pb-4"> SDK Version Distribution </h5>
+		<h4 class="bu-pb-4"> SDK Version Distribution </h4>
 		<div v-if="!sdkVersions.length && !isLoading" class="technology-analytics-wrapper-sdk__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
@@ -67,8 +67,8 @@
 					</cly-metric-cards>
             </vue-scroll>
         </div>
-		<div class="bu-columns bu-is-gapless">
-			<h4>SDK Version Adoption for: </h4>
+		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">SDK Version Adoption for: </h4>
 			<div class ="selector_wrapper">
 				<el-select v-model="selectedSDK" >
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
@@ -76,7 +76,7 @@
 			</div>
 		</div>
 		<cly-section>
-			<cly-chart-time :option="lineOptions" :legend="lineLegend" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
+			<cly-chart-time :option="lineOptions" :legend="lineLegend" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
 		</cly-section>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>

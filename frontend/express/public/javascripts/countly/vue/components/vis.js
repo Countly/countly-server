@@ -2455,7 +2455,8 @@
                 type: Boolean,
                 default: false,
                 required: false
-            }
+            },
+            noHourly: false
         },
         components: {
             'chart-header': ChartHeader,
@@ -2487,6 +2488,12 @@
 
                     if (period === "month" && this.category !== "active-users" && !this.bucket) {
                         tickObj = chartsCommon.getTickObj("monthly", false, true);
+                    }
+                    else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
+                        tickObj = {
+                            ticks: [[0, countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]],
+                            tickTexts: [countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]
+                        };
                     }
                     else {
                         tickObj = chartsCommon.getTickObj(this.bucket, false, true);

@@ -31,7 +31,7 @@
             }
         }
 
-        var series = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearObject, chartData, dataProps).chartDP;
+        var series = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearObject, chartData, dataProps, "", true).chartDP;
         var legend = {"type": "primary", data: []};
         for (let i = 0; i < series.length; i++) {
             series[i].name = series[i].label;

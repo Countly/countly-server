@@ -1617,6 +1617,7 @@
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {string}  metric  - metric to select
+        * @param {boolean} disableHours - disable hourly data for graphs
         * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
         * @example <caption>Extracting total users data from users collection</caption>
         * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
@@ -1664,7 +1665,7 @@
         *  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
         * }
         */
-        countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties, metric) {
+        countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties, metric, disableHours) {
             if (metric) {
                 metric = "." + metric;
             }
@@ -1682,12 +1683,18 @@
                 propertyFunctions = _.pluck(dataProperties, "func"),
                 currOrPrevious = _.pluck(dataProperties, "period"),
                 activeDate,
-                activeDateArr;
+                activeDateArr,
+                dateString = countlyCommon.periodObj.dateString;
             var previousDateArr = [];
+
+            if (countlyCommon.periodObj.daysInPeriod === 1 && disableHours) {
+                periodMax = 1;
+                dateString = "D MMM";
+            }
 
             for (var j = 0; j < propertyNames.length; j++) {
                 if (currOrPrevious[j] === "previous") {
-                    if (countlyCommon.periodObj.daysInPeriod === 1) {
+                    if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                         periodMin = 0;
                         periodMax = 24;
                         activeDate = countlyCommon.periodObj.previousPeriodArr[0];
@@ -1700,6 +1707,7 @@
                         }
                         else {
                             activeDate = countlyCommon.periodObj.previousPeriod;
+                            activeDateArr = countlyCommon.periodObj.previousPeriodArr;
                         }
                     }
                 }
@@ -1723,7 +1731,7 @@
                 }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
-                        if (countlyCommon.periodObj.daysInPeriod === 1) {
+                        if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                             periodMin = 0;
                             periodMax = 24;
                             activeDate = countlyCommon.periodObj.currentPeriodArr[0];
@@ -1736,6 +1744,7 @@
                     }
                     else {
                         activeDate = countlyCommon.periodObj.activePeriod;
+                        activeDateArr = countlyCommon.periodObj.currentPeriodArr;
                     }
                 }
                 if (currOrPrevious[j] === "previousThisMonth") {
@@ -1748,7 +1757,7 @@
                             tableData[counter_] = {};
                         }
 
-                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, dateString);
                         var propertyValue_ = "";
                         if (propertyFunctions[j]) {
                             propertyValue_ = propertyFunctions[j](dataObj);
@@ -1763,7 +1772,7 @@
                 }
                 else {
                     for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
-                        if (!countlyCommon.periodObj.isSpecialPeriod) {
+                        if ((!countlyCommon.periodObj.isSpecialPeriod && !disableHours) || (!countlyCommon.periodObj.isSpecialPeriod && disableHours && countlyCommon.periodObj.daysInPeriod !== 1)) {
                             if (countlyCommon.periodObj.periodMin === 0) {
                                 formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                             }
@@ -1776,7 +1785,7 @@
 
                             dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
                         }
-                        else if (countlyCommon.periodObj.daysInPeriod === 1) {
+                        else if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                             formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                             dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
                         }
@@ -1791,7 +1800,7 @@
                             tableData[counter] = {};
                         }
 
-                        tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        tableData[counter].date = countlyCommon.formatDate(formattedDate, dateString);
                         var propertyValue = "";
                         if (propertyFunctions[j]) {
                             propertyValue = propertyFunctions[j](dataObj);
