@@ -1,126 +1,9 @@
-/*global countlyCommon, countlyVue, CV, CountlyHelpers, jQuery, _, $, countlyTotalUsers */
+/*global countlyCommon, countlyVue, CV, CountlyHelpers, jQuery, $, countlyTotalUsers */
 
 (function(countlySDK) {
 
     CountlyHelpers.createMetricModel(countlySDK, {name: "sdks", estOverrideMetric: "sdks"}, jQuery);
 
-    countlySDK.getSDKData = function() {
-        var chartData = countlyCommon.extractTwoLevelData(countlySDK.getDb(), countlySDK.getMeta("sdks"), countlySDK.clearObject, [
-            {
-                name: "sdks",
-                func: function(rangeArr) {
-                    return rangeArr;
-                }
-            },
-            { "name": "t" },
-            { "name": "u" },
-            { "name": "n" }
-        ], "sdks");
-        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "sdks");
-        var sdkNames = _.pluck(chartData.chartData, 'sdks'),
-            sdkTotal = _.pluck(chartData.chartData, 'u'),
-            chartData2 = [];
-
-        for (var i = 0; i < sdkNames.length; i++) {
-            chartData2[i] = {
-                data: [
-                    [0, sdkTotal[i]]
-                ],
-                label: sdkNames[i]
-            };
-        }
-
-        chartData.chartDP = {};
-        chartData.chartDP.dp = chartData2;
-
-        return chartData;
-    };
-
-    countlySDK.getSegmentedData = function(sdk) {
-        sdk = sdk.toLowerCase();
-        var metric = "sdk_version";
-        var versionData = {};
-        versionData = countlyCommon.extractTwoLevelData(countlySDK.getDb(), countlySDK.getMeta(metric), countlySDK.clearObject, [
-            {
-                name: metric,
-                func: function(rangeArr) {
-                    var parts = (rangeArr).split("]_");
-                    if (parts.length > 2) {
-                        //remove duplicates, only single prefix
-                        rangeArr = parts[0] + "]_" + parts[parts.length - 1];
-                    }
-                    return rangeArr;
-                }
-            },
-            { "name": "t" },
-            { "name": "u" },
-            { "name": "n" }
-        ], metric);
-        versionData.chartData = countlyCommon.mergeMetricsByName(versionData.chartData, metric);
-        var versionTotal = _.pluck(versionData.chartData, 'u'),
-            chartData2 = [];
-        if (versionData.chartData) {
-            for (var i = 0; i < versionData.chartData.length; i++) {
-                var shouldDelete = true;
-                if (versionData.chartData[i][metric].indexOf("[" + sdk + "]_") === 0) {
-                    shouldDelete = false;
-                    versionData.chartData[i][metric] = versionData.chartData[i][metric].replace("[" + sdk + "]_", "").replace(/:/g, ".");
-                }
-                if (shouldDelete) {
-                    delete versionData.chartData[i];
-                }
-            }
-        }
-
-        versionData.chartData = _.compact(versionData.chartData);
-
-        var versionNames = _.pluck(versionData.chartData, metric);
-
-        for (var versionNameIndex = 0; versionNameIndex < versionNames.length; versionNameIndex++) {
-            chartData2[chartData2.length] = {
-                data: [
-                    [0, versionTotal[versionNameIndex]]
-                ],
-                label: versionNames[versionNameIndex]
-            };
-        }
-
-        versionData.chartDP = {};
-        versionData.chartDP.dp = chartData2;
-
-        return versionData;
-    };
-
-    countlySDK.fixSDKVersion = function(val, data) {
-        var sdks = data || countlySDK.getMeta("sdks");
-        for (var i = 0; i < sdks.length; i++) {
-            if (sdks[i] && val.indexOf("[" + sdks[i] + "]_") === 0) {
-                return sdks[i] + " " + val.replace(new RegExp("\\[" + sdks[i] + "\\]_", "g"), "").replace(/:/g, ".");
-            }
-        }
-        return val;
-    };
-
-    countlySDK.getSDKVersionList = function(name, data) {
-        var lowerCase = name.toLowerCase();
-        var codes = [];
-        var sdks = data || countlySDK.getMeta("sdks");
-
-        for (var i = 0; i < sdks.length; i++) {
-            if (sdks[i] && lowerCase.indexOf(sdks[i]) === 0) { //have fll sdk name
-                //codes.push(
-                var vv = lowerCase;
-                vv = vv.replace(sdks[i], "[" + sdks[i] + "]_");
-                vv = vv.replace(/ /g, "");//remove spaces in middle
-                vv = vv.replace(/\./g, ":");//replace . to :
-                codes.push(vv);
-            }
-            else if (sdks[i] && sdks[i].indexOf(lowerCase) > -1) {
-                codes.push("[" + sdks[i] + "]_");
-            }
-        }
-        return codes;
-    };
     countlySDK.getSDKVersionData = function(sdk) {
         sdk = sdk.toLowerCase();
         var data = countlySDK.getData(true, false, "sdk_version").chartData;
@@ -132,6 +15,44 @@
             }
         }
         return ret;
+    };
+
+    countlySDK.getChartData = function(sdk, metric) {
+        if (!metric) {
+            metric = "u";
+        }
+        var data = countlySDK.getData(true, false, "sdk_version").chartData;
+        var chartData = [];
+        var dataProps = [];
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].sdk_version.indexOf("[" + sdk + "]_") === 0) {
+                chartData.push({ data: [], label: data[i].sdk_version.replace(new RegExp("\\[" + sdk + "\\]_", "g"), "").replace(/:/g, ".") });
+                dataProps.push({ name: data[i].sdk_version });
+            }
+        }
+
+        var series = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearObject, chartData, dataProps).chartDP;
+        var legend = {"type": "primary", data: []};
+        for (let i = 0; i < series.length; i++) {
+            series[i].name = series[i].label;
+            legend.data[i] = {
+                "name": series[i].label,
+                "value": 0,
+                "trend": "",
+                "tooltip": "",
+                "percentage": 0
+            };
+            for (let j = 0; j < series[i].data.length; j++) {
+                if (series[i].data[j][1]) {
+                    series[i].data[j] = series[i].data[j][1][metric] || 0;
+                }
+                else {
+                    series[i].data[j] = 0;
+                }
+                legend.data[i].value += series[i].data[j];
+            }
+        }
+        return {series: series, legend: legend};
     };
 
     countlySDK.service = {
@@ -208,6 +129,10 @@
                 context.dispatch('onFetchInit', "sdks");
                 countlySDK.service.fetchSDKStats().then(function() {
                     var sdks = countlySDK.service.calculate();
+                    if (!context.state.stats.selectedSDK) {
+                        context.dispatch('onSetSelectedSDK', sdks.versions[0].label);
+                    }
+                    context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty));
                     context.commit('stats/setSDKData', sdks);
                     context.dispatch('onFetchSuccess', "sdks");
                 }).catch(function(error) {
@@ -225,9 +150,11 @@
             },
             onSetSelectedSDK: function(context, value) {
                 context.commit('stats/setSelectedSDK', value);
+                context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty));
             },
             onSetSelectedProperty: function(context, value) {
                 context.commit('stats/setSelectedProperty', value);
+                context.commit('stats/setSDKChartData', countlySDK.getChartData("java-native-android", context.state.stats.selectedProperty));
             }
         };
 
@@ -272,6 +199,8 @@
             state: function() {
                 return {
                     sdk: {"chart": {}, "table": []},
+                    chartData: {},
+                    legendData: {},
                     isLoading: true,
                     selectedSDK: "",
                     selectedProperty: "t"
@@ -307,6 +236,10 @@
                     state.sdk.totals = state.sdk.totals || {};
                     state.sdk.pie = state.sdk.pie || {"newUsers": [], "totalSessions": []};
                     state.isLoading = false;
+                },
+                setSDKChartData: function(state, value) {
+                    state.chartData = {series: value.series};
+                    state.legendData = value.legend;
                 },
                 setSelectedProperty: function(state, value) {
                     state.selectedProperty = value;

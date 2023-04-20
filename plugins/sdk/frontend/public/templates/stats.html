@@ -67,6 +67,17 @@
 					</cly-metric-cards>
             </vue-scroll>
         </div>
+		<div class="bu-columns bu-is-gapless">
+			<h4>SDK Version Adoption for: </h4>
+			<div class ="selector_wrapper">
+				<el-select v-model="selectedSDK" >
+					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
+				</el-select>
+			</div>
+		</div>
+		<cly-section>
+			<cly-chart-time :option="lineOptions" :legend="lineLegend" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
+		</cly-section>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>
 </div>

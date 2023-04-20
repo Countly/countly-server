@@ -327,7 +327,8 @@
                             }
                         })
                     }
-                ]
+                ],
+                versions: []
             };
         },
         mounted: function() {
@@ -352,6 +353,22 @@
                 }
             }
         },
+        watch: {
+            selectedSDK: function(newValue) {
+                if (newValue) {
+                    this.$store.dispatch('countlySDK/onSetSelectedSDK', newValue);
+                }
+                else {
+                    this.selectedSDK = this.$store.state.countlySDK.stats.sdk.versions[0].label;
+                    this.$store.dispatch('countlySDK/onSetSelectedSDK', this.selectedSDK);
+                }
+                var tempVersions = [];
+                for (var k = 0; k < this.$store.state.countlySDK.stats.sdk.versions.length; k++) {
+                    tempVersions.push({"value": this.$store.state.countlySDK.stats.sdk.versions[k].label, "name": this.$store.state.countlySDK.stats.sdk.versions[k].label});
+                }
+                this.versions = tempVersions;
+            }
+        },
         computed: {
             selectedProperty: {
                 set: function(value) {
@@ -361,14 +378,25 @@
                     return this.$store.state.countlySDK.stats.selectedProperty;
                 }
             },
+            selectedSDK: {
+                set: function(value) {
+                    this.$store.dispatch('countlySDK/onSetSelectedSDK', value);
+                },
+                get: function() {
+                    return this.$store.state.countlySDK.stats.selectedSDK;
+                }
+            },
             graphColors: function() {
                 return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF"];
             },
             sdk: function() {
                 return this.$store.state.countlySDK.stats.sdk;
             },
-            appResolution: function() {
-                return this.$store.state.countlySDK.stats.sdk;
+            lineOptions: function() {
+                return this.$store.state.countlySDK.stats.chartData;
+            },
+            lineLegend: function() {
+                return this.$store.state.countlySDK.stats.legendData;
             },
             chooseProperties: function() {
                 return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
