@@ -206,7 +206,51 @@
             countlyVue.container.dataMixin({"groupsInput": "groups/input", "rolesInput": "user/roles"}),
         ],
         data: function() {
+            var comboPermissionSets = {
+                "data_manager: Transformations": {
+                    c: {
+                        "data_manager": ['r', 'u'],
+                    },
+                    r: {
+                        "data_manager": ['r']
+                    },
+                }
+            };
+            //read permission check in set
+            for (var feature in comboPermissionSets) {
+                var perms = Object.keys(comboPermissionSets[feature]);
+                for (perm of perms) {
+                    var permFeatures = Object.keys(comboPermissionSets[feature][perm]);
+                    for (permFeature of permFeatures) {
+                        var targetAr = comboPermissionSets[feature][perm][permFeature];
+                        if (targetAr.length && targetAr.indexOf('r') === -1) {
+                            comboPermissionSets[feature][perm][permFeature].push('r');
+                        }
+                    }
+                }
+            }
+
+            var inverseComboPermissionSets = {};
+            for (var feature in comboPermissionSets) {
+                var perms = Object.keys(comboPermissionSets[feature]);
+                for (perm of perms) {
+                    var permFeatures = Object.keys(comboPermissionSets[feature][perm]);
+                    for (permFeature of permFeatures) {
+                        if (!inverseComboPermissionSets[permFeature]) {
+                            inverseComboPermissionSets[permFeature] = {c: {}, r: {}, u: {}, d: {}};
+                        }
+                        comboPermissionSets[feature][perm][permFeature].forEach(function(localPerm) {
+                            if (!inverseComboPermissionSets[permFeature][localPerm][feature]) {
+                                inverseComboPermissionSets[permFeature][localPerm][feature] = true;
+                            }
+                        });
+                    }
+                }
+            }
+
             return {
+                comboPermissionSets,
+                inverseComboPermissionSets,
                 pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
@@ -388,7 +432,7 @@
             },
             setPermissionByFeature: function(index, type, feature) {
                 var types = ['c', 'r', 'u', 'd'];
-
+                var self = this;
                 if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
                     this.permissionSets[index].r.allowed[feature] = true;
                     CountlyHelpers.notify({
@@ -416,6 +460,55 @@
                 if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
                     this.permissionSets[index][type].all = false;
                 }
+
+                if (this.permissionSets[index][type].allowed[feature] && this.comboPermissionSets[feature] && this.comboPermissionSets[feature][type]) {
+                    if (type !== 'r' && this.comboPermissionSets[feature].r) {
+                        Object.keys(this.comboPermissionSets[feature].r).forEach(function(preReqfeature) {
+                            self.comboPermissionSets[feature].r[preReqfeature].forEach(function(preReqfeaturePerm) {
+                                if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
+                                    self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature] = true;
+                                    CountlyHelpers.notify({
+                                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + self.featureBeautifier(preReqfeature),
+                                        type: 'info'
+                                    });
+                                }
+                            });
+                        });
+                    }
+                    var preReqfeatures = this.comboPermissionSets[feature][type];
+                    Object.keys(preReqfeatures).forEach(function(preReqfeature) {
+                        preReqfeatures[preReqfeature].forEach(function(preReqfeaturePerm) {
+                            if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
+                                self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature] = true;
+                                CountlyHelpers.notify({
+                                    message: CV.i18n('management-users.read-permission-given-feature') + ' ' + self.featureBeautifier(preReqfeature),
+                                    type: 'info'
+                                });
+                            }
+                        });
+                    });
+                }
+                else if (!this.permissionSets[index][type].allowed[feature] && this.inverseComboPermissionSets[feature] && this.inverseComboPermissionSets[feature][type]) {
+                    var inversePreReqfeatures = self.inverseComboPermissionSets[feature][type];
+                    Object.keys(inversePreReqfeatures).forEach(function(inversePreReqfeature) {
+                        if (self.comboPermissionSets[inversePreReqfeature]) {
+                            Object.keys(self.comboPermissionSets[inversePreReqfeature]).forEach(function(typeKey) {
+                                var preReqPerms = self.comboPermissionSets[inversePreReqfeature][typeKey][feature];
+                                if (preReqPerms && preReqPerms.indexOf(type) !== -1) {
+                                    if (self.permissionSets[index][typeKey].allowed[inversePreReqfeature]) {
+                                        self.permissionSets[index][typeKey].allowed[inversePreReqfeature] = false;
+                                        CountlyHelpers.notify({
+                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(inversePreReqfeature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
+                                            type: 'info'
+                                        });
+                                    }
+
+                                }
+                            });
+                        }
+                    });
+                }
+
             },
             setPermissionByType: function(index, type) {
                 var types = ['c', 'r', 'u', 'd'];
