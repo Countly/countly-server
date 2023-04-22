@@ -214,6 +214,13 @@
                     r: {
                         "data_manager": ['r']
                     },
+                    u: {
+                        "data_manager": ['r']
+                    },
+                    d: {
+                        "data_manager": ['r']
+                    },
+
                 }
             };
             //read permission check in set
@@ -498,7 +505,7 @@
                                     if (self.permissionSets[index][typeKey].allowed[inversePreReqfeature]) {
                                         self.permissionSets[index][typeKey].allowed[inversePreReqfeature] = false;
                                         CountlyHelpers.notify({
-                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(inversePreReqfeature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
+                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + self.featureBeautifier(inversePreReqfeature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
                                             type: 'info'
                                         });
                                     }
