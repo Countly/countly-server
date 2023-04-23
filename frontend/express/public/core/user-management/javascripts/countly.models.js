@@ -176,7 +176,7 @@
                             if (!inverseComboPermissionSets[invPermFeature]) {
                                 inverseComboPermissionSets[invPermFeature] = {c: {}, r: {}, u: {}, d: {}};
                             }
-                            for (let index = 0; index < _featuresPermissionDependency[invFeature][invPerm][invPermFeature]; index++) {
+                            for (var index = 0; index < _featuresPermissionDependency[invFeature][invPerm][invPermFeature].length; index++) {
                                 var localPerm = _featuresPermissionDependency[invFeature][invPerm][invPermFeature][index];
                                 if (!inverseComboPermissionSets[invPermFeature][localPerm][invFeature]) {
                                     inverseComboPermissionSets[invPermFeature][localPerm][invFeature] = true;
