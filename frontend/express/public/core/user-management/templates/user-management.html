@@ -11,5 +11,5 @@
     <cly-main>
         <data-table :loading="loading" @refresh-table="refresh" @edit-user="onEditUser" :rows="users" :group-map="groupMap"></data-table>
     </cly-main>
-	<drawer @refresh-table="refresh" :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
+	<drawer @refresh-table="refresh" :user="user" :features="features" :featuresPermissionDependency="featuresPermissionDependency" :inverseFeaturesPermissionDependency="inverseFeaturesPermissionDependency" :settings="drawerSettings" :controls="drawers.user"></drawer>
 </div>

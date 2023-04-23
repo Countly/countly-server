@@ -10,6 +10,20 @@ plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
     ob.features.push(SUB_FEATURE_REDACTION);
     ob.features.push(SUB_FEATURE_TRANSFORMATIONS);
+    ob.featuresPermissionDependency[SUB_FEATURE_TRANSFORMATIONS] = {
+        c: {
+            [FEATURE_NAME]: ['r'],
+        },
+        r: {
+            [FEATURE_NAME]: ['r'],
+        },
+        u: {
+            [FEATURE_NAME]: ['r'],
+        },
+        d: {
+            [FEATURE_NAME]: ['r']
+        },
+    };
 });
 
 try {

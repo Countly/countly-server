@@ -192,6 +192,14 @@
                 type: Array,
                 default: []
             },
+            featuresPermissionDependency: {
+                type: Object,
+                default: {}
+            },
+            inverseFeaturesPermissionDependency: {
+                type: Object,
+                default: {}
+            },
             editMode: {
                 type: Boolean,
                 default: false
@@ -206,58 +214,7 @@
             countlyVue.container.dataMixin({"groupsInput": "groups/input", "rolesInput": "user/roles"}),
         ],
         data: function() {
-            var comboPermissionSets = {
-                "data_manager: Transformations": {
-                    c: {
-                        "data_manager": ['r', 'u'],
-                    },
-                    r: {
-                        "data_manager": ['r']
-                    },
-                    u: {
-                        "data_manager": ['r']
-                    },
-                    d: {
-                        "data_manager": ['r']
-                    },
-
-                }
-            };
-            //read permission check in set
-            for (var feature in comboPermissionSets) {
-                var perms = Object.keys(comboPermissionSets[feature]);
-                for (perm of perms) {
-                    var permFeatures = Object.keys(comboPermissionSets[feature][perm]);
-                    for (permFeature of permFeatures) {
-                        var targetAr = comboPermissionSets[feature][perm][permFeature];
-                        if (targetAr.length && targetAr.indexOf('r') === -1) {
-                            comboPermissionSets[feature][perm][permFeature].push('r');
-                        }
-                    }
-                }
-            }
-
-            var inverseComboPermissionSets = {};
-            for (var feature in comboPermissionSets) {
-                var perms = Object.keys(comboPermissionSets[feature]);
-                for (perm of perms) {
-                    var permFeatures = Object.keys(comboPermissionSets[feature][perm]);
-                    for (permFeature of permFeatures) {
-                        if (!inverseComboPermissionSets[permFeature]) {
-                            inverseComboPermissionSets[permFeature] = {c: {}, r: {}, u: {}, d: {}};
-                        }
-                        comboPermissionSets[feature][perm][permFeature].forEach(function(localPerm) {
-                            if (!inverseComboPermissionSets[permFeature][localPerm][feature]) {
-                                inverseComboPermissionSets[permFeature][localPerm][feature] = true;
-                            }
-                        });
-                    }
-                }
-            }
-
             return {
-                comboPermissionSets,
-                inverseComboPermissionSets,
                 pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
@@ -468,10 +425,10 @@
                     this.permissionSets[index][type].all = false;
                 }
 
-                if (this.permissionSets[index][type].allowed[feature] && this.comboPermissionSets[feature] && this.comboPermissionSets[feature][type]) {
-                    if (type !== 'r' && this.comboPermissionSets[feature].r) {
-                        Object.keys(this.comboPermissionSets[feature].r).forEach(function(preReqfeature) {
-                            self.comboPermissionSets[feature].r[preReqfeature].forEach(function(preReqfeaturePerm) {
+                if (this.permissionSets[index][type].allowed[feature] && this.featuresPermissionDependency[feature] && this.featuresPermissionDependency[feature][type]) {
+                    if (type !== 'r' && this.featuresPermissionDependency[feature].r) {
+                        Object.keys(this.featuresPermissionDependency[feature].r).forEach(function(preReqfeature) {
+                            self.featuresPermissionDependency[feature].r[preReqfeature].forEach(function(preReqfeaturePerm) {
                                 if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
                                     self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature] = true;
                                     CountlyHelpers.notify({
@@ -482,7 +439,7 @@
                             });
                         });
                     }
-                    var preReqfeatures = this.comboPermissionSets[feature][type];
+                    var preReqfeatures = this.featuresPermissionDependency[feature][type];
                     Object.keys(preReqfeatures).forEach(function(preReqfeature) {
                         preReqfeatures[preReqfeature].forEach(function(preReqfeaturePerm) {
                             if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
@@ -495,12 +452,12 @@
                         });
                     });
                 }
-                else if (!this.permissionSets[index][type].allowed[feature] && this.inverseComboPermissionSets[feature] && this.inverseComboPermissionSets[feature][type]) {
-                    var inversePreReqfeatures = self.inverseComboPermissionSets[feature][type];
+                else if (!this.permissionSets[index][type].allowed[feature] && this.inverseFeaturesPermissionDependency[feature] && this.inverseFeaturesPermissionDependency[feature][type]) {
+                    var inversePreReqfeatures = self.inverseFeaturesPermissionDependency[feature][type];
                     Object.keys(inversePreReqfeatures).forEach(function(inversePreReqfeature) {
-                        if (self.comboPermissionSets[inversePreReqfeature]) {
-                            Object.keys(self.comboPermissionSets[inversePreReqfeature]).forEach(function(typeKey) {
-                                var preReqPerms = self.comboPermissionSets[inversePreReqfeature][typeKey][feature];
+                        if (self.featuresPermissionDependency[inversePreReqfeature]) {
+                            Object.keys(self.featuresPermissionDependency[inversePreReqfeature]).forEach(function(typeKey) {
+                                var preReqPerms = self.featuresPermissionDependency[inversePreReqfeature][typeKey][feature];
                                 if (preReqPerms && preReqPerms.indexOf(type) !== -1) {
                                     if (self.permissionSets[index][typeKey].allowed[inversePreReqfeature]) {
                                         self.permissionSets[index][typeKey].allowed[inversePreReqfeature] = false;
@@ -856,6 +813,8 @@
                     editMode: false
                 },
                 features: [],
+                featuresPermissionDependency: {},
+                inverseFeaturesPermissionDependency: {},
                 loading: true
             };
         },
@@ -931,6 +890,8 @@
                 self.fillOutUsers(usersObj);
                 self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
+                self.featuresPermissionDependency = countlyUserManagement.getFeaturesPermissionDependency();
+                self.inverseFeaturesPermissionDependency = countlyUserManagement.getInverseFeaturesPermissionDependency();
             });
         }
     });

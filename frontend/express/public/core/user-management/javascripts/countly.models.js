@@ -5,7 +5,9 @@
         _user = {},
         _emptyPermissionObject = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
         _permissionSet = {c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}},
-        _features = [];
+        _features = [],
+        _featuresPermissionDependency = {},
+        _inverseFeaturesPermissionDependency = {};
 
     countlyUserManagement.getEmptyPermissionObject = function() {
         return _emptyPermissionObject;
@@ -17,6 +19,14 @@
 
     countlyUserManagement.getFeatures = function() {
         return _features;
+    };
+
+    countlyUserManagement.getFeaturesPermissionDependency = function() {
+        return _featuresPermissionDependency;
+    };
+
+    countlyUserManagement.getInverseFeaturesPermissionDependency = function() {
+        return _inverseFeaturesPermissionDependency;
     };
 
     countlyUserManagement.getUsers = function() {
@@ -142,7 +152,40 @@
                 _t: Date.now()
             },
             success: function(res) {
-                _features = res;
+                _features = res.features;
+                _featuresPermissionDependency = res.featuresPermissionDependency;
+                //read permission check
+                for (var feature in _featuresPermissionDependency) {
+                    var perms = Object.keys(_featuresPermissionDependency[feature]);
+                    for (var perm of perms) {
+                        var permFeatures = Object.keys(_featuresPermissionDependency[feature][perm]);
+                        for (var permFeature of permFeatures) {
+                            var targetAr = _featuresPermissionDependency[feature][perm][permFeature];
+                            if (targetAr.length && targetAr.indexOf('r') === -1) {
+                                _featuresPermissionDependency[feature][perm][permFeature].push('r');
+                            }
+                        }
+                    }
+                }
+                var inverseComboPermissionSets = {};
+                for (var invFeature in _featuresPermissionDependency) {
+                    var invPerms = Object.keys(_featuresPermissionDependency[invFeature]);
+                    for (var invPerm of invPerms) {
+                        var invPermFeatures = Object.keys(_featuresPermissionDependency[invFeature][invPerm]);
+                        for (var invPermFeature of invPermFeatures) {
+                            if (!inverseComboPermissionSets[invPermFeature]) {
+                                inverseComboPermissionSets[invPermFeature] = {c: {}, r: {}, u: {}, d: {}};
+                            }
+                            for (let index = 0; index < _featuresPermissionDependency[invFeature][invPerm][invPermFeature]; index++) {
+                                var localPerm = _featuresPermissionDependency[invFeature][invPerm][invPermFeature][index];
+                                if (!inverseComboPermissionSets[invPermFeature][localPerm][invFeature]) {
+                                    inverseComboPermissionSets[invPermFeature][localPerm][invFeature] = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                _inverseFeaturesPermissionDependency = inverseComboPermissionSets;
             }
         });
     };
