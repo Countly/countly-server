@@ -76,14 +76,14 @@
                         label: "SDK control",
                         list: ["tracking", "networking"]
                     },
-                    features: {
+                    /*features: {
                         label: "SDK features",
                         list: ["crashes", "views"]
                     },
                     settings: {
                         label: "SDK settings",
-                        list: ["heartbeat", "event_queue", "request_queue"]
-                    }
+                        list: ["heartbeat", "event_queue","request_queue"]
+                    }*/
                 },
                 configs: {
                     tracking: {
@@ -100,7 +100,7 @@
                         default: true,
                         value: null
                     },
-                    crashes: {
+                    /*crashes: {
                         type: "switch",
                         name: "Crashes",
                         description: "Enable or disable automatic tracking of unhandled crashes",
@@ -134,7 +134,7 @@
                         description: "How many events to store in queue before they would be batched and sent to server",
                         default: 10,
                         value: null
-                    },
+                    },*/
                 },
                 diff: []
             };
