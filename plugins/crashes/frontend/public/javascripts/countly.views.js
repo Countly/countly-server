@@ -1328,6 +1328,10 @@
         })
     });
 
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.smart_regexes", {input: "el-input", attrs: {type: "textarea", rows: 5}});
+    }
+
     app.addMenu("improve", {code: "crashes", permission: FEATURE_NAME, text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
     app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
