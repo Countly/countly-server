@@ -18,14 +18,14 @@
         else {
             args.app_id = countlyCommon.ACTIVE_APP_ID;
         }
-
         if (data._id) {
             args._id = data._id;
             return $.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.w + '/notes/save',
                 data: {
-                    args: JSON.stringify(args)
+                    args: JSON.stringify(args),
+                    app_id: args.app_id
                 },
                 dataType: "json",
                 success: function() {
