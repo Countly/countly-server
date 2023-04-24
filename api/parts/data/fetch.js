@@ -1613,8 +1613,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
 
-    if(params.qstring.fullRange){
-        options.db.collection(collection).find({ '_id': { $regex: "^"+options.id+".*" } }).toArray(function(err1, data) {
+    if (params.qstring.fullRange) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + options.id + ".*" } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });
     }

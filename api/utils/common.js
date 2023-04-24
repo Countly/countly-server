@@ -1899,9 +1899,9 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
     var dbDateIds = common.getDateIds(params);
 
     if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
-        updateUsersZero =  updateUsersZero || {};
-        updateUsersZero["m"] = dbDateIds.zero;
-        updateUsersZero["a"] = params.app_id + "";
+        updateUsersZero = updateUsersZero || {};
+        updateUsersZero.m = dbDateIds.zero;
+        updateUsersZero.a = params.app_id + "";
 
         var update = {
             $set: updateUsersZero
@@ -1917,13 +1917,13 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
 
     }
     if (Object.keys(updateUsersMonth).length) {
-        updateUsersMonth["m"] = dbDateIds.month;
-        updateUsersMonth["a"] = params.app_id + "";
+        updateUsersMonth.m = dbDateIds.month;
+        updateUsersMonth.a = params.app_id + "";
         common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
             $set: updateUsersMonth
         });
     }
-}
+};
 
 /**
 * Record data in Countly standard metric model
