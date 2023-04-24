@@ -18,9 +18,7 @@
                 app_id: countlyGlobal.defaultApp._id
             },
             success: function(res) {
-                if (res.length) {
-                    countlyAuth.features = res;
-                }
+                countlyAuth.features = res.features;
             }
         });
     };
