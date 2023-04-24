@@ -1727,7 +1727,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         //Matches correct view naming
                         Promise.all(promises).then(function(results) {
                             var runDrill = [];
-                            var haveVisit = false;
+                            var haveVisit = {};
                             var lastView = {};
                             var projection = {};
                             for (let p = 0; p < results.length; p++) {
@@ -1748,7 +1748,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         }
                                         //geting all segment info
                                         if (results[p].segmentation.visit) {
-                                            haveVisit = true;
+                                            haveVisit[p] = true;
                                             lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
                                             projection[results[p].viewAlias] = 1;
                                         }
@@ -1762,18 +1762,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
                             }
 
-                            if (haveVisit) {
+                            if (Object.keys(haveVisit).length > 0) {
                                 common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
-                                    for (let p = 0; p < results.length; p++) {
-                                        if (results[p]) {
+                                    for (let p in haveVisit) {
+                                        if (results[p] && results[p] !== false) {
                                             var currEvent = results[p];
                                             recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
                                         }
                                     }
                                 });
                             }
-
-
                             if (runDrill.length > 0) {
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
                             }
