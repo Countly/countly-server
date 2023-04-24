@@ -587,18 +587,18 @@
                 }
                 if (feedbackOptions.length > 0) {
                     availableEvents.push({
-                        "label": this.i18n('internal-events.[CLY]_crash'),
-                        "name": "[CLY]_crash",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
+                        "label": this.i18n("sidebar.feedback"),
+                        "name": "feedback",
+                        "options": feedbackOptions
                     });
                 }
 
 
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
                     availableEvents.push({
-                        "label": this.i18n("sidebar.feedback"),
-                        "name": "feedback",
-                        "options": feedbackOptions
+                        "label": this.i18n('internal-events.[CLY]_crash'),
+                        "name": "[CLY]_crash",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
                     });
                 }
 
