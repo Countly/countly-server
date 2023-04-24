@@ -394,37 +394,8 @@
                 this.permissionSets.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
-            setPermissionByFeature: function(index, type, feature) {
-                var types = ['c', 'r', 'u', 'd'];
+            setPermissionByDependency: function(index, type, feature) {
                 var self = this;
-                if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
-                    this.permissionSets[index].r.allowed[feature] = true;
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + this.featureBeautifier(feature),
-                        type: 'info'
-                    });
-                }
-                if (type === 'r' && !this.permissionSets[index].r.allowed[feature]) {
-                    for (var _type in types) {
-                        this.permissionSets[index][types[_type]].allowed[feature] = false;
-                        if (this.permissionSets[index][types[_type]].all) {
-                            this.permissionSets[index][types[_type]].all = false;
-                            for (var _feature in this.features) {
-                                if (this.features[_feature] !== feature) {
-                                    this.permissionSets[index][types[_type]].allowed[this.features[_feature]] = true;
-                                }
-                            }
-                        }
-                    }
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(feature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
-                        type: 'info'
-                    });
-                }
-                if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
-                    this.permissionSets[index][type].all = false;
-                }
-
                 if (this.permissionSets[index][type].allowed[feature] && this.featuresPermissionDependency[feature] && this.featuresPermissionDependency[feature][type]) {
                     if (type !== 'r' && this.featuresPermissionDependency[feature].r) {
                         Object.keys(this.featuresPermissionDependency[feature].r).forEach(function(preReqfeature) {
@@ -472,7 +443,37 @@
                         }
                     });
                 }
-
+            },
+            setPermissionByFeature: function(index, type, feature) {
+                var types = ['c', 'r', 'u', 'd'];
+                if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
+                    this.permissionSets[index].r.allowed[feature] = true;
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + this.featureBeautifier(feature),
+                        type: 'info'
+                    });
+                }
+                if (type === 'r' && !this.permissionSets[index].r.allowed[feature]) {
+                    for (var _type in types) {
+                        this.permissionSets[index][types[_type]].allowed[feature] = false;
+                        if (this.permissionSets[index][types[_type]].all) {
+                            this.permissionSets[index][types[_type]].all = false;
+                            for (var _feature in this.features) {
+                                if (this.features[_feature] !== feature) {
+                                    this.permissionSets[index][types[_type]].allowed[this.features[_feature]] = true;
+                                }
+                            }
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(feature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
+                        type: 'info'
+                    });
+                }
+                if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
+                    this.permissionSets[index][type].all = false;
+                }
+                this.setPermissionByDependency(index, type, feature);
             },
             setPermissionByType: function(index, type) {
                 var types = ['c', 'r', 'u', 'd'];
@@ -509,6 +510,7 @@
                     if (!(type === 'r' && this.features[feature2] === 'core')) {
                         this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
                     }
+                    this.setPermissionByDependency(index, type, this.features[feature2]);
                 }
                 if (this.permissionSets[index][type].all) {
                     CountlyHelpers.notify({
