@@ -802,8 +802,8 @@
                 default: ""
             },
             disabledShortcuts: {
-                type: Array,
-                default: null,
+                type: [Array, Boolean],
+                default: false,
                 required: false,
             }
         },

@@ -1,3 +1,46 @@
+## Version 23.03.3
+Fixes:
+- [docker] Update default plugin list for docker install
+- [docker] more lean images
+- [docker] faster pod startup time
+- [core] Fix default main transport
+- [crashes] Enable filtering crashgroup by latest app version
+- [crashes] Fix issue with crash grouping not working for object hash
+
+Enterprise fixes:
+- [ab-testing] Fix issue with ab tests not getting data when using data populator
+- [cohorts] Set default times value for cohorts if not set
+- [retention] Fix a bug with bucket undefined for unbounded type in Retention
+- [funnels] Revert changes where funnels use drill as a single source of truth
+- [ad] Fix request method signature
+- [cohorts] Record realtime cohorts based on current timestamp not the one passed in request. (Helps with timing issues)
+- [cohorts] Added extended logging to help with debugging issues.
+- [cohorts] More fixes recording incorrect counting for users falling out of cohort.
+- [event-timeline] Modify API endpoint for events table to allow session _id
+- [surveys] Add questions data of json type in separate columns for surveys
+- [users] Change label for device ID in user profile
+- [users] Display total users as full number in users profile
+- [drill] Pass period range in app timezone for drill segmentation table
+- [data-manager] Fix events not loading on changing status
+
+## Version 23.03.2
+Fixes:
+- [core] Fixes for table export to have valid columns.
+- [core] Update user and group permission when an app is deleted
+- [crashes] Fix stacktrace section condition check
+- [dashboards] Fixes for ustom date selection on analytics widgets
+- [events] Sorting of numberic segmentation in events table
+
+Enterprise fixes:
+- [ab-testing] Fixes for real time cohort trigger on ab test.
+- [cohorts] Fixes for realtime cohort recording
+- [crash_symbolication] Reset symbol files when closing drawer
+- [data-manager] Changing the visibility of an unplanned event
+- [data-manager] Fixes for user properties drawers
+- [funnels] Fixed bugs with funnel not displaying from report result.
+- [surveys] Fixes to show single day  NPS graph
+- [users] Fixes for displaying object type properties in users table
+
 ## Version 23.03.1
 Fixes:
 - [export] Fixes for app_user export to not prevent exporting if an export already exists
