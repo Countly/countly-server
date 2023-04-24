@@ -36,49 +36,32 @@ plugins.register("/permissions/features", function(ob) {
     });
 
     /**
-     * @api {get} /o?method=remote-config Get remote configs
-     * @apiName GetRemoteConfig
-     * @apiGroup Remote Config
-     * @apiPermission user
-     * @apiDescription Get all the remote configs and the conditions in the dashboard
+     * @api {get} /o?method=sc Get SDK config
+     * @apiName GetSDKConfig
+     * @apiGroup SDK Config
+     * @apiPermission app
+     * @apiDescription Get SDK configuration for this SDK and this user
      *
-     * @apiQuery {String} app_id Application ID
+     * @apiQuery {String} app_key Application key
      *
-     * @apiSuccess {Object[]} parameters All the parameter information
-     * @apiSuccess {Object[]} conditions All the condition information
+     * @apiSuccess {Object} v - version 
+     * @apiSuccess {Object} t - timestamp
+     * @apiSuccess {Object} c - sdk config
      *
      * @apiSuccessExample {json} Success-Response:
      * {
-            "parameters": [
-                {
-                "_id": "5c3b064763c6920705d94e9b",
-                "parameter_key": "button_color",
-                "default_value": [
-                    "#000"
-                ],
-                "conditions": [
-                    {
-                    "condition_id": "5c3f8d50a9c3f071cecc8b87",
-                    "value": [
-                        "#FFF"
-                    ]
-                    }
-                ],
-                "description": "Button color of the apps"
-                }
-            ],
-            "conditions": [
-                {
-                "_id": "5c3f8d50a9c3f071cecc8b87",
-                "condition_name": "android",
-                "condition_color": 2,
-                "condition": "{\"up.d\":{\"$in\":[\"Asus Nexus 10\"]}}",
-                "condition_definition": "Device = Asus Nexus 10",
-                "seed_value": "",
-                "used_in_parameters": 1
-                }
-            ]
+        "v":1,
+        "t":1682328445330,
+        "c":{
+            "tracking":false,
+            "networking":false,
+            "crashes":false,
+            "views":false,
+            "heartbeat":61,
+            "event_queue":11,
+            "request_queue":1001
         }
+     * }
      */
     plugins.register("/o", function(ob) {
         var params = ob.params;
