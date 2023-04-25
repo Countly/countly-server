@@ -640,7 +640,12 @@ const processRequest = (params) => {
                         validateAppAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        if (params.qstring.app_id) {
+                            validateAppAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
+                        else {
+                            validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
                     }
                     break;
                 case 'delete':
