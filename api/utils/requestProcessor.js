@@ -522,6 +522,27 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/deleteExport/:id Deletes user export.
+                 * @apiName Delete user export
+                 * @apiGroup App User Management
+				 * @apiDescription Deletes user export.
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result":"Export deleted"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'deleteExport': {
                     validateUserForWrite(params, function() {
                         countlyApi.mgmt.appUsers.deleteExport(paths[4], params, function(err) {
@@ -535,6 +556,26 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/export Exports all data collected about app user
+                 * @apiName Export user data
+                 * @apiGroup App User Management
+                 *
+                 * @apiDescription Creates export and stores in database. export is downloadable on demand.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} query Query to match users to run export on. Query should be runnable on mongodb database. For example: {"uid":"1"} will find user, for whuch uid === "1" If is possible to export also multiple users in same export.
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result": "appUser_644658291e95e720503d5087_1.json"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'export': {
                     if (!params.qstring.app_id) {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
@@ -1455,6 +1496,22 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
                     break;
                 }
+                /**
+                 * @api {get} /o/app_users/download/:id Downloads user export.
+                 * @apiName Download user export
+                 * @apiGroup App User Management
+				 * @apiDescription Downloads users export
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
