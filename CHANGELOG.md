@@ -1,3 +1,13 @@
+## Version 23.03.4
+Fixes:
+- [core] Allow user with admin rights to modify graph notes.
+- [core] Changes to remove last segment from omitted_segments in case where it is removed from data manager
+- [core] Enable updating apps by app admin
+- [core] Fixed api responses for app user export
+- [crashes] allow providing custom regexes for stacktrace processing
+- [hooks] Updated localization
+- [views] Bugfix for: Views duration is counted double sometimes in aggregated data when there are multiple views in same request.
+
 ## Version 23.03.3
 Fixes:
 - [docker] Update default plugin list for docker install
