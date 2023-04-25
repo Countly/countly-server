@@ -1424,6 +1424,23 @@ const processRequest = (params) => {
                 case 'permissions':
                     validateRead(params, 'core', function() {
                         var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
+                        /*
+                            Example structure for featuresPermissionDependency Object
+                            {
+                                [FEATURE name which need other permissions]:{
+                                    [CRUD permission of FEATURE]: {
+                                        [DEPENDENT_FEATURE name]:[DEPENDENT_FEATURE required CRUD permissions array]
+                                    }
+                                }
+                            },
+                            {
+                                data_manager: Transformations:{
+                                    c:{
+                                        data_manager:['r']
+                                    }
+                                }
+                            }
+                        */
                         var featuresPermissionDependency = {};
                         plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
                             common.returnOutput(params, {features, featuresPermissionDependency});

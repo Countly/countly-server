@@ -396,6 +396,7 @@
             },
             setPermissionByDependency: function(index, type, feature) {
                 var self = this;
+                //for enabling the dependent features
                 if (this.permissionSets[index][type].allowed[feature] && this.featuresPermissionDependency[feature] && this.featuresPermissionDependency[feature][type]) {
                     if (type !== 'r' && this.featuresPermissionDependency[feature].r) {
                         Object.keys(this.featuresPermissionDependency[feature].r).forEach(function(preReqfeature) {
@@ -423,6 +424,7 @@
                         });
                     });
                 }
+                //for disabling the dependent features
                 else if (!this.permissionSets[index][type].allowed[feature] && this.inverseFeaturesPermissionDependency[feature] && this.inverseFeaturesPermissionDependency[feature][type]) {
                     var inversePreReqfeatures = self.inverseFeaturesPermissionDependency[feature][type];
                     Object.keys(inversePreReqfeatures).forEach(function(inversePreReqfeature) {
