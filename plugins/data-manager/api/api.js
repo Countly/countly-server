@@ -24,6 +24,21 @@ plugins.register("/permissions/features", function(ob) {
             [FEATURE_NAME]: ['r']
         },
     };
+    // c,u,d mean the same thing here, so they are dependency of each other
+    ob.featuresPermissionDependency[SUB_FEATURE_REDACTION] = {
+        c: {
+            [SUB_FEATURE_REDACTION]: ['r', 'u', 'd'],
+        },
+        r: {
+            [FEATURE_NAME]: ['r'],
+        },
+        u: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'd'],
+        },
+        d: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'u'],
+        },
+    };
 });
 
 try {
