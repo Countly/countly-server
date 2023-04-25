@@ -937,8 +937,12 @@ const processRequest = (params) => {
                             }
 
                             if (params.qstring.omitted_segments && params.qstring.omitted_segments !== "") {
+                                var omitted_segments_empty = false;
                                 try {
                                     params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);
+                                    if (JSON.stringify(params.qstring.omitted_segments) === '{}') {
+                                        omitted_segments_empty = true;
+                                    }
                                 }
                                 catch (SyntaxError) {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
@@ -951,6 +955,14 @@ const processRequest = (params) => {
                                         "list": params.qstring.omitted_segments[k]
                                     });
                                     pull_us["segments." + k] = {$in: params.qstring.omitted_segments[k]};
+                                }
+                                if (omitted_segments_empty) {
+                                    var events = JSON.parse(params.qstring.event_map);
+                                    for (let k in events) {
+                                        if (update_array.omitted_segments[k]) {
+                                            delete update_array.omitted_segments[k];
+                                        }
+                                    }
                                 }
                             }
 
