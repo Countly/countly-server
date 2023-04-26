@@ -438,8 +438,14 @@
                                             message: CV.i18n('management-users.other-permissions-for') + ' ' + self.featureBeautifier(inversePreReqfeature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
                                             type: 'info'
                                         });
+                                        if (typeKey === 'r') {
+                                            for (var cudType of ['c', 'u', 'd']) {
+                                                if (self.permissionSets[index][cudType].allowed[inversePreReqfeature]) {
+                                                    self.permissionSets[index][cudType].allowed[inversePreReqfeature] = false;
+                                                }
+                                            }
+                                        }
                                     }
-
                                 }
                             });
                         }
