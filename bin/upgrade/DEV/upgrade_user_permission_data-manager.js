@@ -2,10 +2,6 @@ var pluginManager = require('../../../../plugins/pluginManager.js')
 
 const OPERATION_BATCH_SIZE = 200;
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 console.log("Upgrading members/group permissions for data-manager");
 pluginManager.dbConnection().then(async (countlyDb) => {
     const types = ['c', 'r', 'u', 'd'];
