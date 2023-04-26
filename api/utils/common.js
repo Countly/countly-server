@@ -1713,7 +1713,9 @@ function stripPort(ip) {
 common.fillTimeObjectZero = function(params, object, property, increment, isUnique) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
-
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month) {
         return false;
     }
@@ -1772,6 +1774,9 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
 
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month || !timeObj.weekly || !timeObj.day || !timeObj.hour) {
         return false;
     }
@@ -1879,7 +1884,8 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
 */
 common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
-    value = value || 1;
+    value = value || 0;
+    params.defaultValue = 0;
     var updateUsersZero = {},
         updateUsersMonth = {},
         tmpSet = {};
