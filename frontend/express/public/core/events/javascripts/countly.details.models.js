@@ -150,7 +150,12 @@
                 }
             }
             var showSumGraph = arrSum.some(function(item) {
-                return item !== 0;
+                if (item) { //null, undefined, 0
+                    return true;
+                }
+                else {
+                    return false;
+                }
             });
             xAxis.data = xAxisData;
             var graphPointsLen = 0;
