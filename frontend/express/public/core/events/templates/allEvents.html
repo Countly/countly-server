@@ -1,9 +1,18 @@
 <div v-bind:class="[componentId]">
-	<div class="cly-vue-events-header bu-is-flex bu-mb-4">
-		<h2> {{i18n('events.all.title.new')}} 
-		</h2>
+	<cly-header>
+		<template v-slot:header-left>
+			<h2> {{i18n('events.all.title.new')}} </h2>
 		<cly-tooltip-icon :tooltip="i18n('events.all.title.tooltip')" class="cly-vue-events-header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-	  </div>
+		</template>
+		<template v-slot:header-right>
+			<cly-more-options v-if="topDropdown" size="small">
+			  <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+				<!--<span :class="item.icon"></span>-->	
+				<a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+			  </el-dropdown-item>
+			</cly-more-options>
+		</template>
+	</cly-header>
 	<cly-main class="bu-pt-4">
 	  <div class="bu-columns bu-is-gapless">
 		<div class="bu-column white-bg bu-is-3 bu-mr-5" style="max-height:681px">
