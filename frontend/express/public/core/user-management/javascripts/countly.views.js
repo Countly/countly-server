@@ -394,57 +394,69 @@
                 this.permissionSets.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
+            /**
+            * Set/Remove permissions for dependency features
+            * @param {number} index - The index of the permission set to modify.
+            * @param {string} type - The type of permission to modify (c, r, u, or d).
+            * @param {string} feature - The feature to modify permissions for.
+            */
             setPermissionByDependency: function(index, type, feature) {
                 var self = this;
-                //for enabling the dependent features
-                if (this.permissionSets[index][type].allowed[feature] && this.featuresPermissionDependency[feature] && this.featuresPermissionDependency[feature][type]) {
-                    if (type !== 'r' && this.featuresPermissionDependency[feature].r) {
-                        Object.keys(this.featuresPermissionDependency[feature].r).forEach(function(preReqfeature) {
-                            self.featuresPermissionDependency[feature].r[preReqfeature].forEach(function(preReqfeaturePerm) {
-                                if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
-                                    self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature] = true;
-                                    CountlyHelpers.notify({
-                                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + self.featureBeautifier(preReqfeature),
-                                        type: 'info'
-                                    });
-                                }
-                            });
-                        });
-                    }
-                    var preReqfeatures = this.featuresPermissionDependency[feature][type];
+                var permissionSets = this.permissionSets[index];
+                var singleFeaturePermDependency = this.featuresPermissionDependency[feature];
+                var featuresPermDependency = this.featuresPermissionDependency;
+                var inverseFeaturesPermissionDependency = this.inverseFeaturesPermissionDependency[feature];
+
+                //traverse singleFeaturePermDependency object,enable the dependency features
+                var setPermission = function(permType) {
+                    var preReqfeatures = singleFeaturePermDependency[permType];
                     Object.keys(preReqfeatures).forEach(function(preReqfeature) {
                         preReqfeatures[preReqfeature].forEach(function(preReqfeaturePerm) {
-                            if (!self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature]) {
-                                self.permissionSets[index][preReqfeaturePerm].allowed[preReqfeature] = true;
+                            if (!permissionSets[preReqfeaturePerm].allowed[preReqfeature]) {
+                                permissionSets[preReqfeaturePerm].allowed[preReqfeature] = true;
+                                var msg = CV.i18n('management-users.read-permission-given-feature');
+                                if (permType !== 'r') {
+                                    msg = "Permission(s) granted automatically for";
+                                }
                                 CountlyHelpers.notify({
-                                    message: CV.i18n('management-users.read-permission-given-feature') + ' ' + self.featureBeautifier(preReqfeature),
+                                    message: msg + ' ' + self.featureBeautifier(preReqfeature),
                                     type: 'info'
                                 });
                             }
                         });
                     });
+                };
+
+                //for enabling
+                if (permissionSets[type].allowed[feature] && singleFeaturePermDependency && singleFeaturePermDependency[type]) {
+                    if (type !== 'r' && singleFeaturePermDependency.r) {
+                        setPermission('r');
+                    }
+                    setPermission(type);
                 }
-                //for disabling the dependent features
-                else if (!this.permissionSets[index][type].allowed[feature] && this.inverseFeaturesPermissionDependency[feature] && this.inverseFeaturesPermissionDependency[feature][type]) {
-                    var inversePreReqfeatures = self.inverseFeaturesPermissionDependency[feature][type];
-                    Object.keys(inversePreReqfeatures).forEach(function(inversePreReqfeature) {
-                        if (self.featuresPermissionDependency[inversePreReqfeature]) {
-                            Object.keys(self.featuresPermissionDependency[inversePreReqfeature]).forEach(function(typeKey) {
-                                var preReqPerms = self.featuresPermissionDependency[inversePreReqfeature][typeKey][feature];
+                //for disabling
+                else if (!permissionSets[type].allowed[feature] && inverseFeaturesPermissionDependency && inverseFeaturesPermissionDependency[type]) {
+                    var invPreReqfeatures = inverseFeaturesPermissionDependency[type];
+                    //traverse inverseFeaturesPermissionDependency object,disable the dependency features
+                    Object.keys(invPreReqfeatures).forEach(function(invPreReqfeature) {
+                        if (featuresPermDependency[invPreReqfeature]) {
+                            Object.keys(featuresPermDependency[invPreReqfeature]).forEach(function(typeKey) {
+                                var preReqPerms = featuresPermDependency[invPreReqfeature][typeKey][feature];
                                 if (preReqPerms && preReqPerms.indexOf(type) !== -1) {
-                                    if (self.permissionSets[index][typeKey].allowed[inversePreReqfeature]) {
-                                        self.permissionSets[index][typeKey].allowed[inversePreReqfeature] = false;
-                                        CountlyHelpers.notify({
-                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + self.featureBeautifier(inversePreReqfeature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
-                                            type: 'info'
-                                        });
+                                    if (permissionSets[typeKey].allowed[invPreReqfeature]) {
+                                        permissionSets[typeKey].allowed[invPreReqfeature] = false;
+                                        //disable all other permission if Read is disabled
                                         if (typeKey === 'r') {
                                             for (var cudType of ['c', 'u', 'd']) {
-                                                if (self.permissionSets[index][cudType].allowed[inversePreReqfeature]) {
-                                                    self.permissionSets[index][cudType].allowed[inversePreReqfeature] = false;
+                                                if (permissionSets[cudType].allowed[invPreReqfeature]) {
+                                                    permissionSets[cudType].allowed[invPreReqfeature] = false;
                                                 }
                                             }
                                         }
+                                        CountlyHelpers.notify({
+                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + self.featureBeautifier(invPreReqfeature) + ' ' + 'revoked automatically because some permission is disabled',
+                                            type: 'info'
+                                        });
                                     }
                                 }
                             });
