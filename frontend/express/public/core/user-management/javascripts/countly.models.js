@@ -154,7 +154,7 @@
             success: function(res) {
                 _features = res.features;
                 _featuresPermissionDependency = res.featuresPermissionDependency;
-                //read permission check
+                //read permission check, making sure that read is present in every dependency array if any other permission is given
                 for (var feature in _featuresPermissionDependency) {
                     var perms = Object.keys(_featuresPermissionDependency[feature]);
                     for (var perm of perms) {
@@ -167,6 +167,7 @@
                         }
                     }
                 }
+                //building inverse featuresPermissionDependency object to ease up reverse dependency lookup
                 var inverseComboPermissionSets = {};
                 for (var invFeature in _featuresPermissionDependency) {
                     var invPerms = Object.keys(_featuresPermissionDependency[invFeature]);

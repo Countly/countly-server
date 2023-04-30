@@ -1430,14 +1430,24 @@ const processRequest = (params) => {
                                 [FEATURE name which need other permissions]:{
                                     [CRUD permission of FEATURE]: {
                                         [DEPENDENT_FEATURE name]:[DEPENDENT_FEATURE required CRUD permissions array]
-                                    }
+                                    },
+                                    .... other CRUD permission if necessary
                                 }
                             },
                             {
                                 data_manager: Transformations:{
                                     c:{
+                                        data_manager:['r','u']
+                                    },
+                                    r:{
                                         data_manager:['r']
-                                    }
+                                    },
+                                    u:{
+                                        data_manager:['r','u']
+                                    },
+                                    d:{
+                                        data_manager:['r','u']
+                                    },
                                 }
                             }
                         */

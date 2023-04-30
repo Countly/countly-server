@@ -11,6 +11,11 @@
  */
 (function(CountlyHelpers) {
 
+    /**
+    * This function checks if a Countly plugin is enabled.
+    * @param {string|array} name - The name of the plugin(s) to check for. Can be either a string or an array of strings.
+    * @returns {boolean} - Returns true when atleast one plugin is enabled, false otherwise.
+    */
     CountlyHelpers.isPluginEnabled = function(name) {
         if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull)) {
             if (!Array.isArray(name)) {

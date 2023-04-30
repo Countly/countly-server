@@ -82,6 +82,11 @@
         }
     };
 
+    /**
+    * This function returns an authentication mixin object for a given feature or array of features.
+    * @param {string|array} featureName - The name of the feature(s) to create the authentication mixin for
+    * @returns {object} - Returns an object containing computed properties for authentication.
+    */
     var authMixin = function(featureName) {
         if (!Array.isArray(featureName)) {
             featureName = [featureName];
@@ -96,6 +101,7 @@
         };
         return {
             // uses computed mainly to prevent mutations of these values
+            // using helper function checkAuthArray to act as a 'or' returns true if atleast one feature is validated else false
             computed: {
                 canUserCreate: function() {
                     return checkAuthArray(countlyAuth.validateCreate);
