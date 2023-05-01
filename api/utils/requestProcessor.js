@@ -522,6 +522,27 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/deleteExport/:id Deletes user export.
+                 * @apiName Delete user export
+                 * @apiGroup App User Management
+				 * @apiDescription Deletes user export.
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result":"Export deleted"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'deleteExport': {
                     validateUserForWrite(params, function() {
                         countlyApi.mgmt.appUsers.deleteExport(paths[4], params, function(err) {
@@ -535,6 +556,26 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/export Exports all data collected about app user
+                 * @apiName Export user data
+                 * @apiGroup App User Management
+                 *
+                 * @apiDescription Creates export and stores in database. export is downloadable on demand.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} query Query to match users to run export on. Query should be runnable on mongodb database. For example: {"uid":"1"} will find user, for whuch uid === "1" If is possible to export also multiple users in same export.
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result": "appUser_644658291e95e720503d5087_1.json"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'export': {
                     if (!params.qstring.app_id) {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
@@ -640,7 +681,12 @@ const processRequest = (params) => {
                         validateAppAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        if (params.qstring.app_id) {
+                            validateAppAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
+                        else {
+                            validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
                     }
                     break;
                 case 'delete':
@@ -937,8 +983,12 @@ const processRequest = (params) => {
                             }
 
                             if (params.qstring.omitted_segments && params.qstring.omitted_segments !== "") {
+                                var omitted_segments_empty = false;
                                 try {
                                     params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);
+                                    if (JSON.stringify(params.qstring.omitted_segments) === '{}') {
+                                        omitted_segments_empty = true;
+                                    }
                                 }
                                 catch (SyntaxError) {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
@@ -951,6 +1001,14 @@ const processRequest = (params) => {
                                         "list": params.qstring.omitted_segments[k]
                                     });
                                     pull_us["segments." + k] = {$in: params.qstring.omitted_segments[k]};
+                                }
+                                if (omitted_segments_empty) {
+                                    var events = JSON.parse(params.qstring.event_map);
+                                    for (let k in events) {
+                                        if (update_array.omitted_segments[k]) {
+                                            delete update_array.omitted_segments[k];
+                                        }
+                                    }
                                 }
                             }
 
@@ -1455,6 +1513,22 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
                     break;
                 }
+                /**
+                 * @api {get} /o/app_users/download/:id Downloads user export.
+                 * @apiName Download user export
+                 * @apiGroup App User Management
+				 * @apiDescription Downloads users export
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {

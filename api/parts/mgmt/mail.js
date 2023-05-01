@@ -13,7 +13,7 @@ var mail = {},
     config = require('../../config'),
     ip = require('./ip.js');
 
-if (config.mail && config.mail.transport) {
+if (config.mail && config.mail.transport && config.mail.transport !== "nodemailer-smtp-transport") {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
 }
 else if (config.mail && config.mail.config) {
