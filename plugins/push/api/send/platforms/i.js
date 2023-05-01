@@ -640,7 +640,7 @@ class APN extends Base {
                  */
                 streamDone = session.streamDone = function() {
                     session.streamDoneCount--;
-                    self.log.d('streamDone (left %j) %j %j %j %j %j', session.streamDoneCount, oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, nonRecoverableError && nonRecoverableError.affected.length || 0, pushes.length);
+                    // self.log.d('streamDone (left %j) %j %j %j %j %j', session.streamDoneCount, oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, nonRecoverableError && nonRecoverableError.affected.length || 0, pushes.length);
                     if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) + (nonRecoverableError && nonRecoverableError.affected.length || 0) === pushes.length) {
                         let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
@@ -676,12 +676,12 @@ class APN extends Base {
 
             session.streamDoneCount = 0;
             this.log.d('sending %d streams', pushes.length);
-            pushes.forEach((p, i) => {
+            pushes.forEach(p => {
                 session.streamDoneCount = (session.streamDoneCount || 0) + 1;
-                self.log.d('[%s]: sending %s', p._id, p._id);
-                if (i % 200 === 0) {
-                    self.log.d('[%s] %j / %j', p._id, session.closed, session.destroyed);
-                }
+                // self.log.d('[%s]: sending %s', p._id, p._id);
+                // if (i % 200 === 0) {
+                //     self.log.d('[%s] %j / %j', p._id, session.closed, session.destroyed);
+                // }
                 if (nonRecoverableError) {
                     self.log.d('[%s]: nonRecoverableError', p._id);
                     nonRecoverableError.addLeft(p._id, one);
@@ -735,18 +735,18 @@ class APN extends Base {
                     stream.on('response', function(headers) {
                         status = headers[':status'];
                         if (status === 200) {
-                            self.log.d('[%s] response done %d', p._id, status);
+                            // self.log.d('[%s] response done %d', p._id, status);
                             oks.push(p._id);
                             stream.destroy();
                             streamDone();
-                            self.log.d('[%s] response done %d', p._id, status);
+                            // self.log.d('[%s] response done %d', p._id, status);
                         }
                         else if (status === 410) {
-                            self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
+                            // self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
                             stream.destroy();
                             error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
                             streamDone();
-                            self.log.d('[%s] response done %d', p._id, status);
+                            // self.log.d('[%s] response done %d', p._id, status);
                         }
                         else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
                             self.log.e('[%s]: APN returned error %d, destroying session', p._id, status);
@@ -816,7 +816,7 @@ class APN extends Base {
                         stream.close(HTTP2.constants.NGHTTP2_CANCEL);
                     });
                     stream.end(content);
-                    self.log.d('[%s]: sent %s', p._id, content);
+                    // self.log.d('[%s]: sent %s', p._id, content);
                 }
                 catch (err) {
                     self.log.e('[%s] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', p._id, session.closed, session.destroyed, err);
