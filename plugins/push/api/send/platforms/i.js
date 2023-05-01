@@ -603,7 +603,7 @@ class APN extends Base {
                     return ok;
                 }
             }).catch(err => {
-                this.log.e('Failed to reconnect to APN, rejecting %d pushes', pushesData && pushesData.length, err);
+                this.log.e('Failed to reconnect to APN, rejecting %d pushes', pushesData.length, err);
                 err.addAffected(pushesData.map(p => p._id), length);
                 this.send_push_fail(err);
                 throw err;
@@ -877,7 +877,7 @@ class APN extends Base {
                         catch (e) {
                             this.log.e('session timeout %d', session.streamDoneCount, err, lastStreamId, opaqueData);
                         }
-                        while (session.streamDoneCount-- > 0) {
+                        while (session.streamDoneCount > 0) {
                             session.streamDone();
                         }
                         session.goawayed = true;
@@ -888,7 +888,7 @@ class APN extends Base {
 
                     session.on('close', err => {
                         this.log.e('session close %d', session.streamDoneCount, err);
-                        while (session.streamDoneCount-- > 0) {
+                        while (session.streamDoneCount > 0) {
                             session.streamDone();
                         }
                         session.goawayed = true;
@@ -900,7 +900,7 @@ class APN extends Base {
 
                     session.on('goaway', err => {
                         this.log.e('session goaway %d', session.streamDoneCount, err);
-                        while (session.streamDoneCount-- > 0) {
+                        while (session.streamDoneCount > 0) {
                             session.streamDone();
                         }
                         session.goawayed = true;

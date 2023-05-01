@@ -58,7 +58,7 @@ class StreamWrapper extends PassThrough {
                     }
                 }
                 else {
-                    nextCheck = setTimeout(check.bind(this), this.timeout / 10);
+                    nextCheck = setTimeout(check, this.timeout / 10);
                 }
             },
             nextCheck;
@@ -67,9 +67,10 @@ class StreamWrapper extends PassThrough {
 
         let i = 0;
         stream.on('data', obj => {
-            if (i++ % 1000 === 0) {
+            if (i % 1000 === 0) {
                 log.d('%j', obj);
             }
+            i++;
             this.last = obj._id;
             this.lastEmited = Date.now();
         });
