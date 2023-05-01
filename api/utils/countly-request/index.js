@@ -114,15 +114,31 @@ module.exports = function(uri, options, callback) {
 };
 
 // Add a post method to the request object
-module.exports.post = function(options, callback) {
-    got.post(options, callback).then(response => {
-        // Call the callback with the response data
-        callback(null, response, response.body);
-    }).catch(error => {
-        // Call the callback with the error
-        callback(error);
-    });
-
+module.exports.post = function(uri, options, callback) {
+    var params = initParams(uri, options, callback);
+    if (params.options && (params.options.url || params.options.uri)) {
+        // Make the request using got
+        got.post(params.options)
+            .then(response => {
+                // Call the callback with the response data
+                params.callback(null, response, response.body);
+            })
+            .catch(error => {
+                // Call the callback with the error
+                params.callback(error);
+            });
+    }
+    else {
+        // Make the request using got
+        got.post(params.uri, params.options)
+            .then(response => {
+                params.callback(null, response, response.body);
+            })
+            .catch(error => {
+                // Call the callback with the error
+                params.callback(error);
+            });
+    }
 };
 
 //Add a get method to the request object

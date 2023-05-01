@@ -55,7 +55,7 @@
                                     <cly-form-step :id="formId" class="app-section">
                                         <div style="display: flex;justify-content: space-between; line-height: 30px;">
                                             APP INFORMATION
-                                            <el-button v-show="edited && isGlobalAdmin" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
+                                            <el-button v-show="edited && (isGlobalAdmin || isAppAdmin)" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
                                         </div>
                                         <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.application-name')">

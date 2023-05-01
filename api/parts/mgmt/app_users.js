@@ -882,7 +882,7 @@ usersApi.export = function(app_id, query, params, callback) {
                     uids: res[0].uid.join(", "),
                     app_id: app_id,
                     info: "Export started",
-                    export_file: export_folder + ".tar.gz"
+                    export_file: export_filename + ".json"
                 }
             });
 
@@ -948,10 +948,10 @@ usersApi.export = function(app_id, query, params, callback) {
                                                     uids: res[0].uid.join(", "),
                                                     app_id: app_id,
                                                     info: "Export successful",
-                                                    export_file: export_folder + ".tar.gz"
+                                                    export_file: export_filename + ".json"
                                                 }
                                             });
-                                            callback(null, export_filename + ".tar.gz");
+                                            callback(null, export_filename + ".json");
                                         }
                                         //not updated (not exist or errored)
                                         else {
@@ -963,7 +963,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                                     uids: res[0].uid.join(", "),
                                                     app_id: app_id,
                                                     info: "User not exist",
-                                                    export_folder: export_folder
+                                                    export_file: export_filename + ".json"
                                                 }
                                             });
                                             if (res1 && res1.result) {
@@ -982,10 +982,10 @@ usersApi.export = function(app_id, query, params, callback) {
                                             uids: res[0].uid.join(", "),
                                             app_id: app_id,
                                             info: "Export successful",
-                                            export_file: export_folder + ".tar.gz"
+                                            export_file: export_filename + ".json"
                                         }
                                     });
-                                    callback(null, export_filename + ".tar.gz");
+                                    callback(null, export_filename + ".json");
                                 }
 
                                 //Now we don't have empty files.
@@ -1003,7 +1003,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                         uids: res[0].uid.join(", "),
                                         app_id: app_id,
                                         info: "Error during exporting files",
-                                        export_folder: export_folder
+                                        export_file: export_filename + ".json"
                                     }
                                 });
                                 callDeleteExport(export_filename, params, app_id, eid, "Export failed while running commands from other plugins. Unable to clean up file system.", "Export failed while running commands from other plugins. Partially exported data deleted.", callback);

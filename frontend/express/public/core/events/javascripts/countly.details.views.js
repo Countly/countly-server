@@ -150,6 +150,12 @@
         components: {
             "detail-tables": EventsTable,
         },
+        mixins: [
+            countlyVue.container.dataMixin({
+                'externalLinks': '/analytics/events/links'
+            }),
+            countlyVue.mixins.commonFormatters
+        ],
         methods: {
             dateChanged: function() {
                 this.$store.dispatch('countlyAllEvents/setTableLoading', true);
@@ -175,6 +181,31 @@
                     this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
                     this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
                     this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                }
+            },
+            topDropdown: function() {
+                var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];//gets event key(not name)
+                if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                    var dropdown = [];
+                    for (var z = 0; z < this.externalLinks.length; z++) {
+                        if (this.externalLinks[z].data && this.externalLinks[z].data.event) {
+                            var coppied = JSON.parse(JSON.stringify(this.externalLinks[z].data));
+                            coppied.event = eventName;
+                            var segment = this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
+                            if (segment && segment !== "segment") {
+                                coppied.byVal = ["sg." + segment];
+                            }
+                            var link = this.externalLinks[z].getLink(coppied);
+                            dropdown.push({"label": this.externalLinks[z].label, "value": link});
+                        }
+                        else {
+                            dropdown.push({"label": this.externalLinks[z].label, "value": this.externalLinks[z].value});
+                        }
+                    }
+                    return dropdown;
+                }
+                else {
+                    return null;
                 }
             },
             selectedSegment: {
