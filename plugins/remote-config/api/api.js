@@ -125,6 +125,52 @@ plugins.setConfigs("remote-config", {
         return getRemoteConfig(params);
     });
 
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+
+        if (params.qstring.method !== "fetch_variants") {
+            return false;
+        }
+
+        return new Promise(function(resolve, reject) {
+            var appId = params.app_id;
+            var collectionName = "ab_testing_experiments" + appId;
+            params.parameter_criteria = {"$and": []};
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"status": {$exists: false}},
+                    {"status": {$exists: true, $eq: "running"}},
+                ]
+            });
+            var variants = [];
+
+            common.outDb.collection(collectionName).find(params.parameter_criteria).toArray(function(err, result) {
+                if (err) {
+                    common.returnMessage(params, 400, 'Error while fetching ab-testing variants.');
+                    reject(err);
+                    return;
+                }
+
+                for (var i = 0;i < result.length;i++) {
+                    var ab = result[i];
+                    if (ab && ab.variants && ab.variants.length > 0 && ab.variants[0].parameters && ab.variants[0].parameters.length > 0) {
+                        var parameterName = ab.variants[0].parameters[0].name;
+                        if (parameterName === params.qstring.parameter_name) {
+                            for (var j = 0;j < ab.variants.length;j++) {
+                                var variant = ab.variants[j];
+                                var variantName = variant.name;
+                                var variantValue = variant.parameters[0].value;
+                                variants.push({ name: variantName, value: variantValue });
+                            }
+                        }
+                    }
+                }
+                common.returnOutput(params, variants, true);
+                return resolve(true);
+            });
+        });
+    });
+
     plugins.register("/i/remote-config", function(ob) {
         var params = ob.params,
             paths = ob.paths;
