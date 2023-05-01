@@ -402,6 +402,12 @@
             */
             setPermissionByDependency: function(index, type, feature) {
                 var self = this;
+                var crudTypes = {
+                    'c': 'Create',
+                    'r': 'Read',
+                    'u': 'Update',
+                    'd': 'Delete'
+                };
                 var permissionSets = this.permissionSets[index];
                 var singleFeaturePermDependency = this.featuresPermissionDependency[feature];
                 var featuresPermDependency = this.featuresPermissionDependency;
@@ -411,19 +417,20 @@
                 var setPermission = function(permType) {
                     var preReqfeatures = singleFeaturePermDependency[permType];
                     Object.keys(preReqfeatures).forEach(function(preReqfeature) {
+                        //group together similar toast msg
+                        var msg = [];
                         preReqfeatures[preReqfeature].forEach(function(preReqfeaturePerm) {
                             if (!permissionSets[preReqfeaturePerm].allowed[preReqfeature]) {
                                 permissionSets[preReqfeaturePerm].allowed[preReqfeature] = true;
-                                var msg = CV.i18n('management-users.read-permission-given-feature');
-                                if (permType !== 'r') {
-                                    msg = "Permission(s) granted automatically for";
-                                }
-                                CountlyHelpers.notify({
-                                    message: msg + ' ' + self.featureBeautifier(preReqfeature),
-                                    type: 'info'
-                                });
+                                msg.push(crudTypes[preReqfeaturePerm]);
                             }
                         });
+                        if (msg.length) {
+                            CountlyHelpers.notify({
+                                message: `${msg.join(', ')} permission(s) granted automatically for` + ' ' + self.featureBeautifier(preReqfeature),
+                                type: 'info'
+                            });
+                        }
                     });
                 };
 
@@ -440,26 +447,32 @@
                     //traverse inverseFeaturesPermissionDependency object,disable the dependency features
                     Object.keys(invPreReqfeatures).forEach(function(invPreReqfeature) {
                         if (featuresPermDependency[invPreReqfeature]) {
+                            //group together similar toast msg
+                            var invMsg = [];
                             Object.keys(featuresPermDependency[invPreReqfeature]).forEach(function(typeKey) {
                                 var preReqPerms = featuresPermDependency[invPreReqfeature][typeKey][feature];
                                 if (preReqPerms && preReqPerms.indexOf(type) !== -1) {
                                     if (permissionSets[typeKey].allowed[invPreReqfeature]) {
                                         permissionSets[typeKey].allowed[invPreReqfeature] = false;
+                                        invMsg.push(crudTypes[typeKey]);
                                         //disable all other permission if Read is disabled
                                         if (typeKey === 'r') {
                                             for (var cudType of ['c', 'u', 'd']) {
                                                 if (permissionSets[cudType].allowed[invPreReqfeature]) {
                                                     permissionSets[cudType].allowed[invPreReqfeature] = false;
+                                                    invMsg.push(crudTypes[cudType]);
                                                 }
                                             }
                                         }
-                                        CountlyHelpers.notify({
-                                            message: CV.i18n('management-users.other-permissions-for') + ' ' + self.featureBeautifier(invPreReqfeature) + ' ' + 'revoked automatically because some permission is disabled',
-                                            type: 'info'
-                                        });
                                     }
                                 }
                             });
+                            if (invMsg.length) {
+                                CountlyHelpers.notify({
+                                    message: self.featureBeautifier(invPreReqfeature) + ' ' + `${invMsg.join(', ')} permission(s) disabled automatically due to dependency permission being disabled`,
+                                    type: 'info'
+                                });
+                            }
                         }
                     });
                 }
