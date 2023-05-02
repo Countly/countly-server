@@ -1,6 +1,6 @@
 const FEATURE_NAME = 'data_manager';
-const SUB_FEATURE_REDACTION = FEATURE_NAME + ': Redaction';
-const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + ': Transformations';
+const SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');

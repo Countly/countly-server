@@ -399,6 +399,9 @@
             * @param {number} index - The index of the permission set to modify.
             * @param {string} type - The type of permission to modify (c, r, u, or d).
             * @param {string} feature - The feature to modify permissions for.
+            * @example setPermissionByDependency(0, 'u', 'data_manager_transformations'), when the function is called with these params it means the user is toggling 'update' permission of data_manager_transformations for permissionSet of index 0,
+            * we need to make sure incase if the user is enabling it, that the dependency permission data_manager - 'read' is also enabled, we get these dependency details from featuresPermissionDependency.
+            * In case of disabling something let's say data_manager - 'read' we need to check if there are other feature(s) permission(s) which had dependency of data_manager - 'read', and disable them too, we get this inverse dependency from inverseFeaturesPermissionDependency.
             */
             setPermissionByDependency: function(index, type, feature) {
                 var self = this;

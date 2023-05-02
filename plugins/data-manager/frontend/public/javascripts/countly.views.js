@@ -3,8 +3,8 @@
 (function() {
 
     var FEATURE_NAME = "data_manager";
-    var SUB_FEATURE_REDACTION = FEATURE_NAME + ': Redaction';
-    var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + ': Transformations';
+    var SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+    var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
