@@ -708,6 +708,10 @@
                 if (groupVal.length === 0) {
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
+                    this.$refs.userDrawer.editedObject.permission.c = {};
+                    this.$refs.userDrawer.editedObject.permission.r = {};
+                    this.$refs.userDrawer.editedObject.permission.u = {};
+                    this.$refs.userDrawer.editedObject.permission.d = {};
                 }
             },
             onRoleChange: function(role) {
