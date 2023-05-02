@@ -178,6 +178,9 @@ class Audience {
         if (!project.tk) {
             project.tk = 1;
         }
+        if (!project.tz) {
+            project.tz = 1;
+        }
         steps.push({$project: project});
     }
 
@@ -403,7 +406,7 @@ class Mapper {
                 ret.pr[k] = user[k];
             }
         });
-        common.log('push').d('mapped push', ret);
+        // common.log('push').d('mapped push', ret);
         return ret;
     }
 }
@@ -424,7 +427,7 @@ class PlainApiMapper extends Mapper {
     map(user, date, c, offset = 0) {
         let d = date.getTime();
         if (this.trigger.tz) {
-            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : parseFloat(user.tz) || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
 
             if (d < Date.now()) {

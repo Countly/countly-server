@@ -508,7 +508,7 @@ class Message extends Mongoable {
      */
     get needsScheduling() {
         return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
-            (!t.delayed || (t.delayed && t.start.getTime() > Date.now() - 5 * 60000))).length > 0;
+            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead) || (t.delayed && t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead_tz))).length > 0;
     }
 
     /**
@@ -635,7 +635,10 @@ class Message extends Mongoable {
                     }
                 });
             }
-            let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
+            let date = Date.now();
+            if (plain.delayed) {
+                date = plain.start.getTime() - (plain.tz ? DEFAULTS.schedule_ahead_tz : DEFAULTS.schedule_ahead);
+            }
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
         if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {

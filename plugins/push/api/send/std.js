@@ -252,12 +252,19 @@ class Base extends Duplex {
             catch (e) {
                 this.log.w('Retriable error %d of %d', attempt, max, e);
                 if (!(e instanceof PushError)) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isException) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isCredentials) {
+                    this.sending -= bytes;
+                    throw e;
+                }
+                else if (this.cannotRetry) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 // else if (e.hasAffected || e.hasLeft) {
