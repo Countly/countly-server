@@ -6,7 +6,7 @@
             <h2 v-else> {{i18n('data-manager.manage-events')}} </h2>
         </template>
         <template v-slot:header-tabs>
-            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary"></cly-dynamic-tabs>
+            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary" :hideSingleTab="false"></cly-dynamic-tabs>
       </template>
       <template v-slot:header-right>
           <div v-if="isDrill">

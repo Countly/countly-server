@@ -1482,8 +1482,36 @@ const processRequest = (params) => {
                 case 'permissions':
                     validateRead(params, 'core', function() {
                         var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
-                        plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
-                            common.returnOutput(params, features);
+                        /*
+                            Example structure for featuresPermissionDependency Object
+                            {
+                                [FEATURE name which need other permissions]:{
+                                    [CRUD permission of FEATURE]: {
+                                        [DEPENDENT_FEATURE name]:[DEPENDENT_FEATURE required CRUD permissions array]
+                                    },
+                                    .... other CRUD permission if necessary
+                                }
+                            },
+                            {
+                                data_manager: Transformations:{
+                                    c:{
+                                        data_manager:['r','u']
+                                    },
+                                    r:{
+                                        data_manager:['r']
+                                    },
+                                    u:{
+                                        data_manager:['r','u']
+                                    },
+                                    d:{
+                                        data_manager:['r','u']
+                                    },
+                                }
+                            }
+                        */
+                        var featuresPermissionDependency = {};
+                        plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+                            common.returnOutput(params, {features, featuresPermissionDependency});
                         });
                     });
                     break;
