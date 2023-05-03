@@ -691,7 +691,11 @@
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
-                activeThreadPanels: []
+                activeThreadPanels: [],
+                symbolicationErrorDialog: {
+                    show: false,
+                    msg: '',
+                },
             };
         },
         computed: {
@@ -850,7 +854,20 @@
                     this.crashesBeingSymbolicated.push(crash._id);
                     this.$store.dispatch("countlyCrashes/crashgroup/symbolicate", crash)
                         .then(function() {
+                            CountlyHelpers.notify({
+                                title: CV.i18n("crash_symbolication.symbolication-success"),
+                                message: CV.i18n("crash_symbolication.symbolication-success")
+                            });
                             self.refresh();
+                        })
+                        .catch(function(err) {
+                            if (err.responseJSON) {
+                                self.symbolicationErrorDialog.msg = err.responseJSON.result;
+                            }
+                            else {
+                                self.symbolicationErrorDialog.msg = err.statusText;
+                            }
+                            self.symbolicationErrorDialog.show = true;
                         })
                         .finally(function() {
                             self.crashesBeingSymbolicated = self.crashesBeingSymbolicated.filter(function(cid) {
