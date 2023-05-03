@@ -760,7 +760,8 @@
                     editMode: false
                 },
                 features: [],
-                loading: true
+                loading: true,
+                groupModelData: []
             };
         },
         computed: {
@@ -768,7 +769,8 @@
                 var map = {};
 
                 if (isGroupPluginEnabled) {
-                    groupsModel.data().forEach(function(group) {
+                    this.groupModelData = groupsModel.data();
+                    this.groupModelData.forEach(function(group) {
                         map[group._id] = group.name;
                     });
                 }
@@ -823,6 +825,19 @@
 
                         user.groupNames = groupNames.join(", ");
                     }
+                    else {
+                        user.groupNames = '';
+                    }
+
+                    user.dispRole = CV.i18n('management-users.global-admin');
+                    if (!user.global_admin) {
+                        if (user.permission && user.permission._ && user.permission._.a.length > 0) {
+                            user.dispRole = CV.i18n('management-users.admin');
+                        }
+                        else {
+                            user.dispRole = CV.i18n('management-users.user');
+                        }
+                    }
 
                     this.users.push(user);
                 }
@@ -830,6 +845,11 @@
         },
         mounted: function() {
             var self = this;
+            if (isGroupPluginEnabled) {
+                groupsModel.initialize().then(function() {
+                    self.groupModelData = groupsModel.data();
+                });
+            }
             $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
                 var usersObj = countlyUserManagement.getUsers();
                 self.fillOutUsers(usersObj);
