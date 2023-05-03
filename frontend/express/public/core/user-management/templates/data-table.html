@@ -85,7 +85,7 @@
           </el-table-column>
           <el-table-column v-if="col.value === 'group'" sortable="true" prop="groupNames" :label="i18n('management-users.group')">
             <template v-slot="rowScope">
-              <div v-if="!rowScope.row.groupNames">{{i18n(management-users.group-blank)}}</div>
+              <div v-if="!rowScope.row.groupNames">{{i18n('management-users.group-blank')}}</div>
               <div v-else class="manage-users-table__groups" :key="index" v-for="(groupId, index) in rowScope.row.group_id">
                   <a :href="'#/manage/users/group/' + groupId + '?from=userlist'" :title="rowScope.row.groupNames.trim().split(',')[index]">
                     <span>{{rowScope.row.groupNames.trim().split(',')[index]}}</span>
