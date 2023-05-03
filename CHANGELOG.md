@@ -1,3 +1,20 @@
+## Version 23.03.5
+Fixes:
+- [user-management] Fix sorting for Role & Group in user management
+- [user-management] Fix for blank group values
+- [core] Prepare minification for all plugins
+- [core] Reset permission properly in user edit drawer
+- [core] Update app details response to check permission object when listing app admins and users
+- [core] Sum showing up in Events breakdown that has only Count
+- [push] Fixes regarding push delivery in users’ timezones
+- [push] Drill filter for push action event 
+
+Enterprise fixes:
+- [surveys] Fix nps/ias popups not working in firefox
+- [push] Drill filter for push action event
+- [groups] Fix member permission updates when a group is deleted or updated
+- [cohorts] Fixed issues with determining rules for numeric properties in realtime cohort processing.
+
 ## Version 23.03.4
 Fixes:
 - [core] Allow user with admin rights to modify graph notes.
