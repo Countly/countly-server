@@ -220,6 +220,7 @@
                 apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
+                filteredFeatures: [],
                 dropzoneOptions: {
                     member: null,
                     url: "/member/icon",
@@ -241,6 +242,23 @@
             };
         },
         methods: {
+            search: function(index) {
+                var self = this;
+                var query = self.filteredFeatures[index].searchQuery;
+                if (query && query !== "") {
+                    query = query.toLowerCase();
+                    self.filteredFeatures[index].features = self.features.filter(function(feature) {
+                        return feature.toLowerCase().includes(query);
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features = self.features;
+                }
+            },
+            clearSearch: function(index) {
+                this.filteredFeatures[index].searchQuery = '';
+                this.filteredFeatures[index].features = this.features;
+            },
             featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
@@ -380,6 +398,10 @@
                 }
 
                 this.permissionSets.push(permissionSet);
+                this.filteredFeatures.push({
+                    searchQuery: '',
+                    features: this.features
+                });
             },
             removePermissionSet: function(index) {
                 if (this.$refs.userDrawer.editedObject.permission._.u[index]) {
@@ -392,6 +414,7 @@
                     }
                 }
                 this.permissionSets.splice(index, 1);
+                this.filteredFeatures.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             /**
@@ -717,6 +740,9 @@
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
+                // clear filtered features
+                this.filteredFeatures = [];
+
                 // clear permission sets
                 this.permissionSets = [];
                 this.groups = [];
@@ -797,6 +823,12 @@
 
                     this.permissionSets.push(permissionSet_);
                 }
+
+                // initialize filtered features
+                for (let i = 0; i < this.permissionSets.length; i++) {
+                    this.filteredFeatures.push({features: this.features, searchQuery: ''});
+                }
+
             },
             onGroupChange: function(groupVal) {
                 this.groups = groupVal;
