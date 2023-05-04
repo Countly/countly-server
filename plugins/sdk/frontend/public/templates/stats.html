@@ -76,7 +76,7 @@
 			</div>
 		</div>
 		<cly-section>
-			<cly-chart-time :option="lineOptions" :legend="lineLegend" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
+			<cly-chart-bar :option="lineOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
 		</cly-section>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>

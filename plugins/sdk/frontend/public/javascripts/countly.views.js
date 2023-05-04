@@ -10,7 +10,7 @@
         ].concat(countlyVue.container.mixins(["/manage/sdk"])),
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || "configurations"
+                selectedTab: (this.$route.params && this.$route.params.tab) || "stats"
             };
         },
         computed: {
@@ -44,7 +44,6 @@
         this.renderWhenReady(ViewWrapper);
     });
     app.addSubMenu("management", {code: "sdk", permission: FEATURE_NAME, url: "#/manage/sdk", text: "SDK Manager", priority: 50, tabsPath: "/manage/sdk"});
-    //app.addMenu("management", {code: "sdk", permission: FEATURE_NAME, url: "#/manage/sdk", text: "SDK", priority: 50, tabsPath: "/manage/sdk"});
 
     var SDKConfigurationView = countlyVue.views.create({
         template: CV.T('/sdk/templates/config.html'),
@@ -76,14 +75,14 @@
                         label: "SDK control",
                         list: ["tracking", "networking"]
                     },
-                    /*features: {
+                    features: {
                         label: "SDK features",
                         list: ["crashes", "views"]
                     },
                     settings: {
                         label: "SDK settings",
-                        list: ["heartbeat", "event_queue","request_queue"]
-                    }*/
+                        list: ["heartbeat", "event_queue", "request_queue"]
+                    }
                 },
                 configs: {
                     tracking: {
@@ -100,7 +99,7 @@
                         default: true,
                         value: null
                     },
-                    /*crashes: {
+                    crashes: {
                         type: "switch",
                         name: "Crashes",
                         description: "Enable or disable automatic tracking of unhandled crashes",
@@ -134,7 +133,7 @@
                         description: "How many events to store in queue before they would be batched and sent to server",
                         default: 10,
                         value: null
-                    },*/
+                    }
                 },
                 diff: []
             };
@@ -181,7 +180,7 @@
         }
     });
     countlyVue.container.registerTab("/manage/sdk", {
-        priority: 1,
+        priority: 2,
         route: "#/manage/sdk/configurations",
         component: SDKConfigurationView,
         title: "SDK Configuration",
@@ -487,7 +486,7 @@
 
     });
     countlyVue.container.registerTab("/manage/sdk", {
-        priority: 2,
+        priority: 1,
         route: "#/manage/sdk/stats",
         component: SDKStatsView,
         title: "SDK Stats",
