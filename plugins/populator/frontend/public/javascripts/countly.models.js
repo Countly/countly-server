@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app, moment*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -945,6 +945,22 @@
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                params.sdk_name = "javascript_native_web";
+            }
+            else {
+                params.sdk_name = (Math.random() > 0.5) ? "objc-native-ios" : "java-native-android";
+            }
+            var seed = params.timestamp || Date.now();
+            seed = (seed + "").length === 13 ? seed : seed * 1000;
+            var d = moment(seed);
+            if (parseInt(d.format('DD')[1], 10) < 5) {
+                if (Math.random() > 0.5) {
+                    seed -= 1000 * 60 * 60 * 24 * 10;
+                    d = moment(seed);
+                }
+            }
+            params.sdk_version = d.format('YY') + "." + d.format('MM') + "." + d.format('DD')[0];
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();

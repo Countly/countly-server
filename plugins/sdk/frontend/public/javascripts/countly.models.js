@@ -286,7 +286,7 @@
                     legendData: {},
                     isLoading: true,
                     selectedSDK: "",
-                    selectedProperty: "t"
+                    selectedProperty: "u"
                 };
             },
             getters: {
