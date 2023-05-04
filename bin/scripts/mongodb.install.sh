@@ -217,8 +217,9 @@ function update_sysctl() {
 }
 
 function mongodb_check() {
-    MONGODB_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
-    MONGODB_PATH=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F' ' '{print $2}')
+    MONGODB_SERVICE_FILE=$(systemctl status mongod|grep loaded|awk -F'(' '{print $2}'|awk -F';' '{print $1}')
+    MONGODB_USER=$(grep 'User=' "${MONGODB_SERVICE_FILE}"|awk -F'=' '{print $2}')
+    MONGODB_PATH=$(grep 'dbPath' "${MONGODB_CONFIG_FILE}" | awk -F' ' '{print $2}')
     MONGODB_DISK=$(df -Th | grep "${MONGODB_PATH}" | awk -F' ' '{print $2}')
 
     #Check data disk for type
