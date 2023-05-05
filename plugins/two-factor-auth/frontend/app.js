@@ -242,7 +242,7 @@ function generateQRCode(username, secret, callback) {
                                                 secret_token: req.body.secret_token,
                                                 qrcode_html: svg
                                             });
-                                       }
+                                        }
                                     });
                                 }
                                 // 2fa is already set up
