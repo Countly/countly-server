@@ -297,7 +297,7 @@
                     state.selectedSDK = value;
                 },
                 setFetchInit: function(state) {
-                    state.isLoading = true;
+                    //state.isLoading = true;
                     state.hasError = false;
                     state.error = null;
 

@@ -16,8 +16,8 @@
     </cly-header>
     <cly-main>
 		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
-		<div class="bu-columns bu-is-gapless">
-			<h4>Stats for: </h4>
+		<div class="bu-columns bu-is-gapless bu-mt-2">
+			<h4>Stats for </h4>
 			<div class ="selector_wrapper">
 				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
@@ -68,7 +68,7 @@
             </vue-scroll>
         </div>
 		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
-			<h4 class="bu-pb-4">SDK Version Adoption for: </h4>
+			<h4 class="bu-pb-4">SDK Version Adoption for </h4>
 			<div class ="selector_wrapper">
 				<el-select v-model="selectedSDK" >
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
