@@ -215,8 +215,8 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
 // };
 
 module.exports.drillPostprocessUids = ({uids, params}) => new Promise((res, rej) => {
-    let message = params.initialQueryObject && params.initialQueryObject.message;
-    if (params && uids.length && message) {
+    let message = params && params.initialQueryObject && params.initialQueryObject.message;
+    if (uids && uids.length && message) {
         log.d(`filtering ${uids.length} uids by message`);
 
         let q = messageQuery(message);
