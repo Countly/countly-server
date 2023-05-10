@@ -1,3 +1,21 @@
+## Version 23.03.6
+Fixes:
+- [core] Destroying cache stream on error
+- [core] More debugging in pluginManager to see plugin install progress.
+- [crashes] Display symbolication failed/success notification
+- [dbviewer] Fixed issue in aggregation view with not displaying results for drill database.
+- [groups] Rebuilding member permission script
+- [push] Fixes for preprocessUids parameter checking
+- [push] Fixing drill query params handling
+- [push] Fixing timezoned messages being filtered out for UTC- timezones when scheduled from UTC+
+Enterprise fixes:
+- [cohorts] On recalculate delete wrongly set hashes for user properties.
+- [cohorts] Simplified processing cohorts on incoming data to recheck All cohorts.
+- [crash_symbolication] Add new labels
+- [crash_symbolication] Added localization
+- [drill] Unescaping HTML for saved query name/description
+- [surveys] fixed visual issues in popup.
+
 ## Version 23.03.5
 Fixes:
 - [user-management] Fix sorting for Role & Group in user management
