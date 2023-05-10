@@ -404,4 +404,15 @@
         </div>
     </cly-main>
     <component v-for="item in externalDialogs" :is="item.component"></component>
+    <el-dialog
+        :visible.sync="symbolicationErrorDialog.show"
+        :title="i18n('crash_symbolication.symbolication-failed')"
+        width="400px">
+        <div class="bu-is-flex-direction-column">
+            <cly-notification
+                :closable="false"
+                color="light-destructive"
+                :text="symbolicationErrorDialog.msg" />
+        </div>
+    </el-dialog>
 </div>
