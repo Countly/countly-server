@@ -75,14 +75,14 @@
                         label: "SDK control",
                         list: ["tracking", "networking"]
                     },
-                    features: {
+                    /*features: {
                         label: "SDK features",
                         list: ["crashes", "views"]
                     },
                     settings: {
                         label: "SDK settings",
-                        list: ["heartbeat", "event_queue", "request_queue"]
-                    }
+                        list: ["heartbeat", "event_queue","request_queue"]
+                    }*/
                 },
                 configs: {
                     tracking: {
@@ -99,7 +99,7 @@
                         default: true,
                         value: null
                     },
-                    crashes: {
+                    /*crashes: {
                         type: "switch",
                         name: "Crashes",
                         description: "Enable or disable automatic tracking of unhandled crashes",
@@ -133,9 +133,10 @@
                         description: "How many events to store in queue before they would be batched and sent to server",
                         default: 10,
                         value: null
-                    }
+                    }*/
                 },
-                diff: []
+                diff: [],
+                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
             };
         },
         methods: {
@@ -166,7 +167,7 @@
                 this.diff = [];
                 var self = this;
                 this.$store.dispatch("countlySDK/sdk/update", data).then(function() {
-                    self.$store.dispatch("countlySDK/sdkInitialize");
+                    self.$store.dispatch("countlySDK/initialize");
                 });
             },
             unpatch: function() {
@@ -228,7 +229,6 @@
                         keepShow: true
                     }
                 },
-                description: "SDK Statistics",
                 dynamicTab: "sdk-table",
                 sdkTabs: [
                     {
@@ -388,14 +388,17 @@
             graphColors: function() {
                 return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF"];
             },
+            stats: function() {
+                return this.$store.state.countlySDK.stats;
+            },
             sdk: function() {
-                return this.$store.state.countlySDK.stats.sdk;
+                return this.stats.sdk;
             },
             lineOptions: function() {
-                return this.$store.state.countlySDK.stats.chartData;
+                return this.stats.chartData;
             },
             lineLegend: function() {
-                return this.$store.state.countlySDK.stats.legendData;
+                return this.stats.legendData;
             },
             chooseProperties: function() {
                 return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
