@@ -18,7 +18,7 @@
     "apidoc-template": "^0.0.2",
     "docdash": "^2.0.1",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-eslint": "24.0.1",
+    "grunt-eslint": "24.1.0",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "jsdoc": "^4.0.0",
