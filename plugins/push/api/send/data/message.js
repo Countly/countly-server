@@ -106,13 +106,18 @@ class Message extends Mongoable {
      */
     static filter(date, play, state = State.Streamable) {
         let $lte = new Date(date.getTime() + play),
-            $gte = new Date(date.getTime() - play);
+            $gte = new Date(date.getTime() - play),
+            lte_plus = new Date(date.getTime() + play + 15 * 60 * 60 * 1000),
+            gte_minus = new Date(date.getTime() - play - 15 * 60 * 60 * 1000);
         return {
             state: {$bitsAllSet: state},
             $or: [
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, tz: false, start: {$lte}}}}, // either almost now for non timezoned messages
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, tz: true, start: {$lte: lte_plus}}}}, // or UTC+-15 (max possible with DST)
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, time: {$exists: false}, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, time: {$exists: true}, start: {$lte: lte_plus}, $or: [{end: {$gte: gte_minus}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: false}, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: true}, start: {$lte: lte_plus}, $or: [{end: {$gte: gte_minus}}, {end: {$exists: false}}]}}},
                 {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
