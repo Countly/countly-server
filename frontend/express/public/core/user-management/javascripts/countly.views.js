@@ -142,6 +142,21 @@
                 case 'show-logs':
                     window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
+                case 'reset-logins':
+                    countlyUserManagement.resetFailedLogins(index, function(err) {
+                        if (err) {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.reset-failed-logins-failed'),
+                                type: 'error'
+                            });
+                            return;
+                        }
+                        CountlyHelpers.notify({
+                            message: CV.i18n('management-users.reset-failed-logins-success'),
+                            type: 'success'
+                        });
+                    });
+                    break;
                 }
             },
             handleSubmitFilter: function(newFilter) {
