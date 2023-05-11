@@ -65,7 +65,7 @@
     "grunt-contrib-sass": "2.0.0",
     "grunt-contrib-uglify": "5.2.2",
     "icanhazip": "^1.0.3",
-    "jimp": "0.22.7",
+    "jimp": "0.22.8",
     "json2csv": "5.0.7",
     "jsonwebtoken": "9.0.0",
     "later": "1.2.0",
