@@ -172,16 +172,16 @@
                   </el-input> 
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="filteredFeatures[index].all.c">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="filteredFeatures[index].all.r">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="filteredFeatures[index].all.u">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="filteredFeatures[index].all.d">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
                     </div>
                   </div>
                 </div>
