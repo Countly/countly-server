@@ -258,25 +258,39 @@
         },
         methods: {
             toggleFilteredAll: function(index) {
-                //check for all checkbox toggle
                 var self = this;
                 var crudTypes = ['c', 'r', 'u', 'd'];
                 var remCrudTypes = ['c', 'r', 'u', 'd'];
                 var all = this.filteredFeatures[index].all;
-                self.filteredFeatures[index].features.forEach(function(feature) {
+
+                if (self.filteredFeatures[index].features.length === 0) {
+                    // Uncheck all CRUD types if filtered features is empty
                     crudTypes.forEach(function(type) {
-                        if (!self.permissionSets[index][type].allowed[feature]) {
-                            remCrudTypes.splice(remCrudTypes.indexOf(type), 1);
-                            all[type] = false;
+                        all[type] = false;
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features.forEach(function(feature) {
+                        crudTypes.forEach(function(type) {
+                            // Remove the current CRUD type from the remaining CRUD types
+                            if (!self.permissionSets[index][type].allowed[feature]) {
+                                // Remove the current CRUD type from the remaining CRUD types
+                                var idx = remCrudTypes.indexOf(type);
+                                if (idx !== -1) {
+                                    remCrudTypes.splice(idx, 1);
+                                }
+                                all[type] = false;
+                            }
+                        });
+                        if (remCrudTypes.length === 0) {
+                            return;
                         }
                     });
-                    if (remCrudTypes.length === 0) {
-                        return;
-                    }
-                });
-                remCrudTypes.forEach(function(type) {
-                    all[type] = true;
-                });
+                    // Check the "all" checkbox for each remaining CRUD type
+                    remCrudTypes.forEach(function(type) {
+                        all[type] = true;
+                    });
+                }
             },
             search: function(index) {
                 var self = this;
@@ -290,9 +304,7 @@
                 else {
                     self.filteredFeatures[index].features = self.features;
                 }
-                if (self.filteredFeatures[index].features.length) {
-                    this.toggleFilteredAll(index);
-                }
+                this.toggleFilteredAll(index);
             },
             clearSearch: function(index) {
                 this.filteredFeatures[index].searchQuery = '';
@@ -585,9 +597,6 @@
                 var features = this.filteredFeatures[index].features;
                 var all = this.filteredFeatures[index].all;
 
-                if (features.length === this.features.length) {
-                    this.permissionSets[index][type].all = all[type];
-                }
                 // set true read permissions automatically if read not selected yet
                 if (all[type] && type !== 'r' && !all.r) {
                     all.r = true;
@@ -629,6 +638,29 @@
                     }
                     this.setPermissionByDependency(index, type, features[feature2]);
                 }
+
+                //change permission set all only if all[type] is false or if every feature is enabled
+                if (!all[type]) {
+                    this.permissionSets[index][type].all = all[type];
+                }
+                else {
+                    if (features.length === this.features.length) {
+                        this.permissionSets[index][type].all = true;
+                    }
+                    else {
+                        var isTrue = true;
+                        for (var featName of this.features) {
+                            if (!this.permissionSets[index][type].allowed[featName]) {
+                                isTrue = false;
+                                break;
+                            }
+                        }
+                        if (isTrue) {
+                            this.permissionSets[index][type].all = true;
+                        }
+                    }
+                }
+
                 if (all[type]) {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.future-plugins'),
