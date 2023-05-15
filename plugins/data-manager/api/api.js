@@ -28,15 +28,18 @@ plugins.register("/permissions/features", function(ob) {
     ob.featuresPermissionDependency[SUB_FEATURE_REDACTION] = {
         c: {
             [SUB_FEATURE_REDACTION]: ['r', 'u', 'd'],
+            [FEATURE_NAME]: ['u']
         },
         r: {
-            [FEATURE_NAME]: ['r'],
+            [FEATURE_NAME]: ['r']
         },
         u: {
             [SUB_FEATURE_REDACTION]: ['r', 'c', 'd'],
+            [FEATURE_NAME]: ['u']
         },
         d: {
             [SUB_FEATURE_REDACTION]: ['r', 'c', 'u'],
+            [FEATURE_NAME]: ['u']
         },
     };
 });
