@@ -171,8 +171,8 @@ function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_
     }
 
     for (i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
+        if (parseInt(monthsArray[i], 10) === 0) {
+            if (parseInt(weeksArray[i], 10) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
                 uniquePeriods[i] = periodArr[i];
             }
             else {
@@ -290,8 +290,8 @@ function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCo
     }
 
     for (i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) !== 0) {
+        if (parseInt(monthsArray[i], 10) === 0) {
+            if (parseInt(weeksArray[i], 10) !== 0) {
                 uniquePeriods[i] = weeksArray[i];
             }
         }
