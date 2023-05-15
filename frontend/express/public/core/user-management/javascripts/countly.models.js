@@ -192,21 +192,28 @@
     };
 
     countlyUserManagement.resetFailedLogins = function(id, callback) {
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + '/users/reset_timeban',
-            dataType: "json",
-            data: {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                username: _users[id].email
-            },
-            success: function() {
+        var sendRequest = function(username) {
+            return $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/users/reset_timeban',
+                dataType: "json",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    username,
+                }
+            });
+        };
+
+        var resetLoginsWithEmail = sendRequest(_users[id].email);
+        var resetLoginsWithUsername = sendRequest(_users[id].username);
+
+        $.when(resetLoginsWithEmail, resetLoginsWithUsername)
+            .done(function() {
                 callback();
-            },
-            error: function(err) {
+            })
+            .fail(function(err) {
                 callback(err.responseJSON.result);
-            }
-        });
+            });
     };
 
 })((window.countlyUserManagement = window.countlyUserManagement || {}));
