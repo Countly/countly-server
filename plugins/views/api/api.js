@@ -239,6 +239,36 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
     });
 
+    /* Function for future use to use ugroups instead of usual method. Needs to be rechecked for agregation pipeline speed
+    function getUvalueSelectFromMap(map, segmentVal) {
+        var groups = {};
+        for (var year in map) {
+            let yy = year + ":0";
+            groups[yy] = [];
+            groups[yy].push({"k": yy, "v": "$d." + year + "." + segmentVal + "u"});
+            if (Object.keys(map[year]).length > 0) { //we need also monthly doc for those
+                for (var month in map[year]) {
+                    let mm = year + ":" + month;
+                    groups[mm] = [];
+                    groups[mm].push({"k": mm, "v": "$d." + mm + "." + segmentVal + "u"});
+                    if (Object.keys(map[year][month]).length > 0) { //we need also weekly doc for those
+                        for (var week in map[year][month]) {
+                            let ww = year + ":" + week;
+                            groups[yy].push({"k": ww, "v": "$d." + week + "." + segmentVal + "u"});
+
+                            for (var day in map[year][month][week]) {
+                                let dd = year + ":" + month + ":" + day;
+                                groups[mm].push(mm + "." + dd + "." + segmentVal + "u");
+                                groups[mm].push({"k": dd, "v": "$d." + month + "." + day + "." + segmentVal + "u"});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return groups;
+    }
+    */
     /** function returns aggregation pipeline
      * @param {object} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
@@ -436,8 +466,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pipeline.push({$group: groupBy0});
         }
         else if (period === "prevMonth") { //previous month
-            var prevmonth = now.subtract(1, "month").format('YYYY:M');
-            monthNumber = prevmonth.split(':');
+            var prevmonth = now.format('YYYY:M'); //because now is set as end of last month
+            var monthNumber2 = prevmonth.split(':');
             thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
             if (settings && settings.onlyIDs) {
@@ -447,10 +477,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             groupBy0 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.daily.length; i++) {
                 if (settings.levels.daily[i] !== 'u') {
-                    groupBy0[settings.levels.daily[i]] = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0[settings.levels.daily[i]] = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
                 }
                 else {
-                    groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.uvalue = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.u = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
                 }
             }
             pipeline.push({$group: groupBy0});
@@ -478,6 +509,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var lastMonth = now.format('YYYY:M');
             var u00 = createUvalues(periodObj.uniquePeriodArr, segment);
             var u10 = createUvalues(periodObj.uniquePeriodCheckArr, segment);
+
+            //var ugroups = getUvalueSelectFromMap(periodObj.uniqueMap,segment);
 
             month_array = [];
             last_pushed = "";
@@ -516,6 +549,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
 
             projector = {_id: "$vw"};
+            /* Code for using ugroups in period object
+            if(ugroups){
+                var branches00 = [];
+                for(let i in ugroups){
+                    branches00.push({ case: { $eq: [ "$m", i ] }, then: {$push: u00[i]}});
+                }
+            }*/
             if (u00) {
                 calcUvalue.push('$uvalue0');
                 var branches00 = [];

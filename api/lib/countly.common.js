@@ -21,7 +21,7 @@ var _period = "hour",
 * @param {moment} endTimestamp - end of period
 * @returns {array} unique array ticks for period
 **/
-function getTicksBetween(startTimestamp, endTimestamp) {
+/*function getTicksBetween(startTimestamp, endTimestamp) {
     var dayIt = startTimestamp.clone(),
         ticks = [];
 
@@ -42,7 +42,7 @@ function getTicksBetween(startTimestamp, endTimestamp) {
     }
 
     return ticks;
-}
+}*/
 
 /**
 * Returns array with more generalized unique ticks for period
@@ -50,10 +50,9 @@ function getTicksBetween(startTimestamp, endTimestamp) {
 * @param {moment} endTimestamp - end of period
 * @returns {array} unique array ticks for period
 **/
-function getTicksCheckBetween(startTimestamp, endTimestamp) {
+/*function getTicksCheckBetween(startTimestamp, endTimestamp) {
     var dayIt = startTimestamp.clone(),
         ticks = [];
-
     while (dayIt < endTimestamp) {
         let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
         if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
@@ -65,9 +64,282 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
             dayIt.add(8 - dayIt.day(), "days");
         }
     }
-
     return ticks;
+}*/
+
+countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
+    var u = 0;
+    for (var year in uniqueMap) {
+        var yearVal = countlyCommon.getDescendantProp(dbObj, year) || {};
+        var calcYearVal = 0;
+        if (Object.keys(uniqueMap[year]).length > 0) {
+            for (var month in uniqueMap[year]) {
+                var ob = countlyCommon.getDescendantProp(dbObj, year + "." + month) || {};
+                var monthVal = ob.u || 0;
+                var calcMonthVal = 0;
+                if (Object.keys(uniqueMap[year][month]).length > 0) {
+                    for (var week in uniqueMap[year][month]) {
+                        var ob2 = countlyCommon.getDescendantProp(dbObj, year + "." + week) || {};
+                        var weekVal = ob2.u || 0;
+                        var calcWeekVal = 0;
+
+                        for (var day in uniqueMap[year][month][week]) {
+                            var ob3 = countlyCommon.getDescendantProp(dbObj, year + "." + month + "." + day) || {};
+                            calcWeekVal += ob3.u || 0;
+                        }
+                        calcMonthVal += Math.min(weekVal, calcWeekVal);
+                    }
+                }
+                else {
+                    calcMonthVal = monthVal;
+                }
+                calcYearVal += Math.min(monthVal, calcMonthVal);
+            }
+        }
+        else {
+            calcYearVal = yearVal;
+        }
+        u += Math.min((yearVal.u || 0), calcYearVal);
+    }
+    return u;
+};
+
+/** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @param {array} periodArr_pd - period array
+        * @returns {array} periods
+        */
+function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
+
+    if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+        return [];
+    }
+
+    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+        if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+            return [];
+        }
+    }
+
+    var weeksArray = clone(weeksArray_pd),
+        weekCounts = clone(weekCounts_pd),
+        monthsArray = clone(monthsArray_pd),
+        monthCounts = clone(monthCounts_pd),
+        periodArr = clone(periodArr_pd);
+
+    var uniquePeriods = [],
+        tmpDaysInMonth = -1,
+        tmpPrevKey = -1,
+        rejectedWeeks = [],
+        rejectedWeekDayCounts = {};
+    var key = 0;
+    var i = 0;
+    for (key in weekCounts) {
+
+        // If this is the current week we can use it
+        if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+            continue;
+        }
+
+        if (weekCounts[key] < 7) {
+            for (i = 0; i < weeksArray.length; i++) {
+                weeksArray[i] = weeksArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (key in monthCounts) {
+        if (tmpPrevKey !== key) {
+            if (moment().format("YYYY.M") === key) {
+                tmpDaysInMonth = moment().format("D");
+            }
+            else {
+                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+            }
+
+            tmpPrevKey = key;
+        }
+
+        if (monthCounts[key] < tmpDaysInMonth) {
+            for (i = 0; i < monthsArray.length; i++) {
+                monthsArray[i] = monthsArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (i = 0; i < monthsArray.length; i++) {
+        if (parseInt(monthsArray[i]) === 0) {
+            if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
+                uniquePeriods[i] = periodArr[i];
+            }
+            else {
+                uniquePeriods[i] = weeksArray[i];
+            }
+        }
+        else {
+            rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
+            uniquePeriods[i] = monthsArray[i];
+
+            if (rejectedWeekDayCounts[weeksArray[i]]) {
+                rejectedWeekDayCounts[weeksArray[i]].count++;
+            }
+            else {
+                rejectedWeekDayCounts[weeksArray[i]] = {
+                    count: 1,
+                    index: i
+                };
+            }
+        }
+    }
+
+    var totalWeekCounts = underscore.countBy(weeksArray, function(per) {
+        return per;
+    });
+
+    for (var weekDayCount in rejectedWeekDayCounts) {
+
+        // If the whole week is rejected continue
+        if (rejectedWeekDayCounts[weekDayCount].count === 7) {
+            continue;
+        }
+
+        // If its the current week continue
+        if (moment().format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
+            continue;
+        }
+
+        // If only some part of the week is rejected we should add back daily buckets
+
+        var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
+            limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
+
+        for (i = startIndex; i < limit; i++) {
+            // If there isn't already a monthly bucket for that day
+            if (parseInt(monthsArray[i]) === 0) {
+                uniquePeriods[i] = periodArr[i];
+            }
+        }
+    }
+
+    rejectedWeeks = underscore.uniq(rejectedWeeks);
+    uniquePeriods = underscore.uniq(underscore.difference(uniquePeriods, rejectedWeeks));
+
+    return uniquePeriods;
 }
+/** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @returns {array} periods
+        */
+function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd) {
+
+    if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+        return [];
+    }
+
+    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+        if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+            return [];
+        }
+    }
+
+    var weeksArray = clone(weeksArray_pd),
+        weekCounts = clone(weekCounts_pd),
+        monthsArray = clone(monthsArray_pd),
+        monthCounts = clone(monthCounts_pd);
+
+    var uniquePeriods = [],
+        tmpDaysInMonth = -1,
+        tmpPrevKey = -1;
+    var key = 0;
+    var i = 0;
+    for (key in weekCounts) {
+        if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+            continue;
+        }
+
+        if (weekCounts[key] < 1) {
+            for (i = 0; i < weeksArray.length; i++) {
+                weeksArray[i] = weeksArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (key in monthCounts) {
+        if (tmpPrevKey !== key) {
+            if (moment().format("YYYY.M") === key) {
+                tmpDaysInMonth = moment().format("D");
+            }
+            else {
+                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+            }
+
+            tmpPrevKey = key;
+        }
+
+        if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
+            for (i = 0; i < monthsArray.length; i++) {
+                monthsArray[i] = monthsArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (i = 0; i < monthsArray.length; i++) {
+        if (parseInt(monthsArray[i]) === 0) {
+            if (parseInt(weeksArray[i]) !== 0) {
+                uniquePeriods[i] = weeksArray[i];
+            }
+        }
+        else {
+            uniquePeriods[i] = monthsArray[i];
+        }
+    }
+
+    uniquePeriods = underscore.uniq(uniquePeriods);
+
+    return uniquePeriods;
+}
+
+/** Function to clone object
+        * @param {object} obj - object to clone
+        * @returns {object} cloned object
+        */
+function clone(obj) {
+    if (null === obj || "object" !== typeof obj) {
+        return obj;
+    }
+
+    var copy = "";
+    if (obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
+    }
+
+    if (obj instanceof Array) {
+        copy = [];
+        for (var i = 0, len = obj.length; i < len; ++i) {
+            copy[i] = clone(obj[i]);
+        }
+        return copy;
+    }
+
+    if (obj instanceof Object) {
+        copy = {};
+        for (var attr in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+                copy[attr] = clone(obj[attr]);
+            }
+        }
+        return copy;
+    }
+}
+
 
 /**
 * Returns a period object used by all time related data calculation functions
@@ -284,28 +556,132 @@ function getPeriodObject(prmPeriod) {
         daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
         periodContainsToday: (startTimestamp <= _currMoment) && (_currMoment <= endTimestamp),
     });
+    var uniqueMap = {};
+    var uniquePrevMap = {};
 
-    for (let dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+
+    var date0 = startTimestamp.clone().format("YYYY.M.D");
+    date0 = date0.split(".");
+    var sY = date0[0];
+    var sM = date0[1];
+
+    var date1 = endTimestamp.clone().format("YYYY.M.D");
+    date1 = date1.split(".");
+    var eY = date1[0];
+    var eM = date1[1];
+
+    date0 = startTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+    date0 = date0.split(".");
+    var psY = date0[0];
+    var psM = date0[1];
+
+    date1 = endTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+    date1 = date1.split(".");
+    var peY = date1[0];
+    var peM = date1[1];
+
+
+    for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+
+        var date = dayIt.format("YYYY.M.D");
+        var week = Math.ceil(dayIt.format("DDD") / 7),
+            date = date.split(".");
+
+        uniqueMap[date[0]] = uniqueMap[date[0]] || {};//each year
+        if (date[0] == sY || date[0] == eY) {
+            uniqueMap[date[0]][date[1]] = uniqueMap[date[0]][date[1]] || {}; //each month
+            if ((date[0] == sY && date[1] == sM) || (date[0] === eY && date[1] == eM)) {
+                uniqueMap[date[0]][date[1]]["w" + week] = uniqueMap[date[0]][date[1]]["w" + week] || {}; //each week
+                uniqueMap[date[0]][date[1]]["w" + week][date[2]] = uniqueMap[date[0]][date[1]]["w" + week][date[2]] || {}; //each day
+            }
+        }
+
         periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
         periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+
+        date = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
+        week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
+        date = date.split(".");
+
+        uniquePrevMap[date[0]] = uniquePrevMap[date[0]] || {};//each year
+        if (date[0] == psY || date[0] == peY) {
+            uniquePrevMap[date[0]][date[1]] = uniquePrevMap[date[0]][date[1]] || {}; //each month
+            if ((date[0] == psY && date[1] == psM) || (date[0] === peY && date[1] == peM)) {
+                uniquePrevMap[date[0]][date[1]]["w" + week] = uniquePrevMap[date[0]][date[1]]["w" + week] || {}; //each week
+                uniquePrevMap[date[0]][date[1]]["w" + week][date[2]] = uniquePrevMap[date[0]][date[1]]["w" + week][date[2]] || {}; //each day
+            }
+        }
     }
 
-    periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
-    periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
-    periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
-    periodObject.previousUniquePeriodCheckArr = getTicksCheckBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+    if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
+        periodObject.activePeriod = periodObject.currentPeriodArr[0];
+    }
+
+    var currentYear = 0,
+        currWeeksArr = [],
+        currWeekCounts = {},
+        currMonthsArr = [],
+        currMonthCounts = {},
+        currPeriodArr = [],
+        prevWeeksArr = [],
+        prevWeekCounts = {},
+        prevMonthsArr = [],
+        prevMonthCounts = {},
+        prevPeriodArr = [];
+    if (periodObject.daysInPeriod !== 0) {
+        for (var i = (periodObject.daysInPeriod - 1); i > -1; i--) {
+            var currIndex = moment(endTimestamp).subtract(i, 'days'),
+                currIndexYear = currIndex.year(),
+                prevIndex = moment(endTimestamp).subtract((periodObject.daysInPeriod + i), 'days'),
+                prevYear = prevIndex.year();
+
+            currentYear = currIndexYear;
+
+            // Current period variables
+
+            var currWeek = currentYear + "." + "w" + Math.ceil(currIndex.format("DDD") / 7);
+            currWeeksArr[currWeeksArr.length] = currWeek;
+            currWeekCounts[currWeek] = (currWeekCounts[currWeek]) ? (currWeekCounts[currWeek] + 1) : 1;
+
+            var currMonth = currIndex.format("YYYY.M");
+            currMonthsArr[currMonthsArr.length] = currMonth;
+            currMonthCounts[currMonth] = (currMonthCounts[currMonth]) ? (currMonthCounts[currMonth] + 1) : 1;
+
+            currPeriodArr[currPeriodArr.length] = currIndex.format("YYYY.M.D");
+
+            // Previous period variables
+
+            var prevWeek = prevYear + "." + "w" + Math.ceil(prevIndex.format("DDD") / 7);
+            prevWeeksArr[prevWeeksArr.length] = prevWeek;
+            prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek]) ? (prevWeekCounts[prevWeek] + 1) : 1;
+
+            var prevMonth = prevIndex.format("YYYY.M");
+            prevMonthsArr[prevMonthsArr.length] = prevMonth;
+            prevMonthCounts[prevMonth] = (prevMonthCounts[prevMonth]) ? (prevMonthCounts[prevMonth] + 1) : 1;
+
+            prevPeriodArr[prevPeriodArr.length] = prevIndex.format("YYYY.M.D");
+        }
+    }
+
+    periodObject.uniquePeriodArr = getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr);
+    periodObject.uniquePeriodCheckArr = getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts);
+    periodObject.previousUniquePeriodArr = getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr);
+    periodObject.previousUniquePeriodCheckArr = getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts);
+
+    periodObject.uniqueMap = uniqueMap;
+    periodObject.uniquePrevMap = uniquePrevMap;
 
     let zeroIDs = new Set(),
         monthIDs = new Set();
 
     for (let index in periodObject.currentPeriodArr) {
         let [year, month] = periodObject.currentPeriodArr[index].split("."),
-            [prevYear, prevMonth] = periodObject.previousPeriodArr[index].split(".");
+            [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
 
         zeroIDs.add(year + ":0");
         monthIDs.add(year + ":" + month);
-        zeroIDs.add(prevYear + ":0");
-        monthIDs.add(prevYear + ":" + prevMonth);
+        zeroIDs.add(pYear + ":0");
+        monthIDs.add(pYear + ":" + pMonth);
     }
 
     periodObject.reqZeroDbDateIds = Array.from(zeroIDs);
