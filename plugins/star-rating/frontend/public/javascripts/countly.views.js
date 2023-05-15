@@ -23,10 +23,16 @@
                 imageSource: '',
                 deleteLogo: false,
                 imageSrc: '',
+                logoType: 'default',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
                     trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
+                    logoOptions: [
+                        { label: this.i18n("surveys.appearance.logo.option.default"), value: "default" },
+                        { label: this.i18n("surveys.appearance.logo.option.custom"), value: "custom" },
+                        { label: this.i18n("surveys.appearance.logo.option.no.logo"), value: "none" }
+                    ],
                     trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
                 },
                 ratingSymbols: ['emojis', 'thumbs', 'stars'],
@@ -78,8 +84,12 @@
                     submitted.logo = this.logoFile;
                 }
 
-                if (!this.imageSource) {
+                if (!this.imageSource || submitted.logoType !== 'custom') {
                     submitted.logo = '';
+                }
+
+                if (!submitted.logoType) {
+                    submitted.logoType = 'default';
                 }
 
                 if (this.cohortsEnabled) {
@@ -582,7 +592,8 @@
                     status: true,
                     logo: null,
                     target_pages: ["/"],
-                    target_page: false
+                    target_page: false,
+                    logoType: 'default'
                 });
             },
             refresh: function() {
@@ -865,6 +876,9 @@
                 }
                 if (!this.widget.logo) {
                     this.widget.logo = null;
+                }
+                if (!this.widget.logoType) {
+                    this.widget.logoType = 'default';
                 }
                 if (!this.widget.targeting) {
                     this.widget.targeting = {
