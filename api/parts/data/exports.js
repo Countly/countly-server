@@ -555,6 +555,25 @@ exports.fromRequest = function(options) {
                         body = body[path[i]];
                     }
                 }
+                if (options.drillFields) {
+                    const transformedBody = {};
+                    for (var key in body) {
+                        var newItem = { 'Segmentation': key };
+                        for (var prop in body[key]) {
+                            if (['t', 'u', 'a'].includes(prop)) {
+                                body[key][prop] = common.formatNumber(body[key][prop]);
+                            }
+                            if (['dur_at', 'dur', 'adur'].includes(prop)) {
+                                body[key][prop] = common.formatSecond(body[key][prop]);
+                            }
+                            if (prop !== 'keys' && options.drillFields[prop]) {
+                                newItem[options.drillFields[prop]] = body[key][prop];
+                            }
+                        }
+                        transformedBody[key] = newItem;
+                    }
+                    body = transformedBody;
+                }
                 data = body;
             }
             catch (ex) {

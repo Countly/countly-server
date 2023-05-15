@@ -1958,7 +1958,8 @@ const processRequest = (params) => {
                                     limit: params.qstring.limit,
                                     skip: params.qstring.skip,
                                     type: params.qstring.type,
-                                    filename: params.qstring.filename
+                                    filename: params.qstring.filename,
+                                    drillFields: JSON.parse(params.qstring.drillFields)
                                 });
                             }
                             else {
