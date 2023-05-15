@@ -143,7 +143,7 @@ usersApi.resetTimeBan = function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user created
 **/
-usersApi.createUser = function(params) {
+usersApi.createUser = async function(params) {
     var argProps = {
             'full_name': {
                 'required': true,
@@ -188,6 +188,7 @@ usersApi.createUser = function(params) {
         },
         newMember = {};
 
+    await depCheck(params);
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
         common.returnMessage(params, 400, createUserValidation.errors);
@@ -358,6 +359,53 @@ usersApi.updateHomeSettings = function(params) {
         });
     }
 };
+
+
+/**
+ * Checks the permission dependencies of features for each app based on the enabled features, enabling the required permission dependencies if necessary.
+ * @param {object} params - params object.
+*/
+async function depCheck(params) {
+    var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
+    var featuresPermissionDependency = {};
+    plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+        //read permission check, making sure that read is present in every dependency array if any other permission is given
+        for (var feature in featuresPermissionDependency) {
+            var perms = Object.keys(featuresPermissionDependency[feature]);
+            for (var perm of perms) {
+                var permFeatures = Object.keys(featuresPermissionDependency[feature][perm]);
+                for (var permFeature of permFeatures) {
+                    var targetAr = featuresPermissionDependency[feature][perm][permFeature];
+                    if (targetAr.length && targetAr.indexOf('r') === -1) {
+                        featuresPermissionDependency[feature][perm][permFeature].push('r');
+                    }
+                }
+            }
+        }
+        //check permission dependency for each app
+        const crudTypes = ["c", "r", "u", "d"];
+        crudTypes.forEach(function(crudType) {
+            let apps = params.qstring.args.permission[crudType];
+            Object.keys(apps).forEach(function(app) {
+                let feats = apps[app].allowed;
+                Object.keys(feats).forEach(function(feat) {
+                    let featEnabled = feats[feat];
+                    //check if feature is enabled and if it has any dependency
+                    if (featEnabled && featuresPermissionDependency[feat] && featuresPermissionDependency[feat][crudType]) {
+                        let depFeats = featuresPermissionDependency[feat][crudType];
+                        Object.keys(depFeats).forEach(function(depFeat) {
+                            depFeats[depFeat].forEach(function(crudPerm) {
+                                //add dependency permissions
+                                params.qstring.args.permission[crudPerm][app].allowed[depFeat] = true;
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    });
+}
+
 /**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
@@ -425,6 +473,7 @@ usersApi.updateUser = async function(params) {
         updatedMember = {},
         passwordNoHash = "";
 
+    await depCheck(params);
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
         common.returnMessage(params, 400, updateUserValidation.errors);
