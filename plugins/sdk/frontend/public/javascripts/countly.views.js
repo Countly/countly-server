@@ -369,12 +369,23 @@
             }
         },
         computed: {
+            chooseDisplay: function() {
+                return [{"value": "percentage", "name": "percentage"}, {"value": "value", "name": "values"}];
+            },
             selectedProperty: {
                 set: function(value) {
                     this.$store.dispatch('countlySDK/onSetSelectedProperty', value);
                 },
                 get: function() {
                     return this.$store.state.countlySDK.stats.selectedProperty;
+                }
+            },
+            selectedDisplay: {
+                set: function(value) {
+                    this.$store.dispatch('countlySDK/onSetSelectedDisplay', value);
+                },
+                get: function() {
+                    return this.$store.state.countlySDK.stats.selectedDisplay;
                 }
             },
             selectedSDK: {

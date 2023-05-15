@@ -18,11 +18,11 @@
     };
 
 
-    countlySDK.getChartData = function(sdk, metric) {
+    countlySDK.getChartData = function(sdk, metric, displayType) {
         if (!metric) {
             metric = "u";
         }
-        var isPercentage = true;
+        var isPercentage = displayType === "percentage";
         var data = countlySDK.getData(true, false, "sdk_version").chartData;
         var chartData = [];
         var dataProps = [];
@@ -215,7 +215,7 @@
                     if (!context.state.stats.selectedSDK) {
                         context.dispatch('onSetSelectedSDK', sdks.versions[0].label);
                     }
-                    context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty));
+                    context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty, context.state.stats.selectedDisplay));
                     context.commit('stats/setSDKData', sdks);
                     context.dispatch('onFetchSuccess', "sdks");
                 }).catch(function(error) {
@@ -233,11 +233,15 @@
             },
             onSetSelectedSDK: function(context, value) {
                 context.commit('stats/setSelectedSDK', value);
-                context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty));
+                context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty, context.state.stats.selectedDisplay));
             },
             onSetSelectedProperty: function(context, value) {
                 context.commit('stats/setSelectedProperty', value);
-                context.commit('stats/setSDKChartData', countlySDK.getChartData("java-native-android", context.state.stats.selectedProperty));
+                context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty, context.state.stats.selectedDisplay));
+            },
+            onSetSelectedDisplay: function(context, value) {
+                context.commit('stats/setSelectedDisplay', value);
+                context.commit('stats/setSDKChartData', countlySDK.getChartData(context.state.stats.selectedSDK, context.state.stats.selectedProperty, context.state.stats.selectedDisplay));
             }
         };
 
@@ -286,7 +290,8 @@
                     legendData: {},
                     isLoading: true,
                     selectedSDK: "",
-                    selectedProperty: "u"
+                    selectedProperty: "u",
+                    selectedDisplay: "percentage"
                 };
             },
             getters: {
@@ -326,6 +331,9 @@
                 },
                 setSelectedProperty: function(state, value) {
                     state.selectedProperty = value;
+                },
+                setSelectedDisplay: function(state, value) {
+                    state.selectedDisplay = value;
                 },
             },
             actions: {

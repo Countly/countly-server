@@ -72,6 +72,12 @@
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
 				</el-select>
 			</div>
+			<h4>&nbsp;&nbsp;as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
 		</div>
 		<cly-section>
 			<cly-chart-bar :option="lineOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
