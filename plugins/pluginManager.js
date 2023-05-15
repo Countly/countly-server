@@ -1213,7 +1213,8 @@ var pluginManager = function pluginManager() {
                     error2 += data;
                 });
 
-                cmd.on('error', function() {
+                cmd.on('error', function(error) {
+                    console.log(error);
                     errors = true;
                 });
 
