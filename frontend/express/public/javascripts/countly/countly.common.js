@@ -3738,7 +3738,7 @@
                                 var ob2 = countlyCommon.getDescendantProp(dbObj, year + "." + week) || {};
                                 var weekVal = ob2.u || 0;
                                 var calcWeekVal = 0;
-        
+
                                 for (var day in uniqueMap[year][month][week]) {
                                     var ob3 = countlyCommon.getDescendantProp(dbObj, year + "." + month + "." + day) || {};
                                     calcWeekVal += ob3.u || 0;
@@ -3976,56 +3976,56 @@
                 });
             }
             var uniqueMap = {};
-	        var uniquePrevMap = {};
-	
+            var uniquePrevMap = {};
+
             var date0 = startTimestamp.clone().format("YYYY.M.D");
             date0 = date0.split(".");
             var sY = date0[0];
             var sM = date0[1];
-        
+
             var date1 = endTimestamp.clone().format("YYYY.M.D");
             date1 = date1.split(".");
             var eY = date1[0];
             var eM = date1[1];
-        
+
             date0 = startTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
             date0 = date0.split(".");
             var psY = date0[0];
             var psM = date0[1];
-        
+
             date1 = endTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
             date1 = date1.split(".");
             var peY = date1[0];
             var peM = date1[1];
-            
+
             for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
 
-                var date = dayIt.format("YYYY.M.D");
-                var week = Math.ceil(dayIt.format("DDD") / 7),
-                date = date.split(".");
-                
-                uniqueMap[date[0]] = uniqueMap[date[0]] || {};//each year
-                if(date[0] == sY  || date[0] == eY){
-                    uniqueMap[date[0]][date[1]] = uniqueMap[date[0]][date[1]] || {}; //each month
-                    if((date[0] == sY  && date[1] == sM) || (date[0] === eY && date[1] == eM)){
-                        uniqueMap[date[0]][date[1]]["w"+week] = uniqueMap[date[0]][date[1]]["w"+week] || {}; //each week
-                        uniqueMap[date[0]][date[1]]["w"+week][date[2]] = uniqueMap[date[0]][date[1]]["w"+week][date[2]] || {}; //each day
+                var dateVal = dayIt.format("YYYY.M.D");
+                var week = Math.ceil(dayIt.format("DDD") / 7);
+                dateVal = dateVal.split(".");
+
+                uniqueMap[dateVal[0]] = uniqueMap[dateVal[0]] || {};//each year
+                if (dateVal[0] === sY || dateVal[0] === eY) {
+                    uniqueMap[dateVal[0]][dateVal[1]] = uniqueMap[dateVal[0]][dateVal[1]] || {}; //each month
+                    if ((dateVal[0] === sY && dateVal[1] === sM) || (dateVal[0] === eY && dateVal[1] === eM)) {
+                        uniqueMap[dateVal[0]][dateVal[1]]["w" + week] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                        uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
                     }
                 }
 
                 periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
                 periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
 
-                date = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
-                week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD")/7);
-                date = date.split(".");
-                
-                uniquePrevMap[date[0]] = uniquePrevMap[date[0]] || {};//each year
-                if(date[0] == psY  || date[0] == peY){
-                    uniquePrevMap[date[0]][date[1]] = uniquePrevMap[date[0]][date[1]] || {}; //each month
-                    if((date[0] == psY  && date[1] == psM) || (date[0] === peY && date[1] == peM)) {
-                        uniquePrevMap[date[0]][date[1]]["w"+week] = uniquePrevMap[date[0]][date[1]]["w"+week] || {}; //each week
-                        uniquePrevMap[date[0]][date[1]]["w"+week][date[2]] = uniquePrevMap[date[0]][date[1]]["w"+week][date[2]] || {}; //each day
+                dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
+                week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
+                dateVal = dateVal.split(".");
+
+                uniquePrevMap[dateVal[0]] = uniquePrevMap[dateVal[0]] || {};//each year
+                if (dateVal[0] === psY || dateVal[0] === peY) {
+                    uniquePrevMap[dateVal[0]][dateVal[1]] = uniquePrevMap[dateVal[0]][dateVal[1]] || {}; //each month
+                    if ((dateVal[0] === psY && dateVal[1] === psM) || (dateVal[0] === peY && dateVal[1] === peM)) {
+                        uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                        uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
                     }
                 }
             }
@@ -4035,16 +4035,16 @@
             }
 
             var currentYear = 0,
-                    currWeeksArr = [],
-                    currWeekCounts = {},
-                    currMonthsArr = [],
-                    currMonthCounts = {},
-                    currPeriodArr = [],
-                    prevWeeksArr = [],
-                    prevWeekCounts = {},
-                    prevMonthsArr = [],
-                    prevMonthCounts = {},
-                    prevPeriodArr = [];
+                currWeeksArr = [],
+                currWeekCounts = {},
+                currMonthsArr = [],
+                currMonthCounts = {},
+                currPeriodArr = [],
+                prevWeeksArr = [],
+                prevWeekCounts = {},
+                prevMonthsArr = [],
+                prevMonthCounts = {},
+                prevPeriodArr = [];
             if (periodObject.daysInPeriod !== 0) {
                 for (var i = (periodObject.daysInPeriod - 1); i > -1; i--) {
                     var currIndex = moment(endTimestamp).subtract(i, 'days'),

@@ -583,32 +583,32 @@ function getPeriodObject(prmPeriod) {
 
     for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
 
-        var date = dayIt.format("YYYY.M.D");
-        var week = Math.ceil(dayIt.format("DDD") / 7),
-            date = date.split(".");
+        var dateVal = dayIt.format("YYYY.M.D");
+        var week = Math.ceil(dayIt.format("DDD") / 7);
+        dateVal = dateVal.split(".");
 
-        uniqueMap[date[0]] = uniqueMap[date[0]] || {};//each year
-        if (date[0] == sY || date[0] == eY) {
-            uniqueMap[date[0]][date[1]] = uniqueMap[date[0]][date[1]] || {}; //each month
-            if ((date[0] == sY && date[1] == sM) || (date[0] === eY && date[1] == eM)) {
-                uniqueMap[date[0]][date[1]]["w" + week] = uniqueMap[date[0]][date[1]]["w" + week] || {}; //each week
-                uniqueMap[date[0]][date[1]]["w" + week][date[2]] = uniqueMap[date[0]][date[1]]["w" + week][date[2]] || {}; //each day
+        uniqueMap[dateVal[0]] = uniqueMap[dateVal[0]] || {};//each year
+        if (dateVal[0] === sY || dateVal[0] === eY) {
+            uniqueMap[dateVal[0]][dateVal[1]] = uniqueMap[dateVal[0]][dateVal[1]] || {}; //each month
+            if ((dateVal[0] === sY && dateVal[1] === sM) || (dateVal[0] === eY && dateVal[1] === eM)) {
+                uniqueMap[dateVal[0]][dateVal[1]]["w" + week] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
             }
         }
 
         periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
         periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
 
-        date = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
+        dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
         week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
-        date = date.split(".");
+        dateVal = dateVal.split(".");
 
-        uniquePrevMap[date[0]] = uniquePrevMap[date[0]] || {};//each year
-        if (date[0] == psY || date[0] == peY) {
-            uniquePrevMap[date[0]][date[1]] = uniquePrevMap[date[0]][date[1]] || {}; //each month
-            if ((date[0] == psY && date[1] == psM) || (date[0] === peY && date[1] == peM)) {
-                uniquePrevMap[date[0]][date[1]]["w" + week] = uniquePrevMap[date[0]][date[1]]["w" + week] || {}; //each week
-                uniquePrevMap[date[0]][date[1]]["w" + week][date[2]] = uniquePrevMap[date[0]][date[1]]["w" + week][date[2]] || {}; //each day
+        uniquePrevMap[dateVal[0]] = uniquePrevMap[dateVal[0]] || {};//each year
+        if (dateVal[0] === psY || dateVal[0] === peY) {
+            uniquePrevMap[dateVal[0]][dateVal[1]] = uniquePrevMap[dateVal[0]][dateVal[1]] || {}; //each month
+            if ((dateVal[0] === psY && dateVal[1] === psM) || (dateVal[0] === peY && dateVal[1] === peM)) {
+                uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
             }
         }
     }
