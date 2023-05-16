@@ -1,4 +1,3 @@
-var pluginOb = {};
 var plugins = require('../../pluginManager.js');
 var common = require('../../../api/utils/common.js');
 var fetch = require('../../../api/parts/data/fetch.js');
@@ -196,6 +195,4 @@ plugins.register("/permissions/features", function(ob) {
             });
         });
     }
-}(pluginOb));
-
-module.exports = pluginOb;
+}());

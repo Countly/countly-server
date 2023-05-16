@@ -317,7 +317,7 @@
             }
         }
         var year = trimYear ? d.format('YY')[1] : d.format('YY');
-        var day = parseInt(d.format('DD')[0]) === 3 ? 2 : d.format('DD')[0];
+        var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
         return year + "." + d.format('MM') + "." + day;
     }
     /**

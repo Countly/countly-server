@@ -1,10 +1,10 @@
 .technology-analytics-wrapper-sdk {
     &__date-picker {
-        margin-bottom:32px;
+        margin-bottom: 32px;
     }
 
     &__items {
-        height: 115px
+        height: 115px;
     }
 
     &__versions {
@@ -21,12 +21,12 @@
         color:#333C48;
 
         div:first-child {
-            text-align:left;   
+            text-align: left;   
         }
 
         div:nth-child(2) {
-            text-align:right;
-        } 
+            text-align: right;
+        }
     }
 
     &__empty-card {

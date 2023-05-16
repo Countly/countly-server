@@ -466,10 +466,10 @@
                     var i1 = 0;
                     var i2 = 0;
                     if (v1[z]) {
-                        i1 = parseInt(v1[z]);
+                        i1 = parseInt(v1[z], 10);
                     }
                     if (v2[z]) {
-                        i2 = parseInt(v2[z]);
+                        i2 = parseInt(v2[z], 10);
                     }
                     if (i1 !== i2) {
                         if (i2 > i1) {
