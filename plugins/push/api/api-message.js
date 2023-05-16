@@ -258,7 +258,6 @@ module.exports.create = async params => {
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
-
     if (demo) {
         msg.info.demo = true;
     }
@@ -279,7 +278,6 @@ module.exports.create = async params => {
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
-
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
@@ -553,7 +551,6 @@ module.exports.estimate = async params => {
             required: false
         }
     }, true);
-
     if (data.result) {
         data = data.obj;
         if (!data.filter) {
@@ -842,7 +839,6 @@ module.exports.all = async params => {
         sEcho: {type: 'String', required: false},
         status: {type: 'String', required: false}
     }, true);
-
     // backwards compatibility
     if (!data.kind) {
         data.kind = [];
@@ -868,7 +864,7 @@ module.exports.all = async params => {
         };
 
         if (data.platform && data.platform.length) {
-            query.platforms = data.platform;
+            query.platforms = data.platform; //{$in: [data.platforms]};
         }
 
         if (data.removed) {
@@ -951,7 +947,6 @@ module.exports.all = async params => {
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
 
-        console.log(JSON.stringify(pipeline));
 
         let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
             items = res.data || [],

@@ -978,6 +978,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         parsed = args[arg];
                     }
                 }
+                else if (argProperties[arg].type === 'String[]') {
+                    if (typeof args[arg] === 'string') {
+                        try {
+                            args[arg] = JSON.parse(args[arg]);
+                        }
+                        catch (error) {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(args[arg])) {
+                        let allStrings = true;
+                        for (const item of args[arg]) {
+                            if (typeof item !== 'string') {
+                                allStrings = false;
+                                break;
+                            }
+                        }
+
+                        if (!allStrings) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid type for " + arg + ": all elements must be strings");
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
