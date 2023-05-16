@@ -661,7 +661,6 @@ class APITrigger extends AutoTrigger {
         super(data);
     }
 }
-
 /**
  * Recurring trigger
  */
@@ -670,10 +669,32 @@ class RecurringTrigger extends Trigger {
      * Constructor
      * 
      * @param {object|null} data filter data
+     * @param {Date} data.end message end date (don't send anything after this date, set status to Stopped)
+     * @param {string} data.bucket notification frequency ("daily", "weekly", "monthly")
+     * @param {number} data.time time (milliseconds since 00:00) when to send in user's timezone
+     * @param {string} data.every repetition indicator (every 7 days/weeks/months)
+     * @param {Array} data.on repetition indicator (on 1-Monday, 2-Tuesday... or Day 1st, 2nd, 3rd... of month)
+     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean} delayed     true if audience calculation should be done right before sending the message
      */
     constructor(data) {
         data.kind = TriggerKind.Recurring;
         super(data);
+    }
+
+    /**
+     * Class validation rules
+    */
+    static get scheme() {
+        return Object.assign({}, super.scheme, {
+            end: {type: 'Date', required: false},
+            bucket: {type: 'String', required: false},
+            time: {type: 'Number', required: false},
+            every: {type: 'String', required: false},
+            on: {type: 'Array', required: false},
+            tz: {type: 'Boolean', required: false},
+            delayed: {type: 'Boolean', required: false},
+        });
     }
 }
 
@@ -685,11 +706,24 @@ class MultiTrigger extends Trigger {
      * Constructor
      * 
      * @param {object|null} data filter data
-     */
+     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {Array} data.multipleDates delivery times for multiple notifications
+     * @param {boolean} delayed     true if audience calculation should be done right before sending the message
+     * */
     constructor(data) {
         data.kind = TriggerKind.Multi;
         super(data);
     }
-}
 
-module.exports = { Trigger, TriggerKind, PlainTrigger, EventTrigger, CohortTrigger, APITrigger, RecurringTrigger, MultiTrigger };
+    /**
+     * Class validation rules
+    */
+    static get scheme() {
+        return Object.assign({}, super.scheme, {
+            tz: {type: 'Boolean', required: false},
+            multipleDates: {type: 'Array', required: false},
+            delayed: {type: 'Boolean', required: false},
+        });
+    }
+}
+module.exports = { Trigger, TriggerKind, PlainTrigger, EventTrigger, CohortTrigger, APITrigger };
