@@ -94,7 +94,7 @@
                 default: true
             },
             width: {
-                type: [Number, Object],
+                type: [Number, Object, String],
                 default: null
             },
             placement: {

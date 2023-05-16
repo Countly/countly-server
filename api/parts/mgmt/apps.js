@@ -119,11 +119,26 @@ appsApi.getAppsDetails = function(params) {
                     full_name: 1,
                     username: 1
                 }).toArray(function(err3, global_admins) {
-                    common.db.collection('members').find({ admin_of: params.qstring.app_id }, {
+                    common.db.collection('members').find({
+                        '$or': [
+                            { admin_of: params.qstring.app_id },
+                            { 'permission._.a': params.qstring.app_id }
+                        ]
+                    }, {
                         full_name: 1,
                         username: 1
                     }).toArray(function(err4, admins) {
-                        common.db.collection('members').find({ user_of: params.qstring.app_id }, {
+                        common.db.collection('members').find({
+                            '$or': [
+                                { user_of: params.qstring.app_id },
+                                {
+                                    'permission._.u':
+                                    {
+                                        $elemMatch: { $elemMatch: { $eq: params.qstring.app_id } }
+                                    }
+                                }
+                            ]
+                        }, {
                             full_name: 1,
                             username: 1
                         }).toArray(function(err5, users) {
