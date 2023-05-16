@@ -1,3 +1,15 @@
+## Version 23.03.7
+Fixes:
+- [core] Fixed backend period object code to selet buckets in same way as in frontend.
+- [core] More debugging in pluginManager to see plugin install progress.
+- [crashes] Update latest crash id in crashgroup even if new crash app version is the same as the last
+- [views] Fixes for displaying total numbers for selected views
+
+Enterprise fixes:
+- [attribution] allowing to create campaigns with custom link
+- [cohorts] Improvement to be able to deal with situations when cohort segmentation definition is stored as object (not string in database)
+- [formulas] fixed average value for percent format
+
 ## Version 23.03.6
 Fixes:
 - [core] Destroying cache stream on error
