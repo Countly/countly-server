@@ -3,14 +3,14 @@
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
-        <el-table-column v-if="selectedSegment !== 'segment'" sortable="true" prop="curr_segment" :label="i18n('events.table.segmentation')">
+        <el-table-column v-if="selectedSegment !== 'segment'" sortable :sort-method="customSortSegments" prop="curr_segment" :label="i18n('events.table.segmentation')">
           <template v-slot="rowScope">
             <div class="has-ellipsis">
               {{rowScope.row.curr_segment}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :label="i18n('common.date')">
+        <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :sort-method="customSortSegments" :label="i18n('common.date')">
           <template
           date v-slot="rowScope">
             <div>

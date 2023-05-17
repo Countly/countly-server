@@ -17,7 +17,9 @@ const FEATURE_NAME = 'crashes';
 plugins.setConfigs("crashes", {
     report_limit: 100,
     grouping_strategy: "error_and_file",
-    smart_preprocessing: true
+    smart_preprocessing: true,
+    smart_regexes: "{.*?}\n/.*?/",
+    same_app_version_crash_update: false
 });
 
 /**
@@ -676,8 +678,18 @@ plugins.setConfigs("crashes", {
                                             if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                 group.latest_version = report.app_version;
                                                 group.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
-                                                group.error = report.error;
-                                                group.lrid = report._id + "";
+                                            }
+                                            if (plugins.getConfig('crashes').same_app_version_crash_update) {
+                                                if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) >= 0) {
+                                                    group.error = report.error;
+                                                    group.lrid = report._id + "";
+                                                }
+                                            }
+                                            else {
+                                                if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
+                                                    group.error = report.error;
+                                                    group.lrid = report._id + "";
+                                                }
                                             }
                                             if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
                                                 group.is_resolved = false;

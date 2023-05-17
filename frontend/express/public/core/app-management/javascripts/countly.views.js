@@ -434,7 +434,8 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(doc)
+                        args: JSON.stringify(doc),
+                        app_id: doc.app_id
                     },
                     dataType: "json",
                     success: function(data) {
@@ -507,7 +508,8 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args)
+                        args: JSON.stringify(args),
+                        app_id: args.app_id
                     },
                     dataType: "json",
                     success: function(data) {

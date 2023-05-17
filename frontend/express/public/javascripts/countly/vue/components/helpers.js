@@ -535,7 +535,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object], default: 400},
+            width: { type: [Number, Object, String], default: 400},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -587,18 +587,28 @@
                 }
                 if (feedbackOptions.length > 0) {
                     availableEvents.push({
-                        "label": this.i18n('internal-events.[CLY]_crash'),
-                        "name": "[CLY]_crash",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
+                        "label": this.i18n("sidebar.feedback"),
+                        "name": "feedback",
+                        "options": feedbackOptions
                     });
                 }
 
 
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
                     availableEvents.push({
-                        "label": this.i18n("sidebar.feedback"),
-                        "name": "feedback",
-                        "options": feedbackOptions
+                        "label": this.i18n('internal-events.[CLY]_crash'),
+                        "name": "[CLY]_crash",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
+                    });
+                }
+
+                if (countlyGlobal.plugins.indexOf('push') !== -1) {
+                    availableEvents.push({
+                        "label": 'Push',
+                        "name": "[CLY]_push_action",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
+                        ]
                     });
                 }
 

@@ -26,6 +26,37 @@
             },
         },
         methods: {
+            customSortSegments(a, b) {
+                a = a.curr_segment;
+                b = b.curr_segment;
+                var aRight = parseInt(a) || a;
+                if (typeof a === 'string') {
+                    if (a.indexOf('+') !== -1) {
+                        return 1;
+                    }
+                    else if (a.indexOf('-') !== -1) {
+                        aRight = parseInt(a.split('-')[1]);
+                    }
+                }
+                var bRight = parseInt(b) || b;
+                if (typeof b === 'string') {
+                    if (b.indexOf('+') !== -1) {
+                        return -1;
+                    }
+                    else if (b.indexOf('-') !== -1) {
+                        bRight = parseInt(b.split('-')[1]);
+                    }
+                }
+                if (aRight < bRight) {
+                    return -1;
+                }
+                else if (aRight > bRight) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
+            },
             isColumnAllowed: function(column) {
                 var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
                 if (column === 'count') {
