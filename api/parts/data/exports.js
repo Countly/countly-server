@@ -244,6 +244,16 @@ function transformValue(value, key, mapper) {
                 }
             }
         }
+        if (mapper.fields[key].type) {
+            switch (mapper.fields[key].type) {
+            case "number":
+                value = common.formatNumber(value);
+                break;
+            case "second":
+                value = common.formatSecond(value);
+                break;
+            }
+        }
         return value;
     }
     else {
@@ -555,24 +565,29 @@ exports.fromRequest = function(options) {
                         body = body[path[i]];
                     }
                 }
-                if (options.drillFields) {
-                    const transformedBody = {};
+                if (options.projection) {
                     for (var key in body) {
-                        var newItem = { 'Segmentation': key };
                         for (var prop in body[key]) {
-                            if (['t', 'u', 'a'].includes(prop)) {
-                                body[key][prop] = common.formatNumber(body[key][prop]);
-                            }
-                            if (['dur_at', 'dur', 'adur'].includes(prop)) {
-                                body[key][prop] = common.formatSecond(body[key][prop]);
-                            }
-                            if (prop !== 'keys' && options.drillFields[prop]) {
-                                newItem[options.drillFields[prop]] = body[key][prop];
+                            if (!options.projection.includes(prop)) {
+                                delete body[key][prop];
                             }
                         }
-                        transformedBody[key] = newItem;
                     }
-                    body = transformedBody;
+                }
+                if (options.columnNames || options.mapper) {
+                    for (key in body) {
+                        if (options.mapper) {
+                            body[key] = transformValuesInObject(body[key], options.mapper);
+                        }
+                        for (prop in body[key]) {
+                            if (options.columnNames) {
+                                if (options.columnNames[prop]) {
+                                    body[key][options.columnNames[prop]] = body[key][prop];
+                                    delete body[key][prop];
+                                }
+                            }
+                        }
+                    }
                 }
                 data = body;
             }
