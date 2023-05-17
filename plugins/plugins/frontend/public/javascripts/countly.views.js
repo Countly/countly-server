@@ -143,8 +143,8 @@
 
                 countlyPlugins.toggle(plugins, function(res) {
                     if (res.result === "started") {
-                        //self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
-                        //self.checkProcess();
+                    //self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false);
+                    //self.checkProcess();
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.applying"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true);
                     }
                     else {
@@ -325,7 +325,7 @@
                         self.removeNonGlobalConfigs(self.configsData);
                     }
                     catch (error) {
-                        // eslint-disable-next-line no-console
+                    // eslint-disable-next-line no-console
                         console.error(error);
                         self.configsData = {};
                     }
@@ -452,7 +452,7 @@
                 this.configsData[config][key] = value;
                 //when user disables country data tracking while city data tracking is enabled
                 if (key === "country_data" && value === false && this.configsData[config].city_data === true) {
-                    //disable city data tracking 
+                //disable city data tracking 
                     this.configsData[config].city_data = false;
                     //if city data tracking was originally enabled, note the change
                     index = this.diff.indexOf("city_data");
@@ -468,7 +468,7 @@
                 }
                 //when user enables city data tracking while country data tracking is disabled
                 if (key === "city_data" && value === true && this.configsData[config].country_data === false) {
-                    //enable country data tracking
+                //enable country data tracking
                     this.configsData[config].country_data = true;
                     //if country data tracking was originally disabled, note the change
                     index = this.diff.indexOf("country_data");
@@ -529,7 +529,7 @@
                 var plugs = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins;
                 //check if value can be overwritten on user level
                 if (configsData[ns]._user && configsData[ns]._user[id]) {
-                    //check if value is overwritten on user level
+                //check if value is overwritten on user level
                     var sets = countlyGlobal.member.settings;
                     if (sets && sets[ns] && typeof sets[ns][id] !== "undefined") {
                         return {label: jQuery.i18n.map["configs.overwritten.user"], href: "#/account-settings"};
@@ -631,7 +631,7 @@
                                             let label = self.getLabelName(item, config) || "";
                                             let helper = self.getHelperLabel(item, config) || "";
                                             return label.toLowerCase().includes(self.searchQuery)
-                                        || helper.toLowerCase().includes(self.searchQuery);
+                                    || helper.toLowerCase().includes(self.searchQuery);
                                         });
                                         if (list.length > 0) {
                                             let tmp = group;
@@ -667,7 +667,7 @@
             },
             clearSearch: function() {
                 this.searchQuery = "";
-                //this.searchResultStructure = {};
+            //this.searchResultStructure = {};
             }
         }
     });
@@ -1275,7 +1275,9 @@
     });
 
     if (countlyAuth.validateGlobalAdmin()) {
-        app.addMenu("management", {code: "plugins", pluginName: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
+        if (!countlyGlobal.mycountly && countlyGlobal.plugins.indexOf('my-countly') === -1) {
+            app.addMenu("management", {code: "plugins", pluginName: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
+        }
     }
     if (countlyAuth.validateGlobalAdmin()) {
         app.addMenu("management", {code: "configurations", pluginName: "plugins", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 30});
@@ -1285,7 +1287,7 @@
         if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
             countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
                 if (err) {
-                // throw err
+                    // throw err
                 }
             });
         }

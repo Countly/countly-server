@@ -116,7 +116,7 @@ var pluginManager = function pluginManager() {
             }
             db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
                 if (err1) {
-                    log.e(err1);
+                    console.error(err1);
                 }
                 else {
                     self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
@@ -691,6 +691,10 @@ var pluginManager = function pluginManager() {
             callback();
         }
         return used;
+    };
+
+    this.returnEventsCopy = function() {
+        return JSON.parse(JSON.stringify(events));
     };
 
     /**
