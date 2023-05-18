@@ -6,7 +6,7 @@
         ref="eventsDefaultTable"
         :searchPlaceholder="i18n('data-manager.event-search-placeholder')"
         :rows="events"
-        :keyFn="function(row) {return row.key}"
+        :keyFn="function(row) {return row.key ||row.e || row.name}"
         :indent=0
         :force-loading="isLoading"
         :tracked-fields="trackedFields"
@@ -174,7 +174,7 @@
             {{i18n('data-manager.delete-event-permanently')}}<br/> 
             <small class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>
-             <li v-for="ev in deleteQueue"> {{ev.key}}</li>
+             <li v-for="ev in deleteQueue"> {{ev.key || ev.e || ev.name}}</li>
             </ul>
         </template>
     </cly-confirm-dialog>
