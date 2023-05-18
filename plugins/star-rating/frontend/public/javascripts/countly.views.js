@@ -155,7 +155,9 @@
                 }, 1);
             },
             onComplete: function(res) {
-                this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+                var fileName = res.upload.filename;
+                var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                this.logoFile = this.stamp + '.' + fileExtension;
             },
             remove: function() {
                 this.imageSource = '';
