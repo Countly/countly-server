@@ -482,7 +482,7 @@
                     }
                 },
                 updatePath: function(query) {
-                    window.location.hash = "#/manage/db/aggregate/countly/" + this.collection + "/" + query;
+                    window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection + "/" + query;
                 },
                 getCollectionName: function() {
                     var self = this;

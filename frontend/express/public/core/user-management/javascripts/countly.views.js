@@ -142,6 +142,21 @@
                 case 'show-logs':
                     window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
+                case 'reset-logins':
+                    countlyUserManagement.resetFailedLogins(index, function(err) {
+                        if (err) {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.reset-failed-logins-failed'),
+                                type: 'error'
+                            });
+                            return;
+                        }
+                        CountlyHelpers.notify({
+                            message: CV.i18n('management-users.reset-failed-logins-success'),
+                            type: 'success'
+                        });
+                    });
+                    break;
                 }
             },
             handleSubmitFilter: function(newFilter) {
@@ -220,6 +235,7 @@
                 apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
+                filteredFeatures: [],
                 dropzoneOptions: {
                     member: null,
                     url: "/member/icon",
@@ -241,6 +257,60 @@
             };
         },
         methods: {
+            toggleFilteredAll: function(index) {
+                var self = this;
+                var crudTypes = ['c', 'r', 'u', 'd'];
+                var remCrudTypes = ['c', 'r', 'u', 'd'];
+                var all = this.filteredFeatures[index].all;
+
+                if (self.filteredFeatures[index].features.length === 0) {
+                    // Uncheck all CRUD types if filtered features is empty
+                    crudTypes.forEach(function(type) {
+                        all[type] = false;
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features.forEach(function(feature) {
+                        crudTypes.forEach(function(type) {
+                            // Remove the current CRUD type from the remaining CRUD types
+                            if (!self.permissionSets[index][type].allowed[feature]) {
+                                // Remove the current CRUD type from the remaining CRUD types
+                                var idx = remCrudTypes.indexOf(type);
+                                if (idx !== -1) {
+                                    remCrudTypes.splice(idx, 1);
+                                }
+                                all[type] = false;
+                            }
+                        });
+                        if (remCrudTypes.length === 0) {
+                            return;
+                        }
+                    });
+                    // Check the "all" checkbox for each remaining CRUD type
+                    remCrudTypes.forEach(function(type) {
+                        all[type] = true;
+                    });
+                }
+            },
+            search: function(index) {
+                var self = this;
+                var query = self.filteredFeatures[index].searchQuery;
+                if (query && query !== "") {
+                    query = query.toLowerCase();
+                    self.filteredFeatures[index].features = self.features.filter(function(feature) {
+                        return self.featureBeautifier(feature).toLowerCase().includes(query);
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features = self.features;
+                }
+                this.toggleFilteredAll(index);
+            },
+            clearSearch: function(index) {
+                this.filteredFeatures[index].searchQuery = '';
+                this.filteredFeatures[index].features = this.features;
+                this.toggleFilteredAll(index);
+            },
             featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
@@ -380,6 +450,16 @@
                 }
 
                 this.permissionSets.push(permissionSet);
+                this.filteredFeatures.push({
+                    searchQuery: '',
+                    features: this.features,
+                    all: {
+                        c: false,
+                        r: false,
+                        u: false,
+                        d: false
+                    }
+                });
             },
             removePermissionSet: function(index) {
                 if (this.$refs.userDrawer.editedObject.permission._.u[index]) {
@@ -392,6 +472,7 @@
                     }
                 }
                 this.permissionSets.splice(index, 1);
+                this.filteredFeatures.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             /**
@@ -513,12 +594,18 @@
             },
             setPermissionByType: function(index, type) {
                 var types = ['c', 'r', 'u', 'd'];
+                var features = this.filteredFeatures[index].features;
+                var all = this.filteredFeatures[index].all;
+
                 // set true read permissions automatically if read not selected yet
-                if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
-                    this.permissionSets[index].r.all = true;
-                    for (var feature in this.features) {
-                        if (this.features[feature] !== 'core') {
-                            this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                if (all[type] && type !== 'r' && !all.r) {
+                    all.r = true;
+                    if (features.length === this.features.length) {
+                        this.permissionSets[index].r.all = true;
+                    }
+                    for (var feature in features) {
+                        if (features[feature] !== 'core') {
+                            this.permissionSets[index].r.allowed[features[feature]] = all[type];
                         }
                     }
                     CountlyHelpers.notify({
@@ -527,12 +614,15 @@
                     });
                 }
                 // set false all other permissions automatically if read set as false
-                if (type === 'r' && !this.permissionSets[index].r.all) {
+                if (type === 'r' && !all.r) {
                     for (var _type in types) {
-                        this.permissionSets[index][types[_type]].all = false;
-                        for (var feature1 in this.features) {
-                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
-                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
+                        all[types[_type]] = false;
+                        if (features.length === this.features.length) {
+                            this.permissionSets[index][types[_type]].all = false;
+                        }
+                        for (var feature1 in features) {
+                            if (!(types[_type] === 'r' && features[feature1] === 'core')) {
+                                this.permissionSets[index][types[_type]].allowed[features[feature1]] = false;
                             }
                         }
                     }
@@ -542,13 +632,36 @@
                     });
                 }
                 // set type specific features for other cases
-                for (var feature2 in this.features) {
-                    if (!(type === 'r' && this.features[feature2] === 'core')) {
-                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
+                for (var feature2 in features) {
+                    if (!(type === 'r' && features[feature2] === 'core')) {
+                        this.permissionSets[index][type].allowed[features[feature2]] = all[type];
                     }
-                    this.setPermissionByDependency(index, type, this.features[feature2]);
+                    this.setPermissionByDependency(index, type, features[feature2]);
                 }
-                if (this.permissionSets[index][type].all) {
+
+                //change permission set all only if all[type] is false or if every feature is enabled
+                if (!all[type]) {
+                    this.permissionSets[index][type].all = all[type];
+                }
+                else {
+                    if (features.length === this.features.length) {
+                        this.permissionSets[index][type].all = true;
+                    }
+                    else {
+                        var isTrue = true;
+                        for (var featName of this.features) {
+                            if (!this.permissionSets[index][type].allowed[featName]) {
+                                isTrue = false;
+                                break;
+                            }
+                        }
+                        if (isTrue) {
+                            this.permissionSets[index][type].all = true;
+                        }
+                    }
+                }
+
+                if (all[type]) {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.future-plugins'),
                         type: 'info'
@@ -717,6 +830,9 @@
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
+                // clear filtered features
+                this.filteredFeatures = [];
+
                 // clear permission sets
                 this.permissionSets = [];
                 this.groups = [];
@@ -797,12 +913,31 @@
 
                     this.permissionSets.push(permissionSet_);
                 }
+
+                // initialize filtered features
+                for (let i = 0; i < this.permissionSets.length; i++) {
+                    this.filteredFeatures.push({
+                        features: this.features,
+                        searchQuery: '',
+                        all: {
+                            c: this.permissionSets[i].c.all,
+                            r: this.permissionSets[i].r.all,
+                            u: this.permissionSets[i].u.all,
+                            d: this.permissionSets[i].d.all
+                        }
+                    });
+                }
+
             },
             onGroupChange: function(groupVal) {
                 this.groups = groupVal;
                 if (groupVal.length === 0) {
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
+                    this.$refs.userDrawer.editedObject.permission.c = {};
+                    this.$refs.userDrawer.editedObject.permission.r = {};
+                    this.$refs.userDrawer.editedObject.permission.u = {};
+                    this.$refs.userDrawer.editedObject.permission.d = {};
                 }
             },
             onRoleChange: function(role) {
@@ -853,7 +988,8 @@
                 features: [],
                 featuresPermissionDependency: {},
                 inverseFeaturesPermissionDependency: {},
-                loading: true
+                loading: true,
+                groupModelData: []
             };
         },
         computed: {
@@ -861,7 +997,8 @@
                 var map = {};
 
                 if (isGroupPluginEnabled) {
-                    groupsModel.data().forEach(function(group) {
+                    this.groupModelData = groupsModel.data();
+                    this.groupModelData.forEach(function(group) {
                         map[group._id] = group.name;
                     });
                 }
@@ -916,6 +1053,19 @@
 
                         user.groupNames = groupNames.join(", ");
                     }
+                    else {
+                        user.groupNames = '';
+                    }
+
+                    user.dispRole = CV.i18n('management-users.global-admin');
+                    if (!user.global_admin) {
+                        if (user.permission && user.permission._ && user.permission._.a.length > 0) {
+                            user.dispRole = CV.i18n('management-users.admin');
+                        }
+                        else {
+                            user.dispRole = CV.i18n('management-users.user');
+                        }
+                    }
 
                     this.users.push(user);
                 }
@@ -923,6 +1073,11 @@
         },
         mounted: function() {
             var self = this;
+            if (isGroupPluginEnabled) {
+                groupsModel.initialize().then(function() {
+                    self.groupModelData = groupsModel.data();
+                });
+            }
             $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
                 var usersObj = countlyUserManagement.getUsers();
                 self.fillOutUsers(usersObj);

@@ -769,7 +769,7 @@
                 var rows = this.deleteQueue;
                 var events = [];
                 rows.forEach(function(row) {
-                    var delKey = row.key || row.e || row.name ;
+                    var delKey = row.key || row.e || row.name;
                     events.push(delKey);
                 });
                 this.$store.dispatch('countlyDataManager/deleteEvents', events);

@@ -1151,11 +1151,17 @@ var pluginManager = function pluginManager() {
                     else {
                         self.installPlugin(name, function(errors) {
                             if (!errors) {
+                                console.log("Install is finished fine. Updating state in database");
                                 var query = {_id: "plugins"};
                                 query["plugins." + name] = {"$ne": false};
                                 var update = {};
                                 update["plugins." + name] = true;
-                                db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function() {
+                                db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function(err3, res) {
+                                    console.log('plugins document updated');
+                                    if (err3) {
+                                        console.log(err3);
+                                    }
+                                    console.log(JSON.stringify(res));
                                     if (callback) {
                                         callback();
                                     }
@@ -1167,6 +1173,8 @@ var pluginManager = function pluginManager() {
                                 });
                             }
                             else {
+                                console.log("Install is finished with errors");
+                                console.log(JSON.stringify(errors));
                                 callback();
                             }
                         });
@@ -1205,7 +1213,8 @@ var pluginManager = function pluginManager() {
                     error2 += data;
                 });
 
-                cmd.on('error', function() {
+                cmd.on('error', function(error) {
+                    console.log(error);
                     errors = true;
                 });
 

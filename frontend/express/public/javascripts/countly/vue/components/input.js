@@ -748,7 +748,7 @@
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
-            width: { type: [Number, Object], default: 400},
+            width: { type: [Number, Object, String], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
             minInputWidth: {
