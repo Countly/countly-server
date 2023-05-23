@@ -29,6 +29,7 @@ async function validate(args, draft = false) {
             },
             triggers: {
                 type: Trigger.scheme,
+                discriminator: Trigger.discriminator.bind(Trigger),
                 array: true,
                 'min-length': 1
             },
@@ -58,6 +59,12 @@ async function validate(args, draft = false) {
         }
         else {
             throw new ValidationError(msg.errors);
+        }
+    }
+
+    for (let trigger of msg.triggers) {
+        if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
+            throw new ValidationError('Please remove tz parameter from trigger definition');
         }
     }
 

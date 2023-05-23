@@ -1,6 +1,6 @@
 'use strict';
 
-const { PushError } = require('./error'),
+const { PushError, ValidationError } = require('./error'),
     { toDate, TriggerKind, Validatable } = require('./const');
 
 /**
@@ -37,6 +37,29 @@ class Trigger extends Validatable {
             kind: {type: 'String', in: Object.values(TriggerKind)},
             start: {type: 'Date', required: true}
         };
+    }
+
+    /**
+     * Class validation rules for all trigger kinds
+     * @param {object} data data to validate
+     * @returns {object} trigger scheme for given data
+     */
+    static discriminator(data) {
+        if (data.kind === TriggerKind.Cohort) {
+            return CohortTrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.Event) {
+            return EventTrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.API) {
+            return APITrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.Plain) {
+            return PlainTrigger.scheme;
+        }
+        else {
+            throw new ValidationError('Unsupported Trigger kind');
+        }
     }
 
     /**
@@ -168,7 +191,7 @@ class PlainTrigger extends Trigger {
      */
     constructor(data) {
         data.kind = TriggerKind.Plain;
-        data.tz = data.tz || false;
+        data.tz = typeof data.sctz === 'number' ? true : false;
         super(data);
     }
 
