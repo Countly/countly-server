@@ -1,3 +1,16 @@
+## Version 23.03.8
+Fixes:
+- [data-manager] Fix issue with deleting event
+- [push] Adding debug logging on push action
+- [crashes] Get build uuid from other in crashes list if latest crash is not in crashes list
+
+Enterprise fixes:
+- [ab-testing] Allow starting experiment on experiment details page
+- [ab-testing] Fix validations and error handling on experiment creation
+- [data-manager] Fix description check when updating segment
+- [gateway] ignore deleted app in async pull
+- [funnels] Allow duplication on funnel editing
+
 ## Version 23.03.7
 Fixes:
 - [core] Fixed backend period object code to selet buckets in same way as in frontend.
