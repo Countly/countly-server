@@ -568,7 +568,7 @@ exports.fromRequest = function(options) {
                 if (options.projection) {
                     for (var key in body) {
                         for (var prop in body[key]) {
-                            if (!options.projection.includes(prop)) {
+                            if (!options.projection[prop]) {
                                 delete body[key][prop];
                             }
                         }
