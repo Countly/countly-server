@@ -258,7 +258,6 @@ module.exports.create = async params => {
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
-
     if (demo) {
         msg.info.demo = true;
     }
@@ -279,7 +278,6 @@ module.exports.create = async params => {
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
-
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
@@ -553,7 +551,6 @@ module.exports.estimate = async params => {
             required: false
         }
     }, true);
-
     if (data.result) {
         data = data.obj;
         if (!data.filter) {
@@ -807,9 +804,10 @@ module.exports.user = async params => {
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
- * @apiQuery {Boolean} auto Whether to return only automated messages
- * @apiQuery {Boolean} api Whether to return only API messages
- * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
+ * @apiQuery {Boolean} auto *Deprecated.* Whether to return only automated messages
+ * @apiQuery {Boolean} api *Deprecated.* Whether to return only API messages
+ * @apiQuery {String[]} kind Required. Array of message kinds (Trigger kinds) to return, overrides *auto* & *api* if set.
+ * @apiQuery {Boolean} removed Whether to return removed messages (set it to true to return removed messages)
  * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
  * @apiQuery {Number} [iDisplayStart] Skip this much messages
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
@@ -825,10 +823,13 @@ module.exports.user = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
+    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
+        platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -838,6 +839,20 @@ module.exports.all = async params => {
         sEcho: {type: 'String', required: false},
         status: {type: 'String', required: false}
     }, true);
+    // backwards compatibility
+    if (!data.kind) {
+        data.kind = [];
+        if (data.api) {
+            data.kind.push(TriggerKind.API);
+        }
+        else if (data.auto) {
+            data.kind.push(TriggerKind.Event);
+            data.kind.push(TriggerKind.Cohort);
+        }
+        else {
+            data.kind.push(TriggerKind.Plain);
+        }
+    }
 
     if (data.result) {
         data = data.obj;
@@ -845,20 +860,15 @@ module.exports.all = async params => {
         let query = {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
+            'triggers.kind': {$in: data.kind}
         };
+
+        if (data.platform && data.platform.length) {
+            query.platforms = data.platform; //{$in: [data.platforms]};
+        }
 
         if (data.removed) {
             delete query.state;
-        }
-
-        if (data.auto) {
-            query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
-        }
-        else if (data.api) {
-            query['triggers.kind'] = TriggerKind.API;
-        }
-        else {
-            query['triggers.kind'] = TriggerKind.Plain;
         }
 
         if (data.sSearch) {
@@ -936,30 +946,23 @@ module.exports.all = async params => {
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
-        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
-            res = res || [];
-            res = res[0] || {};
 
-            var items = res.data || [];
-            var total = 0;
-            if (res.total && res.total[0] && res.total[0].cn) {
-                total = res.total[0].cn;
-            }
 
-            common.returnOutput(params, {
-                sEcho: data.sEcho,
-                iTotalRecords: total || items.length,
-                iTotalDisplayRecords: total || items.length,
-                aaData: items || []
-            }, true);
-
-        });
-
+        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
+            items = res.data || [],
+            total = res.total && res.total[0] && res.total[0].cn || 0;
+        common.returnOutput(params, {
+            sEcho: data.sEcho,
+            iTotalRecords: total || items.length,
+            iTotalDisplayRecords: total || items.length,
+            aaData: items
+        }, true);
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
     }
+
+    return true;
 };
 
 /**
