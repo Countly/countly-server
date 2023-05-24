@@ -895,7 +895,12 @@
                 if (metric === "build_info") {
                     crashMetrics = "App Version: " + crash.app_version;
                     if (crash.os === "iOS") {
-                        crashMetrics += "\nApp Build ID: " + crash.app_build;
+                        if (crash.app_build) {
+                            crashMetrics += "\nApp Build ID: " + crash.app_build;
+                        }
+                        if (crash.build_uuid) {
+                            crashMetrics += "\nBuild UUID: " + crash.build_uuid;
+                        }
                     }
                 }
                 else if (metric === "device") {
