@@ -2456,7 +2456,11 @@
                 default: false,
                 required: false
             },
-            noHourly: false
+            noHourly: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
         },
         components: {
             'chart-header': ChartHeader,
@@ -2594,6 +2598,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            patchXAxis: {
+                type: Boolean,
+                default: true,
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -2602,7 +2613,9 @@
             chartOptions: function() {
                 var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                opt = this.patchOptionsForXAxis(opt);
+                if (this.patchXAxis) {
+                    opt = this.patchOptionsForXAxis(opt);
+                }
                 return opt;
             }
         },

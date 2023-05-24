@@ -492,6 +492,9 @@
                     }
                     else {
                         series[i].data[j] = 0;
+                        if (!percent[j]) {
+                            percent[j] = 0;
+                        }
                     }
                 }
             }

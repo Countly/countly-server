@@ -1,0 +1,22 @@
+<cly-form-field
+    name="metrics"
+    rules="required"
+    label="Display type">
+    <el-select
+        :is-full-width="true"
+        :key="rerender"
+        style="width: 100%;"
+        v-bind="$attrs"
+        v-on="allListeners"
+        v-model="selectedValue"
+        :collapse-tags="false"
+        :multiple="false"
+        :placeholder="placeholderText">
+        <el-option
+            v-for="value in values"
+            :key="value.value"
+            :label="value.label"
+            :value="value.value">
+        </el-option>
+    </el-select>
+</cly-form-field>
