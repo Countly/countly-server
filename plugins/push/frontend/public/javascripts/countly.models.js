@@ -35,7 +35,7 @@
         Recurring: 'rec',
         Multi: 'multi',
     });
-    var CampaignTypes= [
+    var CampaignTypes = [
         {label: CV.i18n('push-notification-drawer.one-time'), description: CV.i18n('push-notification-drawer.one-time-description')},
         {label: CV.i18n('push-notification-drawer.automated'), description: CV.i18n('push-notification-drawer.automated-description')},
         {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
