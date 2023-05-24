@@ -75,6 +75,15 @@
             hideSingleTab: {
                 type: Boolean,
                 default: true
+            },
+            customIcon: {
+                type: Object,
+                default: () => {
+                    return {
+                        implementedTab: '',
+                        iconTemplate: ''
+                    };
+                }
             }
         },
         computed: {
@@ -148,6 +157,13 @@
                         };
                     }
                 }
+
+                var tabObj = this.tabs.find(t => t.name === tab);
+                if (tabObj && tabObj.name === this.customIcon.implementedTab) {
+                    return {
+                        'custom-icon': true
+                    };
+                }
             }
         },
         mounted: function() {
@@ -169,6 +185,7 @@
                                             <a v-if=\'tab.route\' :href="tab.route"><span>{{ i18n(tab.title) }}</span></a>\
                                             <span v-else>{{ i18n(tab.title) }}</span>\
                                         </slot>\
+                                        <div class="bu-is-inline-block" v-if="tab.name === customIcon.implementedTab" v-html="customIcon.iconTemplate"></div>\
                                 </div>\
                             </div>\
                         </div>\
