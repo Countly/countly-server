@@ -244,6 +244,16 @@ function transformValue(value, key, mapper) {
                 }
             }
         }
+        if (mapper.fields[key].type) {
+            switch (mapper.fields[key].type) {
+            case "number":
+                value = common.formatNumber(value);
+                break;
+            case "second":
+                value = common.formatSecond(value);
+                break;
+            }
+        }
         return value;
     }
     else {
@@ -553,6 +563,30 @@ exports.fromRequest = function(options) {
                     var path = options.prop.split(".");
                     for (var i = 0; i < path.length; i++) {
                         body = body[path[i]];
+                    }
+                }
+                if (options.projection) {
+                    for (var key in body) {
+                        for (var prop in body[key]) {
+                            if (!options.projection[prop]) {
+                                delete body[key][prop];
+                            }
+                        }
+                    }
+                }
+                if (options.columnNames || options.mapper) {
+                    for (key in body) {
+                        if (options.mapper) {
+                            body[key] = transformValuesInObject(body[key], options.mapper);
+                        }
+                        for (prop in body[key]) {
+                            if (options.columnNames) {
+                                if (options.columnNames[prop]) {
+                                    body[key][options.columnNames[prop]] = body[key][prop];
+                                    delete body[key][prop];
+                                }
+                            }
+                        }
                     }
                 }
                 data = body;

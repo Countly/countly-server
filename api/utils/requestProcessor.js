@@ -1957,8 +1957,7 @@ const processRequest = (params) => {
                                     sort: params.qstring.sort,
                                     limit: params.qstring.limit,
                                     skip: params.qstring.skip,
-                                    type: params.qstring.type,
-                                    filename: params.qstring.filename
+                                    type: params.qstring.type
                                 });
                             }
                             else {
@@ -1989,7 +1988,10 @@ const processRequest = (params) => {
                             method: params.qstring.method,
                             prop: params.qstring.prop,
                             type: params.qstring.type,
-                            filename: params.qstring.filename
+                            filename: params.qstring.filename,
+                            projection: JSON.parse(params.qstring.projection),
+                            columnNames: JSON.parse(params.qstring.columnNames),
+                            mapper: JSON.parse(params.qstring.mapper),
                         });
                     }, params);
                     break;
