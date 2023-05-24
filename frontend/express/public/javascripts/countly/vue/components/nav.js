@@ -80,6 +80,10 @@
                         iconTemplate: ''
                     };
                 }
+            },
+            hideSingleTab: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
