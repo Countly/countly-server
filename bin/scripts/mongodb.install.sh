@@ -42,7 +42,7 @@ function mongodb_configure () {
             sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
         fi
 
-        rm -rf $MONGODB_DATA_PATH/*
+        rm -rf "${MONGODB_DATA_PATH:?}"/*
         systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
     fi
 }
