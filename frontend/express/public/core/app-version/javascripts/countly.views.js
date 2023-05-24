@@ -34,6 +34,9 @@ var AppVersionView = countlyVue.views.create({
         appVersionOptions: function() {
             return this.appVersion.chart;
         },
+        appVersionStackedOptions: function() {
+            return {series: this.appVersion.series, xAxis: this.appVersion.xAxis, yAxis: this.appVersion.yAxis};
+        },
         isLoading: function() {
             return this.$store.state.countlyDevicesAndTypes.versionLoading;
         },
@@ -45,6 +48,36 @@ var AppVersionView = countlyVue.views.create({
                 return null;
             }
 
+        },
+        chooseProperties: function() {
+            return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
+        },
+        chooseDisplay: function() {
+            return [{"value": "percentage", "name": "percentage"}, {"value": "value", "name": "values"}];
+        },
+        selectedProperty: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
+                this.$store.dispatch('countlyDevicesAndTypes/onRecalcProp');
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            },
+            dropdownsDisabled: function() {
+                return "";
+            }
+        },
+        selectedDisplay: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDisplay', value);
+                this.$store.dispatch('countlyDevicesAndTypes/onRecalcProp');
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedDisplay;
+            },
+            dropdownsDisabled: function() {
+                return "";
+            }
         },
     },
     mixins: [

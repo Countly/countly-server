@@ -2455,6 +2455,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            noHourly: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         components: {
@@ -2487,6 +2492,12 @@
 
                     if (period === "month" && this.category !== "active-users" && !this.bucket) {
                         tickObj = chartsCommon.getTickObj("monthly", false, true);
+                    }
+                    else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
+                        tickObj = {
+                            ticks: [[0, countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]],
+                            tickTexts: [countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]
+                        };
                     }
                     else {
                         tickObj = chartsCommon.getTickObj(this.bucket, false, true);
@@ -2587,6 +2598,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            patchXAxis: {
+                type: Boolean,
+                default: true,
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -2595,7 +2613,9 @@
             chartOptions: function() {
                 var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                opt = this.patchOptionsForXAxis(opt);
+                if (this.patchXAxis) {
+                    opt = this.patchOptionsForXAxis(opt);
+                }
                 return opt;
             }
         },
