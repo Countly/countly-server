@@ -10,6 +10,7 @@ Enterprise fixes:
 - [data-manager] Fix description check when updating segment
 - [gateway] ignore deleted app in async pull
 - [funnels] Allow duplication on funnel editing
+- [users] Return also lsid for users events table
 
 ## Version 23.03.7
 Fixes:
