@@ -1101,7 +1101,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
 
-                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    let schema = argProperties[arg].discriminator ? argProperties[arg].discriminator(args[arg]) : argProperties[arg].type;
+
+                    let subret = common.validateArgs(args[arg], schema, returnErrors);
                     if (returnErrors && !subret.result) {
                         returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
                         returnObj.result = false;
@@ -1128,6 +1130,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (args[arg].length) {
                         let type,
+                            discriminator = argProperties[arg].discriminator,
                             scheme = {},
                             ret;
 
@@ -1139,7 +1142,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
+                            scheme[i] = { type: discriminator ? discriminator(v) : type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);

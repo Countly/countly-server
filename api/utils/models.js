@@ -91,6 +91,16 @@ class Validatable extends Jsonable {
     }
 
     /**
+     * Class schema per given data, allows schema variativity for given data (validates according to subclasses schemas using a discriminator field)
+     * @see push/api/data/trigger.js
+     * 
+     * @returns {object} class schema by default
+     */
+    static discriminator(/*data*/) {
+        return this.constructor.scheme;
+    }
+
+    /**
      * Override Jsonable logic allowing only valid data to be saved
      */
     get json() {
