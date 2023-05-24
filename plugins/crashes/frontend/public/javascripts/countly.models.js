@@ -597,7 +597,8 @@ function transformAppVersion(inpVersion) {
                     occurrences: state.crashgroup.reports,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
-                    latestAppVersion: state.crashgroup.latest_version
+                    latestAppVersion: state.crashgroup.latest_version,
+                    build_uuid: state.crashgroup.build_uuid
                 };
             }
         };
@@ -838,6 +839,8 @@ function transformAppVersion(inpVersion) {
                                     build_uuid: buildUuid,
                                     javascript: crashgroupJson.javascript
                                 }];
+
+                                crashgroupJson.build_uuid = latestCrash && latestCrash.build_uuid,
 
                                 crashes = crashes.concat(crashgroupJson.data);
 

@@ -69,10 +69,35 @@
                         <template v-slot:value>{{commonMetrics.crashFrequency ? commonMetrics.crashFrequency.toFixed(2) : 0}}</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth"
+                        v-if="!commonMetrics.build_uuid"
                         :tooltip="i18n('crashes.help-latest-version')"
                         v-loading="commonMetrics.latestAppVersion == undefined">
                         <template v-slot:title>Latest App Version</template>
                         <template v-slot:value>{{commonMetrics.latestAppVersion}}</template>
+                    </cly-crashes-dashboard-tile>
+                </div>
+            </cly-section>
+            <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics && commonMetrics.build_uuid">
+                <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
+                    <cly-crashes-dashboard-tile columnWidth="is-one-fifth"
+                        :tooltip="i18n('crashes.help-latest-version')"
+                        v-loading="commonMetrics.latestAppVersion == undefined">
+                        <template v-slot:title>Latest App Version</template>
+                        <template v-slot:value>{{commonMetrics.latestAppVersion}}</template>
+                    </cly-crashes-dashboard-tile>
+                    <cly-crashes-dashboard-tile columnWidth="is-one-fifth"
+                        v-loading="commonMetrics.build_uuid == undefined">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <div class="crashes-tile__donut">
+                            </div>
+                            <div class="crashes-tile__content">
+                                <div class="text-medium text-uppercase">Build UUID <cly-tooltip-icon
+                                        icon="ion-help-circled" :tooltip="i18n('crashes.help-build-uuid')">
+                                    </cly-tooltip-icon>
+                                </div>
+                                <div>{{commonMetrics.build_uuid}}</div>
+                            </div>
+                        </div>
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
