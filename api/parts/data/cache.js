@@ -1005,13 +1005,9 @@ class StreamedCollection {
      */
     close() {
         if (this.stream) {
-            this.stream.close(e => {
-                this.stream = undefined;
-                if (e) {
-                    log.e('Error while closing stream', e);
-                }
-                log.d('Stream closedd');
-            });
+            this.stream.destroy();
+            this.stream = undefined;
+            log.d('Stream closedd');
         }
     }
 

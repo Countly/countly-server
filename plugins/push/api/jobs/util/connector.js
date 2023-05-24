@@ -178,7 +178,7 @@ class Connector extends DoFinish {
                 let creds = app.creds[push.p],
                     pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
-                    this.log.d('pgc', push._id); // Push Goes to Connection
+                    // this.log.d('pgc', push._id); // Push Goes to Connection
                     callback(null, push);
                 }
                 else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time

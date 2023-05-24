@@ -28,6 +28,9 @@ function httpRequest(url, options, data) {
                     headers: res.headers,
                     body: body
                 };
+                if (response.statusCode >= 400) {
+                    return reject(new Error(`HTTP request failed with status code ${response.statusCode}: ${response.body}`));
+                }
                 resolve(response);
             });
         });
@@ -61,7 +64,7 @@ pluginManager.dbConnection(DB).then(async(countlyDb) => {
         const {body} = await httpRequest('https://stats.count.ly/o/license-generator/download/' + licenseId, { method: 'POST' }, {auth_token: auth_token});
         var obj = {};
         const license = body;
-        const cert = await fs.readFile(path.resolve(__dirname, './../plugins/drill/files/public.pem'));
+        const cert = await fs.readFile(path.resolve(__dirname, './../../plugins/drill/files/public.pem'));
         console.log('key read success');
         const decoded = jwt.verify(license, cert, { algorithms: ['RS256'] });
         console.log('decode success for license_id', decoded._id);

@@ -80,6 +80,9 @@
                         iconTemplate: ''
                     };
                 }
+            hideSingleTab: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -168,7 +171,7 @@
             }
         },
         template: '<div>\
-                        <div v-if="tabs && tabs.length > 1" class="cly-vue-tabs">\
+                        <div v-if="!hideSingleTab || (tabs && tabs.length > 1)" class="cly-vue-tabs">\
                             <div :class="tabListClasses">\
                                 <div\
                                     v-for="tab in tabs"\

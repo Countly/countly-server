@@ -127,4 +127,51 @@ describe('Updating app', function() {
                 });
         });
     });
+    describe('App details', async() => {
+        it('Should contain correct admins and users', async() => {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+
+            // Create new user with access to app
+            const userParams = JSON.stringify({
+                full_name: 'testappdetails',
+                username: 'testappdetails',
+                password: 'p4ssw0rD!',
+                email: 'mail@mail.com',
+                permission: {
+                    _: {
+                        a: [APP_ID],
+                        u: [[APP_ID]],
+                    },
+                },
+            });
+            let sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('args', userParams);
+
+            const userResponse = await request.get(`/i/users/create?${sp.toString()}`);
+            const userId = userResponse.body._id;
+
+            sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('app_id', APP_ID);
+
+            // Check that user is in app details result
+            const appResponse = await request.get(`/o/apps/details?${sp.toString()}`);
+            should(appResponse.status).equal(200);
+
+            const userInAdmin = appResponse.body.admin.findIndex((item) => item.username === 'testappdetails');
+            const userInUser = appResponse.body.user.findIndex((item) => item.username === 'testappdetails');
+
+            should(userInAdmin >= 0).be.true();
+            should(userInUser >= 0).be.true();
+
+            // delete user
+            sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('args', JSON.stringify({ user_ids: [userId] }));
+
+            const userResponses = await request.get(`/i/users/delete?${sp.toString()}`);
+        });
+    });
 });

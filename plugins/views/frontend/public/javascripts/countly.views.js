@@ -486,13 +486,15 @@
                         label: CV.i18n('views.segment-key'),
                         key: "segment",
                         items: this.chooseSegment,
-                        default: "all"
+                        default: "all",
+                        searchable: true
                     },
                     {
                         label: CV.i18n('views.segment-value'),
                         key: "segmentKey",
                         items: this.chooseSegmentValue,
-                        default: "all"
+                        default: "all",
+                        searchable: true
                     }
                 ];
             },
@@ -522,9 +524,10 @@
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
+                var sortedKeys = Object.keys(segments).sort(Intl.Collator().compare);
                 var listed = [{"value": "all", "label": jQuery.i18n.map["views.all-segments"]}];
-                for (var key in segments) {
-                    listed.push({"value": key, "label": key});
+                for (var i = 0; i < sortedKeys.length; i++) {
+                    listed.push({"value": sortedKeys[i], "label": sortedKeys[i]});
                 }
                 return listed;
             },

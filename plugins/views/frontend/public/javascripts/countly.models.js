@@ -286,22 +286,29 @@
                     totals[key2] += (rr.chartData[z][key2] || 0);
                 }
             }
+
+            if (!countlyCommon.periodObj.isSpecialPeriod && countlyCommon.periodObj.activePeriod) {
+                var ob1 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.activePeriod) || {};
+                totals.u = ob1.u || 0;
+            }
+            else {
             //fix value for u
-            var uvalue1 = 0;
-            var uvalue2 = 0;
-            var l = 0;
+                var uvalue1 = 0;
+                var uvalue2 = 0;
+                var l = 0;
 
-            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
-                var ob = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodArr[l]) || {};
-                uvalue1 += ob.u || 0;
+                for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                    var ob = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodArr[l]) || {};
+                    uvalue1 += ob.u || 0;
+                }
+
+                for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                    var ob2 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodCheckArr[l]) || {};
+                    uvalue2 += ob2.u || 0;
+
+                }
+                totals.u = Math.max(totals.n, Math.min(totals.u, totals.t, uvalue1, uvalue2));
             }
-
-            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
-                var ob2 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodCheckArr[l]) || {};
-                uvalue2 += ob2.u || 0;
-
-            }
-            totals.u = Math.min(totals.n, uvalue1, uvalue2);
             if (totals.t > 0) {
                 totals.dCalc = countlyCommon.formatSecond(totals.d / totals.t);
                 var vv = parseFloat(totals.scr) / parseFloat(totals.t);
@@ -667,6 +674,9 @@
                                 json.segments[i] = countlyCommon.decode(json.segments[i]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -827,6 +837,9 @@
                                 json.segments[z] = countlyCommon.decode(json.segments[z]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -940,6 +953,9 @@
                             json.segments[i] = countlyCommon.decode(json.segments[i]);
                         }
                         _segments = json.segments;
+                        for (let segment in _segments) {
+                            _segments[segment].sort(Intl.Collator().compare);
+                        }
                     }
                 }
             }),

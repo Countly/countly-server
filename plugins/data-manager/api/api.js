@@ -1,11 +1,47 @@
 const FEATURE_NAME = 'data_manager';
+const SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
 const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
-
+const auditLog = require('./parts/auditLogs');
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
+    ob.features.push(SUB_FEATURE_REDACTION);
+    ob.features.push(SUB_FEATURE_TRANSFORMATIONS);
+    ob.featuresPermissionDependency[SUB_FEATURE_TRANSFORMATIONS] = {
+        c: {
+            [FEATURE_NAME]: ['r'],
+        },
+        r: {
+            [FEATURE_NAME]: ['r'],
+        },
+        u: {
+            [FEATURE_NAME]: ['r'],
+        },
+        d: {
+            [FEATURE_NAME]: ['r']
+        },
+    };
+    // c,u,d mean the same thing here, so they are dependency of each other
+    ob.featuresPermissionDependency[SUB_FEATURE_REDACTION] = {
+        c: {
+            [SUB_FEATURE_REDACTION]: ['r', 'u', 'd'],
+            [FEATURE_NAME]: ['u']
+        },
+        r: {
+            [FEATURE_NAME]: ['r']
+        },
+        u: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'd'],
+            [FEATURE_NAME]: ['u']
+        },
+        d: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'u'],
+            [FEATURE_NAME]: ['u']
+        },
+    };
 });
 
 try {
@@ -23,27 +59,8 @@ plugins.register("/o/data-manager/events", function(ob) {
             let appId = ob.params.qstring.app_id;
 
             let events = await common.db.collection('events')
-                .findOne({'_id': common.db.ObjectID(appId)});
-            let auditLogs = await common.db.collection('systemlogs')
-                .aggregate([
-                    {
-                        '$match': {
-                            'a': {'$in': ['dm-event-edit', 'dm-event-create', 'dm-event-approve']},
-                            'i.ev': {'$in': events?.list || [] }
-                        }
-                    }, {
-                        '$sort': {'ts': -1 }
-                    }, {
-                        '$group': {
-                            '_id': '$i.ev',
-                            'user_id': {'$first': '$user_id'},
-                            'ts': {'$first': '$ts' },
-                            'event': {'$first': '$i.ev' }
-                        }
-                    }
-                ], { allowDiskUse: true })
-                .toArray();
-
+                .findOne({ '_id': common.db.ObjectID(appId) });
+            let auditLogs = await auditLog.eventsAuditLogs(events?.list);
             let memberIds = [...auditLogs.map(al=>{
                 return al.user_id;
             }) ];

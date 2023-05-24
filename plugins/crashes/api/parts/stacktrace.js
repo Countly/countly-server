@@ -75,7 +75,7 @@ var trace = {
             seed = seed.replace(/\/.*?\//gim, "");
 
             //remove object contents like (android.app.XyzException:  Context.method() did not then call  Service.method():Object{3e13d46 u14  com.example/.Service})
-            seed = seed.replace(/Object\{.*?\}/gim, "");
+            seed = seed.replace(/\{.*?\}/gim, "");
 
             //remove protocol (http://test)
             seed = seed.replace(/[a-zA-Z]*.:\/\//gim, "/");
@@ -94,6 +94,19 @@ var trace = {
 
             //remove ipv6
             seed = seed.replace(/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/gim, "");
+
+            //remove additional custom provided regexes
+            var regexes = (plugins.getConfig("crashes").smart_regexes || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+            for (let i = 0; i < regexes.length; i++) {
+                if (regexes[i] && regexes[i].length) {
+                    try {
+                        seed = seed.replace(new RegExp(regexes[i]), "gim");
+                    }
+                    catch (ex) {
+                        console.log("Error in smart regex for crash", regexes[i], ex);
+                    }
+                }
+            }
         }
 
         callback(seed);

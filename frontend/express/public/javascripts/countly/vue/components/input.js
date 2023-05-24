@@ -748,7 +748,7 @@
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
-            width: { type: [Number, Object], default: 400},
+            width: { type: [Number, Object, String], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
             minInputWidth: {
@@ -917,7 +917,7 @@
                     document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
                         item.style.width = '100%';
                     });
-                }, 100);
+                }, 0);
             },
             focusOnSearch: function() {
                 var self = this;

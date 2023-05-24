@@ -307,6 +307,13 @@
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
+                        id: "latest_version",
+                        name: "Latest App Version",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: getAppVersions
+                    });
+                    filterProperties.push({
                         id: "opengl",
                         name: "OpenGL Version",
                         type: countlyQueryBuilder.PropertyType.LIST,
@@ -684,7 +691,11 @@
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
-                activeThreadPanels: []
+                activeThreadPanels: [],
+                symbolicationErrorDialog: {
+                    show: false,
+                    msg: '',
+                },
             };
         },
         computed: {
@@ -843,7 +854,20 @@
                     this.crashesBeingSymbolicated.push(crash._id);
                     this.$store.dispatch("countlyCrashes/crashgroup/symbolicate", crash)
                         .then(function() {
+                            CountlyHelpers.notify({
+                                title: CV.i18n("crash_symbolication.symbolication-success"),
+                                message: CV.i18n("crash_symbolication.symbolication-success")
+                            });
                             self.refresh();
+                        })
+                        .catch(function(err) {
+                            if (err.responseJSON) {
+                                self.symbolicationErrorDialog.msg = err.responseJSON.result;
+                            }
+                            else {
+                                self.symbolicationErrorDialog.msg = err.statusText;
+                            }
+                            self.symbolicationErrorDialog.show = true;
                         })
                         .finally(function() {
                             self.crashesBeingSymbolicated = self.crashesBeingSymbolicated.filter(function(cid) {
@@ -1320,6 +1344,10 @@
             }
         })
     });
+
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.smart_regexes", {input: "el-input", attrs: {type: "textarea", rows: 5}});
+    }
 
     app.addMenu("improve", {code: "crashes", permission: FEATURE_NAME, text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
     app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});

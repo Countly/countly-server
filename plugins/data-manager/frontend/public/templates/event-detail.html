@@ -129,7 +129,7 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column type="options" width="90px" align="center">
+                <el-table-column v-if="canUserUpdate" type="options" width="90px" align="center">
                     <template v-slot="rowScope">
                         <el-button v-if="rowScope.row.hover" @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
                     </template>
