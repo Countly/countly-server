@@ -3568,4 +3568,42 @@ common.formatNumber = function(x) {
     return parts.join(".");
 };
 
+/**
+* Second formatter
+
+* @memberof countlyCommon
+* @param {number} number - number of seconds to format
+* @returns {string} formatted seconds
+*/
+common.formatSecond = function(number) {
+    if (number === 0) {
+        return '0';
+    }
+
+    const days = Math.floor(number / (24 * 60 * 60));
+    const hours = Math.floor((number % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((number % (60 * 60)) / 60);
+    const seconds = Math.floor((number % 60)); //floor to discard decimals;
+
+    let formattedDuration = '';
+
+    if (days > 0) {
+        formattedDuration += `${days}d `;
+    }
+
+    if (hours > 0) {
+        formattedDuration += `${hours}h `;
+    }
+
+    if (minutes > 0) {
+        formattedDuration += `${minutes}m `;
+    }
+
+    if (seconds > 0) {
+        formattedDuration += `${seconds}s`;
+    }
+
+    return formattedDuration.trim();
+};
+
 module.exports = common;
