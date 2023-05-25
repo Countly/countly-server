@@ -340,6 +340,20 @@ function clone(obj) {
     }
 }
 
+/**
+* Returns number for timestamp making sure it is 13 digits
+* @param {integer}ts -  number we need to se as timestamp
+* @returns {integer} timestamp in ms
+**/
+function fixTimestampToMilliseconds(ts) {
+    while ((ts + "").length > 13) {
+        ts = Math.round(ts / 10);
+    }
+    while ((ts + "").length < 13) {
+        ts = ts * 10;
+    }
+    return ts;
+}
 
 /**
 * Returns a period object used by all time related data calculation functions
@@ -397,6 +411,8 @@ function getPeriodObject(prmPeriod) {
         var fromDate, toDate;
 
         if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
+			period[0] = fixTimestampToMilliseconds(period[0]);
+            period[1] = fixTimestampToMilliseconds(period[1]);
             fromDate = moment(period[0]);
             toDate = moment(period[1]);
         }
