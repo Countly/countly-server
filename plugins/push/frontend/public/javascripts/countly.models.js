@@ -38,8 +38,8 @@
     var CampaignTypes = [
         {label: CV.i18n('push-notification-drawer.one-time'), description: CV.i18n('push-notification-drawer.one-time-description')},
         {label: CV.i18n('push-notification-drawer.automated'), description: CV.i18n('push-notification-drawer.automated-description')},
-        {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
-        {label: CV.i18n('push-notification-drawer.multiple-days'), description: CV.i18n('push-notification-drawer.multiple-days-description')},
+        // {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
+        // {label: CV.i18n('push-notification-drawer.multiple-days'), description: CV.i18n('push-notification-drawer.multiple-days-description')},
         {label: CV.i18n('push-notification-drawer.api'), description: CV.i18n('push-notification-drawer.api-description')}
     ];
     var TriggerTypeEnum = Object.freeze({

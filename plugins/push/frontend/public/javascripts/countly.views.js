@@ -1613,8 +1613,8 @@
             this.notificationTypes.push(
                 {label: "One-Time Notificaitons", value: "plain"},
                 {label: "Automated Notifications", value: "auto"},
-                {label: "Recurring Notifications", value: "rec"},
-                {label: "Multiple Notifications", value: "multi"},
+                // {label: "Recurring Notifications", value: "rec"},
+                // {label: "Multiple Notifications", value: "multi"},
                 {label: "API Notifications", value: "api"}
             );
         },
