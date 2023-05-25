@@ -346,11 +346,9 @@ function clone(obj) {
 * @returns {integer} timestamp in ms
 **/
 function fixTimestampToMilliseconds(ts) {
-    while ((ts + "").length > 13) {
-        ts = Math.round(ts / 10);
-    }
-    while ((ts + "").length < 13) {
-        ts = ts * 10;
+    if ((ts + "").length > 13) {
+        ts = (ts + '').substring(0, 13);
+        ts = parseInt(ts, 10);
     }
     return ts;
 }
