@@ -409,7 +409,7 @@ function getPeriodObject(prmPeriod) {
         var fromDate, toDate;
 
         if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
-			period[0] = fixTimestampToMilliseconds(period[0]);
+            period[0] = fixTimestampToMilliseconds(period[0]);
             period[1] = fixTimestampToMilliseconds(period[1]);
             fromDate = moment(period[0]);
             toDate = moment(period[1]);
