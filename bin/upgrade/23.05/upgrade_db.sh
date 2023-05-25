@@ -33,7 +33,7 @@ then
     nodejs "$SCRIPTS/scripts/push_drop_indexes.js"
     nodejs "$SCRIPTS/scripts/upgrade_user_permission_data-manager.js"
     nodejs "$SCRIPTS/scripts/rebuild_member_permission.js"
-
+    nodejs "$SCRIPTS/scripts/merge_drill_meta.js"
 
     if [ "$1" != "combined" ]; then
         countly upgrade;
