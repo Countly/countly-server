@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError, ValidationError } = require('./error'),
-    { toDate, TriggerKind, Validatable } = require('./const');
+    { toDate, TriggerKind, Validatable, RecurringType } = require('./const');
 
 /**
  * Base clsss for message triggers
@@ -684,10 +684,19 @@ class APITrigger extends AutoTrigger {
         super(data);
     }
 }
+
+/**
+ * Superclass for triggers which allow message to be scheduled again
+ */
+class ReschedulingTrigger extends Trigger {
+
+}
+
+
 /**
  * Recurring trigger
  */
-class RecurringTrigger extends Trigger {
+class RecurringTrigger extends ReschedulingTrigger {
     /**
      * Constructor
      * 
@@ -697,7 +706,7 @@ class RecurringTrigger extends Trigger {
      * @param {number} data.time time (milliseconds since 00:00) when to send in user's timezone
      * @param {string} data.every repetition indicator (every 7 days/weeks/months)
      * @param {Array} data.on repetition indicator (on 1-Monday, 2-Tuesday... or Day 1st, 2nd, 3rd... of month)
-     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean} data.sctz   in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {boolean} delayed     true if audience calculation should be done right before sending the message
      */
     constructor(data) {
@@ -711,11 +720,11 @@ class RecurringTrigger extends Trigger {
     static get scheme() {
         return Object.assign({}, super.scheme, {
             end: {type: 'Date', required: false},
-            bucket: {type: 'String', required: false},
+            bucket: {type: 'String', required: false, in: Object.values(RecurringType)},
             time: {type: 'Number', required: false},
-            every: {type: 'String', required: false},
-            on: {type: 'Array', required: false},
-            tz: {type: 'Boolean', required: false},
+            every: {type: 'Number', required: false},
+            on: {type: 'Number[]', required: false},
+            sctz: {type: 'Number', required: false},
             delayed: {type: 'Boolean', required: false},
         });
     }
@@ -724,12 +733,12 @@ class RecurringTrigger extends Trigger {
 /**
  * Multi trigger
  */
-class MultiTrigger extends Trigger {
+class MultiTrigger extends ReschedulingTrigger {
     /**
      * Constructor
      * 
      * @param {object|null} data filter data
-     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean} data.sctz   in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {Array} data.multipleDates delivery times for multiple notifications
      * @param {boolean} delayed     true if audience calculation should be done right before sending the message
      * */
@@ -743,8 +752,8 @@ class MultiTrigger extends Trigger {
     */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            tz: {type: 'Boolean', required: false},
-            multipleDates: {type: 'Array', required: false},
+            sctz: {type: 'Number', required: false},
+            multipleDates: {type: 'Date[]', required: false},
             delayed: {type: 'Boolean', required: false},
         });
     }

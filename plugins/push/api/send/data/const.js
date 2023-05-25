@@ -153,6 +153,15 @@ const TriggerKind = {
     Multi:      'multi',        // Multiple times,
 };
 
+/**
+ * Recurring message types
+ */
+const RecurringType = {
+    Daily: 'daily',
+    Weekly: 'weekly',
+    Monthly: 'monthly'
+};
+
 
 /* eslint-enable key-spacing, no-multi-spaces */
 
@@ -201,6 +210,7 @@ module.exports = {
     STATUSES: Object.values(Status),
 
     TriggerKind,
+    RecurringType,
 
     PersType,
     PERS_TYPES: Object.values(PersType),
