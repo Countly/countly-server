@@ -57,6 +57,12 @@ class Trigger extends Validatable {
         else if (data.kind === TriggerKind.Plain) {
             return PlainTrigger.scheme;
         }
+        else if (data.kind === TriggerKind.Recurring) {
+            return RecurringTrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.Multi) {
+            return MultiTrigger.scheme;
+        }
         else {
             throw new ValidationError('Unsupported Trigger kind');
         }
@@ -753,7 +759,7 @@ class MultiTrigger extends ReschedulingTrigger {
     static get scheme() {
         return Object.assign({}, super.scheme, {
             sctz: {type: 'Number', required: false},
-            multipleDates: {type: 'Date[]', required: false},
+            dates: {type: 'Date[]', required: false},
             delayed: {type: 'Boolean', required: false},
         });
     }
