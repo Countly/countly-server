@@ -163,6 +163,14 @@ const RecurringType = {
 };
 
 
+/**
+ * Time limits (0 ... 24h in milliseconds - 1)
+ */
+const Time = {
+    MIN: 0,
+    MAX: 24 * 60 * 60 * 1000 - 1
+};
+
 /* eslint-enable key-spacing, no-multi-spaces */
 
 /**
@@ -211,6 +219,7 @@ module.exports = {
 
     TriggerKind,
     RecurringType,
+    Time,
 
     PersType,
     PERS_TYPES: Object.values(PersType),

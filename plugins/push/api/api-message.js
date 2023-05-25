@@ -1,5 +1,5 @@
 const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
-    { DEFAULTS } = require('./send/data/const'),
+    { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
@@ -65,6 +65,9 @@ async function validate(args, draft = false) {
     for (let trigger of msg.triggers) {
         if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
             throw new ValidationError('Please remove tz parameter from trigger definition');
+        }
+        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
+            throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
         }
     }
 

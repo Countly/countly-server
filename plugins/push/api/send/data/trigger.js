@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError, ValidationError } = require('./error'),
-    { toDate, TriggerKind, Validatable, RecurringType } = require('./const');
+    { toDate, TriggerKind, Validatable, RecurringType, Time } = require('./const');
 
 /**
  * Base clsss for message triggers
@@ -304,7 +304,7 @@ class AutoTrigger extends Trigger {
         return Object.assign({}, super.scheme, {
             end: {type: 'Date', required: false},
             actuals: {type: 'Boolean', required: false},
-            time: {type: 'Number', required: false},
+            time: {type: 'Number', required: false, min: Time.MIN, max: Time.MAX},
             reschedule: {type: 'Boolean', required: false},
             delay: {type: 'Number', required: false},
             cap: {type: 'Number', required: false},
@@ -695,7 +695,17 @@ class APITrigger extends AutoTrigger {
  * Superclass for triggers which allow message to be scheduled again
  */
 class ReschedulingTrigger extends Trigger {
-
+    /**
+     * Class validation rules
+    */
+    static get scheme() {
+        return Object.assign({}, super.scheme, {
+            tz: {type: 'Boolean', required: false},
+            sctz: {type: 'Number', required: false},
+            delayed: {type: 'Boolean', required: false},
+            reschedule: {type: 'Boolean', required: false},
+        });
+    }
 }
 
 
@@ -726,12 +736,10 @@ class RecurringTrigger extends ReschedulingTrigger {
     static get scheme() {
         return Object.assign({}, super.scheme, {
             end: {type: 'Date', required: false},
-            bucket: {type: 'String', required: false, in: Object.values(RecurringType)},
-            time: {type: 'Number', required: false},
-            every: {type: 'Number', required: false},
+            bucket: {type: 'String', required: true, in: Object.values(RecurringType)},
+            time: {type: 'Number', required: true, min: Time.MIN, max: Time.MAX},
+            every: {type: 'Number', required: true},
             on: {type: 'Number[]', required: false},
-            sctz: {type: 'Number', required: false},
-            delayed: {type: 'Boolean', required: false},
         });
     }
 }
@@ -758,9 +766,7 @@ class MultiTrigger extends ReschedulingTrigger {
     */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            sctz: {type: 'Number', required: false},
-            dates: {type: 'Date[]', required: false},
-            delayed: {type: 'Boolean', required: false},
+            dates: {type: 'Date[]', required: true},
         });
     }
 }
