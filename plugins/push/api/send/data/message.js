@@ -49,6 +49,7 @@ class Message extends Mongoable {
             },
             triggers: {
                 type: Trigger.scheme,
+                discriminator: Trigger.discriminator.bind(Trigger),
                 array: true,
                 required: true,
                 'min-length': 1

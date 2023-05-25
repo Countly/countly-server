@@ -127,7 +127,7 @@ class Connector extends DoFinish {
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
                 }
                 else {
-                    this.log.e('message not found', push.m);
+                    this.log.e('message not found', push.m, query);
                     this.state.discardMessage(push.m);
                 }
                 this.do_transform(push, encoding, callback);
