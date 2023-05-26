@@ -160,6 +160,7 @@
             type: function(val) {
                 if (val) {
                     this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type, this.pushNotificationUnderEdit)));
+                    this.updatePlatformsBasedOnAppConfig();
                 }
             },
             'campaignType': {
