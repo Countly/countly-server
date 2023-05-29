@@ -15,4 +15,5 @@ pluginManager.dbConnection('countly').then(async(db) => {
     catch (e) {
         console.error(e);
     }
+    db.close();
 });

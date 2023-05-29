@@ -820,12 +820,22 @@ function transformAppVersion(inpVersion) {
 
                                 crashgroupJson.binary_images = latestCrash && latestCrash.binary_images;
 
+                                let buildUuid = latestCrash && latestCrash.build_uuid;
+
+                                if (!buildUuid) {
+                                    crashgroupJson.data.every(function(item) {
+                                        buildUuid = item.build_uuid;
+
+                                        return !buildUuid;
+                                    });
+                                }
+
                                 var crashes = [{
                                     _id: crashgroupJson.lrid,
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
                                     app_version: crashgroupJson.latest_version,
-                                    build_uuid: latestCrash && latestCrash.build_uuid,
+                                    build_uuid: buildUuid,
                                     javascript: crashgroupJson.javascript
                                 }];
 

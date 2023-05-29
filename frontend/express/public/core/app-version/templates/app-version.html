@@ -15,8 +15,22 @@
   </cly-header>
   <cly-main>
   <cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
+  <div class="bu-columns bu-is-gapless bu-mt-2">
+    <h4>App versions for </h4>
+    <div class ="selector_wrapper">
+      <el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+      </el-select>
+    </div>
+    <h4>&nbsp;&nbsp;as </h4>
+    <div class ="selector_wrapper">
+      <el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      </el-select>
+    </div>
+  </div>
   <cly-section>
-    <cly-chart-bar :option="appVersionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+    <cly-chart-bar :option="appVersionStackedOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
   </cly-section>
   <cly-section>
     <cly-datatable-n  :rows="appVersionRows" :resizable="true" :force-loading="isLoading">
