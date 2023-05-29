@@ -1610,10 +1610,10 @@
      * @param {date} ts - date as timestamp
      * @param {number} userCount - users count will be generated
      * @param {array} ids - ids array
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
+    function generateRetentionUser(ts, userCount, ids, template, callback) {
         var bulker = [];
         for (var userIndex = 0; userIndex < userCount; userIndex++) {
             for (var j = 0; j < ids.length; j++) {
@@ -1652,7 +1652,7 @@
                     }
                 }
 
-                var userdetails = new getUser(templateUp);
+                var userdetails = new getUser(template && template.up);
                 userdetails.begin_session = 1;
                 userdetails.device_id = userIndex + "" + ids[j];
                 userdetails.dow = getRandomInt(0, 6);
@@ -1672,7 +1672,7 @@
 
         totalStats.r++;
         for (var index = 0; index < bulker.length; index++) {
-            bulker[index].startSession(templateUp);
+            bulker[index].startSession(template);
         }
 
         callback("");
@@ -1680,10 +1680,10 @@
 
     /**
      * Generate retentions
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetention(templateUp, callback) {
+    function generateRetention(template, callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
             return;
@@ -1703,28 +1703,28 @@
         totalUserCount += userAmount + retentionCall; // campaign users
         totalCountWithoutUserProps = 0;
 
-        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+        generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+            generateRetentionUser(ts, userCount--, ids, template, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                generateRetentionUser(ts, userCount--, ids, template, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                    generateRetentionUser(ts, userCount--, ids, template, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                        generateRetentionUser(ts, userCount--, ids, template, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                            generateRetentionUser(ts, userCount--, ids, template, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                                generateRetentionUser(ts, userCount--, ids, template, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, templateUp, callback);
+                                    generateRetentionUser(ts, userCount--, ids, template, callback);
                                 });
                             });
                         });
@@ -1903,7 +1903,7 @@
         }
 
         generateWidgets(function() {
-            generateRetention(template && template.up, function() {
+            generateRetention(template, function() {
                 generateCampaigns(function() {
                     for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                         createUser();
