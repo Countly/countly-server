@@ -978,6 +978,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         parsed = args[arg];
                     }
                 }
+                else if (argProperties[arg].type === 'String[]') {
+                    if (typeof args[arg] === 'string') {
+                        try {
+                            args[arg] = JSON.parse(args[arg]);
+                        }
+                        catch (error) {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(args[arg])) {
+                        let allStrings = true;
+                        for (const item of args[arg]) {
+                            if (typeof item !== 'string') {
+                                allStrings = false;
+                                break;
+                            }
+                        }
+
+                        if (!allStrings) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid type for " + arg + ": all elements must be strings");
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
@@ -1101,7 +1131,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
 
-                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    let schema = argProperties[arg].discriminator ? argProperties[arg].discriminator(args[arg]) : argProperties[arg].type;
+
+                    let subret = common.validateArgs(args[arg], schema, returnErrors);
                     if (returnErrors && !subret.result) {
                         returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
                         returnObj.result = false;
@@ -1128,6 +1160,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (args[arg].length) {
                         let type,
+                            discriminator = argProperties[arg].discriminator,
                             scheme = {},
                             ret;
 
@@ -1139,7 +1172,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
+                            scheme[i] = { type: discriminator ? discriminator(v) : type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);
@@ -3566,6 +3599,44 @@ common.formatNumber = function(x) {
     var parts = x.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return parts.join(".");
+};
+
+/**
+* Second formatter
+
+* @memberof countlyCommon
+* @param {number} number - number of seconds to format
+* @returns {string} formatted seconds
+*/
+common.formatSecond = function(number) {
+    if (number === 0) {
+        return '0';
+    }
+
+    const days = Math.floor(number / (24 * 60 * 60));
+    const hours = Math.floor((number % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((number % (60 * 60)) / 60);
+    const seconds = Math.floor((number % 60)); //floor to discard decimals;
+
+    let formattedDuration = '';
+
+    if (days > 0) {
+        formattedDuration += `${days}d `;
+    }
+
+    if (hours > 0) {
+        formattedDuration += `${hours}h `;
+    }
+
+    if (minutes > 0) {
+        formattedDuration += `${minutes}m `;
+    }
+
+    if (seconds > 0) {
+        formattedDuration += `${seconds}s`;
+    }
+
+    return formattedDuration.trim();
 };
 
 module.exports = common;

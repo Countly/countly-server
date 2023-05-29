@@ -1,0 +1,87 @@
+<div class="technology-analytics-wrapper-sdk" v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2>SDK stats</h2>
+        </template>
+		<template v-slot:header-right>
+			<cly-more-options v-if="topDropdown" size="small">
+				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+				  <!--<span :class="item.icon"></span>-->
+				  <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+				</el-dropdown-item>
+			  </cly-more-options>
+		  </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
+		<div class="bu-columns bu-is-gapless bu-mt-2">
+			<h4>Stats for </h4>
+			<div class ="selector_wrapper">
+				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+				</el-select>
+			</div>
+		</div>
+		<div class="technology-analytics-wrapper-sdk__items bu-pb-5" v-loading="isLoading">
+            <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
+                <cly-metric-cards :multiline="false" :is-synced-scroll="true">
+                    <cly-metric-card 
+                        :is-percentage="true" 
+                        :column-width=3 
+                        :color="item.color" 
+                        :number="item.percent"
+                        :key="idx" 
+                        v-for="(item, idx) in sdkItems">
+						{{item.name}}
+                        <template v-slot:number>{{item.value}}</template>
+                        <template v-slot:description>
+                            <span class="text-medium">{{item.percentText}}</span>
+                        </template>
+                    </cly-metric-card>
+					<div v-if="!sdkItems.length && !isLoading" class="technology-analytics-wrapper-sdk__empty-card">
+						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+					</div>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
+		<h4 class="bu-pb-4"> SDK Version Distribution </h4>
+		<div v-if="!sdkVersions.length && !isLoading" class="technology-analytics-wrapper-sdk__versions-empty-card">
+			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+		</div>
+        <div v-else v-loading="isLoading" class="technology-analytics-wrapper-sdk__versions">
+            <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
+					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
+						<cly-metric-breakdown 
+							:name="item.name" 
+							:values="item.values" 
+							:key="idx"
+							:column-width="3"
+							:scroll-ops="breakdownScrollOps" 
+							v-for="(item, idx) in sdkVersions">
+						</cly-metric-breakdown>
+						<div v-if="!sdkItems.length && !isLoading" class="technology-analytics-wrapper-sdk__empty-card">
+							<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+						</div>
+					</cly-metric-cards>
+            </vue-scroll>
+        </div>
+		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">SDK Version Adoption for </h4>
+			<div class ="selector_wrapper">
+				<el-select v-model="selectedSDK" >
+					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
+				</el-select>
+			</div>
+			<h4>&nbsp;&nbsp;as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
+		</div>
+		<cly-section>
+			<cly-chart-bar :option="lineOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+		</cly-section>
+		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
+    </cly-main>
+</div>

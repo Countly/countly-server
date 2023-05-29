@@ -591,6 +591,7 @@
                     this.permissionSets[index][type].all = false;
                 }
                 this.setPermissionByDependency(index, type, feature);
+                this.toggleFilteredAll(index);
             },
             setPermissionByType: function(index, type) {
                 var types = ['c', 'r', 'u', 'd'];
@@ -667,6 +668,7 @@
                         type: 'info'
                     });
                 }
+                this.toggleFilteredAll(index);
             },
             handleCommand: function(command, index) {
                 switch (command) {

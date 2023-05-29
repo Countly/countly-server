@@ -1,9 +1,9 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
-        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
-        desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
+        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_density", "_locale", "_store", "_browser"],
+        desktop: ["_os", "_os_version", "_resolution", "_locale"]
     };
     var props = {
         _os: ["Android", "iOS"],
@@ -27,7 +27,6 @@
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],
         _carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
-        _app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
         _cpu: ["armv6", "armv7", "x86"],
         _opengl: ["opengl_es1", "opengl_es2"],
         _density_android: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI"],
@@ -302,6 +301,26 @@
         }
     }
     /**
+     * Get version based on current timestamp for better version adoption plotting,
+     * @param {number} ts - current timestamp
+     * @param {boolean} trimYear - trim year to look it like semantic versioning
+     * @returns {string} returns version
+     **/
+    function getVersion(ts, trimYear) {
+        var seed = ts || Date.now();
+        seed = (seed + "").length === 13 ? seed : seed * 1000;
+        var d = moment(seed);
+        if (parseInt(d.format('DD')[1], 10) < 5) {
+            if (Math.random() > 0.5) {
+                seed -= 1000 * 60 * 60 * 24 * 6;
+                d = moment(seed);
+            }
+        }
+        var year = trimYear ? d.format('YY')[1] : d.format('YY');
+        var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
+        return year + "." + d.format('MM') + "." + day;
+    }
+    /**
      * Generate a user with random properties and actions
      * @param {object} templateUp user properties template, if available
      **/
@@ -348,7 +367,9 @@
         else {
             this.platform = this.getProp("_os");
         }
+        this.app_version = getVersion(this.ts, true);
         this.metrics._os = this.platform;
+        this.metrics._app_version = this.app_version;
         var m_props = metric_props.mobile;
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
             m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
@@ -379,7 +400,7 @@
             crash._device = this.metrics._device;
             crash._manufacture = this.getProp("_manufacture");
             crash._resolution = this.metrics._resolution;
-            crash._app_version = this.metrics._app_version;
+            crash._app_version = this.app_version;
             crash._cpu = this.getProp("_cpu");
             crash._opengl = this.getProp("_opengl");
 
@@ -650,7 +671,7 @@
             event.segmentation.email = chance.email();
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             if (ratingWidgetList.length) {
                 event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
@@ -674,7 +695,7 @@
             event.segmentation = {};
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(0, 10);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             if (npsWidgetList.length) {
@@ -697,7 +718,7 @@
 
             this.ts += 1000;
             event.segmentation = {};
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             var keys = Object.keys(surveyWidgetList);
@@ -953,6 +974,13 @@
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                params.sdk_name = "javascript_native_web";
+            }
+            else {
+                params.sdk_name = (Math.random() > 0.5) ? "objc-native-ios" : "java-native-android";
+            }
+            params.sdk_version = getVersion(params.timestamp);
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();

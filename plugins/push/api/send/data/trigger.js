@@ -1,6 +1,6 @@
 'use strict';
 
-const { PushError } = require('./error'),
+const { PushError, ValidationError } = require('./error'),
     { toDate, TriggerKind, Validatable } = require('./const');
 
 /**
@@ -37,6 +37,29 @@ class Trigger extends Validatable {
             kind: {type: 'String', in: Object.values(TriggerKind)},
             start: {type: 'Date', required: true}
         };
+    }
+
+    /**
+     * Class validation rules for all trigger kinds
+     * @param {object} data data to validate
+     * @returns {object} trigger scheme for given data
+     */
+    static discriminator(data) {
+        if (data.kind === TriggerKind.Cohort) {
+            return CohortTrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.Event) {
+            return EventTrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.API) {
+            return APITrigger.scheme;
+        }
+        else if (data.kind === TriggerKind.Plain) {
+            return PlainTrigger.scheme;
+        }
+        else {
+            throw new ValidationError('Unsupported Trigger kind');
+        }
     }
 
     /**
@@ -90,6 +113,12 @@ class Trigger extends Validatable {
         }
         else if (data.kind === TriggerKind.API) {
             return new APITrigger(data);
+        }
+        else if (data.kind === TriggerKind.Recurring) {
+            return new RecurringTrigger(data);
+        }
+        else if (data.kind === TriggerKind.Multi) {
+            return new MultiTrigger(data);
         }
         else {
             throw new PushError(`Invalid trigger kind ${data.kind}`);
@@ -168,7 +197,7 @@ class PlainTrigger extends Trigger {
      */
     constructor(data) {
         data.kind = TriggerKind.Plain;
-        data.tz = data.tz || false;
+        data.tz = typeof data.sctz === 'number' ? true : false;
         super(data);
     }
 
@@ -655,5 +684,69 @@ class APITrigger extends AutoTrigger {
         super(data);
     }
 }
+/**
+ * Recurring trigger
+ */
+class RecurringTrigger extends Trigger {
+    /**
+     * Constructor
+     * 
+     * @param {object|null} data filter data
+     * @param {Date} data.end message end date (don't send anything after this date, set status to Stopped)
+     * @param {string} data.bucket notification frequency ("daily", "weekly", "monthly")
+     * @param {number} data.time time (milliseconds since 00:00) when to send in user's timezone
+     * @param {string} data.every repetition indicator (every 7 days/weeks/months)
+     * @param {Array} data.on repetition indicator (on 1-Monday, 2-Tuesday... or Day 1st, 2nd, 3rd... of month)
+     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean} delayed     true if audience calculation should be done right before sending the message
+     */
+    constructor(data) {
+        data.kind = TriggerKind.Recurring;
+        super(data);
+    }
 
+    /**
+     * Class validation rules
+    */
+    static get scheme() {
+        return Object.assign({}, super.scheme, {
+            end: {type: 'Date', required: false},
+            bucket: {type: 'String', required: false},
+            time: {type: 'Number', required: false},
+            every: {type: 'String', required: false},
+            on: {type: 'Array', required: false},
+            tz: {type: 'Boolean', required: false},
+            delayed: {type: 'Boolean', required: false},
+        });
+    }
+}
+
+/**
+ * Multi trigger
+ */
+class MultiTrigger extends Trigger {
+    /**
+     * Constructor
+     * 
+     * @param {object|null} data filter data
+     * @param {boolean} data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {Array} data.multipleDates delivery times for multiple notifications
+     * @param {boolean} delayed     true if audience calculation should be done right before sending the message
+     * */
+    constructor(data) {
+        data.kind = TriggerKind.Multi;
+        super(data);
+    }
+
+    /**
+     * Class validation rules
+    */
+    static get scheme() {
+        return Object.assign({}, super.scheme, {
+            tz: {type: 'Boolean', required: false},
+            multipleDates: {type: 'Array', required: false},
+            delayed: {type: 'Boolean', required: false},
+        });
+    }
+}
 module.exports = { Trigger, TriggerKind, PlainTrigger, EventTrigger, CohortTrigger, APITrigger };

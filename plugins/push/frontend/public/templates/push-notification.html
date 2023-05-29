@@ -11,13 +11,13 @@
                 </div>
             </template>
             <template v-slot:header-tabs>
-                <cly-dynamic-tabs v-model="selectedPushNotificationTab" skin="secondary" :tabs="pushNotificationTabs">
+                <cly-dynamic-tabs class="push-notification__main-tabs" v-model="selectedPushNotificationTab" skin="secondary" :tabs="pushNotificationTabs">
                     <template v-slot:tables="scope">
                         <span>{{scope.tab.title}}</span>
                     </template>
                 </cly-dynamic-tabs>
             </template>
         </cly-header>
-        <push-notification-drawer @onClose="onDrawerClose" @save="onSave" :controls="drawers.pushNotificationDrawer" :type="selectedPushNotificationTab" :userCommand="userCommand.type" :id="userCommand.pushNotificationId" :isOpened="isDrawerOpen"></push-notification-drawer>
+        <push-notification-drawer ref="pushNotificationDrawer" @onClose="onDrawerClose" @save="onSave" :controls="drawers.pushNotificationDrawer" :type="selectedPushNotificationTab" :userCommand="userCommand.type" :id="userCommand.pushNotificationId" :isOpened="isDrawerOpen"></push-notification-drawer>
     </div>
 </script>
