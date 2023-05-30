@@ -138,7 +138,13 @@ class FCM extends Splitter {
                     resp.results.forEach((r, i) => {
                         if (r.message_id) {
                             if (r.registration_id) {
-                                oks.push([pushes[i]._id, r.registration_id]);
+                                if (r.registration_id === 'BLACKLISTED') {
+                                    error(ERROR.DATA_TOKEN_INVALID, 'Blacklisted').addAffected(pushes[i]._id, one);
+                                    printBody = true;
+                                }
+                                else {
+                                    oks.push([pushes[i]._id, r.registration_id]);
+                                }
                                 // oks.push([pushes[i]._id, r.registration_id], one); ???
                             }
                             else {
