@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app, moment*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
@@ -881,6 +881,10 @@
                 this.stats.u++;
                 // note login event was here
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                }
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 this.stats.p++;
                 req.events = req.events.concat(this.getHeatmapEvents());
@@ -889,6 +893,10 @@
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                }
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -1630,10 +1638,10 @@
      * @param {date} ts - date as timestamp
      * @param {number} userCount - users count will be generated
      * @param {array} ids - ids array
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
+    function generateRetentionUser(ts, userCount, ids, template, callback) {
         var bulker = [];
         for (var userIndex = 0; userIndex < userCount; userIndex++) {
             for (var j = 0; j < ids.length; j++) {
@@ -1672,7 +1680,7 @@
                     }
                 }
 
-                var userdetails = new getUser(templateUp);
+                var userdetails = new getUser(template && template.up);
                 userdetails.begin_session = 1;
                 userdetails.device_id = userIndex + "" + ids[j];
                 userdetails.dow = getRandomInt(0, 6);
@@ -1692,7 +1700,7 @@
 
         totalStats.r++;
         for (var index = 0; index < bulker.length; index++) {
-            bulker[index].startSession(templateUp);
+            bulker[index].startSession(template);
         }
 
         callback("");
@@ -1700,10 +1708,10 @@
 
     /**
      * Generate retentions
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetention(templateUp, callback) {
+    function generateRetention(template, callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
             return;
@@ -1723,28 +1731,28 @@
         totalUserCount += userAmount + retentionCall; // campaign users
         totalCountWithoutUserProps = 0;
 
-        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+        generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+            generateRetentionUser(ts, userCount--, ids, template, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                generateRetentionUser(ts, userCount--, ids, template, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                    generateRetentionUser(ts, userCount--, ids, template, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                        generateRetentionUser(ts, userCount--, ids, template, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                            generateRetentionUser(ts, userCount--, ids, template, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                                generateRetentionUser(ts, userCount--, ids, template, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, templateUp, callback);
+                                    generateRetentionUser(ts, userCount--, ids, template, callback);
                                 });
                             });
                         });
@@ -1923,7 +1931,7 @@
         }
 
         generateWidgets(function() {
-            generateRetention(template && template.up, function() {
+            generateRetention(template, function() {
                 generateCampaigns(function() {
                     for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                         createUser();
@@ -1965,7 +1973,7 @@
         //}
     };
 
-    countlyPopulator.stopGenerating = function(callback) {
+    countlyPopulator.stopGenerating = function(ensureJobs, callback) {
         stopCallback = callback;
         generating = false;
 
@@ -1978,8 +1986,9 @@
         }
         users = [];
 
-
-        countlyPopulator.ensureJobs();
+        if (ensureJobs) {
+            countlyPopulator.ensureJobs();
+        }
 
         if (stopCallback) {
             stopCallback(!countlyPopulator.bulking);
@@ -2160,7 +2169,38 @@
             });
         }
 
+        if (typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
 
+            let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
+            let page1 = pages[getRandomInt(0, pages.length - 1)];
+            let page2 = pages[getRandomInt(0, pages.length - 1)];
+
+            countlyFunnel.createFunnel({
+                name: "View (View name = " + page1 + ") -> View (View name = " + page2 + ")",
+                description: "",
+                type: "session-independent",
+                steps: ["[CLY]_view", "[CLY]_view"],
+                queries: [{"sg.name": {"$in": [page1]}}, {"sg.name": {"$in": [page2]}}],
+                queryTexts: ["View name = " + page1 + ", View name = " + page2 + ""],
+                stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+            });
+
+            if (template && template.events && Object.keys(template.events).length > 0) {
+
+                let firstEvent = Object.keys(template.events)[0];
+                let secondEvent = Object.keys(template.events)[1] || "[CLY]_view";
+
+                countlyFunnel.createFunnel({
+                    name: firstEvent + " -> " + secondEvent + "",
+                    description: "",
+                    type: "session-independent",
+                    steps: [firstEvent, secondEvent],
+                    queries: [{}, {}],
+                    queryTexts: ["", ""],
+                    stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+                });
+            }
+        }
 
         createMessage(messages[0]);
         createMessage(messages[1]);
