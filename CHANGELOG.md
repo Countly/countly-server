@@ -1,3 +1,15 @@
+## Version 23.03.9
+Fixes:
+- [core] Fixes to periodObject function to deal with invalid date arrays.
+- [push] Fixing tz: false with sctz: 0 case
+- [user-activity] Do not export percentages in Loyalty section
+
+Enterprise fixes:
+- [drill] Fixed breakdown flter freezing issue.
+- [drill] Formatted column titles for drill export
+- [retention] Updated logic to do not use $facets in session retention calculation.
+- [users] Fixed user properties not getting beautified in users table
+
 ## Version 23.03.8
 Fixes:
 - [data-manager] Fix issue with deleting event
