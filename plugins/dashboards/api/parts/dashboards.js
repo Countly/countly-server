@@ -9,6 +9,7 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     countlyCommon = require('../../../../api/lib/countly.common'),
     fetch = require("../../../../api/parts/data/fetch.js"),
     log = common.log('dashboards:api'),
+    requestProcessor = require('../../../../api/utils/requestProcessor.js'),
     plugins = require("../../../pluginManager.js");
 
 /** @lends module:api/parts/data/dashboard */
@@ -562,6 +563,70 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
+
+/**
+ * Remove deleted records from widgets
+ * 
+ * @param {string} apiKey user's api key
+ * @param {object} matchOperator match operator for aggregation
+ */
+dashboard.removeDeletedRecordsFromWidgets = async function(apiKey, matchOperator) {
+    try {
+        if (!apiKey || !matchOperator) {
+            log.e('missing parameters for removeDeletedRecordsFromWidgets', apiKey, matchOperator);
+            return false;
+        }
+
+        var pipeline = [
+            {
+                $match: matchOperator
+            },
+            {
+                $lookup: {
+                    from: "dashboards",
+                    localField: "_id",
+                    foreignField: "widgets",
+                    as: "dashboard"
+                }
+            },
+            {
+                $unwind: "$dashboard"
+            },
+            {
+                $project: {
+                    _id: 0,
+                    widget_id: "$_id",
+                    dashboard_id: "$dashboard._id",
+                }
+            }
+        ];
+        const widgets = await common.db.collection('widgets').aggregate(pipeline, {allowDiskUse: true}).toArray();
+        widgets.forEach((widget)=>{
+            var dashboardId = widget.dashboard_id;
+            var widgetId = widget.widget_id;
+            if (!dashboardId || !widgetId) {
+                log.e('dashbordId or widgetId could not found in remove widget');
+                return false;
+            }
+            var params = {
+                'req': {
+                    url: "/i/dashboards/remove-widget?dashboard_id=" + dashboardId + "&widget_id=" + widgetId + "&api_key=" + apiKey
+                },
+                //adding custom processing for API responses
+                'APICallback': function(err, responseData, headers, returnCode) {
+                    if (err) {
+                        log.e('Error while removing widget from dashboard', err, responseData, headers, returnCode);
+                    }
+                }
+            };
+            requestProcessor.processRequest(params);
+        });
+    }
+    catch (error) {
+        log.e('Invalid request for remove widget', error);
+        return false;
+    }
+};
 
 /**
  * Function to fetch technology analytics data for app
