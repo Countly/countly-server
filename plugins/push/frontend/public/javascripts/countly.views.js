@@ -158,21 +158,23 @@
                 title: '',
                 type: countlyPushNotification.service.TypeEnum.ONE_TIME,
                 campaignType: "One-Time",
+                campaignTypeMapper: {"One-Time": "oneTime", "Automated": "automatic", "Recurring": "rec", "Multiple Days": "multi", "API": "transactional"}
             };
         },
         watch: {
             type: function(val) {
                 if (val) {
                     this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type, this.pushNotificationUnderEdit)));
+                    this.updatePlatformsBasedOnAppConfig();
                 }
             },
             'campaignType': {
                 handler: function(newVal) {
-                    var campaignTypeMapper = {"One-Time": "oneTime", "Automated": "automatic", "Recurring": "rec", "Multiple Days": "multi", "API": "transactional"};
-                    if (typeof campaignTypeMapper[newVal] !== "undefined") {
-                        this.type = campaignTypeMapper[newVal];
+                    // var campaignTypeMapper = {"One-Time": "oneTime", "Automated": "automatic", "Recurring": "rec", "Multiple Days": "multi", "API": "transactional"};
+                    if (typeof this.campaignTypeMapper[newVal] !== "undefined") {
+                        this.type = this.campaignTypeMapper[newVal];
                     }
-                    else if (typeof campaignTypeMapper[newVal] === "undefined") {
+                    else if (typeof this.campaignTypeMapper[newVal] === "undefined") {
                         this.type = newVal;
                     }
                 },
@@ -418,9 +420,61 @@
                 }
                 return true;
             },
+            validateStartDates: function(nextStep, currentStep) {
+                if (currentStep === 2 && nextStep === 3 && this.type !== this.campaignTypeMapper.API) {
+                    var startDate = new Date();
+                    var today = new Date();
+                    var validDate = new Date(today.getTime() + (15 * 60 * 60 * 1000));
+                    if (this.type === "rec") {
+                        startDate = new Date(this.pushNotificationUnderEdit.delivery.startDate);
+                    }
+                    else if (this.type === "oneTime") {
+                        if (this.pushNotificationUnderEdit.timezone === "device") {
+                            startDate = new Date(this.pushNotificationUnderEdit.delivery.startDate);
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    else if (this.type === "multi") {
+                        if (this.pushNotificationUnderEdit.timezone === "device") {
+                            var multipleDates = this.pushNotificationUnderEdit.delivery.multipleDates;
+                            for (var i = 0; i < multipleDates.length; i++) {
+                                var inputDate = new Date(multipleDates[i]);
+                                if (inputDate.getTime() < validDate.getTime()) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    else if (this.type === "automatic") {
+                        if (this.pushNotificationUnderEdit.automatic.deliveryMethod === "immediately" && this.pushNotificationUnderEdit.delivery.type === "later") {
+                            startDate = new Date(this.pushNotificationUnderEdit.delivery.startDate);
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    if (startDate < validDate) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                return true;
+            },
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
                 this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
+                if (!this.validateStartDates(nextStep, currentStep)) {
+                    CountlyHelpers.notify({ message: CV.i18n('push-notification.start-date-validation-warning'), type: "error"});
+                    return;
+                }
                 if (!this.validateDeliveryDates(nextStep, currentStep)) {
                     CountlyHelpers.notify({ message: CV.i18n('push-notification-drawer.date-validation'), type: "error"});
                     return;
@@ -1297,16 +1351,6 @@
             selectedPushNotificationType: function() {
                 return this.$store.state.countlyPushNotificationMain.selectedPushNotificationType;
             },
-            // selectedNotificationKind: {
-            //     get: function() {
-            //         console.log(this.$store.state.countlyPushNotificationMain.selectedPushNotificationKind);
-            //         return this.$store.state.countlyPushNotificationMain.selectedPushNotificationKind;
-            //     },
-            //     set: function(value) {
-            //         this.$store.dispatch('countlyPushNotificationMain/onSetPushNotificationKind', value);
-            //         this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
-            //     }
-            // },
             isDashboardLoading: function() {
                 return this.$store.getters['countlyPushNotificationDashboard/isLoading'];
             },
