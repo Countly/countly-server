@@ -9,6 +9,7 @@ var plugin = {},
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
     versionUtils = require('./parts/version.js'),
+    { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
@@ -19,7 +20,8 @@ plugins.setConfigs("crashes", {
     grouping_strategy: "error_and_file",
     smart_preprocessing: true,
     smart_regexes: "{.*?}\n/.*?/",
-    same_app_version_crash_update: false
+    same_app_version_crash_update: false,
+    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS
 });
 
 /**

@@ -1,17 +1,18 @@
-const MAX_CUSTOM_FIELD_KEYS = 100;
+const DEFAULT_MAX_CUSTOM_FIELD_KEYS = 100;
 
 /**
 * Generate updates for cleaning up custom field from a crashgroup document
 * @param {Object} crashgroup - crashgroup document, it has to contain '_id' and `custom` fields
+* @param {number} maxCustomFieldKeys - how many unique custom field keys should be kept
 * @returns {Object} update queries for mongo bulk update
 */
-function generateUpdates(crashgroup) {
+function generateUpdates(crashgroup, maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIELD_KEYS) {
     const updates = [];
     const keysToRemove = {};
     const customField = crashgroup.custom;
 
     for (const key in customField) {
-        const excessFields = Object.keys(customField[key]).length - MAX_CUSTOM_FIELD_KEYS;
+        const excessFields = Object.keys(customField[key]).length - maxCustomFieldKeys;
 
         if (excessFields > 0) {
             Object.entries(customField[key])
@@ -38,9 +39,14 @@ function generateUpdates(crashgroup) {
 /**
 * Cleanup custom field from crashgroup documents
 * @param {Object} countlyDb - db connection object
+* @param {number} maxCustomFieldKeys - how many unique custom field keys should be kept
 * @param {number} BATCH_SIZE - bulk write batch size
 */
-async function cleanupCustomField(countlyDb, BATCH_SIZE = 200) {
+async function cleanupCustomField(
+    countlyDb,
+    maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIELD_KEYS,
+    BATCH_SIZE = 200
+) {
     const apps = await countlyDb.collection('apps').find({}).project({_id: 1}).toArray();
 
     for (let idx = 0; idx < apps.length; idx += 1) {
@@ -53,7 +59,7 @@ async function cleanupCustomField(countlyDb, BATCH_SIZE = 200) {
         let updates = [];
 
         for (let idy = 0; idy < crashgroups.length; idy += 1) {
-            updates = updates.concat(generateUpdates(crashgroups[idy]));
+            updates = updates.concat(generateUpdates(crashgroups[idy], maxCustomFieldKeys));
 
             if (updates.length && (updates.length === BATCH_SIZE || idy === crashgroups.length - 1)) {
                 try {
@@ -73,5 +79,5 @@ async function cleanupCustomField(countlyDb, BATCH_SIZE = 200) {
 module.exports = {
     generateUpdates,
     cleanupCustomField,
-    MAX_CUSTOM_FIELD_KEYS,
+    DEFAULT_MAX_CUSTOM_FIELD_KEYS,
 };

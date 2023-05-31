@@ -2,7 +2,7 @@ const job = require('../../../../api/parts/jobs/job.js');
 const log = require('../../../../api/utils/log.js')('job:crashes:cleanup_custom_field');
 const pluginManager = require('../../../pluginManager.js');
 
-const { cleanupCustomField } = require('../parts/custom_field.js');
+const { cleanupCustomField, DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('../parts/custom_field.js');
 
 /** class CleanupCustomFieldJob */
 class CleanupCustomFieldJob extends job.Job {
@@ -41,7 +41,8 @@ class CleanupCustomFieldJob extends job.Job {
         }
 
         pluginManager.loadConfigs(countlyDb, async() => {
-            await cleanupCustomField(countlyDb);
+            const maxCustomFieldKeys = pluginManager.getConfig('crashes').max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
+            await cleanupCustomField(countlyDb, maxCustomFieldKeys);
 
             return endJob();
         });
