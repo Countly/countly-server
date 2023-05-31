@@ -437,6 +437,24 @@
                             </cly-time-picker>
                         </div>
                     </div>
+                    <div v-if="isUsersTimezoneSet" class="cly-vue-drawer-step__section bu-mt-5">
+                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            {{i18n('push-notification.what-if-past-scheduled')}}
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <line-radio-button-with-description 
+                                :label="PastScheduleEnum.SKIP"
+                                v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                :title="i18n('push-notification.do-not-send-message')">
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description 
+                                :label="PastScheduleEnum.NEXT_DAY"
+                                v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                :title="i18n('push-notification.deliver-next-day')">
+                            </line-radio-button-with-description>
+                        </div>
+                    </div>
                 </div>
                 <template v-if="type === TypeEnum.MULTIPLE">
                     <div v-for="(_, index) in pushNotificationUnderEdit.delivery.multipleDates" class="bu-is-flex bu-mt-2">
@@ -620,7 +638,6 @@
                             <el-switch v-model="isEndDateSet" class="bu-mr-2"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
                                 <span class="text-medium font-weight-bold">{{i18n('push-notification.set-end-date')}}</span>
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.set-end-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
                         <div class="cly-vue-push-notification-drawer__date-picker-wrapper">
@@ -639,7 +656,6 @@
                     </div>
                     <div class="bu-mt-5">
                         <span class="text-big font-weight-bold">{{i18n('push-notification-drawer.notification-frequency')}}</span>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.notification-frequency-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                         <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-3">
                             <el-radio-group class="bu-ml-1" size="medium" @change="onSelectedBucket" v-model="pushNotificationUnderEdit.delivery.repetition.bucket">
                                 <el-radio-button
@@ -653,7 +669,7 @@
                     </div>
                     <div class="bu-mt-6">
                         <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repetition-for-every')}}</span>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repetition-for-every-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repetition-for-every-tooltip', i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket))" icon="ion ion-help-circled"></cly-tooltip-icon>
                         <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
                             <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                 <el-input v-model="pushNotificationUnderEdit.delivery.repetition.every" :min="0" style="width:120px" :class="{'is-error': validation.errors.length > 0}">
@@ -688,6 +704,24 @@
                                 style="width:100px"
                                 v-model="pushNotificationUnderEdit.delivery.repetition.at">
                             </cly-time-picker>
+                        </div>
+                    </div>
+                    <div class="cly-vue-drawer-step__section bu-mt-5">
+                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            {{i18n('push-notification.what-if-past-scheduled')}}
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <line-radio-button-with-description 
+                                :label="PastScheduleEnum.SKIP"
+                                v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                :title="i18n('push-notification.do-not-send-message')">
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description 
+                                :label="PastScheduleEnum.NEXT_DAY"
+                                v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                :title="i18n('push-notification.deliver-next-day')">
+                            </line-radio-button-with-description>
                         </div>
                     </div>
                 </template>
