@@ -556,7 +556,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     branches00.push({ case: { $eq: [ "$m", i ] }, then: {$push: u00[i]}});
                 }
             }*/
-            if (u00) {
+            if (Object.keys(u00).lenght > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches00 = [];
                 for (let i in u00) {
@@ -565,7 +565,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector.uvalue0 = {$sum: {$switch: {branches: branches00, default: 0}}};
             }
 
-            if (u10) {
+            if (Object.keys(u10).lenght > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches01 = [];
                 for (let i in u10) {
