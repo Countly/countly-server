@@ -529,15 +529,6 @@ function getPeriodObject(prmPeriod) {
             isSpecialPeriod: true
         });
     }
-    else if (/([1-9][0-9]*)years/.test(period)) {
-        const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
-        startTimestamp = _currMoment.clone().startOf("year").subtract((nYears - 1), "years");
-        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
-        Object.assign(periodObject, {
-            dateString: "D MMM",
-            isSpecialPeriod: true
-        });
-    }
     //incorrect period, defaulting to 30 days
     else {
         let nDays = 30;
