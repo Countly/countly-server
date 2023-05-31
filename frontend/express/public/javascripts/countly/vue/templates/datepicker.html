@@ -90,6 +90,7 @@
                                 <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                                 <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                                 <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
+                                <el-option :label="i18n('common.buckets.years')" value="years"></el-option>
                             </el-select>
                         </div>
                         <div v-else class="cly-vue-daterp__input-wrapper bu-is-justify-content-flex-end">
@@ -118,6 +119,7 @@
                             <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                             <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                             <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
+                            <el-option :label="i18n('common.buckets.years')" value="years"></el-option>
                         </el-select>
                     </div>
                 </div>
@@ -132,7 +134,22 @@
             <div class="cly-vue-daterp__calendars-wrapper">
                 <div class="cly-vue-daterp__table-wrap" :class="{'is-point': !isRange, 'is-start-focused': isStartFocused, 'is-end-focused': isEndFocused}" style="height: 238px" ref="calendarsViewport">
                     <vue-scroll ref="vs" :ops="scrollOps">
-                        <div class="cly-vue-daterp__table-view" v-if="tableType === 'month'">
+                        <div class="cly-vue-daterp__table-view" v-if="tableType === 'year'">
+                            <year-table
+                                v-for="item in globalRange"
+                                :key="item.key"
+                                :date-meta="item"
+                                :in-viewport-requires-root="true"
+                                :in-viewport-root="$refs.calendarsViewport"
+                                selection-mode="years"
+                                :date="item.date"
+                                :disabled-date="disabledDateFn"
+                                :min-date="minDate"
+                                :max-date="maxDate"
+                                @pick="handleYearPick">
+                            </year-table>
+                        </div>
+                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'month'">
                             <month-table
                                 v-for="item in globalRange"
                                 :key="item.key"
