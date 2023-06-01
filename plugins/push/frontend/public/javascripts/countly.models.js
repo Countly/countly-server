@@ -344,7 +344,8 @@
                     days: 0,
                     hours: 0
                 },
-                usersTimezone: "00"
+                usersTimezone: "00",
+                pastSchedule: PastScheduleEnum.SKIP,
             };
             return baseModel;
         },
@@ -360,8 +361,8 @@
             };
             baseModel.delivery.repetition = {
                 bucket: bucketList[0],
-                every: "7",
-                at: "00",
+                every: 7,
+                at: moment().valueOf(),
                 on: []
             };
             return baseModel;
@@ -374,7 +375,7 @@
                 audienceSelection: AudienceSelectionEnum.NOW,
             };
             var today = new Date();
-            baseModel.delivery.multipleDates = [today.getTime(), today.getTime()];
+            baseModel.delivery.multipleDates = [today.getTime()];
             return baseModel;
         },
         getInitialModel: function(type, dto) {
@@ -1564,6 +1565,7 @@
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
+                    pastSchedule: PastScheduleEnum.SKIP
                 };
                 if (triggerDto.time) {
                     var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
@@ -1591,12 +1593,13 @@
                 model.type = TypeEnum.RECURRING;
                 model[TypeEnum.RECURRING] = {};
                 model[TypeEnum.RECURRING].targeting = this.mapTargeting(dto);
+                model[TypeEnum.RECURRING].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
                     startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
                     endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
-                    repetition: {bucket: triggerDto.bucket, every: triggerDto.every, on: triggerDto.on || []}
+                    repetition: {bucket: triggerDto.bucket, every: parseInt(triggerDto.every), on: triggerDto.on || []}
                 };
                 if (triggerDto.time) {
                     var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
@@ -1620,7 +1623,7 @@
                     startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
-                    multipleDates: triggerDto.multipleDates || [],
+                    multipleDates: triggerDto.dates || [],
                 };
 
                 if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
@@ -2052,26 +2055,32 @@
                     kind: 'rec',
                     start: model.delivery.startDate,
                     bucket: model.delivery.repetition.bucket,
-                    every: model.delivery.repetition.every,
+                    every: parseInt(model.delivery.repetition.every),
                     on: model.delivery.repetition.on
                 };
+                if (typeof model.delivery.repetition.at === 'number') {
+                    model.delivery.repetition.at = new Date(model.delivery.repetition.at);
+                }
                 var repeatedHour = {
                     hours: model.delivery.repetition.at.getHours(),
                     minutes: model.delivery.repetition.at.getMinutes()
                 };
+
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
                 }
+
                 result.time = countlyPushNotification.helper.convertDateTimeToMS(repeatedHour);
                 result.delayed = model[TypeEnum.RECURRING].audienceSelection === AudienceSelectionEnum.BEFORE;
-
+                result.tz = true;
+                result.sctz = new Date().getTimezoneOffset();
                 return [result];
             },
             mapMultipleTrigger: function(model) {
                 var result = {
                     kind: 'multi',
                     start: model.delivery.startDate,
-                    multipleDates: model.delivery.multipleDates,
+                    dates: model.delivery.multipleDates,
                 };
                 if (model.timezone === TimezoneEnum.DEVICE) {
                     result.tz = true;
@@ -2370,21 +2379,12 @@
         monthlyRepetitionOptions: function() {
             const days = [];
             for (let i = 1; i <= 28; i++) {
-                let day;
-                if (i === 1) {
-                    day = "st";
-                }
-                else if (i === 2) {
-                    day = "nd";
-                }
-                else if (i === 3) {
-                    day = "rd";
-                }
-                else {
-                    day = "th";
-                }
-                days.push({ label: `Day ${i}${day}`, value: i });
+                days.push({ label: CV.i18n('push-notification.day') + " " + i, value: i });
             }
+            days.push({ label: CV.i18n('push-notification.last-day'), value: 0 });
+            days.push({ label: CV.i18n('push-notification.x-day-before-the-last-day', 1), value: -1 });
+            days.push({ label: CV.i18n('push-notification.x-days-before-the-last-day', 2), value: -2 });
+
             return days;
         },
         triggerOptions: triggerOptions,
