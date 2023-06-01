@@ -386,7 +386,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             };
 
             var u0keys = Object.keys(u0);
-            if (u0keys.lenght > 0) {
+            if (u0keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches0 = [];
                 for (let i in u0) {
@@ -396,7 +396,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
 
             var u1keys = Object.keys(u1);
-            if (u1keys.lenght > 0) {
+            if (u1keys.length > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches1 = [];
                 for (let i in u1) {
@@ -559,7 +559,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
             }*/
             var u00keys = Object.keys(u00);
-            if (u00keys.lenght > 0) {
+            if (u00keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches00 = [];
                 for (let i in u00) {
