@@ -301,7 +301,7 @@ describe('Testing views plugin', function() {
             tableResponse.yesterday.iTotalDisplayRecords += 1;
             pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "view": "testview0"});
 
-            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
+            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
 
             tableResponse["7days"].iTotalRecords += 1;
             tableResponse["7days"].iTotalDisplayRecords += 1;
@@ -336,7 +336,7 @@ describe('Testing views plugin', function() {
             tableResponse.hour.iTotalRecords += 1;
             tableResponse.hour.iTotalDisplayRecords += 1;
             pushValues("hour", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
-            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
+            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, 'uvalue': 1});
 
             tableResponse.month.iTotalRecords = 1;
             tableResponse.month.iTotalDisplayRecords = 1;

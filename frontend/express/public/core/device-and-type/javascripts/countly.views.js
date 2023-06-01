@@ -423,6 +423,9 @@ var GridComponent = countlyVue.views.create({
         stackedBarOptions: function() {
             return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
         },
+        stackedBarTimeSeriesOptions: function() {
+            return this.calculateStackedBarTimeSeriesOptionsFromWidget(this.data, this.tableMap);
+        },
         pieGraph: function() {
             return this.calculatePieGraphFromWidget(this.data, this.tableMap);
         }
@@ -450,7 +453,7 @@ var DrawerComponent = countlyVue.views.create({
             ];
         },
         enabledVisualizationTypes: function() {
-            return ['pie-chart', 'bar-chart', 'table'];
+            return ['time-series', 'pie-chart', 'bar-chart', 'table'];
         },
         isMultipleMetric: function() {
             var multiple = false;
@@ -461,6 +464,9 @@ var DrawerComponent = countlyVue.views.create({
 
             return multiple;
         },
+        showDisplayType: function() {
+            return this.scope.editedObject.data_type === 'technology' && this.scope.editedObject.visualization === 'time-series';
+        }
     },
     mounted: function() {
         if (this.scope.editedObject.breakdowns.length === 0) {
@@ -514,6 +520,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 data_type: "technology",
                 app_count: 'single',
                 metrics: [],
+                displaytype: "",
                 apps: [],
                 visualization: "",
                 breakdowns: ['devices'],

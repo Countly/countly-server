@@ -586,6 +586,7 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
     switch (visualization) {
     case 'bar-chart':
     case 'pie-chart':
+    case 'time-series':
     case 'table':
         if (!breakdowns || !breakdowns.length) {
             throw new Error("Breakdowns are required for bar chart and table");
@@ -616,6 +617,9 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
         break;
     case 'table':
         widgetData = model.getTableData(segment, 10);
+        break;
+    case 'time-series':
+        widgetData = model.getStackedBarData(segment, 10, widget.metrics[0] || "u", widget.displaytype || "percentage");
         break;
     default:
         break;

@@ -829,6 +829,37 @@
             }
         }
 
+        .el-year-table {
+            margin-top: 2px;
+            margin-bottom: 14px;
+            td {
+                width: 78px;
+                height: 66px;
+                padding: 0;
+                >  a {
+                    width: 68px;
+                    height: 46px;
+                    background: #fff;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    padding-top: 10px;
+                    border: 2px solid transparent;
+                }
+                &.in-range{
+                    > a {
+                        background: #ccdbf2;
+                        mix-blend-mode: normal;
+                    }
+                }
+                &.start-date, &.end-date {
+                    > a {
+                        color: #FFF;
+                        background: #1967D2
+                    }
+                }
+            }
+        }
+
         @mixin cell-hover() {
             background: #FFFFFF;
             border: 2px solid #0166D6;
@@ -847,6 +878,11 @@
                     @include cell-hover()
                 }
             }
+            .el-year-table .start-date {
+                > a {
+                    @include cell-hover()
+                }
+            }
         }
 
         &__table-wrap.is-end-focused {
@@ -857,6 +893,11 @@
             }
             .el-month-table .end-date {
                 > div a {
+                    @include cell-hover()
+                }
+            }
+            .el-year-table .end-date {
+                > a {
                     @include cell-hover()
                 }
             }
@@ -871,7 +912,12 @@
                 > div:hover a {
                     @include cell-hover()
                }
-           }
+            }
+            .el-year-table td:not(.in-range) {
+                > a:hover {
+                    @include cell-hover()
+               }
+            }   
         }
     }
 

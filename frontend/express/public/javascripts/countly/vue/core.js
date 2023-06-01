@@ -256,6 +256,16 @@
                     return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
                 }
             },
+            calculateStackedBarTimeSeriesOptionsFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                widgetData.dashData.data = widgetData.dashData.data || {};
+                widgetData.metrics = widgetData.metrics || [];
+
+                for (var app in widgetData.dashData.data) {
+                    return widgetData.dashData.data[app];
+                }
+            },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
                 widgetData = widgetData || {};
                 widgetData.metrics = widgetData.metrics || [];
