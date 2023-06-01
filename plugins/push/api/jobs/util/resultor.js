@@ -332,6 +332,33 @@ class Resultor extends DoFinish {
                         status = Status.Scheduled;
                     }
                 }
+                else if (m.triggerRescheduleable()) {
+                    let resch = m.triggerRescheduleable();
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Stopped;
+                        error = 'Failed to send all notifications';
+                    }
+                    else if (m.result.total === m.result.processed) {
+                        if (!resch.nextReference(resch.last)) {
+                            state = State.Created | State.Done;
+                            status = Status.Sent;
+                        }
+                        else {
+                            state = m.state & ~State.Streaming;
+                            status = Status.Scheduled;
+                        }
+                    }
+                    else { // shouldn't happen, but possible in some weird cases
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                        m.schedule(this.log).then(() => {
+                            this.log.i('Rescheduled %s from resultor', m.id);
+                        }, e => {
+                            this.log.e('Rescheduling error for %s from resultor', m.id, e);
+                        });
+                    }
+                }
                 else {
                     if (m.result.total === m.result.errored) {
                         state = State.Created | State.Error | State.Done;
