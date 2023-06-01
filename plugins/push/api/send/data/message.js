@@ -668,7 +668,7 @@ class Message extends Mongoable {
                 start = reference && resch.scheduleDate(reference);
             log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
             if (start) {
-                await this.updateAtomically({_id: this._id, state: this.state, 'triggers.kind': resch.kind}, {$set: {'triggers.$.last': reference}});
+                await this.updateAtomically({_id: this._id, state: this.state, 'triggers.kind': resch.kind}, {$set: {'triggers.$.last': reference, 'triggers.$.prev': resch.last}});
                 await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app, reference}).replace().once(start);
             }
             else {

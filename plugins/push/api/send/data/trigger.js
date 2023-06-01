@@ -714,7 +714,31 @@ class ReschedulingTrigger extends Trigger {
             delayed: {type: 'Boolean', required: false},
             reschedule: {type: 'Boolean', required: false},
             last: {type: 'Date', required: false},
+            prev: {type: 'Date', required: false},
         });
+    }
+
+    /**
+     * Get prev reference date
+     * 
+     * @returns {Date|undefined} prev reference date
+     */
+    get prev() {
+        return toDate(this._data.prev);
+    }
+
+    /**
+     * Set prev reference date
+     * 
+     * @param {Date|number}  prev  message prev reference date
+     */
+    set prev(prev) {
+        if (prev) {
+            this._data.prev = toDate(prev);
+        }
+        else {
+            delete this._data.prev;
+        }
     }
 
     /**
