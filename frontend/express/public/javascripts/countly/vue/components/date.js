@@ -132,14 +132,17 @@
 
     var globalDaysRange = [],
         globalMonthsRange = [],
+        globalYearsRange = [],
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
+        globalFutureYearsRange = [],
         globalMin = moment([2010, 0, 1]),
         globalMax = moment().endOf('day'),
         globalFutureMin = moment().startOf('day'),
         globalFutureMax = moment().startOf('day').add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
-        monthsCursor = moment(globalMin.toDate());
+        monthsCursor = moment(globalMin.toDate()),
+        yearsCursor = moment(globalMin.toDate());
 
     while (daysCursor < globalMax) {
         globalDaysRange.push({
@@ -185,10 +188,39 @@
         monthsCursor = monthsCursor.add(1, "Y");
     }
 
+    while (yearsCursor < globalMax) {
+        let year = yearsCursor.year();
+        let title = String(year) + " - " + String(yearsCursor.clone().add(9, "Y").year());
+        let key = moment([year, 0, 1]).unix();
+        globalYearsRange.push({
+            date: moment([year, 0, 1]).toDate(),
+            title,
+            key,
+            anchorClass: "anchor-" + key,
+        });
+        yearsCursor = yearsCursor.add(10, "Y");
+    }
+
+    globalFutureYearsRange.push(globalYearsRange[globalYearsRange.length - 1]);
+
+    while (yearsCursor < globalFutureMax) {
+        let year = yearsCursor.year();
+        let title = String(year) + " - " + String(yearsCursor.clone().add(9, "Y").year());
+        let key = moment([year, 0, 1]).unix();
+        globalFutureYearsRange.push({
+            date: moment([year, 0, 1]).toDate(),
+            title,
+            key,
+            anchorClass: "anchor-" + key,
+        });
+        yearsCursor = yearsCursor.add(10, "Y");
+    }
+
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
     Object.freeze(globalFutureDaysRange);
     Object.freeze(globalFutureMonthsRange);
+    Object.freeze(globalYearsRange);
 
     /**
      * Creates an initial state object 
@@ -205,6 +237,11 @@
             formatter = "YYYY-MM";
             tableType = "month";
             globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+        }
+        else if (instance.type.includes("year")) {
+            formatter = "YYYY";
+            tableType = "year";
+            globalRange = instance.isFuture ? globalFutureYearsRange : globalYearsRange;
         }
         else {
             formatter = "YYYY-MM-DD";
@@ -240,7 +277,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            tableTypeMapper: {months: "month", weeks: "week", days: "day"},
+            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day"},
             inputDisable: inputDisable,
             leftSideShortcuts: [
                 {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
@@ -250,6 +287,7 @@
                 {label: CV.i18n('common.all-time'), value: "0days"},
             ],
             globalMonthsRange: globalMonthsRange,
+            globalYearsRange: globalYearsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
@@ -352,6 +390,33 @@
         mixins: [AbstractTableComponent]
     };
 
+    var ExtendedYearTable = {
+        extends: ELEMENT.YearTable,
+        props: {
+            minDate: Date,
+            maxDate: Date
+        },
+        methods: {
+            getCellStyle(year) {
+                const style = ELEMENT.YearTable.methods.getCellStyle.call(this, year);
+                const extendedStyle = Object.assign({}, style);
+                const minDateYear = moment(this.minDate).year();
+                const maxDateYear = moment(this.maxDate).year();
+                extendedStyle["start-date"] = year === minDateYear;
+                extendedStyle["end-date"] = year === maxDateYear;
+                extendedStyle["in-range"] = year >= minDateYear && year <= maxDateYear;
+                return extendedStyle;
+            }
+        }
+    };
+
+    var yearTableComponent = {
+        components: {
+            'table-component': ExtendedYearTable
+        },
+        mixins: [AbstractTableComponent],
+    };
+
     var InputControlsMixin = {
         methods: {
             tryParsing: function(newVal, target, sourceIndex, targetIndexes) {
@@ -441,6 +506,9 @@
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
+                    if (this.inTheLastInput.raw.level === "years") {
+                        this.tableType = "year";
+                    }
                     this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || "day";
                     inputObj = this.inTheLastInput.parsed;
                     break;
@@ -466,16 +534,23 @@
                     this.maxDate = inputObj[1];
                 }
                 var self = this;
-                if (this.tableType !== "month") {
-                    this.formatter = "YYYY-MM-DD";
-                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                if (this.tableType === "month") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else if (this.tableType === "year") {
+                    this.formatter = "YYYY";
+                    this.globalRange = this.isFuture ? globalFutureYearsRange : globalYearsRange;
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
                 }
                 else {
-                    this.formatter = "YYYY-MM";
-                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
@@ -567,7 +642,11 @@
                             this.handleUserInputUpdate(this.inTheLastInput.parsed[0], this.inTheLastInput.parsed[1]);
                         }
                     }
-                    if (newVal.level === "months") {
+                    if (newVal.level === "years") {
+                        this.globalRange = this.globalYearsRange;
+                        this.tableType = "year";
+                    }
+                    else if (newVal.level === "months") {
                         this.globalRange = this.globalMonthsRange;
                         this.tableType = "month";
                     }
@@ -624,7 +703,7 @@
                         minDate = moment(val.minDate).startOf("isoWeek").toDate();
                         maxDate = moment(val.maxDate).endOf("isoWeek").toDate();
                     }
-                    else {
+                    else if (this.tableType === "month") {
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.minDate).endOf("month").toDate();
                     }
@@ -671,7 +750,7 @@
                             }
                         }
                     }
-                    else {
+                    else if (this.tableType === "month") {
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.maxDate).endOf("month").toDate();
                     }
@@ -709,7 +788,11 @@
                     return;
                 }
                 var anchorClass = null;
-                if (this.tableType === "month") {
+                if (this.tableType === "year") {
+                    let dateMoment = moment(date);
+                    anchorClass = ".anchor-" + dateMoment.startOf('year').subtract(dateMoment.year() % 10, 'years').unix();
+                }
+                else if (this.tableType === "month") {
                     anchorClass = ".anchor-" + moment(date).startOf("year").unix();
                 }
                 else {
@@ -752,7 +835,8 @@
         ],
         components: {
             'date-table': dateTableComponent,
-            'month-table': monthTableComponent
+            'month-table': monthTableComponent,
+            'year-table': yearTableComponent,
         },
         computed: {
             isStartFocused: function() {
@@ -816,7 +900,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['date', 'daterange', 'month', 'monthrange', "week"].includes(value);
+                    return ['date', 'daterange', 'month', 'monthrange', "week", 'year', 'yearrange'].includes(value);
                 }
             },
             displayShortcuts: {
@@ -1121,7 +1205,7 @@
                 if (this.isGlobalDatePicker) {
                     try {
                         var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
-                        var inTheLastInputLevelMapper = {"month": "months", "week": "weeks", "day": "days"};
+                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days"};
                         this.rangeMode = storedDateItems.rangeMode;
                         this.tableType = storedDateItems.tableType;
                         if (this.rangeMode === "inTheLast") {
@@ -1140,16 +1224,23 @@
                     this.rangeMode = this.displayOneMode;
                 }
                 var self = this;
-                if (this.tableType !== "month") {
-                    this.formatter = "YYYY-MM-DD";
-                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
+                if (this.tableType === "month") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    setTimeout(function() {
+                        self.scrollTo(self.inTheLastInput.parsed[0]);
+                    }, 0);
+                }
+                else if (this.tableType === "year") {
+                    this.formatter = "YYYY";
+                    this.globalRange = this.isFuture ? globalFutureYearsRange : globalYearsRange;
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
                 }
                 else {
-                    this.formatter = "YYYY-MM";
-                    this.globalRange = this.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
@@ -1322,6 +1413,18 @@
                     }
                     this.doClose();
                 }
+            },
+            handleYearPick: function(val) {
+                let minDate = moment(val, 'YYYY').startOf("year").toDate();
+                let maxDate = moment().toDate();
+                this.setCurrentInTheLast(minDate, maxDate);
+                this.setCurrentInBetween(minDate, maxDate);
+                if (this.maxDate === maxDate && this.minDate === minDate) {
+                    return;
+                }
+                this.onPick && this.onPick({minDate, maxDate});
+                this.minDate = minDate;
+                this.maxDate = maxDate;
             }
         },
         beforeDestroy: function() {
