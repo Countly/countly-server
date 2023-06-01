@@ -385,7 +385,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 "_id": "$vw"
             };
 
-            if (u0) {
+            var u0keys = Object.keys(u0);
+            if (u0keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches0 = [];
                 for (let i in u0) {
@@ -394,7 +395,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector.uvalue0 = {$sum: {$switch: {branches: branches0, default: 0}}};
             }
 
-            if (u1) {
+            var u1keys = Object.keys(u1);
+            if (u1keys.length > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches1 = [];
                 for (let i in u1) {
@@ -556,7 +558,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     branches00.push({ case: { $eq: [ "$m", i ] }, then: {$push: u00[i]}});
                 }
             }*/
-            if (u00) {
+            var u00keys = Object.keys(u00);
+            if (u00keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches00 = [];
                 for (let i in u00) {
@@ -564,8 +567,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 projector.uvalue0 = {$sum: {$switch: {branches: branches00, default: 0}}};
             }
-
-            if (u10) {
+            var u10keys = Object.keys(u10);
+            if (u10keys.length > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches01 = [];
                 for (let i in u10) {
@@ -598,6 +601,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
             pipeline.push({$group: projector});
+            pipeline.push({"$addFields": {"uvalue": {"$min": ["$u", {"$max": ["$t", "$n"]}]}}});
 
         }
 
