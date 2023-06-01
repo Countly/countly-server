@@ -120,6 +120,8 @@ class Message extends Mongoable {
                 {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: false}, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
                 {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: true}, start: {$lte: lte_plus}, $or: [{end: {$gte: gte_minus}}, {end: {$exists: false}}]}}},
                 {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Multi, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Recurring, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
     }
@@ -314,6 +316,15 @@ class Message extends Mongoable {
      */
     triggerPlain() {
         return this.triggerFind(TriggerKind.Plain);
+    }
+
+    /**
+     * Search for rescheduleable trigger
+     * 
+     * @returns {ReschedulingTrigger|undefined} multi or recurring trigger if message has it
+     */
+    triggerRescheduleable() {
+        return this.triggerFind(t => t.isRescheduleable);
     }
 
     /**
@@ -622,9 +633,9 @@ class Message extends Mongoable {
      * @param {log} log logger
      */
     async schedule(log) {
-        if (this.is(State.Streamable) || this.is(State.Streaming)) {
-            await this.stop(log);
-        }
+        // if (this.is(State.Streamable) || this.is(State.Streaming)) {
+        //     await this.stop(log);
+        // }
         let plain = this.triggerPlain();
         if (plain) {
             if (this.is(State.Cleared) && !this.triggerAutoOrApi()) {
@@ -650,6 +661,20 @@ class Message extends Mongoable {
         if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {
             await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable | State.Created, status: Status.Scheduled}});
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
+        }
+        let resch = this.triggerRescheduleable();
+        if (resch) {
+            let reference = resch.nextReference(resch.last),
+                start = reference && resch.scheduleDate(reference);
+            log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
+            if (start) {
+                await this.updateAtomically({_id: this._id, state: this.state, 'triggers.kind': resch.kind}, {$set: {'triggers.$.last': reference}});
+                await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app, reference}).replace().once(start);
+            }
+            else {
+                log.i('Message %s is sent, won\'t reschedule', this.id);
+                // await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done, status: Status.Sent}});
+            }
         }
     }
 

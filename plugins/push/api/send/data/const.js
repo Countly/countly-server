@@ -167,8 +167,14 @@ const RecurringType = {
  * Time limits (0 ... 24h in milliseconds - 1)
  */
 const Time = {
-    MIN: 0,
-    MAX: 24 * 60 * 60 * 1000 - 1
+    MIN: 0, // min time of day in ms
+    MAX: 24 * 60 * 60000 - 1, // max time of day in ms
+    DAY: 24 * 60 * 60000, // ms in a day
+    SEND_AHEAD: 5 * 60000, // send message max 5min early
+    TIME_TO_SEND: 2 * 60 * 60000, // generally 2min should be enough to send a notification
+    TOO_LATE_TO_SEND: 1 * 60 * 60000, // send message max 1hr late
+    WESTMOST_TIMEZONE: 14 * 60 * 60000, // the most western timezone possible
+    SCHEDULE_AHEAD: 10 * 60000, // schedule messages this much ahead (plus WESTMOST_TIMEZONE for timezoned messages) to ensure audience calculation runs on time
 };
 
 /* eslint-enable key-spacing, no-multi-spaces */
