@@ -516,11 +516,8 @@ function getPeriodObject(prmPeriod) {
             previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
         });
     }
-    else if (/([0-9]+)days/.test(period)) {
-        let nDays = parseInt(/([0-9]+)days/.exec(period)[1]);
-        if (nDays < 1) {
-            nDays = 30; //if there is less than 1 day
-        }
+    else if (/([1-9][0-9]*)days/.test(period)) {
+        let nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
         startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
         cycleDuration = moment.duration(nDays, "days");
         Object.assign(periodObject, {
@@ -528,25 +525,19 @@ function getPeriodObject(prmPeriod) {
             isSpecialPeriod: true
         });
     }
-    else if (/([0-9]+)weeks/.test(period)) {
-        let nDays = parseInt(/([0-9]+)weeks/.exec(period)[1]) * 7;
-        if (nDays < 1) {
-            nDays = 30; //if there is less than 1 day
-        }
-        startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
-        cycleDuration = moment.duration(nDays, "days");
+    else if (/([1-9][0-9]*)weeks/.test(period)) {
+        const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("week").subtract((nWeeks - 1), "weeks");
+        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
         });
     }
-    else if (/([0-9]+)months/.test(period)) {
-        let nDays = parseInt(/([0-9]+)months/.exec(period)[1]) * 30;
-        if (nDays < 1) {
-            nDays = 30; //if there is less than 1 day
-        }
-        startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
-        cycleDuration = moment.duration(nDays, "days");
+    else if (/([1-9][0-9]*)months/.test(period)) {
+        const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("month").subtract((nMonths - 1), "months");
+        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
