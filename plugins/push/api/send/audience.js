@@ -2,7 +2,7 @@ const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
     { util } = require('./std'),
     { Message, State, TriggerKind, Result, dbext } = require('./data'),
-    { DEFAULTS } = require('./data/const'),
+    { DEFAULTS, Time } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
     { fields, TK } = require('./platforms'),
@@ -44,6 +44,22 @@ const common = require('../../../../api/utils/common'),
             return require('../../../pluginManager').getPluginsApis().geo;
         }
     };
+
+/**
+ * Get current time, to be able to override it in tests
+ * 
+ * @returns {Number} current date in ms
+ */
+let now = () => Date.now();
+
+/**
+ * Set now function, for tests
+ * 
+ * @param {function} f now function
+ */
+function setNow(f) {
+    now = f;
+}
 
 /**
  * Class encapsulating user selection / queue / message scheduling logic
@@ -212,7 +228,7 @@ class Audience {
         let query = filter.user;
         if (query) {
             let params = {
-                time: common.initTimeObj(this.app.timezone, Date.now()),
+                time: common.initTimeObj(this.app.timezone, now()),
                 qstring: Object.assign({app_id: this.app._id.toString()}, query),
                 app_id: this.app._id.toString()
             };
@@ -274,7 +290,7 @@ class Audience {
                 // drill().drill.openDrillDb();
 
                 let params = {
-                    time: common.initTimeObj(this.app.timezone, Date.now()),
+                    time: common.initTimeObj(this.app.timezone, now()),
                     qstring: Object.assign({app_id: this.app._id.toString()}, query),
                     app_id: this.app._id.toString()
                 };
@@ -427,9 +443,9 @@ class PlainApiMapper extends Mapper {
             let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
 
-            if (d < Date.now()) {
+            if (d < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
-                    d = d + 24 * 60 * 60000;
+                    d = d + Time.DAY;
                 }
                 else {
                     return null;
@@ -468,9 +484,9 @@ class CohortsEventsMapper extends Mapper {
             auto.setMilliseconds(0);
 
             inTz = auto.getTime() + this.trigger.time + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
-            if (inTz < Date.now()) {
+            if (inTz < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
-                    d = inTz + 24 * 60 * 60000;
+                    d = inTz + Time.DAY;
                 }
                 else {
                     return null;
@@ -507,6 +523,40 @@ class CohortsEventsMapper extends Mapper {
 }
 
 /**
+ * Plain or API triggers mapper - uses date calculation logic for those cases
+ */
+class MultiRecurringMapper extends Mapper {
+    /**
+     * Map app_user object to message
+     * 
+     * @param {object} user app_user object
+     * @param {Date} date reference date (time of delivery in UTC, only user tz is what's left to add here for tz messages)
+     * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
+     * @returns {object} push object ready to be inserted
+     */
+    map(user, date, c, offset) {
+        let d = date.getTime();
+
+        // send in user's timezone
+        if (this.trigger.tz) {
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
+            d -= utz;
+        }
+
+        if (d < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (this.trigger.reschedule) {
+                d += Time.DAY;
+            }
+            else {
+                return null;
+            }
+        }
+
+        return super.map(user, d, c, offset);
+    }
+}
+/**
  * Pushing / popping notes to queue logic
  */
 class PusherPopper {
@@ -523,8 +573,14 @@ class PusherPopper {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
-            else {
+            else if (trigger.kind === TriggerKind.Recurring || TriggerKind.Multi) {
+                this.mappers[p + f] = new MultiRecurringMapper(audience.app, audience.message, trigger, p, f);
+            }
+            else if (trigger.kind === TriggerKind.Event || trigger.kind === TriggerKind.Cohort) {
                 this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
+            }
+            else {
+                throw new PushError('Invalid trigger kind ' + trigger.kind);
             }
         }));
     }
@@ -819,4 +875,4 @@ class Popper extends PusherPopper {
     }
 }
 
-module.exports = { Audience };
+module.exports = { Audience, MultiRecurringMapper, setNow };

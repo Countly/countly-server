@@ -33,7 +33,7 @@ class Info extends Validatable {
      * @param {Date}        data.started        date of first sending start
      * @param {Date}        data.startedLast    date of last sending start
      * @param {Date}        data.finished       date of state being set to Done
-     * @param {Date}        data.demo           true if this is a demo message
+     * @param {Boolean}     data.demo           true if this is a demo message
      */
     constructor(data) {
         super(data);
