@@ -1,5 +1,5 @@
 const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
-    { DEFAULTS } = require('./send/data/const'),
+    { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
@@ -65,6 +65,9 @@ async function validate(args, draft = false) {
     for (let trigger of msg.triggers) {
         if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
             throw new ValidationError('Please remove tz parameter from trigger definition');
+        }
+        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
+            throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
         }
     }
 
@@ -836,6 +839,8 @@ module.exports.all = async params => {
         platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        multi: {type: 'BooleanString', required: false},
+        rec: {type: 'BooleanString', required: false},
         kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
@@ -856,8 +861,14 @@ module.exports.all = async params => {
             data.kind.push(TriggerKind.Event);
             data.kind.push(TriggerKind.Cohort);
         }
+        else if (data.multi) {
+            data.kind.push(TriggerKind.Multi);
+        }
+        else if (data.rec) {
+            data.kind.push(TriggerKind.Recurring);
+        }
         else {
-            data.kind.push(TriggerKind.Plain);
+            data.kind = Object.values(TriggerKind);
         }
     }
 
@@ -915,8 +926,14 @@ module.exports.all = async params => {
                 else if (data.api) {
                     dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
                 }
+                else if (data.multi) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+                }
+                else if (data.rec) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+                }
                 else {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
                 }
 
                 dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
@@ -946,8 +963,14 @@ module.exports.all = async params => {
             else if (data.api) {
                 dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
             }
+            else if (data.multi) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+            }
+            else if (data.rec) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+            }
             else {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
             }
             dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
