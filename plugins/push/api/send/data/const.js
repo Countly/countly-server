@@ -173,8 +173,8 @@ const Time = {
     SEND_AHEAD: 5 * 60000, // send message max 5min early
     TIME_TO_SEND: 2 * 60 * 60000, // generally 2min should be enough to send a notification
     TOO_LATE_TO_SEND: 1 * 60 * 60000, // send message max 1hr late
-    WESTMOST_TIMEZONE: 14 * 60 * 60000, // the most western timezone possible
-    SCHEDULE_AHEAD: 10 * 60000, // schedule messages this much ahead (plus WESTMOST_TIMEZONE for timezoned messages) to ensure audience calculation runs on time
+    EASTMOST_TIMEZONE: 14 * 60 * 60000, // the most eastern timezone possible
+    SCHEDULE_AHEAD: 10 * 60000, // schedule messages this much ahead (plus EASTMOST_TIMEZONE for timezoned messages) to ensure audience calculation runs on time
 };
 
 /* eslint-enable key-spacing, no-multi-spaces */
