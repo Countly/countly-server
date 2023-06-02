@@ -1201,8 +1201,6 @@ class MultiTrigger extends ReschedulingTrigger {
     static get scheme() {
         return Object.assign({}, super.scheme, {
             dates: {type: 'Date[]', required: true},
-            last: {type: 'Date', required: false},
-            prev: {type: 'Date', required: false},
         });
     }
 
