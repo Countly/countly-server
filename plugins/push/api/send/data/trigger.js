@@ -1048,9 +1048,10 @@ class RecurringTrigger extends ReschedulingTrigger {
         let ref = reference,
             date = new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD),
             i = 0;
-        while ((date.getTime() + Time.SCHEDULE_AHEAD < now || date.getTime() + Time.SCHEDULE_AHEAD < this.start.getTime()) && i++ < 100) {
+        while ((date.getTime() + Time.SCHEDULE_AHEAD < now || date.getTime() + Time.SCHEDULE_AHEAD < this.start.getTime()) && i < 100) {
             ref = this.nextReference(ref);
             date = new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD);
+            i++;
         }
         if (i === 100) {
             throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long. ${reference.toISOString()}. ${this.json}`);
@@ -1240,12 +1241,13 @@ class MultiTrigger extends ReschedulingTrigger {
         let ref = reference,
             date = this.tz ? new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD),
             i = 0;
-        while (date.getTime() < now && i++ < 100) {
+        while (date.getTime() < now && i < 100) {
             ref = this.nextReference(ref);
             if (!ref) {
                 return null;
             }
             date = this.tz ? new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD);
+            i++;
         }
         if (i === 100) {
             throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long. ${reference.toISOString()}. ${this.json}`);
