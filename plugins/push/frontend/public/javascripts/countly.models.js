@@ -1163,7 +1163,7 @@
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
                         lastDate: {
                             date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:00 a") : null,
                         },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
