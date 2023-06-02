@@ -185,7 +185,12 @@
                 return multiple;
             },
             showDisplayType: function() {
-                return true;
+                var show = false;
+                var visualization = this.scope.editedObject.visualization;
+                if (visualization === 'time-series') {
+                    show = true;
+                }
+                return show;
             },
             metrics: function() {
                 return this.metricLists[this.scope.editedObject.data_type];
