@@ -1055,6 +1055,9 @@
             customPeriod: {
                 type: [Array, String, Object, Boolean],
             },
+            customText: {
+                type: String,
+            },
             reportInfo: {
                 type: Object
             },

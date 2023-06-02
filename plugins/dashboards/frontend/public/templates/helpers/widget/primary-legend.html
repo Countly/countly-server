@@ -8,6 +8,14 @@
 
     <i class="fas fa-circle color-cool-gray-50 bu-mx-2" style="font-size: 4px;" v-if="showPeriod && showApps"></i>
 
+    <div class="clyd-legend-app bu-is-flex-shrink-1" v-if="customText" style="min-width: 0;">
+        <div class="bu-is-flex">
+            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{customText}}</span>
+        </div>
+    </div>
+
+    <i class="fas fa-circle color-cool-gray-50 bu-mx-2" style="font-size: 4px;" v-if="customText"></i>
+
     <clyd-legend-period :custom-period="customPeriod" v-if="showPeriod"></clyd-legend-period>
 	<div v-if="reportInfo" class="text-small has-ellipsis bu-is-flex-shrink-1" v-html="reportInfo.formatted"></div>
 	<div v-if="reportInfo && (reportInfo.status=='rerunning' || reportInfo.status=='running')" class="text-small has-ellipsis bu-is-flex-shrink-1 bu-ml-1"><i class="fa fa-circle text-danger blink bu-mr-1"></i>{{i18n('taskmanager.recalculating')}}</div>
