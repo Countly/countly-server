@@ -17,6 +17,24 @@
         return ret;
     };
 
+    countlySDK.loadListOfSDKs = function(app_id, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": app_id,
+                "method": "sdks",
+                "action": "refresh"
+            },
+            success: function(json) {
+                callback(json);
+            },
+            error: function() {
+                callback();
+            }
+        });
+    };
+
 
     countlySDK.getChartData = function(sdk, metric, displayType) {
         if (!metric) {

@@ -1,6 +1,7 @@
 var plugins = require('../../pluginManager.js');
 var common = require('../../../api/utils/common.js');
 var fetch = require('../../../api/parts/data/fetch.js');
+var countlyModel = require('../../../api/lib/countly.model.js');
 var {validateRead, validateUpdate} = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'sdk';
@@ -156,6 +157,109 @@ plugins.register("/permissions/features", function(ob) {
         common.outDb.collection('sdk_configs').deleteOne({_id: appId + ""}, function() {});
         common.db.collection('sdks').remove({'_id': {$regex: appId + ".*"}}, function() {});
 
+    });
+
+    plugins.register("/dashboard/data", function(ob) {
+        return new Promise((resolve) => {
+            var params = ob.params;
+            var widget = ob.widget;
+            var apps = ob.apps;
+            var appId = widget.apps && widget.apps[0];
+            var visualization = ob.widget.visualization;
+            var segment = "sdk_version";
+            var dashData = {};
+
+            if (widget.widget_type === "sdk") {
+                var period = widget.custom_period || params.qstring.period;
+                if (period.since) {
+                    period = [period.since, Date.now()];
+                }
+                var paramsObj = {
+                    app_id: appId,
+                    appTimezone: apps[appId] && apps[appId].timezone,
+                    qstring: {
+                        period: period
+                    },
+                    time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+                };
+
+                fetch.getTimeObj("sdks", paramsObj, function(data) {
+                    fetch.getTotalUsersObj("sdks", paramsObj, function(dbTotalUsersObj) {
+                        var formattedUserObj = fetch.formatTotalUsersObj(dbTotalUsersObj);
+
+                        var model = countlyModel.load("sdk");
+
+                        model.setPeriod(paramsObj.qstring.period);
+                        model.setDb(data);
+                        model.setSDK(widget.selectedSDK);
+
+                        if (formattedUserObj) {
+                            model.setTotalUsersObj(formattedUserObj);
+                        }
+
+                        /**
+                         * Can widget.metrics be null? Not sure.
+                         * For Session data type and all its visualizations metrics are required,
+                         * so it shouldn't be null imo.
+                         * widget.metrics = widget.metrics || model.getMetrics();
+                         * Code on master has above line, not sure when its required,
+                         * Lets not add it yet and see what happens.
+                         */
+                        var widgetMetrics = JSON.parse(JSON.stringify(widget.metrics));
+
+                        if (widgetMetrics.indexOf("u") !== -1) {
+                            if (widgetMetrics.indexOf("t") === -1) {
+                                widgetMetrics.push("t");
+                            }
+                            if (widgetMetrics.indexOf("n") === -1) {
+                                widgetMetrics.push("n");
+                            }
+                        }
+
+                        if (widgetMetrics.indexOf("n") !== -1) {
+                            if (widgetMetrics.indexOf("u") === -1) {
+                                widgetMetrics.push("u");
+                            }
+                        }
+
+                        model.setMetrics(widgetMetrics);
+                        var widgetData;
+
+                        switch (visualization) {
+                        case 'bar-chart':
+                        case 'pie-chart':
+                            var totals = {};
+                            totals[widget.metrics[0]] = 0;
+                            var graph = model.getBars(segment, -1);
+                            for (var z in graph) {
+                                totals[widget.metrics[0]] += graph[z].value;
+                            }
+
+                            widgetData = {"total": totals, "graph": model.getBars(segment, 10)};
+
+                            break;
+                        case 'table':
+                            widgetData = model.getTableData(segment, 10);
+                            break;
+                        case 'time-series':
+                            widgetData = model.getStackedBarData(segment, 10, widget.metrics[0] || "u", widget.displaytype || "percentage");
+                            break;
+                        default:
+                            break;
+                        }
+
+                        dashData.isValid = true;
+                        dashData.data = {};
+                        dashData.data[appId] = widgetData;
+                        widget.dashData = dashData;
+                        return resolve();
+                    });
+                });
+            }
+            else {
+                return resolve();
+            }
+        });
     });
 
     /**
