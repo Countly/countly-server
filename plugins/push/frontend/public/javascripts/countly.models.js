@@ -1624,6 +1624,8 @@
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                     multipleDates: triggerDto.dates || [],
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
                 };
 
                 if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
