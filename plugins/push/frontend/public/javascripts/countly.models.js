@@ -1597,7 +1597,9 @@
                     startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
                     endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
-                    repetition: {bucket: triggerDto.bucket, every: parseInt(triggerDto.every), on: triggerDto.on || []}
+                    repetition: {bucket: triggerDto.bucket, every: parseInt(triggerDto.every), on: triggerDto.on || []},
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
                 };
                 if (triggerDto.time) {
                     var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);

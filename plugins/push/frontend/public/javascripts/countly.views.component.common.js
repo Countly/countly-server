@@ -1010,6 +1010,16 @@
                 const selectedDays = repetitionDays.map(day => days[day - 1]);
                 return selectedDays.join(', ');
             },
+            calculateDeliveryDates: function(prev, last) {
+                var nextDeliveryDates = [];
+                if (prev) {
+                    nextDeliveryDates.push(this.formatDateTime(prev, 'DD MMMM YYYY'));
+                }
+                if (last) {
+                    nextDeliveryDates.push(this.formatDateTime(last, 'DD MMMM YYYY'));
+                }
+                return nextDeliveryDates.join(', ');
+            },
             setCohorts: function(cohorts) {
                 this.cohorts = cohorts;
             },

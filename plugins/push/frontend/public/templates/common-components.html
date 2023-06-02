@@ -491,6 +491,7 @@
                     <details-tab-row :label="i18n('push-notification-drawer.repetition-for-every')" :value="pushNotification.delivery.repetition.every"> </details-tab-row>
                     <details-tab-row v-if="pushNotification.delivery.repetition.on.length" :label="i18n('push-notification-drawer.repeat-on')" :value="pushNotification.delivery.repetition.on"> </details-tab-row>
                     <details-tab-row :label="i18n('push-notification-drawer.repeat-at')" :value="formatDateTime(pushNotification.delivery.repetition.at, 'HH:mm a')"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.delivery.prev || pushNotification.delivery.last" :label="i18n('push-notification.next-delivery-dates')" :value="calculateDeliveryDates(pushNotification.delivery.prev, pushNotification.delivery.last)"></details-tab-row>
                 </template>
                 <template v-if="pushNotification.type === TypeEnum.MULTIPLE">
                     <details-tab-row :label="i18n('push-notification.delivery-dates')" :value="formatDateAndTime(pushNotification.delivery.multipleDates, 'HH:mm a', true)"></details-tab-row>
