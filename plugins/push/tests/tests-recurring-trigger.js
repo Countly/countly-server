@@ -3,7 +3,7 @@ const should = require('should'),
     { MultiRecurringMapper, setNow } = require('../api/send/audience');
 
 const SCHEDULE_AHEAD = 10 * 60000,
-    WESTMOST_TIMEZONE = 14 * 60 * 60000,
+    EASTMOST_TIMEZONE = 14 * 60 * 60000,
     users = [
         {_id: 1, uid: 1, tk: [{tk: {ip: 'ip'}}], tz: 0},
         {_id: 2, uid: 2, tk: [{tk: {ip: 'ip'}}], tz: 180},
@@ -68,13 +68,13 @@ describe('PUSH RECURRING', () => {
             mapper = new MultiRecurringMapper({_id: 'appid', timezone: 'Europe/Moscow'}, new Message({triggers: [trigger.json]}), trigger, 'i', 'p');
 
         should.equal(first.getTime() + sctz * 60000, trigger.nextReference().getTime());
-        should.equal(first.getTime() + sctz * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(), now).getTime());
+        should.equal(first.getTime() + sctz * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(), now).getTime());
         should.equal(first.getTime() + sctz * 60000, trigger.nextReference(start).getTime());
-        should.equal(first.getTime() + sctz * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(start), now).getTime());
+        should.equal(first.getTime() + sctz * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(start), now).getTime());
         should.equal(second.getTime() + sctz * 60000, trigger.nextReference(new Date(first.getTime() + 20)).getTime());
-        should.equal(second.getTime() + sctz * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(new Date(first.getTime() + 20)), now).getTime());
+        should.equal(second.getTime() + sctz * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(new Date(first.getTime() + 20)), now).getTime());
         should.equal(third.getTime() + sctz * 60000, trigger.nextReference(new Date(second.getTime() + 20)).getTime());
-        should.equal(third.getTime() + sctz * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(new Date(second.getTime() + 20)), now).getTime());
+        should.equal(third.getTime() + sctz * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(trigger.nextReference(new Date(second.getTime() + 20)), now).getTime());
         should.equal(null, trigger.nextReference(third));
         should.equal(null, trigger.scheduleDate(trigger.nextReference(third), now));
         should.equal(null, trigger.nextReference(new Date(third.getTime() + 5 * 60000)));
@@ -108,11 +108,11 @@ describe('PUSH RECURRING', () => {
             third = trigger.nextReference(second);
 
         should.equal(startZero.getTime() + time + Time.DAY + 0 * every * 24 * 60 * 60000, first.getTime());
-        should.equal(startZero.getTime() + time + Time.DAY + 0 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
+        should.equal(startZero.getTime() + time + Time.DAY + 0 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
         should.equal(startZero.getTime() + time + Time.DAY + 1 * every * 24 * 60 * 60000, second.getTime());
-        should.equal(startZero.getTime() + time + Time.DAY + 1 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
+        should.equal(startZero.getTime() + time + Time.DAY + 1 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
         should.equal(startZero.getTime() + time + Time.DAY + 2 * every * 24 * 60 * 60000, third.getTime());
-        should.equal(startZero.getTime() + time + Time.DAY + 2 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
+        should.equal(startZero.getTime() + time + Time.DAY + 2 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
 
         let mapped = users.map(u => mapper.map(u, start));
         should.equal(mapped[0]._id.getTimestamp().getTime(), start.getTime());
@@ -141,11 +141,11 @@ describe('PUSH RECURRING', () => {
             third = trigger.nextReference(second);
 
         should.equal(startZero.getTime() + time + 0 * every * 24 * 60 * 60000, first.getTime());
-        should.equal(startZero.getTime() + time + 0 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
+        should.equal(startZero.getTime() + time + 0 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
         should.equal(startZero.getTime() + time + 1 * every * 24 * 60 * 60000, second.getTime());
-        should.equal(startZero.getTime() + time + 1 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
+        should.equal(startZero.getTime() + time + 1 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
         should.equal(startZero.getTime() + time + 2 * every * 24 * 60 * 60000, third.getTime());
-        should.equal(startZero.getTime() + time + 2 * every * 24 * 60 * 60000 - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
+        should.equal(startZero.getTime() + time + 2 * every * 24 * 60 * 60000 - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
 
         let mapped = users.map(u => mapper.map(u, first));
         should.equal(mapped[0]._id.getTimestamp().getTime(), first.getTime());
@@ -193,13 +193,13 @@ describe('PUSH RECURRING', () => {
         should.equal(six.getTime(), sixth.getTime());
         should.equal(sev.getTime(), seventh.getTime());
 
-        should.equal(first.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
-        should.equal(second.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
-        should.equal(third.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
-        should.equal(fourth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
-        should.equal(fifth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
-        should.equal(sixth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
-        should.equal(seventh.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(seventh, now).getTime());
+        should.equal(first.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
+        should.equal(second.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
+        should.equal(third.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
+        should.equal(fourth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
+        should.equal(fifth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
+        should.equal(sixth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
+        should.equal(seventh.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(seventh, now).getTime());
 
         let mapped = users.map(u => mapper.map(u, first));
         should.equal(mapped[0]._id.getTimestamp().getTime(), first.getTime());
@@ -245,12 +245,12 @@ describe('PUSH RECURRING', () => {
         should.equal(fif.getTime(), fifth.getTime());
         should.equal(six.getTime(), sixth.getTime());
 
-        should.equal(first.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
-        should.equal(second.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
-        should.equal(third.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
-        should.equal(fourth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
-        should.equal(fifth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
-        should.equal(sixth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
+        should.equal(first.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
+        should.equal(second.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
+        should.equal(third.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
+        should.equal(fourth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
+        should.equal(fifth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
+        should.equal(sixth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
 
         let mapped = users.map(u => mapper.map(u, first));
         should.equal(mapped[0]._id.getTimestamp().getTime(), first.getTime());
@@ -296,12 +296,12 @@ describe('PUSH RECURRING', () => {
         should.equal(fif.getTime(), fifth.getTime());
         should.equal(six.getTime(), sixth.getTime());
 
-        should.equal(first.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
-        should.equal(second.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
-        should.equal(third.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
-        should.equal(fourth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
-        should.equal(fifth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
-        should.equal(sixth.getTime() - WESTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
+        should.equal(first.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(first, now).getTime());
+        should.equal(second.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(second, now).getTime());
+        should.equal(third.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(third, now).getTime());
+        should.equal(fourth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fourth, now).getTime());
+        should.equal(fifth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(fifth, now).getTime());
+        should.equal(sixth.getTime() - EASTMOST_TIMEZONE - SCHEDULE_AHEAD, trigger.scheduleDate(sixth, now).getTime());
 
         let mapped = users.map(u => mapper.map(u, first));
         should.equal(mapped[0]._id.getTimestamp().getTime(), first.getTime());

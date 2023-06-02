@@ -26,8 +26,6 @@ const MEDIA_MIME_ANDROID = [
     };
 
 const DEFAULTS = {
-    schedule_ahead: 5 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date
-    schedule_ahead_tz: 24 * 60 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date if we send in users' timezones
     queue_insert_batch: 100000,  // insert into "push" collection in batches of 100 000 records
     max_media_size: 1024 * 1024 // 1Mb is a very conservative limit for media attachments
 };
