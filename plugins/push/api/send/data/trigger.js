@@ -917,8 +917,6 @@ class RecurringTrigger extends ReschedulingTrigger {
             time: {type: 'Number', required: true, min: Time.MIN, max: Time.MAX},
             every: {type: 'Number', required: true},
             on: {type: 'Number[]', required: false},
-            last: {type: 'Date', required: false},
-            prev: {type: 'Date', required: false}
         });
     }
 
