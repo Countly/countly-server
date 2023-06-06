@@ -5186,6 +5186,16 @@
             }
             return _.unescape(text || df).replace(/&#39;/g, "'");
         };
+
+        /**
+         * Remove spaces, tabs, and newlines from the start and end of the string
+         * @param {String} str - Arbitrary string
+         * @returns {String} Trimmed string
+         */
+        countlyCommon.trimWhitespaceStartEnd = function(str) {
+            str = str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+            return str;
+        };
     };
 
     window.CommonConstructor = CommonConstructor;
