@@ -3641,8 +3641,8 @@ common.formatSecond = function(number) {
 
 /**
  * Remove spaces, tabs, and newlines from the start and end from all levels of a nested object
- * @param {String} value - Arbitrary value
- * @returns {String} Trimmed value
+ * @param {any} value - Arbitrary value
+ * @returns {any} Trimmed value
  */
 common.trimWhitespaceStartEnd = function(value) {
     if (typeof value === 'string') {
