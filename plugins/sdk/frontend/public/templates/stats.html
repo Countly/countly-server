@@ -80,7 +80,7 @@
     		</div>
 		</div>
 		<cly-section>
-			<cly-chart-bar :option="lineOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+			<cly-chart-bar :option="lineOptions" :valFormatter="lineOptions.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
 		</cly-section>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>

@@ -12,7 +12,7 @@
                 selectedBucket: "daily",
                 map: {
                     "t": this.i18n("common.total-sessions"),
-                    "u": this.i18n("common.unique-sessions"),
+                    "u": this.i18n("common.table.total-users"),
                     "n": this.i18n("common.new-sessions")
                 },
             };
@@ -148,6 +148,12 @@
                     return this.$emit('command', event);
                 }
             },
+            valFormatter: function(val) {
+                if (this.data.displaytype !== "value") {
+                    return val + " %";
+                }
+                return val;
+            },
         },
     });
 
@@ -163,7 +169,7 @@
                 metricLists: {
                     "sdk": [
                         { label: this.i18n("common.total-sessions"), value: "t" },
-                        { label: this.i18n("common.unique-sessions"), value: "u" },
+                        { label: this.i18n("common.table.total-users"), value: "u" },
                         { label: this.i18n("common.new-sessions"), value: "n" }
                     ]
                 },

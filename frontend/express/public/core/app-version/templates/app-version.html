@@ -30,7 +30,7 @@
     </div>
   </div>
   <cly-section>
-    <cly-chart-bar :option="appVersionStackedOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+    <cly-chart-bar :valFormatter="appVersionStackedOptions.valFormatter" :option="appVersionStackedOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
   </cly-section>
   <cly-section>
     <cly-datatable-n  :rows="appVersionRows" :resizable="true" :force-loading="isLoading">
