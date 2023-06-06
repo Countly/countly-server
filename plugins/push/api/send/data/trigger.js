@@ -933,7 +933,7 @@ class RecurringTrigger extends ReschedulingTrigger {
         date.setMilliseconds(0);
 
         if (this.bucket === RecurringType.Daily) {
-            let min = date.getTime() - Time.WESTMOST_TIMEZONE; // actual minimal date, in the most western timezone
+            let min = date.getTime() - Time.EASTMOST_TIMEZONE; // actual minimal date, in the most western timezone
             if (min < this.start.getTime()) {
                 date = new Date(date.getTime() + Time.DAY);
             }
@@ -945,7 +945,7 @@ class RecurringTrigger extends ReschedulingTrigger {
             days = days.filter(d => d.getTime() >= this.start.getTime());
             days.sort((a, b) => a.getTime() > b.getTime() ? 1 : -1);
             date = days.shift();
-            while (days.length && date.getTime() - Time.WESTMOST_TIMEZONE < this.start.getTime()) {
+            while (days.length && date.getTime() - Time.EASTMOST_TIMEZONE < this.start.getTime()) {
                 date = days.shift();
             }
         }
@@ -963,7 +963,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
             days.sort((a, b) => a.getTime() > b.getTime() ? 1 : -1);
             date = days.shift();
-            while (days.length && date.getTime() - Time.WESTMOST_TIMEZONE < this.start.getTime()) {
+            while (days.length && date.getTime() - Time.EASTMOST_TIMEZONE < this.start.getTime()) {
                 date = days.shift();
             }
         }
@@ -1046,11 +1046,11 @@ class RecurringTrigger extends ReschedulingTrigger {
      */
     scheduleDate(reference, now = Date.now()) {
         let ref = reference,
-            date = new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD),
+            date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD),
             i = 0;
         while ((date.getTime() + Time.SCHEDULE_AHEAD < now || date.getTime() + Time.SCHEDULE_AHEAD < this.start.getTime()) && i < 100) {
             ref = this.nextReference(ref);
-            date = new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD);
+            date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD);
             i++;
         }
         if (i === 100) {
@@ -1208,7 +1208,7 @@ class MultiTrigger extends ReschedulingTrigger {
      * @returns {Date} first reference date
      */
     reference() {
-        return this.tz ? new Date(this.dates[0].getTime() - this.sctz * 60000) : this.dates[0];
+        return this.tz ? new Date(toDate(this.dates[0]).getTime() - this.sctz * 60000) : toDate(this.dates[0]);
     }
 
     /**
@@ -1219,8 +1219,8 @@ class MultiTrigger extends ReschedulingTrigger {
      */
     nextReference(previousReference) {
         if (previousReference) {
-            return this.dates.map(d => this.tz ? new Date(d.getTime() - this.sctz * 60000) : d)
-                .filter(d => d.getTime() > previousReference.getTime())[0];
+            return this.dates.map(d => this.tz ? new Date(toDate(d).getTime() - this.sctz * 60000) : toDate(d))
+                .filter(d => toDate(d).getTime() > toDate(previousReference).getTime())[0];
         }
         else {
             return this.reference();
@@ -1239,14 +1239,14 @@ class MultiTrigger extends ReschedulingTrigger {
             return null;
         }
         let ref = reference,
-            date = this.tz ? new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD),
+            date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD),
             i = 0;
         while (date.getTime() < now && i < 100) {
             ref = this.nextReference(ref);
             if (!ref) {
                 return null;
             }
-            date = this.tz ? new Date(ref.getTime() - Time.WESTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD);
+            date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD);
             i++;
         }
         if (i === 100) {

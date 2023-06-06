@@ -467,10 +467,10 @@
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
                 this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
-                if (!this.validateStartDates(nextStep, currentStep)) {
-                    CountlyHelpers.notify({ message: CV.i18n('push-notification.start-date-validation-warning'), type: "error"});
-                    return;
-                }
+                // if (!this.validateStartDates(nextStep, currentStep)) {
+                //     CountlyHelpers.notify({ message: CV.i18n('push-notification.start-date-validation-warning'), type: "error"});
+                //     return;
+                // }
                 if (!this.validateDeliveryDates(nextStep, currentStep)) {
                     CountlyHelpers.notify({ message: CV.i18n('push-notification-drawer.date-validation'), type: "error"});
                     return;

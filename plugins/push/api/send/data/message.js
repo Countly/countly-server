@@ -1,5 +1,5 @@
 'use strict';
-const { State, Status, STATUSES, Mongoable, DEFAULTS, S, S_REGEXP } = require('./const'),
+const { State, Status, STATUSES, Mongoable, S, S_REGEXP, Time } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -525,7 +525,7 @@ class Message extends Mongoable {
      */
     get needsScheduling() {
         return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
-            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead) || (t.delayed && t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead_tz))).length > 0;
+            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - Time.SCHEDULE_AHEAD) || (t.delayed && t.tz && t.start.getTime() > Date.now() - (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD)))).length > 0;
     }
 
     /**
@@ -654,7 +654,7 @@ class Message extends Mongoable {
             }
             let date = Date.now();
             if (plain.delayed) {
-                date = plain.start.getTime() - (plain.tz ? DEFAULTS.schedule_ahead_tz : DEFAULTS.schedule_ahead);
+                date = plain.start.getTime() - (plain.tz ? (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD) : Time.SCHEDULE_AHEAD);
             }
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
@@ -663,7 +663,7 @@ class Message extends Mongoable {
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
         }
         let resch = this.triggerRescheduleable();
-        if (resch) {
+        if (resch && (this.is(State.Done) || this.state === State.Created)) {
             let reference = resch.nextReference(resch.last),
                 start = reference && resch.scheduleDate(reference);
             log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
