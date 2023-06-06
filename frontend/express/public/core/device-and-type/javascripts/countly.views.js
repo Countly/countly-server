@@ -433,7 +433,13 @@ var GridComponent = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.refreshNotes();
-        }
+        },
+        valFormatter: function(val) {
+            if (this.data.displaytype !== "value") {
+                return val + " %";
+            }
+            return val;
+        },
     }
 });
 

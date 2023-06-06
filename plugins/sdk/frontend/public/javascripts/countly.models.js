@@ -154,8 +154,19 @@
         var yAxis = {};
         if (isPercentage) {
             yAxis.axisLabel = {formatter: '{value} %'};
+            return {
+                xAxis: xAxis,
+                legend: legend,
+                yAxis: yAxis,
+                series: series,
+                valFormatter: function(val) {
+                    return val + " %";
+                }
+            };
         }
-        return {xAxis: xAxis, legend: legend, yAxis: yAxis, series: series};
+        else {
+            return {xAxis: xAxis, legend: legend, yAxis: yAxis, series: series};
+        }
 
     };
 
@@ -347,7 +358,7 @@
                     state.isLoading = false;
                 },
                 setSDKChartData: function(state, value) {
-                    state.chartData = {series: value.series, xAxis: value.xAxis, yAxis: value.yAxis};
+                    state.chartData = {series: value.series, xAxis: value.xAxis, yAxis: value.yAxis, valFormatter: value.valFormatter};
                     state.legendData = value.legend;
                 },
                 setSelectedProperty: function(state, value) {

@@ -7,9 +7,10 @@ var AppVersionView = countlyVue.views.create({
             barChartItemsLegends: {
                 totalSessions: CV.i18n('common.table.total-sessions'),
                 newUsers: CV.i18n('common.table.new-users')
-            }
+            },
         };
     },
+
     mounted: function() {
         this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
     },
@@ -35,7 +36,7 @@ var AppVersionView = countlyVue.views.create({
             return this.appVersion.chart;
         },
         appVersionStackedOptions: function() {
-            return {series: this.appVersion.series, xAxis: this.appVersion.xAxis, yAxis: this.appVersion.yAxis};
+            return {series: this.appVersion.series, xAxis: this.appVersion.xAxis, yAxis: this.appVersion.yAxis, valFormatter: this.appVersion.valFormatter};
         },
         isLoading: function() {
             return this.$store.state.countlyDevicesAndTypes.versionLoading;

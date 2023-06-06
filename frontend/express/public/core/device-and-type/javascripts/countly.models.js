@@ -617,6 +617,12 @@
                             return rangeArr.replace(/:/g, ".");
                         }
                     }).table;
+                    versions.valFormatter = function(val) {
+                        if (context.state.selectedDisplay !== "value") {
+                            return val + " %";
+                        }
+                        return val;
+                    };
                     context.commit('setAppVersion', versions);
                     context.dispatch('onFetchSuccess', "version");
                 }).catch(function(error) {
@@ -717,6 +723,12 @@
                         return rangeArr.replace(/:/g, ".");
                     }
                 }).table;
+                versions.valFormatter = function(val) {
+                    if (context.state.selectedDisplay !== "value") {
+                        return val + " %";
+                    }
+                    return val;
+                };
                 context.commit('setAppVersion', versions);
             }
         };
