@@ -3639,4 +3639,34 @@ common.formatSecond = function(number) {
     return formattedDuration.trim();
 };
 
+/**
+ * Remove spaces, tabs, and newlines from the start and end from all levels of a nested object
+ * @param {String} value - Arbitrary value
+ * @returns {String} Trimmed value
+ */
+common.trimWhitespaceStartEnd = function(value) {
+    if (typeof value === 'string') {
+        try {
+            value = JSON.parse(value);
+        }
+        catch (error) {
+            value = value.trim();
+        }
+    }
+    if (typeof value === 'string') {
+        value = value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    }
+    else if (Array.isArray(value)) {
+        value = value.map(common.trimWhitespaceStartEnd);
+    }
+    else if (typeof value === 'object' && value !== null) {
+        const trimmedObj = {};
+        for (let key in value) {
+            trimmedObj[key] = common.trimWhitespaceStartEnd(value[key]);
+        }
+        return trimmedObj;
+    }
+    return value;
+};
+
 module.exports = common;

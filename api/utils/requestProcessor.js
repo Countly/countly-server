@@ -1417,6 +1417,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/i': {
+                params.qstring = common.trimWhitespaceStartEnd(params.qstring);
                 params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
                 params.user = {};
 
