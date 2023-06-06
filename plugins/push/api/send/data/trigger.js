@@ -1208,7 +1208,7 @@ class MultiTrigger extends ReschedulingTrigger {
      * @returns {Date} first reference date
      */
     reference() {
-        return this.tz ? new Date(this.dates[0].getTime() - this.sctz * 60000) : this.dates[0];
+        return this.tz ? new Date(toDate(this.dates[0]).getTime() - this.sctz * 60000) : toDate(this.dates[0]);
     }
 
     /**
@@ -1219,8 +1219,8 @@ class MultiTrigger extends ReschedulingTrigger {
      */
     nextReference(previousReference) {
         if (previousReference) {
-            return this.dates.map(d => this.tz ? new Date(d.getTime() - this.sctz * 60000) : d)
-                .filter(d => d.getTime() > previousReference.getTime())[0];
+            return this.dates.map(d => this.tz ? new Date(toDate(d).getTime() - this.sctz * 60000) : toDate(d))
+                .filter(d => toDate(d).getTime() > toDate(previousReference).getTime())[0];
         }
         else {
             return this.reference();
