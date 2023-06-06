@@ -663,7 +663,7 @@ class Message extends Mongoable {
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
         }
         let resch = this.triggerRescheduleable();
-        if (resch) {
+        if (resch && (this.is(State.Done) || this.state === State.Created)) {
             let reference = resch.nextReference(resch.last),
                 start = reference && resch.scheduleDate(reference);
             log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);

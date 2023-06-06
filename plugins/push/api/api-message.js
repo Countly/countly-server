@@ -487,8 +487,8 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAutoOrApi()) {
-        throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    if (!msg.triggerAutoOrApi() && !msg.triggerRescheduleable()) {
+        throw new ValidationError(`The message doesn't have Cohort, Event, Multi or Recurring trigger`);
     }
 
     if (data.active && msg.is(State.Streamable)) {
