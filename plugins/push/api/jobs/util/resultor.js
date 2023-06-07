@@ -346,7 +346,7 @@ class Resultor extends DoFinish {
                         error = 'Failed to send all notifications';
                     }
                     else if (m.result.total === m.result.processed) {
-                        if (!resch.nextReference(resch.last)) {
+                        if (!resch.nextReference(resch.last)) { // TODO: this will probably result in skipping last reference if it's scheduled before last message in queue is sent
                             state = State.Created | State.Done;
                             status = Status.Sent;
                         }
