@@ -1038,18 +1038,9 @@ class RecurringTrigger extends ReschedulingTrigger {
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
      */
-    scheduleDate(reference, now = Date.now()) {
+    scheduleDate(reference) {
         let ref = reference,
-            date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD),
-            i = 0;
-        while ((date.getTime() + Time.SCHEDULE_AHEAD < now || date.getTime() + Time.SCHEDULE_AHEAD < this.start.getTime()) && i < 100) {
-            ref = this.nextReference(ref);
             date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD);
-            i++;
-        }
-        if (i === 100) {
-            throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long (missed 100 schedules). ${reference.toISOString()}. ${this.json}`);
-        }
         return this.end && date.getTime() > this.end.getTime() ? null : date;
     }
 
@@ -1228,24 +1219,12 @@ class MultiTrigger extends ReschedulingTrigger {
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
      */
-    scheduleDate(reference, now = Date.now()) {
+    scheduleDate(reference) {
         if (!reference) {
             return null;
         }
         let ref = reference,
-            date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD),
-            i = 0;
-        while (date.getTime() < now && i < 100) {
-            ref = this.nextReference(ref);
-            if (!ref) {
-                return null;
-            }
             date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD);
-            i++;
-        }
-        if (i === 100) {
-            throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long (missed 100 schedules). ${reference.toISOString()}. ${this.json}`);
-        }
         return this.end && date.getTime() > this.end.getTime() ? null : date;
     }
 
