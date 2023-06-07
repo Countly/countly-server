@@ -498,7 +498,7 @@
                     <details-tab-row :label="i18n('push-notification.delivery-type')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
                     <details-tab-row :label="i18n('push-notification-details.scheduled-for')" :value="formatDateAndTime(pushNotification.delivery.startDate)"> </details-tab-row>
                     <details-tab-row :label="i18n('push-notification-details.expiration-time')" :value="i18n('push-notification-details.message-expires-after', pushNotification.expiration.days, pushNotification.expiration.hours)"></details-tab-row>
-                    <details-tab-row v-if="pushNotification.delivery.prev || pushNotification.delivery.last" :label="i18n('push-notification.next-delivery-dates')" :value="calculateDeliveryDate(pushNotification.delivery.prev, pushNotification.delivery.last)"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.delivery.prev || pushNotification.delivery.last" :label="i18n('push-notification.next-delivery-dates')" :value="calculateDeliveryDates(pushNotification.delivery.prev, pushNotification.delivery.last)"></details-tab-row>
                 </template>
             </div>
         </div>
