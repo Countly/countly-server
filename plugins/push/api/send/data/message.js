@@ -663,7 +663,7 @@ class Message extends Mongoable {
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
         }
         let resch = this.triggerRescheduleable();
-        if (resch && (this.is(State.Done) || this.state === State.Created)) {
+        if (resch && !this.is(State.Done)) {
             let reference = resch.nextReference(resch.last),
                 start = reference && resch.scheduleDate(reference);
             log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
@@ -690,6 +690,7 @@ class Message extends Mongoable {
 
         let plain = this.triggerPlain(),
             auto = this.triggerAutoOrApi(),
+            resch = this.triggerRescheduleable(),
             removed = 0,
             audience = new Audience(log, this);
 
@@ -700,6 +701,9 @@ class Message extends Mongoable {
         }
         else if (plain) {
             removed += await audience.pop(plain).clear();
+        }
+        else if (resch) {
+            removed += await audience.pop(resch).clear();
         }
 
         await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
