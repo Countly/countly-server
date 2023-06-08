@@ -42,40 +42,61 @@ var convertOptionsToGot = function(options) {
 
     var requestOptions = {};
 
-    //define for got and request differences
+    // Define for got and request differences
     var keyMap = {
         "qs": "searchParams",
-        "strictSSL": "rejectUnauthorized",
+        "strictSSL": "https.rejectUnauthorized",
         "gzip": "decompress",
         "jar": "cookieJar",
         "baseUrl": "prefixUrl",
         "uri": "url"
     };
 
+    // Helper function to assign value to nested keys
+    function assignDeep(obj, keyPath, value) {
+        var keys = keyPath.split('.');
+        var lastKey = keys.pop();
+        var nestedObj = obj;
+
+        keys.forEach(function(key) {
+            if (!nestedObj[key] || typeof nestedObj[key] !== 'object') {
+                nestedObj[key] = {};
+            }
+            nestedObj = nestedObj[key];
+        });
+
+        nestedObj[lastKey] = value;
+    }
+
     for (let key in options) {
         if (!Object.prototype.hasOwnProperty.call(requestOptions, key) && keyMap[key]) {
-            requestOptions[keyMap[key]] = options[key];
-        }
-        else {
+            var mappedKey = keyMap[key];
+            if (mappedKey.includes('.')) {
+                assignDeep(requestOptions, mappedKey, options[key]);
+            } else {
+                requestOptions[mappedKey] = options[key];
+            }
+        } else {
             requestOptions[key] = options[key];
         }
     }
 
-    //backward compatability. in got json is not boolean. it is the object.
-    //request body and json are mutally exclusive. if request.json and body exists one of them must be deleted
+    // Backward compatibility: in got, json is not a boolean, it is an object.
+    // Request body and json are mutually exclusive.
+    // If request.json and body exist, one of them must be deleted.
     if (requestOptions.json && typeof requestOptions.json === 'boolean' && requestOptions.body) {
         requestOptions.json = requestOptions.body;
-        delete requestOptions.json;
+        delete requestOptions.body;
     }
 
     if (requestOptions.prefixUrl && options.uri && requestOptions.url) {
         requestOptions.uri = options.uri;
         delete requestOptions.url;
-
     }
 
     return requestOptions;
 };
+
 
 module.exports = function(uri, options, callback) {
 
@@ -145,3 +166,5 @@ module.exports.post = function(uri, options, callback) {
 module.exports.get = function(uri, options, callback) {
     module.exports(uri, options, callback);
 };
+
+module.exports.convertOptionsToGot = convertOptionsToGot;
