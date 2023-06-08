@@ -2,38 +2,40 @@ const DEFAULT_MAX_CUSTOM_FIELD_KEYS = 100;
 
 /**
 * Generate updates for cleaning up custom field from a crashgroup document
-* @param {Object} crashgroup - crashgroup document, it has to contain '_id' and `custom` fields
+* @param {Object} crashgroup - crashgroup document, it has to contain '_id' and `keys` fields
 * @param {number} maxCustomFieldKeys - how many unique custom field keys should be kept
 * @returns {Object} update queries for mongo bulk update
 */
 function generateUpdates(crashgroup, maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIELD_KEYS) {
-    const updates = [];
-    const keysToRemove = {};
-    const customField = crashgroup.custom;
+    const queries = [];
+    const keysToClean = crashgroup.keys;
 
-    for (const key in customField) {
-        const excessFields = Object.keys(customField[key]).length - maxCustomFieldKeys;
-
-        if (excessFields > 0) {
-            Object.entries(customField[key])
-                .sort((a, b) => a[1] - b[1])
-                .slice(0, excessFields)
-                .forEach(([k]) => keysToRemove[`custom.${key}.${k}`] = '');
-        }
-    }
-
-    if (Object.keys(keysToRemove).length > 0) {
-        updates.push({
-            updateOne: {
-                filter: { _id: crashgroup._id },
-                update: {
-                    $unset: keysToRemove,
+    keysToClean.forEach((key) => {
+        queries.push({
+            $set: {
+                [`custom.${key}`]: {
+                    $arrayToObject: {
+                        $slice: [
+                            {
+                                $sortArray: {
+                                    input: { $objectToArray: `$custom.${key}` },
+                                    sortBy: { v: -1 }
+                                },
+                            },
+                            maxCustomFieldKeys,
+                        ],
+                    },
                 },
             },
         });
-    }
+    });
 
-    return updates;
+    return {
+        updateOne: {
+            filter: { _id: crashgroup._id },
+            update: queries,
+        },
+    };
 }
 
 /**
@@ -52,8 +54,26 @@ async function cleanupCustomField(
     for (let idx = 0; idx < apps.length; idx += 1) {
         const crashgroupCollection = `app_crashgroups${apps[idx]._id}`;
         const crashgroups = await countlyDb.collection(crashgroupCollection)
-            .find({ _id: { $ne: 'meta' }, 'custom': { $exists: true } })
-            .project({ custom: 1 })
+            .aggregate([
+                {
+                    $project: {
+                        _id: 1,
+                        custom: {
+                            $map: {
+                                input: { $objectToArray: "$custom" },
+                                as: "item",
+                                in: {
+                                    key: "$$item.k",
+                                    size: { "$size": {"$objectToArray": "$$item.v"} }
+                                },
+                            },
+                        },
+                    },
+                },
+                { $unwind: "$custom" },
+                { $match: { "custom.size": { "$gt": maxCustomFieldKeys } } },
+                { $group: { _id: "$_id", keys: { $push: "$custom.key" } } },
+            ])
             .toArray();
 
         let updates = [];
