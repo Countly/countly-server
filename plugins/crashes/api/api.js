@@ -59,7 +59,7 @@ plugins.setConfigs("crashes", {
         });
 
         setTimeout(() => {
-            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule("every 10 minutes");
+            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule("every 1 hour");
         }, 10000);
     });
     var ranges = ["ram", "bat", "disk", "run", "session"];
