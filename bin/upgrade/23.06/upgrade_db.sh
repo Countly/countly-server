@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="23.05"
+VER="23.06"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -34,6 +34,7 @@ then
     nodejs "$SCRIPTS/scripts/upgrade_user_permission_data-manager.js"
     nodejs "$SCRIPTS/scripts/rebuild_member_permission.js"
     nodejs "$SCRIPTS/scripts/merge_drill_meta.js"
+    nodejs "$SCRIPTS/scripts/cleanup_crashgroup_custom_field.js"
 
     if [ "$1" != "combined" ]; then
         countly upgrade;
