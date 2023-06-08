@@ -150,7 +150,7 @@
             redirectHomePage: function() {
                 this.generateDataModal = { showDialog: false };
                 var self = this;
-                countlyPopulator.stopGenerating(function() {
+                countlyPopulator.stopGenerating(false, function() {
                     window.clearInterval(self.progressBar);
                     self.generateDataModal = { showDialog: false };
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
@@ -184,7 +184,7 @@
                     }
                     else {
                         self.percentage = 100;
-                        countlyPopulator.stopGenerating();
+                        countlyPopulator.stopGenerating(true);
                         window.clearInterval(self.progressBar);
                         self.generateDataModal = { showDialog: false };
                         self.finishedGenerateModal = {showDialog: true};
@@ -197,7 +197,7 @@
                 this.generateDataModal = { showDialog: false };
                 this.description = CV.i18n('populator.warning3');
                 var self = this;
-                countlyPopulator.stopGenerating(function() {
+                countlyPopulator.stopGenerating(true, function() {
                     window.clearInterval(self.progressBar);
                     self.generateDataModal = { showDialog: false };
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};

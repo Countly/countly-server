@@ -3,6 +3,8 @@
 (function() {
 
     var FEATURE_NAME = "data_manager";
+    var SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+    var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
@@ -906,6 +908,25 @@
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME)) {
+                localTabs.push(
+                    {
+                        title: this.i18n('data-manager.events'),
+                        priority: 1,
+                        name: "events",
+                        component: EventsDefaultTabView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
+                    }
+                );
+                localTabs.push({
+                    priority: 3,
+                    title: CV.i18n('data-manager.event-groups'),
+                    name: "event-groups",
+                    component: EventsGroupsTabView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
+                });
+            }
             return {
                 isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
                 currentSecondaryTab: (this.$route.params && this.$route.params.secondaryTab) || "events",
@@ -921,22 +942,7 @@
                     previewTemplate: '<div class="cly-vue-data-manager__dropzone__preview bu-level bu-mx-4 bu-mt-3">\
                                       <div class="dz-filename bu-ml-2"><span data-dz-name></span></div></div>'
                 },
-                localTabs: [
-                    {
-                        title: this.i18n('data-manager.events'),
-                        priority: 1,
-                        name: "events",
-                        component: EventsDefaultTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
-                    },
-                    {
-                        priority: 3,
-                        title: CV.i18n('data-manager.event-groups'),
-                        name: "event-groups",
-                        component: EventsGroupsTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
@@ -948,6 +954,9 @@
                 });
 
                 return allTabs;
+            },
+            canUserCreateTransform: function() {
+                return countlyAuth.validateCreate(SUB_FEATURE_TRANSFORMATIONS);
             }
         },
         components: {
@@ -1163,17 +1172,19 @@
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME) || countlyAuth.validateRead(SUB_FEATURE_TRANSFORMATIONS)) {
+                localTabs.push({
+                    priority: 1,
+                    title: this.i18n('data-manager.events'),
+                    name: "events",
+                    component: EventsView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
+                });
+            }
             return {
                 currentPrimaryTab: (this.$route.params && this.$route.params.primaryTab) || "events",
-                localTabs: [
-                    {
-                        priority: 1,
-                        title: this.i18n('data-manager.events'),
-                        name: "events",
-                        component: EventsView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
@@ -1366,5 +1377,5 @@
         this.renderWhenReady(detailView);
     });
 
-    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    app.addSubMenu("management", { code: "data-manager", permission: [FEATURE_NAME, SUB_FEATURE_REDACTION, SUB_FEATURE_TRANSFORMATIONS], pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

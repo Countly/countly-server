@@ -1,5 +1,5 @@
 const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
-    { DEFAULTS } = require('./send/data/const'),
+    { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
@@ -65,6 +65,9 @@ async function validate(args, draft = false) {
     for (let trigger of msg.triggers) {
         if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
             throw new ValidationError('Please remove tz parameter from trigger definition');
+        }
+        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
+            throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
         }
     }
 
@@ -265,7 +268,6 @@ module.exports.create = async params => {
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
-
     if (demo) {
         msg.info.demo = true;
     }
@@ -286,7 +288,6 @@ module.exports.create = async params => {
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
-
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
@@ -486,8 +487,8 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAutoOrApi()) {
-        throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    if (!msg.triggerAutoOrApi() && !msg.triggerRescheduleable()) {
+        throw new ValidationError(`The message doesn't have Cohort, Event, Multi or Recurring trigger`);
     }
 
     if (data.active && msg.is(State.Streamable)) {
@@ -560,7 +561,6 @@ module.exports.estimate = async params => {
             required: false
         }
     }, true);
-
     if (data.result) {
         data = data.obj;
         if (!data.filter) {
@@ -814,9 +814,10 @@ module.exports.user = async params => {
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
- * @apiQuery {Boolean} auto Whether to return only automated messages
- * @apiQuery {Boolean} api Whether to return only API messages
- * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
+ * @apiQuery {Boolean} auto *Deprecated.* Whether to return only automated messages
+ * @apiQuery {Boolean} api *Deprecated.* Whether to return only API messages
+ * @apiQuery {String[]} kind Required. Array of message kinds (Trigger kinds) to return, overrides *auto* & *api* if set.
+ * @apiQuery {Boolean} removed Whether to return removed messages (set it to true to return removed messages)
  * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
  * @apiQuery {Number} [iDisplayStart] Skip this much messages
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
@@ -832,10 +833,15 @@ module.exports.user = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
+    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
+        platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        multi: {type: 'BooleanString', required: false},
+        rec: {type: 'BooleanString', required: false},
+        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -845,6 +851,26 @@ module.exports.all = async params => {
         sEcho: {type: 'String', required: false},
         status: {type: 'String', required: false}
     }, true);
+    // backwards compatibility
+    if (!data.kind) {
+        data.kind = [];
+        if (data.api) {
+            data.kind.push(TriggerKind.API);
+        }
+        else if (data.auto) {
+            data.kind.push(TriggerKind.Event);
+            data.kind.push(TriggerKind.Cohort);
+        }
+        else if (data.multi) {
+            data.kind.push(TriggerKind.Multi);
+        }
+        else if (data.rec) {
+            data.kind.push(TriggerKind.Recurring);
+        }
+        else {
+            data.kind = Object.values(TriggerKind);
+        }
+    }
 
     if (data.result) {
         data = data.obj;
@@ -852,20 +878,15 @@ module.exports.all = async params => {
         let query = {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
+            'triggers.kind': {$in: data.kind}
         };
+
+        if (data.platform && data.platform.length) {
+            query.platforms = data.platform; //{$in: [data.platforms]};
+        }
 
         if (data.removed) {
             delete query.state;
-        }
-
-        if (data.auto) {
-            query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
-        }
-        else if (data.api) {
-            query['triggers.kind'] = TriggerKind.API;
-        }
-        else {
-            query['triggers.kind'] = TriggerKind.Plain;
         }
 
         if (data.sSearch) {
@@ -905,8 +926,14 @@ module.exports.all = async params => {
                 else if (data.api) {
                     dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
                 }
+                else if (data.multi) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+                }
+                else if (data.rec) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+                }
                 else {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
                 }
 
                 dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
@@ -936,37 +963,36 @@ module.exports.all = async params => {
             else if (data.api) {
                 dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
             }
+            else if (data.multi) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+            }
+            else if (data.rec) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+            }
             else {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
             }
             dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
-        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
-            res = res || [];
-            res = res[0] || {};
 
-            var items = res.data || [];
-            var total = 0;
-            if (res.total && res.total[0] && res.total[0].cn) {
-                total = res.total[0].cn;
-            }
 
-            common.returnOutput(params, {
-                sEcho: data.sEcho,
-                iTotalRecords: total || items.length,
-                iTotalDisplayRecords: total || items.length,
-                aaData: items || []
-            }, true);
-
-        });
-
+        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
+            items = res.data || [],
+            total = res.total && res.total[0] && res.total[0].cn || 0;
+        common.returnOutput(params, {
+            sEcho: data.sEcho,
+            iTotalRecords: total || items.length,
+            iTotalDisplayRecords: total || items.length,
+            aaData: items
+        }, true);
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
     }
+
+    return true;
 };
 
 /**

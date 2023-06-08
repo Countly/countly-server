@@ -1,4 +1,6 @@
 const FEATURE_NAME = 'data_manager';
+const SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
@@ -6,6 +8,40 @@ const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
 const auditLog = require('./parts/auditLogs');
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
+    ob.features.push(SUB_FEATURE_REDACTION);
+    ob.features.push(SUB_FEATURE_TRANSFORMATIONS);
+    ob.featuresPermissionDependency[SUB_FEATURE_TRANSFORMATIONS] = {
+        c: {
+            [FEATURE_NAME]: ['r'],
+        },
+        r: {
+            [FEATURE_NAME]: ['r'],
+        },
+        u: {
+            [FEATURE_NAME]: ['r'],
+        },
+        d: {
+            [FEATURE_NAME]: ['r']
+        },
+    };
+    // c,u,d mean the same thing here, so they are dependency of each other
+    ob.featuresPermissionDependency[SUB_FEATURE_REDACTION] = {
+        c: {
+            [SUB_FEATURE_REDACTION]: ['r', 'u', 'd'],
+            [FEATURE_NAME]: ['u']
+        },
+        r: {
+            [FEATURE_NAME]: ['r']
+        },
+        u: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'd'],
+            [FEATURE_NAME]: ['u']
+        },
+        d: {
+            [SUB_FEATURE_REDACTION]: ['r', 'c', 'u'],
+            [FEATURE_NAME]: ['u']
+        },
+    };
 });
 
 try {

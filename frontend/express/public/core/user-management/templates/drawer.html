@@ -166,26 +166,27 @@
                   </cly-select-x>
                 </div>
                 <div class="user-management-drawer-content__permission-table-header bu-px-1">
-                  <div class="user-management-drawer-content__feature-name-col text-medium bu-has-text-weight-medium">
-                    {{ i18n('management-users.feature') }}
-                  </div>
+                  <el-input v-model="filteredFeatures[index].searchQuery" :placeholder="i18n('management-users.search-placeholder')" class="user-management-drawer-content__feature-search" @input="search(index)">
+                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                    <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch(index)"></i>
+                  </el-input> 
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="filteredFeatures[index].all.c">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="filteredFeatures[index].all.r">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="filteredFeatures[index].all.u">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="filteredFeatures[index].all.d">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
                     </div>
                   </div>
                 </div>
                 <div class="user-management-drawer-content__permission-table-content bu-px-1">
-                  <div class="user-management-drawer-content__permission-row bu-mb-5" v-for="feature in features">
+                  <div class="user-management-drawer-content__permission-row bu-mb-5" v-for="feature in filteredFeatures[index].features">
                     <div class="user-management-drawer-content__feature-name">{{featureBeautifier(feature)}}</div>
                     <div class="user-management-drawer-content__feature-permissions">
                       <div class="user-management-drawer-content__permission-box">

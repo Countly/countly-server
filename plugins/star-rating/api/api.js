@@ -99,6 +99,10 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
+    logoType: {
+        required: false,
+        type: "String"
+    },
     appearance: {
         required: false,
         type: "Object"
