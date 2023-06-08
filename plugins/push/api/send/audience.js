@@ -446,7 +446,7 @@ class PlainApiMapper extends Mapper {
             let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : parseFloat(user.tz) || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
 
-            if (d < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
                     d = d + Time.DAY;
                 }
@@ -487,7 +487,7 @@ class CohortsEventsMapper extends Mapper {
             auto.setMilliseconds(0);
 
             inTz = auto.getTime() + this.trigger.time + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
-            if (inTz < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (inTz < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
                     d = inTz + Time.DAY;
                 }
@@ -547,7 +547,7 @@ class MultiRecurringMapper extends Mapper {
             d -= utz;
         }
 
-        if (d < (now() + (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+        if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
             if (this.trigger.reschedule) {
                 d += Time.DAY;
             }

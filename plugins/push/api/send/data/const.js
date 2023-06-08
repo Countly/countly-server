@@ -169,7 +169,7 @@ const Time = {
     MAX: 24 * 60 * 60000 - 1, // max time of day in ms
     DAY: 24 * 60 * 60000, // ms in a day
     SEND_AHEAD: 5 * 60000, // send message max 5min early
-    TIME_TO_SEND: 2 * 60 * 60000, // generally 2min should be enough to send a notification
+    TIME_TO_SEND: 2 * 60000, // generally 2min should be enough to send a notification
     TOO_LATE_TO_SEND: 1 * 60 * 60000, // send message max 1hr late
     EASTMOST_TIMEZONE: 14 * 60 * 60000, // the most eastern timezone possible
     SCHEDULE_AHEAD: 10 * 60000, // schedule messages this much ahead (plus EASTMOST_TIMEZONE for timezoned messages) to ensure audience calculation runs on time

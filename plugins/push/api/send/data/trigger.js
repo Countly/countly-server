@@ -932,20 +932,14 @@ class RecurringTrigger extends ReschedulingTrigger {
         date.setSeconds(0);
         date.setMilliseconds(0);
 
-        if (this.bucket === RecurringType.Daily) {
-            let min = date.getTime() - Time.EASTMOST_TIMEZONE; // actual minimal date, in the most western timezone
-            if (min < this.start.getTime()) {
-                date = new Date(date.getTime() + Time.DAY);
-            }
-        }
-        else if (this.bucket === RecurringType.Weekly) {
+        if (this.bucket === RecurringType.Weekly) {
             let days = this.on.map(on => moment(date).locale('ru').day(on).toDate())
                 .concat(this.on.map(on => moment(date).locale('ru').add(-1, 'weeks').day(on).toDate()))
                 .concat(this.on.map(on => moment(date).locale('ru').add(1, 'weeks').day(on).toDate()));
             days = days.filter(d => d.getTime() >= this.start.getTime());
             days.sort((a, b) => a.getTime() > b.getTime() ? 1 : -1);
             date = days.shift();
-            while (days.length && date.getTime() - Time.EASTMOST_TIMEZONE < this.start.getTime()) {
+            while (days.length && date && date.getTime() < this.start.getTime()) {
                 date = days.shift();
             }
         }
@@ -963,7 +957,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
             days.sort((a, b) => a.getTime() > b.getTime() ? 1 : -1);
             date = days.shift();
-            while (days.length && date.getTime() - Time.EASTMOST_TIMEZONE < this.start.getTime()) {
+            while (days.length && date && date.getTime() < this.start.getTime()) {
                 date = days.shift();
             }
         }
@@ -1044,18 +1038,9 @@ class RecurringTrigger extends ReschedulingTrigger {
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
      */
-    scheduleDate(reference, now = Date.now()) {
+    scheduleDate(reference) {
         let ref = reference,
-            date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD),
-            i = 0;
-        while ((date.getTime() + Time.SCHEDULE_AHEAD < now || date.getTime() + Time.SCHEDULE_AHEAD < this.start.getTime()) && i < 100) {
-            ref = this.nextReference(ref);
             date = new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD);
-            i++;
-        }
-        if (i === 100) {
-            throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long. ${reference.toISOString()}. ${this.json}`);
-        }
         return this.end && date.getTime() > this.end.getTime() ? null : date;
     }
 
@@ -1234,24 +1219,12 @@ class MultiTrigger extends ReschedulingTrigger {
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
      */
-    scheduleDate(reference, now = Date.now()) {
+    scheduleDate(reference) {
         if (!reference) {
             return null;
         }
         let ref = reference,
-            date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD),
-            i = 0;
-        while (date.getTime() < now && i < 100) {
-            ref = this.nextReference(ref);
-            if (!ref) {
-                return null;
-            }
             date = this.tz ? new Date(ref.getTime() - Time.EASTMOST_TIMEZONE - Time.SCHEDULE_AHEAD) : new Date(ref.getTime() - Time.SCHEDULE_AHEAD);
-            i++;
-        }
-        if (i === 100) {
-            throw new PushError(`Failed to calculate schedule date, it's a bug or the server was offline for too long. ${reference.toISOString()}. ${this.json}`);
-        }
         return this.end && date.getTime() > this.end.getTime() ? null : date;
     }
 

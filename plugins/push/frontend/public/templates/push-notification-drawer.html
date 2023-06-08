@@ -163,7 +163,7 @@
                             </validation-provider>
                         </div>
                     </div>
-                    <div class="cly-vue-drawer-step__section">
+                    <div v-if="type === TypeEnum.ONE_TIME" class="cly-vue-drawer-step__section">
                         <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             {{i18n('push-notification.when-to-determine-users')}}
                             <cly-tooltip-icon :tooltip="i18n('push-notification.when-to-determine-users-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
