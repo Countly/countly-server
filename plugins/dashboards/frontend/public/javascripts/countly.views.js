@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull*/
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull, countlyCommon */
 
 (function() {
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -1380,6 +1380,8 @@
                 if (dashboard.owner && dashboard.owner.full_name) {
                     dashboard.creation.by = dashboard.owner.full_name;
                 }
+
+                dashboard.name = countlyCommon.unescapeHtml(dashboard.name);
 
                 return dashboard;
             },
