@@ -1,3 +1,47 @@
+## Version 23.06
+
+New Features:
+- [app_versions] display time series data
+- [dashboards] new time series type for Technology section
+- [dashboards] SDK statistics widgets 
+- [events] added event comparison by average duration
+- [events] added search in available segments
+- [events] show omitted segments
+- [populator] create funnels
+- [push] new push notification structure and types
+- [sdk] SDK remote configuration
+- [sdk] SDK statistics
+- [user-management] clear failed logins for user
+- [user-management] search for feature permissions
+
+Enterprise new features:
+- [ab-testing] allow customer period running tests including indefinitely
+- [ab-testing] allow reseting experiments
+- [ab-testing] new APIs for fetching all varians and testing varians (enrolling/leaving variants)
+- [data-manager] division of data manager permissions
+- [drill] enhanced state url for drill
+- [drill] new drill meta structure
+- [events] add drill option to Events
+- [surveys] different logo types
+- [surveys] show always option
+- [users] download user debug information
+- [users] enable incoming data log for single user
+
+Fixes:
+- [crashes] clean big crash group documents
+- [db] reduce timeouts to display errors
+- [ratings] allow images with dot in the name
+
+Enterprise fixes:
+- [ab-testing] fix json-editor in ab-testing
+- [cohorts] dealing with widgets for the cohort after cohort deletion
+- [crash_symbolication] add logs for symbolication server connection test
+- [drill] break down by date should break by dates and not seconds
+- [drill] heatmap chart shouldn't limit series to 10
+- [drill] hide no data text
+- [drill] standartizing ls/lac behavior
+- [performance-monitoring] splitting documents to be able to store more data
+
 ## Version 23.03.9
 Fixes:
 - [core] Fixes to periodObject function to deal with invalid date arrays.
