@@ -50,9 +50,9 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'APN Production Token', // prod
-    '1': 'APN Development Token', // debug
-    '2': 'APN AdHoc / TestFlight Token', // ad hoc
+    '0': 'iOS Production Token', // prod
+    '1': 'iOS Development Token', // debug
+    '2': 'iOS AdHoc / TestFlight Token', // ad hoc
 };
 
 /**
