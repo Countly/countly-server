@@ -126,10 +126,10 @@ dashboard.mapWidget = function(widget) {
             if (widget.interval === "adaily") {
                 widget.period = "d" + (widget.selected_span || 7);
             }
-            else if (widget.inerval === "aweekly") {
+            else if (widget.interval === "aweekly") {
                 widget.period = "w" + (widget.selected_span || 12);
             }
-            else if (widget.inerval === "amonthly") {
+            else if (widget.interval === "amonthly") {
                 widget.period = "m" + (widget.selected_span || 6);
             }
         }
