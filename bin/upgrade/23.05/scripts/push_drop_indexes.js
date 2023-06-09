@@ -7,7 +7,14 @@ pluginManager.dbConnection('countly').then(async(db) => {
             fields_appusers = fields(platforms, true);
         console.log(`Dropping indexes for ${apps.length} apps`);
         for (let app of apps) {
-            await db.collection(`app_users${app._id}`).dropIndexes(fields_appusers);
+            for (let field of fields_appusers) {
+                try {
+                    await db.collection(`app_users${app._id}`).dropIndex(fields_appusers);
+                }
+                catch (e) {
+                    // do nothing
+                }
+            }
             console.log('Dropped indexes for ', app._id);
         }
         console.log('Dropping indexes DONE');
