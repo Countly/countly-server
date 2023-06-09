@@ -2138,7 +2138,7 @@
                 var queryData = {message: {"$nin": [this.pushNotification._id]}};
                 var $in = [];
                 if (this.pushNotification.user) {
-                    queryData.user = this.pushNotification.user;
+                    Object.assign(queryData, JSON.parse(this.pushNotification.user));
                 }
                 if (this.pushNotification.locations && this.pushNotification.locations.length) {
                     queryData.geo = {"$in": this.pushNotification.locations};
