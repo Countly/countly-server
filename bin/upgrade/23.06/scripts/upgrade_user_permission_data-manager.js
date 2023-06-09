@@ -29,6 +29,7 @@ pluginManager.dbConnection().then(async (countlyDb) => {
                         Object.keys(apps).forEach(function (appId) {
                             if (!apps[appId].allowed) {
                                 apps[appId].allowed = {};
+                                update[`permission.${type}.${appId}.allowed`] = {};
                             }
                             else if (apps[appId].allowed.data_manager) {
                                 update[`permission.${type}.${appId}.allowed.data_manager: Transformations`] = true;
