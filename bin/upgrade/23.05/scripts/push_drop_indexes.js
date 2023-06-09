@@ -9,7 +9,7 @@ pluginManager.dbConnection('countly').then(async(db) => {
         for (let app of apps) {
             for (let field of fields_appusers) {
                 try {
-                    await db.collection(`app_users${app._id}`).dropIndex(fields_appusers);
+                    await db.collection(`app_users${app._id}`).dropIndex(field);
                 }
                 catch (e) {
                     // do nothing
