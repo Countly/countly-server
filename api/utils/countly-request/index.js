@@ -86,7 +86,7 @@ var convertOptionsToGot = function(options) {
     // If request.json and body exist, one of them must be deleted.
     if (requestOptions.json && typeof requestOptions.json === 'boolean' && requestOptions.body) {
         requestOptions.json = requestOptions.body;
-        delete requestOptions.body;
+        delete requestOptions.json;
     }
 
     if (requestOptions.prefixUrl && options.uri && requestOptions.url) {
