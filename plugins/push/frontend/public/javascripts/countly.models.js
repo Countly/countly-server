@@ -3275,4 +3275,24 @@
             destroy: false,
         });
     };
+
+    var TT = {
+        tkid: 'iOS Development Token',
+        tkia: 'iOS Ad Hoc / TestFlight Token',
+        tkip: 'iOS Production Token',
+        tkap: 'Android Firebase Token',
+        tkhp: 'Android Huawei Token'
+    };
+
+    countlyPushNotification.getTokenTypes = function() {
+        return Object.keys(TT);
+    };
+
+    countlyPushNotification.getTokenNames = function() {
+        return Object.values(TT);
+    };
+
+    countlyPushNotification.getTokenName = function(type) {
+        return TT[type];
+    };
 }(window.countlyPushNotification = window.countlyPushNotification || {}));

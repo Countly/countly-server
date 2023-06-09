@@ -22,6 +22,8 @@ then
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
+
+    countly plugin enable sdk;
     
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"

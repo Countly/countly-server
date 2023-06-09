@@ -34,6 +34,7 @@ Fixes:
 
 Enterprise fixes:
 - [ab-testing] fix json-editor in ab-testing
+- [attribution] fix safari redirect issues for custom scheme
 - [cohorts] dealing with widgets for the cohort after cohort deletion
 - [crash_symbolication] add logs for symbolication server connection test
 - [drill] break down by date should break by dates and not seconds

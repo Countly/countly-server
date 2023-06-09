@@ -23,6 +23,7 @@ then
     if [ "$1" != "combined" ]; then
         #upgrade plugins
         countly plugin enable license;
+        countly plugin enable sdk;
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
