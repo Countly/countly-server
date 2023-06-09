@@ -1665,7 +1665,7 @@
         mounted: function() {
             this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
             this.notificationTypes.push(
-                {label: "One-Time Notificaitons", value: "plain"},
+                {label: "One-Time Notifications", value: "plain"},
                 {label: "Automated Notifications", value: "auto"},
                 {label: "Recurring Notifications", value: "rec"},
                 {label: "Multiple Notifications", value: "multi"},

@@ -27,7 +27,11 @@ pluginManager.dbConnection().then(async (countlyDb) => {
                         }
                         let apps = group.permission[type];
                         Object.keys(apps).forEach(function (appId) {
-                            if (apps[appId].allowed.data_manager) {
+                            if (!apps[appId].allowed) {
+                                apps[appId].allowed = {};
+                                update[`permission.${type}.${appId}.allowed`] = {};
+                            }
+                            else if (apps[appId].allowed.data_manager) {
                                 update[`permission.${type}.${appId}.allowed.data_manager: Transformations`] = true;
                                 if (type !== 'r') {//since c,u,d means the same thing for data_manager: Redaction
                                     for (let CrudType of ['c','u','d']) {

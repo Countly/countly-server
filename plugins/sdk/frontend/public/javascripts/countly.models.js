@@ -17,6 +17,24 @@
         return ret;
     };
 
+    countlySDK.loadListOfSDKs = function(app_id, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": app_id,
+                "method": "sdks",
+                "action": "refresh"
+            },
+            success: function(json) {
+                callback(json);
+            },
+            error: function() {
+                callback();
+            }
+        });
+    };
+
 
     countlySDK.getChartData = function(sdk, metric, displayType) {
         if (!metric) {
@@ -136,8 +154,19 @@
         var yAxis = {};
         if (isPercentage) {
             yAxis.axisLabel = {formatter: '{value} %'};
+            return {
+                xAxis: xAxis,
+                legend: legend,
+                yAxis: yAxis,
+                series: series,
+                valFormatter: function(val) {
+                    return val + " %";
+                }
+            };
         }
-        return {xAxis: xAxis, legend: legend, yAxis: yAxis, series: series};
+        else {
+            return {xAxis: xAxis, legend: legend, yAxis: yAxis, series: series};
+        }
 
     };
 
@@ -329,7 +358,7 @@
                     state.isLoading = false;
                 },
                 setSDKChartData: function(state, value) {
-                    state.chartData = {series: value.series, xAxis: value.xAxis, yAxis: value.yAxis};
+                    state.chartData = {series: value.series, xAxis: value.xAxis, yAxis: value.yAxis, valFormatter: value.valFormatter};
                     state.legendData = value.legend;
                 },
                 setSelectedProperty: function(state, value) {

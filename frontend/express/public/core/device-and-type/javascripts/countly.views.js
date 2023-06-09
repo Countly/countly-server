@@ -433,7 +433,13 @@ var GridComponent = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.refreshNotes();
-        }
+        },
+        valFormatter: function(val) {
+            if (this.data.displaytype !== "value") {
+                return val + " %";
+            }
+            return val;
+        },
     }
 });
 
@@ -453,6 +459,9 @@ var DrawerComponent = countlyVue.views.create({
             ];
         },
         enabledVisualizationTypes: function() {
+            if (this.scope.editedObject.breakdowns.indexOf("devices") !== -1 || this.scope.editedObject.breakdowns.indexOf("resolutions") !== -1 || this.scope.editedObject.breakdowns.indexOf("carriers") !== -1 || this.scope.editedObject.breakdowns.indexOf("density") !== -1) {
+                return ['pie-chart', 'bar-chart', 'table'];
+            }
             return ['time-series', 'pie-chart', 'bar-chart', 'table'];
         },
         isMultipleMetric: function() {

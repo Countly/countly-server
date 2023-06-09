@@ -596,8 +596,11 @@ countlyModel.create = function(fetchValue) {
         var chartData = [];
         var dataProps = [];
         for (let i = 0; i < data.length; i++) {
-            chartData.push({ data: [], label: fetchValue ? fetchValue(data[i][segment]) : data[i][segment]});
-            dataProps.push({ name: data[i][segment]});
+            var segment_value = fetchValue ? fetchValue(data[i][segment]) : data[i][segment];
+            if (segment_value) {
+                chartData.push({ data: [], label: segment_value});
+                dataProps.push({ name: data[i][segment]});
+            }
         }
         var dd = countlyCommon.extractStackedBarData(this.getDb(), this.clearObject, chartData, dataProps, "", true);
         var series = dd.chartDP;
