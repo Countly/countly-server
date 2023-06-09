@@ -63,7 +63,7 @@ plugins.setConfigs("logger", {
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
         log.d("Logging config => ", requestLoggerConfiguration);
         log.d("Should Log request? => ", shouldLogRequest(requestLoggerConfiguration));
-        if (params.logging_is_allowed && (shouldLogRequest(requestLoggerConfiguration) || params.app_user.request_logs)) {
+        if (params.logging_is_allowed && (shouldLogRequest(requestLoggerConfiguration) || (params && params.app_user && params.app_user.request_logs))) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
