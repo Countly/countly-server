@@ -1,4 +1,4 @@
-var request = require('../index.js');
+var request = require('countly-request');
 var should = require('should');
 
 describe('Countly Request', () => {
