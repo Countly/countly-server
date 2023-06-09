@@ -52,7 +52,12 @@ var convertOptionsToGot = function(options) {
         "uri": "url"
     };
 
-    // Helper function to assign value to nested keys
+    /***
+     * Assigns a value to a nested object property
+     * @param {object} obj - The object to assign the value to
+     * @param {string} keyPath - The path to the property to assign the value to
+     * @param {*} value - The value to assign
+     */
     function assignDeep(obj, keyPath, value) {
         var keys = keyPath.split('.');
         var lastKey = keys.pop();
@@ -73,10 +78,12 @@ var convertOptionsToGot = function(options) {
             var mappedKey = keyMap[key];
             if (mappedKey.includes('.')) {
                 assignDeep(requestOptions, mappedKey, options[key]);
-            } else {
+            }
+            else {
                 requestOptions[mappedKey] = options[key];
             }
-        } else {
+        }
+        else {
             requestOptions[key] = options[key];
         }
     }
