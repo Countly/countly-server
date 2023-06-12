@@ -1981,6 +1981,32 @@ const processRequest = (params) => {
                                 params.qstring.data = {};
                             }
                         }
+
+                        if (params.qstring.projection) {
+                            try {
+                                params.qstring.projection = JSON.parse(params.qstring.projection);
+                            }
+                            catch (ex) {
+                                params.qstring.projection = {};
+                            }
+                        }
+
+                        if (params.qstring.columnNames) {
+                            try {
+                                params.qstring.columnNames = JSON.parse(params.qstring.columnNames);
+                            }
+                            catch (ex) {
+                                params.qstring.columnNames = {};
+                            }
+                        }
+                        if (params.qstring.mapper) {
+                            try {
+                                params.qstring.mapper = JSON.parse(params.qstring.mapper);
+                            }
+                            catch (ex) {
+                                params.qstring.mapper = {};
+                            }
+                        }
                         countlyApi.data.exports.fromRequest({
                             params: params,
                             path: params.qstring.path,
@@ -1989,9 +2015,9 @@ const processRequest = (params) => {
                             prop: params.qstring.prop,
                             type: params.qstring.type,
                             filename: params.qstring.filename,
-                            projection: JSON.parse(params.qstring.projection),
-                            columnNames: JSON.parse(params.qstring.columnNames),
-                            mapper: JSON.parse(params.qstring.mapper),
+                            projection: params.qstring.projection,
+                            columnNames: params.qstring.columnNames,
+                            mapper: params.qstring.mapper,
                         });
                     }, params);
                     break;
