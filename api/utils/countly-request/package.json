@@ -8,12 +8,16 @@
     "url": "git+ssh://git@github.com/Countly/countly-server.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/countly-request.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "got": "^11.8.5"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "should": "^13.2.3"
   }
 }
