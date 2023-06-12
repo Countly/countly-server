@@ -27,6 +27,9 @@ pluginManager.dbConnection().then(async (countlyDb) => {
                         }
                         let apps = group.permission[type];
                         Object.keys(apps).forEach(function (appId) {
+                            if (!appId) {
+                                return;
+                            }
                             if (!apps[appId].allowed) {
                                 apps[appId].allowed = {};
                                 update[`permission.${type}.${appId}.allowed`] = {};
