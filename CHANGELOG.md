@@ -22,6 +22,7 @@ Enterprise new features:
 - [drill] enhanced state url for drill
 - [drill] new drill meta structure
 - [events] add drill option to Events
+- [push] user profiles querying by push tokens & messages
 - [surveys] different logo types
 - [surveys] show always option
 - [users] download user debug information
@@ -42,6 +43,7 @@ Enterprise fixes:
 - [drill] hide no data text
 - [drill] standartizing ls/lac behavior
 - [performance-monitoring] splitting documents to be able to store more data
+- [retention] backward compatibility in retention widgets
 
 ## Version 23.03.9
 Fixes:
