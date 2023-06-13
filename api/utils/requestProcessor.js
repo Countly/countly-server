@@ -1186,6 +1186,33 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/events/delete_events Delete event
+                 * @apiName Delete Event
+                 * @apiGroup Events Management
+                 *
+                 * @apiDescription Deletes one or multiple events. Params can be send as POST and also as GET.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} events JSON array of event keys to delete. For example: ["event1", "event2"]. Value must be passed as string. (Array must be stringified before passing to API)
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Missing parameter \"api_key\" or \"auth_token\""
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Could not find event"
+                 * }
+                 */
                 case 'delete_events':
                 {
                     validateDelete(params, 'events', function() {
@@ -1205,6 +1232,7 @@ const processRequest = (params) => {
                         var updateThese = {"$unset": {}};
                         if (idss.length > 0) {
                             for (let i = 0; i < idss.length; i++) {
+                                idss[i] = idss[i] + ""; //make sure it is string to do not fail.
                                 if (idss[i].indexOf('.') !== -1) {
                                     updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                     updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
