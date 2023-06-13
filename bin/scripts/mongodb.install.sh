@@ -7,9 +7,6 @@ function mongodb_configure () {
     INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
     INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
-    sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
-    sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
-
     #enable IPv6 support
     if ping -c 1 -6 localhost >> /dev/null 2>&1; then
         sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
@@ -35,8 +32,18 @@ function mongodb_configure () {
         sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
 
-    if ! grep -q "directoryForIndexes" "$MONGODB_CONFIG_FILE"; then
-        sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
+    if [ "$1" == "fresh" ]; then
+        MONGODB_DATA_PATH=$(grep "dbPath" "${MONGODB_CONFIG_FILE}" | awk -F' ' '{print $2}')
+
+        sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
+
+        if ! grep -q "directoryForIndexes" "$MONGODB_CONFIG_FILE"; then
+            sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
+        fi
+
+        rm -rf "${MONGODB_DATA_PATH:?}"/*
+        systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
     fi
 }
 
@@ -362,14 +369,15 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
     fi
 
     #backup config and remove configuration to prevent duplicates
-    mongodb_configure
-
-    #mongodb might need to be restarted
-    systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+    mongodb_configure "fresh"
 
     mongodb_check
 elif [ "$1" == "check" ]; then
     mongodb_check
 elif [ "$1" == "configure" ]; then
-    mongodb_configure
+    if [ "$2" == "fresh" ]; then
+        mongodb_configure "fresh"
+    else
+        mongodb_configure
+    fi
 fi
