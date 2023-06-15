@@ -99,6 +99,10 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
+    logoType: {
+        required: false,
+        type: "String"
+    },
     appearance: {
         required: false,
         type: "Object"
@@ -235,7 +239,7 @@ function uploadFile(myfile, id, callback) {
             //convert file to data
             if (data) {
                 try {
-                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    var pp = path.resolve(__dirname, './../images/' + id + "." + ext);
                     countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
                         if (err3) {
                             callback("Failed to upload image");
@@ -572,6 +576,9 @@ function uploadFile(myfile, id, callback) {
                             }
                         }
                         else {
+                            if (!changes.targeting) {
+                                changes.targeting = {};
+                            }
                             changes.targeting.app_id = params.app_id + "";//has to be string
                             // eslint-disable-next-line
                             createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
@@ -989,8 +996,19 @@ function uploadFile(myfile, id, callback) {
                 }
             }).toArray(function(err, docs) {
                 if (!err) {
-                    common.returnOutput(params, docs);
-                    return true;
+                    if (docs.length) {
+                        common.returnOutput(params, docs);
+                        return true;
+                    }
+                    else {
+                        if (ob.from_survey) {
+                            common.returnMessage(params, 404, 'Widgets not found.');
+                        }
+                        else {
+                            common.returnOutput(params, docs);
+                        }
+                        return true;
+                    }
                 }
                 else {
                     common.returnMessage(params, 500, err.message);
@@ -1124,21 +1142,18 @@ function uploadFile(myfile, id, callback) {
      */
     plugins.register('/o/feedback/widget', function(ob) {
         var params = ob.params;
-        // check widget_id param is provided?
-        if (!params.qstring.widget_id) {
-            common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
-            return true;
-        }
-        // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
         var collectionName = 'feedback_widgets';
+
         try {
-            widgetId = common.db.ObjectID(widgetId);
+            widgetId = common.db.ObjectID(params.qstring.widget_id);
         }
         catch (e) {
-            common.returnMessage(params, 500, 'Invalid widget id.');
+            log.e(e);
+            common.returnMessage(params, 400, 'Missing parameter "widget_id"');
             return true;
         }
+
         common.db.collection(collectionName).findOne({
             "_id": widgetId
         }, function(err, doc) {
@@ -1375,15 +1390,13 @@ function uploadFile(myfile, id, callback) {
             }, function() {});
         }
     });
-    plugins.register("/i/app_users/delete", function(ob) {
+    plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
-            common.db.collection("feedback" + appId).remove({
-                uid: {
-                    $in: uids
-                }
-            }, function() {});
+            // By using await and no callback, error in db operation will be thrown
+            // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+            await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
         }
     });
     plugins.register("/i/app_users/export", function(ob) {

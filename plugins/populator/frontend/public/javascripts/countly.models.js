@@ -1,26 +1,24 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
-        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
-        desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
+        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_density", "_locale", "_store", "_browser"],
+        desktop: ["_os", "_os_version", "_resolution", "_locale"]
     };
     var props = {
-        _os: ["Android", "iOS", "Windows Phone"],
-        _os_web: ["Android", "iOS", "Windows Phone", "Windows", "MacOS"],
+        _os: ["Android", "iOS"],
+        _os_web: ["Android", "iOS", "Windows", "MacOS"],
         _os_desktop: ["Windows", "MacOS", "Linux"],
-        _os_version_android: ["2.3", "2.3.7", "3.0", "3.2.6", "4.0", "4.0.4", "4.1", "4.3.1", "4.4", "4.4.4", "5.0", "5.1.1", "6.0", "6.0.1", "7.0", "7.1"],
-        _os_version_ios: ["7.1.2", "8.4.1", "9.3.5", "10.1.1", "10.2"],
-        _os_version_windows_phone: ["7", "8"],
+        _os_version_android: ["11", "12", "12L"],
+        _os_version_ios: ["10.3.4", "12.5.5", "15.5"],
         _os_version_windows: ["7", "8", "10"],
-        _os_version_macos: ["10.8", "10.9", "10.10", "10.11", "10.12"],
+        _os_version_macos: ["10.15", "11.0", "12.0"],
         _os_version: function() {
             return getRandomInt(1, 9) + "." + getRandomInt(0, 5);
         },
         _resolution: ["320x480", "768x1024", "640x960", "1536x2048", "320x568", "640x1136", "480x800", "240x320", "540x960", "480x854", "240x400", "360x640", "800x1280", "600x1024", "600x800", "768x1366", "720x1280", "1080x1920"],
-        _device_android: ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"],
-        _device_ios: ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"],
-        _device_windows_phone: ["Lumia 535", "Lumia 540", "Lumia 640 XL"],
+        _device_android: ["Note10 Lite", "Galaxy A52S", "Redmi 9c", "Note 10S", "Oppo A74", "Nova 9SE", "K41S"],
+        _device_ios: ["iPhone13", "iPhone12", "iPhone11", "iPod7,1", "iPad3,6"],
         _device_type: ["console", "mobile", "tablet", "smarttv", "wearable", "embedded", "desktop"],
         _manufacturer_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
         _manufacturer_ios: ["Apple"],
@@ -29,7 +27,6 @@
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],
         _carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
-        _app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
         _cpu: ["armv6", "armv7", "x86"],
         _opengl: ["opengl_es1", "opengl_es2"],
         _density_android: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI"],
@@ -40,7 +37,7 @@
         },
         _locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
         _browser: ["Opera", "Chrome", "Internet Explorer", "Safari", "Firefox"],
-        _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.slideme.sam.manager", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.nokia.payment.iapenabler", "com.qihoo.appstore", "cn.goapk.market", "com.wandoujia.phoenix2", "com.hiapk.marketpho", "com.hiapk.marketpad", "com.dragon.android.pandaspace", "me.onemobile.android", "com.aspire.mm", "com.xiaomi.market", "com.miui.supermarket", "com.baidu.appsearch", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "cm.aptoide.pt", "com.nduoa.nmarket", "com.rim.marketintent", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.keenhi.mid.kitservice", "com.yingyonghui.market", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "com.appslib.vending", "com.mappn.gfan", "com.diguayouxi", "um.market.android", "com.huawei.appmarket", "com.oppo.market", "com.taobao.appcenter"],
+        _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.qihoo.appstore", "com.dragon.android.pandaspace", "me.onemobile.android", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "um.market.android"],
         _source: ["https://www.google.lv/search?q=countly+analytics", "https://www.google.co.in/search?q=mobile+analytics", "https://www.google.ru/search?q=product+analytics", "http://stackoverflow.com/questions?search=what+is+mobile+analytics", "http://stackoverflow.com/unanswered?search=game+app+analytics", "http://stackoverflow.com/tags?search=product+dashboard", "http://r.search.yahoo.com/?query=analytics+product+manager"]
     };
     var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
@@ -54,8 +51,8 @@
     };
     var messages = [
         {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "💥 Latest 💥", "default|0|t": "Go", "default|0|l": "theapp://offers", "default": "Check our latest offers!"}, "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": "events", "autoEvents": ["Login"], "autoTime": 57600000, "autoCapMessages": 1, "autoCapSleep": 86400000},
+        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
+        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "💥 Latest 💥", "default|0|t": "Go", "default|0|l": "theapp://offers", "default": "Check our latest offers!"}, "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": "events", "autoEvents": ["Login"], "autoTime": 576000, "autoCapMessages": 1, "autoCapSleep": 864000},
         // {
         //     demo: 4,
         //     app: countlyCommon.ACTIVE_APP_ID,
@@ -240,6 +237,19 @@
     }
 
     /**
+     * Creates an array of html sample pages
+     * @param {string} populatorType - populator template type ('banking', 'gaming', etc.)
+     * @returns {array} returns an array of html pages based on populatorType
+     **/
+    function getPageTemplates(populatorType) {
+        return [
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html",
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-1.html",
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-2.html"
+        ];
+    }
+
+    /**
      * Create user properties with Facebook Login, Twitter Login,
      * Twitter Login name and Has Apple Watch Os properties
      * @param {object} templateUp user properties template, if available
@@ -291,6 +301,26 @@
         }
     }
     /**
+     * Get version based on current timestamp for better version adoption plotting,
+     * @param {number} ts - current timestamp
+     * @param {boolean} trimYear - trim year to look it like semantic versioning
+     * @returns {string} returns version
+     **/
+    function getVersion(ts, trimYear) {
+        var seed = ts || Date.now();
+        seed = (seed + "").length === 13 ? seed : seed * 1000;
+        var d = moment(seed);
+        if (parseInt(d.format('DD')[1], 10) < 5) {
+            if (Math.random() > 0.5) {
+                seed -= 1000 * 60 * 60 * 24 * 6;
+                d = moment(seed);
+            }
+        }
+        var year = trimYear ? d.format('YY')[1] : d.format('YY');
+        var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
+        return year + "." + d.format('MM') + "." + day;
+    }
+    /**
      * Generate a user with random properties and actions
      * @param {object} templateUp user properties template, if available
      **/
@@ -315,7 +345,13 @@
 
         this.hasSession = false;
         this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
+        if ((totalCountWithoutUserProps < totalUserCount / 3)) {
+            this.userdetails = { custom: getUserProperties(templateUp) };
+            totalCountWithoutUserProps++;
+        }
+        else {
+            this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
+        }
         this.userdetails.custom.populator = true;
         this.metrics = {};
         this.startTs = startTs;
@@ -331,7 +367,9 @@
         else {
             this.platform = this.getProp("_os");
         }
+        this.app_version = getVersion(this.ts, true);
         this.metrics._os = this.platform;
+        this.metrics._app_version = this.app_version;
         var m_props = metric_props.mobile;
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
             m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
@@ -362,7 +400,7 @@
             crash._device = this.metrics._device;
             crash._manufacture = this.getProp("_manufacture");
             crash._resolution = this.metrics._resolution;
-            crash._app_version = this.metrics._app_version;
+            crash._app_version = this.app_version;
             crash._cpu = this.getProp("_cpu");
             crash._opengl = this.getProp("_opengl");
 
@@ -574,7 +612,7 @@
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
-                        values = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
+                        values = getPageTemplates(populatorType);
                     }
                     else {
                         values = viewSegments[key];
@@ -633,7 +671,7 @@
             event.segmentation.email = chance.email();
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             if (ratingWidgetList.length) {
                 event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
@@ -657,7 +695,7 @@
             event.segmentation = {};
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(0, 10);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             if (npsWidgetList.length) {
@@ -680,7 +718,7 @@
 
             this.ts += 1000;
             event.segmentation = {};
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             var keys = Object.keys(surveyWidgetList);
@@ -736,12 +774,27 @@
             return events;
         };
 
+        this.createUsersForAB = function(device_id, callback) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/sdk",
+                data: {
+                    app_key: countlyCommon.ACTIVE_APP_KEY,
+                    device_id: device_id,
+                    keys: JSON.stringify([abExampleName]),
+                    method: "ab"
+                },
+                success: callback,
+                error: callback
+            });
+        };
+
         this.getHeatmapEvent = function() {
             this.stats.e++;
             // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
-            var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
+            var views = getPageTemplates(populatorType);
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,
@@ -776,7 +829,7 @@
         };
 
         this.getScrollmapEvents = function() {
-            var events = this.getHeatmapEvent();
+            var events = this.getScrollmapEvent();
 
             if (Math.random() >= 0.5) {
                 events = events.concat(this.getScrollmapEvent());
@@ -794,7 +847,7 @@
             // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
-            var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
+            var views = getPageTemplates(populatorType);
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,
@@ -828,16 +881,22 @@
                 this.stats.u++;
                 // note login event was here
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
-                if (Math.random() > 0.5) {
-                    this.stats.p++;
-                    req.events = req.events.concat(this.getHeatmapEvents());
-                    req.events = req.events.concat(this.getFeedbackEvents());
-                    req.events = req.events.concat(this.getScrollmapEvents());
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
                 }
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
+                this.stats.p++;
+                req.events = req.events.concat(this.getHeatmapEvents());
+                req.events = req.events.concat(this.getFeedbackEvents());
+                req.events = req.events.concat(this.getScrollmapEvents());
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                }
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -848,10 +907,9 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            if (Math.random() > 0.5) {
-                this.stats.c++;
-                req.crash = this.getCrash();
-            }
+            this.stats.c++;
+            req.crash = this.getCrash();
+
             var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
             req.consent = {};
 
@@ -864,6 +922,10 @@
             this.timer = setTimeout(function() {
                 that.extendSession(template);
             }, timeout);
+        };
+
+        this.startSessionForAb = function() {
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {
@@ -912,6 +974,13 @@
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                params.sdk_name = "javascript_native_web";
+            }
+            else {
+                params.sdk_name = (Math.random() > 0.5) ? "objc-native-ios" : "java-native-android";
+            }
+            params.sdk_version = getVersion(params.timestamp);
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
@@ -943,8 +1012,13 @@
     var generating = false;
     var stopCallback = null;
     var users = [];
+    var usersForAb = [];
     var userAmount = 1000;
+    var totalUserCount = 0;
+    var totalCountWithoutUserProps = 0;
     var queued = 0;
+    var abExampleCount = 1;
+    var abExampleName = "Pricing";
     var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
     var _templateType = '';
     /**
@@ -1028,6 +1102,93 @@
                 error: callback
             });
         }
+    }
+    /**
+     * Add Parameter
+     * @param {string} parameter_key - Parameter Key
+     * @param {string} description - Parameter description
+     * @param {string} default_value - Default value of parameter
+     * @param {function} callback - callback method
+     * @return {function} returns ajax get request
+     **/
+    function addParameter(parameter_key, description, default_value, callback) {
+        var parameter = {
+            parameter_key: parameter_key,
+            description: description,
+            default_value: default_value
+        };
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/remote-config/add-parameter",
+            data: {
+                parameter: JSON.stringify(parameter),
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function() {
+                callback();
+            },
+            error: function() {
+                callback();
+            }
+        });
+    }
+    /**
+     * Add Parameter
+     * @param {string} name - Name
+     * @param {function} callback - callback method
+     * @return {function} returns ajax get request
+     **/
+    function addExperiment(name, callback) {
+        var experiment = {
+            name: name,
+            description: 'TestPricing',
+            show_target_users: false,
+            target_users: {
+                byVal: [],
+                byValText: "",
+                condition_definition: "",
+                percentage: 100,
+                condition: {}
+            },
+            "goals": [{"user_segmentation": "{\"query\":{},\"queryText\":\"\"}", "steps": "[{\"type\":\"did\",\"event\":\"[CLY]_session\",\"times\":\"{\\\"$gte\\\":1}\",\"period\":\"0days\",\"query\":\"{}\",\"queryText\":\"\",\"byVal\":\"\",\"group\":0,\"conj\":\"and\"}]"}],
+            variants: [
+                {
+                    "name": "Control group",
+                    "parameters": [
+                        {
+                            "name": abExampleName,
+                            "description": "",
+                            "value": "5000/month"
+                        }
+                    ]
+                },
+                {
+                    "name": "Variant A",
+                    "parameters": [
+                        {
+                            "name": abExampleName,
+                            "description": "",
+                            "value": "10000/month"
+                        }
+                    ]
+                }
+            ]
+        };
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.w + "/ab-testing/add-experiment",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                experiment: JSON.stringify(experiment)
+            },
+            success: function(json) {
+                callback(json);
+            },
+            error: function(json) {
+                callback(json);
+            }
+        });
     }
     /**
      * Create feedback popup
@@ -1221,10 +1382,54 @@
         }
 
         /**
-         *  Create survey widgets
+         *  Create survey widget 1
          *  @param {function} callback - callback method
          */
-        function generateSurveyWidgets(callback) {
+        function generateSurveyWidgets1(callback) {
+            createSurveyWidget("Customer support example", [
+                {
+                    "type": "radio",
+                    "question": "Were you able to find the information you were looking for?",
+                    "choices": ["Yes", "No"],
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What type of support communication methods do you prefer?",
+                    "required": true
+                },
+                {
+                    "type": "rating",
+                    "question": "How would you rate our service on a scale of 0-10?",
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 2
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets2(callback) {
             createSurveyWidget("Product Feedback example", [
                 {
                     "type": "rating",
@@ -1243,61 +1448,67 @@
                     "required": true
                 }
             ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                createSurveyWidget("User Experience example", [
-                    {
-                        "type": "rating",
-                        "question": "How satisfied are you with the look and feel of the app?",
-                        "required": true
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
-                    {
-                        "type": "text",
-                        "question": "What confused/annoyed you about the app?",
-                        "required": true
-                    },
-                    {
-                        "type": "dropdown",
-                        "question": "Which feature did you like most on new version?",
-                        "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
-                        "required": true
-                    }
-                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                    createSurveyWidget("Customer support example", [
-                        {
-                            "type": "radio",
-                            "question": "Were you able to find the information you were looking for?",
-                            "choices": ["Yes", "No"],
-                            "required": true
-                        },
-                        {
-                            "type": "text",
-                            "question": "What type of support communication methods do you prefer?",
-                            "required": true
-                        },
-                        {
-                            "type": "rating",
-                            "question": "How would you rate our service on a scale of 0-10?",
-                            "required": true
-                        }
-                    ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                        $.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID
-                            },
-                            success: function(json) {
-                                if (json && json.aaData) {
-                                    for (var i = 0; i < json.aaData.length; i++) {
-                                        surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
-                                    }
-                                }
-                                callback();
-                            },
-                            error: function() {
-                                callback();
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
                             }
-                        });
-                    });
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 3
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets3(callback) {
+            createSurveyWidget("User Experience example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the look and feel of the app?",
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What confused/annoyed you about the app?",
+                    "required": true
+                },
+                {
+                    "type": "dropdown",
+                    "question": "Which feature did you like most on new version?",
+                    "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
                 });
             });
         }
@@ -1305,13 +1516,50 @@
         generateRatingWidgets(function() {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 generateNPSWidgets(function() {
-                    generateSurveyWidgets(done);
+                    setTimeout(function() {
+                        generateSurveyWidgets1(done);
+                    }, 1000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets2(done);
+                    }, 3000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets3(done);
+                    }, 5000);
                 });
             }
             else {
                 done();
             }
         });
+    }
+
+
+    /**
+     * Generate ab test
+     * @param {funciton} callback - callback method
+     **/
+    function generateAbTests(callback) {
+        addParameter(abExampleName, "Test Pricing", "5000/month", function() {
+            addExperiment(abExampleName, function(json) {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/ab-testing/start-experiment",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        "experiment_id": json
+                    },
+                    success: function() {
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        });
+
     }
 
     /**
@@ -1390,10 +1638,10 @@
      * @param {date} ts - date as timestamp
      * @param {number} userCount - users count will be generated
      * @param {array} ids - ids array
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
+    function generateRetentionUser(ts, userCount, ids, template, callback) {
         var bulker = [];
         for (var userIndex = 0; userIndex < userCount; userIndex++) {
             for (var j = 0; j < ids.length; j++) {
@@ -1432,33 +1680,38 @@
                     }
                 }
 
-                var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
+                var userdetails = new getUser(template && template.up);
+                userdetails.begin_session = 1;
+                userdetails.device_id = userIndex + "" + ids[j];
+                userdetails.dow = getRandomInt(0, 6);
+                userdetails.hour = getRandomInt(0, 23);
+                userdetails.ip_address = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+                delete userdetails.ip;
+                userdetails.request_id = userIndex + "" + ids[j] + "_" + ts;
+                userdetails.timestamp = ts;
+                delete userdetails.metrics;
+                userdetails.metrics = metrics;
 
-                bulker.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6), request_id: userIndex + "" + ids[j] + "_" + ts});
+                bulker.push(userdetails);
                 totalStats.s++;
                 totalStats.u++;
             }
         }
+
         totalStats.r++;
-        $.ajax({
-            type: "POST",
-            url: countlyCommon.API_URL + "/i/bulk",
-            data: {
-                app_key: countlyCommon.ACTIVE_APP_KEY,
-                requests: JSON.stringify(bulker),
-                populator: true
-            },
-            success: callback,
-            error: callback
-        });
+        for (var index = 0; index < bulker.length; index++) {
+            bulker[index].startSession(template);
+        }
+
+        callback("");
     }
 
     /**
      * Generate retentions
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetention(templateUp, callback) {
+    function generateRetention(template, callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
             return;
@@ -1466,28 +1719,40 @@
         var ts = endTs - 60 * 60 * 24 * 9;
         var ids = [ts];
         var userCount = 10;
-        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+        var retentionCall = 8; // number of generateRetentionUser function call
+        var retentionLastUserCount = (userCount - retentionCall) + 1;
+
+        var idCount = 1;
+        for (var i = userCount; i >= retentionLastUserCount; i--) { //total retension user
+            totalUserCount += idCount * i;
+            idCount++;
+        }
+
+        totalUserCount += userAmount + retentionCall; // campaign users
+        totalCountWithoutUserProps = 0;
+
+        generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+            generateRetentionUser(ts, userCount--, ids, template, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                generateRetentionUser(ts, userCount--, ids, template, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                    generateRetentionUser(ts, userCount--, ids, template, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                        generateRetentionUser(ts, userCount--, ids, template, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                            generateRetentionUser(ts, userCount--, ids, template, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                                generateRetentionUser(ts, userCount--, ids, template, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, templateUp, callback);
+                                    generateRetentionUser(ts, userCount--, ids, template, callback);
                                 });
                             });
                         });
@@ -1595,6 +1860,17 @@
             }, Math.random() * timeout);
         }
 
+        /**
+         * Create new user for ab test
+         **/
+        function createUsersForABTest() {
+            var u = new getUser(template && template.up);
+            usersForAb.push(u);
+            u.timer = setTimeout(function() {
+                u.startSession(template);
+            }, Math.random() * timeout);
+        }
+
         var seg = {};
 
         if (template && template.name) {
@@ -1619,6 +1895,17 @@
             }
         }
         /**
+         * Start user session process for AB
+         * @param {object} u - user object
+         **/
+        function processUserForAb(u) {
+            if (u && !u.hasSession) {
+                u.timer = setTimeout(function() {
+                    u.startSessionForAb();
+                }, Math.random() * timeout);
+            }
+        }
+        /**
          * Start user session process
          * @param {object} u - user object
          **/
@@ -1633,19 +1920,40 @@
                 countlyPopulator.sync(true);
             }
         }
+        /**
+         * Start user session process
+         * @param {object} u - user object
+         **/
+        function processUsersForAb() {
+            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
+                processUserForAb(usersForAb[userAmountIndex]);
+            }
+        }
 
-        generateRetention(template && template.up, function() {
-            generateCampaigns(function() {
-                for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                    createUser();
-                }
-                // Generate campaigns conversion for web
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    setTimeout(reportConversions, timeout);
-                }
-                setTimeout(processUsers, timeout);
+        generateWidgets(function() {
+            generateRetention(template, function() {
+                generateCampaigns(function() {
+                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                        createUser();
+                    }
+                    // Generate campaigns conversion for web
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        setTimeout(reportConversions, timeout);
+                    }
+                    setTimeout(processUsers, timeout);
+                });
             });
         });
+
+        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+            abExampleName = "Pricing" + abExampleCount++;
+            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                createUsersForABTest();
+            }
+            generateAbTests(function() {
+                processUsersForAb();
+            });
+        }
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
@@ -1660,12 +1968,12 @@
             });
         }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function() {});
-        }
+        //if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+        //    generateWidgets(function() {});
+        //}
     };
 
-    countlyPopulator.stopGenerating = function(callback) {
+    countlyPopulator.stopGenerating = function(ensureJobs, callback) {
         stopCallback = callback;
         generating = false;
 
@@ -1678,8 +1986,9 @@
         }
         users = [];
 
-
-        countlyPopulator.ensureJobs();
+        if (ensureJobs) {
+            countlyPopulator.ensureJobs();
+        }
 
         if (stopCallback) {
             stopCallback(!countlyPopulator.bulking);
@@ -1860,7 +2169,38 @@
             });
         }
 
+        if (typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
 
+            let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
+            let page1 = pages[getRandomInt(0, pages.length - 1)];
+            let page2 = pages[getRandomInt(0, pages.length - 1)];
+
+            countlyFunnel.createFunnel({
+                name: "View (View name = " + page1 + ") -> View (View name = " + page2 + ")",
+                description: "",
+                type: "session-independent",
+                steps: ["[CLY]_view", "[CLY]_view"],
+                queries: [{"sg.name": {"$in": [page1]}}, {"sg.name": {"$in": [page2]}}],
+                queryTexts: ["View name = " + page1 + ", View name = " + page2 + ""],
+                stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+            });
+
+            if (template && template.events && Object.keys(template.events).length > 0) {
+
+                let firstEvent = Object.keys(template.events)[0];
+                let secondEvent = Object.keys(template.events)[1] || "[CLY]_view";
+
+                countlyFunnel.createFunnel({
+                    name: firstEvent + " -> " + secondEvent + "",
+                    description: "",
+                    type: "session-independent",
+                    steps: [firstEvent, secondEvent],
+                    queries: [{}, {}],
+                    queryTexts: ["", ""],
+                    stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+                });
+            }
+        }
 
         createMessage(messages[0]);
         createMessage(messages[1]);

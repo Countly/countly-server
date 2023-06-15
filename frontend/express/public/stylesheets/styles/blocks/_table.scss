@@ -43,6 +43,15 @@
                 opacity: 0.12;
             }
         }
+		&--fileExport {
+			border-top: 1px solid #E2E4E8;
+		}
+		&--radio-button {
+			.el-radio-button {
+				width: 99px;
+				display: inline-grid;
+			}
+		}
         &--search {
             input[type=text] {
                 background-color: #F6F6F6;

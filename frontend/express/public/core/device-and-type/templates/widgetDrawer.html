@@ -5,6 +5,7 @@
     <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledVisualizationTypes"></clyd-visualization>
 	<clyd-colors v-if="scope.editedObject.visualization === 'bar-chart'" v-model="scope.editedObject.bar_color"></clyd-colors>
     <clyd-metric v-model="scope.editedObject.metrics" :metrics="metrics" :multiple="isMultipleMetric"></clyd-metric>
+    <clyd-displaytype v-model="scope.editedObject.displaytype" v-if="showDisplayType"></clyd-displaytype>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
 	<clyd-period v-model="scope.editedObject.custom_period"></clyd-period>
 </div>

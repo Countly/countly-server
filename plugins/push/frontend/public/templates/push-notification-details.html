@@ -56,7 +56,7 @@
                         </div>
                     </div>
                     <div class="bu-level-item bu-mr-1">
-                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter" :disabled="!localeFilterOptions.length">
+                        <el-select  :placeholder="i18n('push-notification.all-localizations')" :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter" :disabled="!localeFilterOptions.length">
                             <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
@@ -69,8 +69,8 @@
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.users-targeted')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.users-targeted-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
-                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{targetedUsers}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.processed || 0}} {{i18n('push-notification.users')}}</div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{targetedUsers}}% </div>
+                                <div class="text-medium">{{selectedDashboard.processed || 0}} {{i18n('push-notification.users')}}</div>
                             </div>
                         </div>
                     </div>
@@ -79,7 +79,7 @@
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.sent-notifications')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.sent-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
-                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{sentPushNotifications}} % </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{sentPushNotifications}}% </div>
                                 <div class="text-medium">{{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToSentUrl" @click="onGoToSent"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span>  </div>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.clicked-notifications')}} <cly-tooltip-icon :tooltip="i18n('push-notification.clicked-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
-                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{clickedPushNotifications}} % </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{clickedPushNotifications}}% </div>
                                 <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToActionedUrl" @click="onGoToActioned"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span> </div>
                             </div>
                         </div>
@@ -97,9 +97,17 @@
                     <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item"> 
                         <cly-chart-bar :option="pushNotificationChartBars.failedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend"> 
-                            <div class="bu-my-4 bu-ml-6"> 
-                                <div class="text-medium"> {{i18n('push-notification.failed')}} <cly-tooltip-icon :tooltip="i18n('push-notification.failed-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
-                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{failedPushNotifications}} % </div>
+                            <div class="bu-my-4 bu-ml-6 bu-is-flex bu-is-flex-direction-column"> 
+                                <div class="text-medium bu-is-flex bu-is-justify-content-space-between"> 
+                                    <div>
+                                        {{i18n('push-notification.failed')}} 
+                                        <cly-tooltip-icon :tooltip="i18n('push-notification.failed-description')" icon="ion ion-help-circled" class="bu-ml-1"></cly-tooltip-icon>
+                                    </div>
+                                    <div>
+                                        <a href="#" @click.prevent="downloadLogs" class="text-smallish bu-mr-4 font-weight-bold bu-is-underlined">{{i18n('push-notification.download-logs')}}</a>
+                                    </div>
+                                </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{failedPushNotifications}}% </div>
                                 <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToErroredUrl" @click="onGoToErrored"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span> </div>
                             </div>
                         </div>
@@ -108,13 +116,13 @@
             </cly-section>
             <div class="cly-vue-push-notification-details-summary">
                 <div style="width: calc(100% - 72px); display: flex; align-items: end;">
-                    <div style="width: 83.133333%; padding-right: 24px">
+                    <div style="width: 83.133333%; padding-right: 24px; padding-top: 48px">
                         <div class="bu-py-3" style="display: flex; align-items: baseline;">
                             <h3>{{i18n('push-notification-details.summary-header')}}</h3>
                             <cly-tooltip-icon :tooltip="i18n('push-notification-details.summary-header-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
                         </div>
                         <div>
-                            <cly-dynamic-tabs v-model="currentSummaryTab" skin="secondary" :tabs="summaryTabs"></cly-dynamic-tabs>
+                            <cly-dynamic-tabs :custom-icon="customIcon" v-model="currentSummaryTab" skin="secondary" :tabs="summaryTabs"></cly-dynamic-tabs>
                         </div>
                     </div>
                     <div style="width: 16.166667%; padding-right: 24px">

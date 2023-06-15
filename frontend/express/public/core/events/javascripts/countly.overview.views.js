@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers, moment*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -16,6 +16,9 @@
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
+            },
+            formatDurNumber: function(val) {
+                return countlyCommon.formatSecond(val);
             }
         },
         computed: {
@@ -67,6 +70,15 @@
             }
         },
         methods: {
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                }
+                return str;
+            },
+            encode: function(str) {
+                return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
+            },
             onClose: function(event) {
                 this.selectEvent = '',
                 this.selectProperty = '',
@@ -106,7 +118,13 @@
                     });
                 }
                 else {
-                    var eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.selectEvent];
+                    var eventAttributes;
+                    if (typeof this.selectEvent === 'string') {
+                        eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.encode(this.selectEvent)];
+                    }
+                    else {
+                        eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.selectEvent];
+                    }
                     var obj = {
                         "order": this.selectedEvents.length,
                         "eventKey": this.selectEvent,
@@ -135,7 +153,7 @@
                 type: String
             }
         },
-        template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
+        template: '<div class="cly-events-breakdown-horizontal-tile bu-column">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
         <slot name="title"></slot>\
@@ -210,6 +228,12 @@
             'overview-drawer': OverviewConfigureDrawer
         },
         methods: {
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                }
+                return str;
+            },
             configureOverview: function() {
                 this.$store.dispatch('countlyEventsOverview/fetchConfigureOverview');
                 this.openDrawer("configureDrawer", {});
@@ -221,6 +245,14 @@
             onMetricClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
+            durCheck: function(item) {
+                var eventMapKey = item.eventKey;
+                var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                return item.eventProperty === (eventMap[eventMapKey]).dur.toUpperCase();
+            },
+            valFormatter: function(val) {
+                return countlyCommon.formatSecond(val);
+            }
         },
         computed: {
             selectedEvents: function() {
@@ -233,7 +265,81 @@
                 return this.$store.getters["countlyEventsOverview/eventsOverview"];
             },
             monitorEventsData: function() {
-                return this.$store.getters["countlyEventsOverview/monitorEventsData"];
+                var period = countlyCommon.getPeriodForAjax();
+                this.xAxisLabels = [];
+                var editedMonitorEventsData = [];
+                var dateMonthValArr = [];
+                var currentData = this.$store.getters["countlyEventsOverview/monitorEventsData"];
+
+                var dateVal = countlyCommon.periodObj.currentPeriodArr.map(function(x) {
+                    var thisDay = moment(x, "YYYY.M.D");
+                    return countlyCommon.formatDate(thisDay, "DD MMM");
+                });
+                var dateMonthVal = countlyCommon.periodObj.currentPeriodArr.map(function(x) {
+                    var thisDay = moment(x, "YYYY.M.D");
+                    return countlyCommon.formatDate(thisDay, "MMM YYYY");
+
+                });
+                for (var i = 0; i < dateMonthVal.length; i++) {
+                    if (dateMonthVal[i] !== dateMonthVal[i - 1]) {
+                        dateMonthValArr.push(dateMonthVal[i]);
+                    }
+                }
+
+                if (typeof this.$store.getters["countlyEventsOverview/monitorEventsData"][0] === "object") {
+                    for (var j = 0; j < currentData.length; j++) {
+                        this.xAxisLabels = [];
+                        for (var index = 0; index < currentData[j].barData.series[0].data.length; index++) {
+                            if (period === "hour" || period === "yesterday") {
+                                this.xAxisLabels.push(index + ":00");
+                            }
+                            else if (period === "month") {
+                                if (typeof dateMonthValArr[index] !== "undefined") {
+                                    this.xAxisLabels.push(dateMonthValArr[index]);
+                                }
+                            }
+                            else {
+                                if (typeof dateVal[index] !== "undefined") {
+                                    this.xAxisLabels.push(dateVal[index]);
+                                }
+                            }
+                        }
+                        var total = countlyCommon.formatNumber(currentData[j].total);
+                        var yAxis = this.monitorEventsOptions.yAxis;
+                        var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                        var eventMapKey = currentData[j].eventKey;
+                        if (currentData[j].eventProperty === (eventMap[eventMapKey]).dur.toUpperCase()) {
+                            total = countlyCommon.formatSecond(currentData[j].total, 2);
+                            yAxis.axisLabel = {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value, 2);
+                                },
+                            };
+                        }
+                        var editedMonitorEventsDataObj = {
+                            "barData": {
+                                "series": [{
+                                    "data": currentData[j].barData.series[0].data,
+                                    "color": "rgb(82, 163, 239)",
+                                    "name": currentData[j].name
+                                }],
+                                "legend": this.monitorEventsOptions.legend,
+                                "xAxis": this.monitorEventsOptions.xAxis,
+                                "yAxis": yAxis
+                            },
+                            "change": currentData[j].change,
+                            "eventProperty": currentData[j].eventProperty,
+                            "total": total,
+                            "name": currentData[j].name,
+                            "eventKey": currentData[j].eventKey
+                        };
+                        editedMonitorEventsData.push(editedMonitorEventsDataObj);
+                    }
+                    return editedMonitorEventsData;
+                }
+                else {
+                    return [];
+                }
             },
             updatedAt: function() {
                 var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
@@ -241,13 +347,39 @@
             },
             isMonitorEventsLoading: function() {
                 return this.$store.getters["countlyEventsOverview/isMonitorEventsLoading"];
+            },
+            monitorEventsOptions: function() {
+                return {
+                    xAxis: {
+                        type: 'category',
+                        data: this.xAxisLabels,
+                        axisTick: {
+                            alignWithLable: false
+                        },
+                        axisLabel: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitNumber: 1,
+                        minInterval: 1,
+                        position: 'right'
+                    },
+                    legend: {
+                        bottom: "0%",
+                        itemHeight: 10,
+                        itemWidth: 10,
+                    },
+                };
             }
         },
         data: function() {
             return {
                 description: CV.i18n('events.overview.title.new'),
                 disabledDatePicker: '1months',
-                monitorEventsLegend: {"show": false}
+                monitorEventsLegend: {"show": false},
+                xAxisLabels: []
             };
         },
         beforeCreate: function() {

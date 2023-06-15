@@ -88,7 +88,8 @@
                 "method": "total_users",
                 "metric": forMetric,
                 "period": "hour",
-                "action": "refresh"
+                "action": "refresh",
+                "_dt": Date.now()
             },
             dataType: "json",
             success: function(todaysJson) {

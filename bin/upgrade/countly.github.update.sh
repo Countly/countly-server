@@ -44,7 +44,7 @@ then
 fi
 
 if ! type git >/dev/null 2>&1; then
-    apt-get update && apt-get -y install git
+    apt-get update && apt-get install -y git
 fi
 
 rm -rf /tmp/countly-github

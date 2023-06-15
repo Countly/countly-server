@@ -181,7 +181,7 @@
         border-radius: 8px;
         display: inline-block;
         vertical-align: middle;
-        margin-right: 5px;
+        margin-right: 2px;
         animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
     }
     @keyframes blinker {
@@ -659,6 +659,12 @@
                 color: map.get(c.$colors, "primary");
             }
 
+            &--deactive {
+                background-color: transparent;
+                border-radius: 0;
+                color: rgb(51, 60, 72);
+            }
+
             &--custom {
                 margin-bottom: 24px;
             }
@@ -677,6 +683,10 @@
             margin: 0;
             padding: 16px;
             align-items: center;
+        }
+
+        &__input-wrapper-content {
+            display: contents;
         }
 
         &__time-picker-section {
@@ -819,6 +829,37 @@
             }
         }
 
+        .el-year-table {
+            margin-top: 2px;
+            margin-bottom: 14px;
+            td {
+                width: 78px;
+                height: 66px;
+                padding: 0;
+                >  a {
+                    width: 68px;
+                    height: 46px;
+                    background: #fff;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    padding-top: 10px;
+                    border: 2px solid transparent;
+                }
+                &.in-range{
+                    > a {
+                        background: #ccdbf2;
+                        mix-blend-mode: normal;
+                    }
+                }
+                &.start-date, &.end-date {
+                    > a {
+                        color: #FFF;
+                        background: #1967D2
+                    }
+                }
+            }
+        }
+
         @mixin cell-hover() {
             background: #FFFFFF;
             border: 2px solid #0166D6;
@@ -837,6 +878,11 @@
                     @include cell-hover()
                 }
             }
+            .el-year-table .start-date {
+                > a {
+                    @include cell-hover()
+                }
+            }
         }
 
         &__table-wrap.is-end-focused {
@@ -847,6 +893,11 @@
             }
             .el-month-table .end-date {
                 > div a {
+                    @include cell-hover()
+                }
+            }
+            .el-year-table .end-date {
+                > a {
                     @include cell-hover()
                 }
             }
@@ -861,7 +912,12 @@
                 > div:hover a {
                     @include cell-hover()
                }
-           }
+            }
+            .el-year-table td:not(.in-range) {
+                > a:hover {
+                    @include cell-hover()
+               }
+            }   
         }
     }
 
@@ -1399,6 +1455,9 @@
             .bu-column {
                 padding: 0px;
             }
+            .divider {
+                color:#A7AEB8;
+            }
         }
         &__value-row {
             border-radius: 4px;
@@ -1431,6 +1490,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #333c48;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
         }
         &__blur_container {
             position: absolute;
@@ -1555,7 +1618,7 @@
         right: 0;
         top: 0;
         background-color: transparent;
-        z-index: 2000;
+        z-index: 2001;
         width: 100%;
 
         /*
@@ -4006,4 +4069,32 @@
     &__subtitle {
         max-width: 500px;
     }
+}
+
+.__vuescroll {
+    .__panel {
+        overscroll-behavior: contain;
+    }
+}
+
+.cly-vue-auto-refresh-toggle {
+    &__refresh {
+        font-size: 18px;
+        color: #a7aeb8;
+        margin-left: 10px;
+        &--enabled {
+          font-size: 14px;
+          color: #333c48;
+        }
+        &--enabled-color {
+          font-size: 14px;
+          color: #0064de;
+          margin-left: 5px;
+        }
+        &--disabled {
+          font-size: 14px;
+          color: #333c48;
+          margin-left: 10px;
+        }
+    }		
 }

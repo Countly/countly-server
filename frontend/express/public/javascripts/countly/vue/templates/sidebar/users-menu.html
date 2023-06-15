@@ -29,7 +29,7 @@
                             :style="{
                                     backgroundImage: 'url(' + item.member.image.url + ')',
                                     backgroundPosition: item.member.image.position + 'px',
-                                    backgroundSize: '1020px 60px'
+                                    backgroundSize: '600px 60px'
                                 }">
                             <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
                         </div>
@@ -42,7 +42,7 @@
                         <div class="cly-vue-sidebar__user-api">
                             <p class="has-ellipsis">{{i18nM('sidebar.api_key')}}</p>
                             <p id="user_api_key_item">
-                                <i class="cly-icon-copy cly-icon-btn"></i>
+                                <i class="cly-icon-copy cly-icon-btn"  v-clipboard:copy="item.member.api_key" v-clipboard:success="onCopy" v-clipboard:error="onError"></i>
                                 <input :value="item.member.api_key" readonly type="text" onclick="select()" class="has-ellipsis bu-px-0"
                                     v-clipboard:copy="item.member.api_key"
                                     v-clipboard:success="onCopy"
@@ -192,7 +192,7 @@
             :style="{
                     backgroundImage: 'url(' + item.member.image.url + ')',
                     backgroundPosition: item.member.image.position + 'px',
-                    backgroundSize: '1020px 60px',
+                    backgroundSize: '600px 60px',
                     height: 30 + 'px',
                     width: 30 + 'px'
                 }">

@@ -1,5 +1,5 @@
 /*global
-   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, _,  countlyVue, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -108,6 +108,23 @@
             },
             onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
+            },
+            formatExportFunction: function() {
+                var tableData = this.tableRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('hooks.hook-name').toUpperCase()] = tableData[i].name;
+                    item[CV.i18n('hooks.description').toUpperCase()] = tableData[i].description;
+                    item[CV.i18n('hooks.trigger-and-actions').toUpperCase()] = hooksPlugin.generateTriggerActionsTreeForExport(tableData[i]);
+                    item[CV.i18n('hooks.trigger-count').toUpperCase()] = tableData[i].triggerCount;
+                    item[CV.i18n('hooks.trigger-last-time').toUpperCase()] = tableData[i].lastTriggerTimestampString === "-" ? "" : tableData[i].lastTriggerTimestampString;
+                    item[CV.i18n('hooks.create-by').toUpperCase()] = tableData[i].createdByUser;
+
+                    table.push(item);
+                }
+                return table;
+
             },
         }
     });
@@ -879,14 +896,11 @@
         this.renderWhenReady(hooksDetailView);
     });
 
-    $(document).ready(function() {
-        app.addMenu("management", {code: "hooks", permission: FEATURE_NAME, url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
+    app.addMenu("management", {code: "hooks", permission: FEATURE_NAME, url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
 
-        //check if configuration view exists
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
-            app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
-        }
-
-    });
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
+        app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
+    }
 })();

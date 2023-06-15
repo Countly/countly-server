@@ -37,13 +37,13 @@
 				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
 			</div>
         </div>
-		<cly-section>
+		<cly-section class="pageViews_chart">
 			<div v-if="lineOptions.series.length < 3">
-				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
             <div v-else>
-				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
         </cly-section>
@@ -79,7 +79,7 @@
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								{{formatNumber(scope.row.br)}} %
+								{{formatNumber(scope.row.br)}}%
 							</template>
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
@@ -128,7 +128,6 @@
 		</cly-section>
     </cly-main>
 </div>
-
 
 
 

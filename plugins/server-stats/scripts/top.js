@@ -7,7 +7,7 @@ if (myArgs[0] === "help") {
     return;
 }
 pluginManager.dbConnection().then((db) => {
-    stats.getTop(db, function(toReturn) {
+    stats.getTop(db, {}, function(toReturn) {
         var apps = Object.keys(toReturn);
         db.collection("apps").find({_id: {$in: apps.map(id => db.ObjectID(id))}}, {projection: {name: 1}}).toArray(function(err, appResult) {
             if (appResult) {

@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: countly-tls
+data:
+  tls.crt: YOUR_SSL_CERT_IN_BASE64      # cat cert.crt | base64
+  tls.key: YOUR_SSL_KEY_IN_BASE64       # cat cert.key | base64
+type: kubernetes.io/tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: countly-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.global-static-ip-name: "countly-static-ip"
+spec:
+  tls:
+  - hosts:
+    - YOUR_HOSTNAME                     # example.count.ly
+    secretName: countly-tls
+  rules:
+  - host: example.count.ly
+    http:
+      paths:
+      - path: /i
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestion
+            port:
+              number: 3001
+      - path: /i/bulk
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestion
+            port:
+              number: 3001
+      - path: /i/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001

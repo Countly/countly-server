@@ -15,10 +15,12 @@
                         title="Edit columns"
                         mode="multi-check-sortable"
                         placement="bottom-end"
+                        :persistColumnOrderKey="persistKey"
                         :width="300"
                         :auto-commit="false"
                         :hide-default-tabs="true"
                         :hide-all-options-tab="true"
+                        :show-search="true"
                         :options="availableDynamicCols"
                         v-model="controlParams.selectedDynamicCols">
                         <template v-slot:trigger>
@@ -34,11 +36,11 @@
                         <template>
                             <div class="bu-mx-4 bu-mt-4">
                                 <p class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
-                                <el-radio-group
-                                    class="bu-mb-5"
-                                    v-model="selectedExportType">
-                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value" style="width: 99px; display: inline-grid;">{{exportType.name}}</el-radio-button>
-                                </el-radio-group>
+                                <div  class="cly-vue-eldatatable__export--radio-button bu-mb-5">
+                                    <el-radio-group v-model="selectedExportType">
+                                        <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                    </el-radio-group>
+                                </div>
                             </div>
                             <div v-if="exportColumnSelection" class="cly-vue-eldatatable__export--extended">
                                 <div class="bu-mx-4 bu-mb-3">
@@ -74,8 +76,14 @@
                                     :options.sync="getMatching(availableDynamicCols)">
                                     </cly-checklistbox>
                                 </div>
-                                <slot name="export-config"></slot>
                             </div>
+                            <div v-if="customExportFileName" :class="{'cly-vue-eldatatable__export--fileExport': exportColumnSelection}">
+                                <div class="bu-my-4 bu-mx-4">
+                                    <p class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
+                                    <el-input v-model="exportFileName"></el-input>
+                                </div>
+                            </div>
+                            <slot name="export-config"></slot>
                             <div class="bu-mx-4 bu-mb-4">
                                 <el-button size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
                             </div>
@@ -90,6 +98,7 @@
             </div>
         </div>
         <el-table
+            :preventDefaultSort="preventDefaultSort"
             :border="border"
             :row-key="keyFn"
             :data="mutatedRows"
@@ -101,11 +110,8 @@
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
-                <template slot="empty" v-if="!isLoading">
+                <template slot="empty">
                     <cly-empty-datatable></cly-empty-datatable>
-                </template>
-                <template slot="empty" v-if="isLoading">
-                    <div class="cly-vue-eldatatable__empty-slot"></div>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>

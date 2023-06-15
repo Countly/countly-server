@@ -6,17 +6,19 @@ describe('PUSH COMPILE', () => {
     it('compiles APN templates', () => {
         let msg = new Message(data.messages.m1),
             template = new Template(msg, PLATFORM.i),
-            [p1, p2, p3, p4, p5, p6] = data.compilation,
-            [r1, r2, r3, r4, r5, r6] = data.compilation_results.i;
+            [p1, p2, p3, p4, p5, p6, p7, p8] = data.compilation,
+            [r1, r2, r3, r4, r5, r6, r7, r8] = data.compilation_results.i;
 
         // just to catch silly caching bugs
         for (let i = 0; i < 1000; i++) {
             should.deepEqual(template.compile(p1), r1, 'No p case passes');
             should.deepEqual(template.compile(p2), r2, 'la-only case passes');
             should.deepEqual(template.compile(p3), r3, 'overriding sound case passes');
-            should.deepEqual(template.compile(p4), r4, 'overriding data & sound case passes');
-            should.deepEqual(template.compile(p5), r5, 'empty o + extras case passes');
-            should.deepEqual(template.compile(p6), r6, 'extras case passes');
+            should.deepEqual(template.compile(p4), r4, 'overriding sound for locale case passes');
+            should.deepEqual(template.compile(p5), r5, 'overriding sound for wrong locale case passes');
+            should.deepEqual(template.compile(p6), r6, 'overriding data & sound case passes');
+            should.deepEqual(template.compile(p7), r7, 'empty o + extras case passes');
+            should.deepEqual(template.compile(p8), r8, 'extras case passes');
         }
     });
 });

@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager, countlyGraphNotesCommon*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -256,7 +256,7 @@
             },
             validateTotalViewCount: function() {
                 this.totalViewCount = this.$store.state.countlyViews.totalViewsCount;
-                if (this.totalViewCount > countlyGlobal.views_limit) {
+                if (this.totalViewCount >= countlyGlobal.views_limit) {
                     this.showViewCountWarning = true;
                     this.totalViewCountWarning = CV.i18n('views.max-views-limit').replace("{0}", countlyGlobal.views_limit);
                 }
@@ -377,7 +377,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -414,6 +414,15 @@
                             },
                         }
                     };
+                    if (self.selectedProperty === "d") {
+                        self.lineOptions.yAxis = {
+                            axisLabel: {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value);
+                                }
+                            }
+                        };
+                    }
                 });
             },
             getExportQuery: function() {
@@ -451,7 +460,18 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            formatChartValue: function(value) {
+                if (this.selectedProperty === "br") {
+                    return countlyCommon.getShortNumber(value) + '%';
+                }
+                if (this.selectedProperty === "d") {
+                    return countlyCommon.formatSecond(value);
+                }
+                return countlyCommon.getShortNumber(value);
             }
+
+
         },
         computed: {
             data: function() {
@@ -466,13 +486,15 @@
                         label: CV.i18n('views.segment-key'),
                         key: "segment",
                         items: this.chooseSegment,
-                        default: "all"
+                        default: "all",
+                        searchable: true
                     },
                     {
                         label: CV.i18n('views.segment-value'),
                         key: "segmentKey",
                         items: this.chooseSegmentValue,
-                        default: "all"
+                        default: "all",
+                        searchable: true
                     }
                 ];
             },
@@ -481,7 +503,7 @@
                     {"value": "t", "name": CV.i18n('views.total-visits')},
                     {"value": "u", "name": CV.i18n('common.table.total-users')},
                     {"value": "n", "name": CV.i18n('common.table.new-users')},
-                    {"value": "d", "name": CV.i18n('views.duration')},
+                    {"value": "d", "name": CV.i18n('views.avg-duration')},
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
@@ -502,9 +524,10 @@
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
+                var sortedKeys = Object.keys(segments).sort(Intl.Collator().compare);
                 var listed = [{"value": "all", "label": jQuery.i18n.map["views.all-segments"]}];
-                for (var key in segments) {
-                    listed.push({"value": key, "label": key});
+                for (var i = 0; i < sortedKeys.length; i++) {
+                    listed.push({"value": sortedKeys[i], "label": sortedKeys[i]});
                 }
                 return listed;
             },
@@ -683,7 +706,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -792,11 +815,19 @@
                 drillClone = $("#drill-filter-view").clone(true);
             }, 0);
         }
-    });
+    }, FEATURE_NAME);
 
     var GridComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.commonFormatters,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         computed: {
             title: function() {
                 if (this.data.title) {
@@ -838,7 +869,7 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (this.data.metrics[k] === "d") {
                             if (this.data.dashData.data.chartData[z].t > 0) {
-                                ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
+                                ob[this.data.metrics[k]] = countlyCommon.formatSecond(this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t);
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
@@ -850,7 +881,7 @@
                                 if (vv > 100) {
                                     vv = 100;
                                 }
-                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
+                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
@@ -858,7 +889,7 @@
                         }
                         else if (this.data.metrics[k] === "br") {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
-                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
+                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + "%";
                         }
                         else {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
@@ -869,8 +900,25 @@
                 }
                 return tableData;
             }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         }
-
     });
 
     var DrawerComponent = countlyVue.views.create({
@@ -919,6 +967,7 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
+        permission: FEATURE_NAME,
         label: CV.i18n("views.widget-type"),
         priority: 1,
         primary: false,
@@ -956,45 +1005,35 @@
             }
         },
         grid: {
-            component: GridComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 2,
-                    height: 4
-                };
-            }
+            component: GridComponent
         }
 
     });
 
-    $(document).ready(function() {
-        jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-        };
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    };
 
-        jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-        };
+        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    };
 
-        app.addAppSwitchCallback(function(appId) {
-            if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
-                countlyViews.loadList(appId);
-            }
-        });
-        app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
-
-        //check if configuration view exists
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("views", "views.title");
-            app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {
+            countlyViews.loadList(appId);
         }
     });
+    app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
+
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("views", "views.title");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    }
 })();

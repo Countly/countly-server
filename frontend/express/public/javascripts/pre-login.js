@@ -17,7 +17,12 @@
 function showMessage(key, prop) {
     key = encodeSomeHtml(key);
     $("#message").data("localize", key);
-    $("#message").html(jQuery.i18n.prop(key, prop));
+    if (jQuery.i18n.map[key]) {
+        $("#message").html(jQuery.i18n.prop(key, prop));
+    }
+    else {
+        $("#message").html("Error occurred without localized message");
+    }
 }
 
 var htmlEncodeOptions = {

@@ -38,8 +38,8 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
       - name: countly-frontend
-        image: countly/frontend:20.11.2
-#        image: gcr.io/countly-01/frontend:20.11.2     # Enterprise Edition
+        image: countly/frontend:23.03
+#        image: gcr.io/countly-01/frontend:23.03     # Enterprise Edition
         imagePullPolicy: Always
         ports:
         - containerPort: 6001
@@ -47,16 +47,18 @@ spec:
           httpGet:
             path: /ping
             port: 6001
-          initialDelaySeconds: 120
-          periodSeconds: 10
-          timeoutSeconds: 3
+          initialDelaySeconds: 300
+          periodSeconds: 30
+          timeoutSeconds: 30
         env:
           - name: COUNTLY_PLUGINS
-            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate"
-            # Enterprise Edition: value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards"
+            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards"
+            # Enterprise Edition: value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,errorlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps"
           - name: COUNTLY_CONFIG_API_FILESTORAGE
             value: "gridfs"
           - name: COUNTLY_CONFIG__MONGODB
             value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
           - name: COUNTLY_CONFIG_HOSTNAME
             value: countly.example.com
+          - name: NODE_OPTIONS
+            value: "--max-old-space-size=2048"  

@@ -13,6 +13,7 @@ var common = {},
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
     mongodb = require('mongodb'),
+    getRandomValues = require('get-random-values'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -85,11 +86,11 @@ common.escape_html = function(string, more) {
 * @returns {string} escaped string
 **/
 common.decode_html = function(string) {
-    string = string.replace(/&amp;/g, '&');
     string = string.replace(/&#39;/g, "'");
     string = string.replace(/&quot;/g, '"');
     string = string.replace(/&lt;/g, '<');
     string = string.replace(/&gt;/g, '>');
+    string = string.replace(/&amp;/g, '&');
     return string;
 };
 
@@ -298,7 +299,8 @@ common.os_mapping = {
     "debian": "d",
     "nokia": "n",
     "firefox": "f",
-    "tizen": "t"
+    "tizen": "t",
+    "arch": "l"
 };
 
 /**
@@ -379,6 +381,7 @@ common.isNumber = function(n) {
 * This default Countly behavior of type conversion for storing proeprties accepted through API requests
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
+* @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
 * @returns {varies} converted value
 * @example
 * common.convertToType(1) //outputs 1
@@ -386,11 +389,11 @@ common.isNumber = function(n) {
 * common.convertToType("test") //outputs "test"
 * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
 */
-common.convertToType = function(value) {
+common.convertToType = function(value, preventParsingToNumber) {
     //handle array values
     if (Array.isArray(value)) {
         for (var i = 0; i < value.length; i++) {
-            value[i] = common.convertToType(value[i]);
+            value[i] = common.convertToType(value[i], true);
         }
         return value;
     }
@@ -403,7 +406,10 @@ common.convertToType = function(value) {
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
-        if (value.length && value.length <= 16) {
+        if (preventParsingToNumber) {
+            return value;
+        }
+        else if (value.length && value.length <= 16) {
             //convert to number
             return parseFloat(value);
         }
@@ -767,9 +773,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
         }
         if (args[arg] !== void 0) {
-
             if (argProperties[arg].type) {
-                if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
+                if (argProperties[arg].type === 'Number') {
+                    if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'String') {
+                    if (argState && argProperties[arg].trim && args[arg]) {
+                        args[arg] = args[arg].trim();
+                    }
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -813,14 +833,23 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
-                    else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
-                        if (returnErrors) {
-                            returnObj.errors.push("Invalid url string " + arg);
-                            returnObj.result = false;
-                            argState = false;
+                    else {
+                        if (argState && argProperties[arg].trim && args[arg]) {
+                            args[arg] = args[arg].trim();
                         }
-                        else {
-                            return false;
+                        let { URL } = require('url');
+                        try {
+                            new URL(args[arg]);
+                        }
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid url string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -949,6 +978,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         parsed = args[arg];
                     }
                 }
+                else if (argProperties[arg].type === 'String[]') {
+                    if (typeof args[arg] === 'string') {
+                        try {
+                            args[arg] = JSON.parse(args[arg]);
+                        }
+                        catch (error) {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(args[arg])) {
+                        let allStrings = true;
+                        for (const item of args[arg]) {
+                            if (typeof item !== 'string') {
+                                allStrings = false;
+                                break;
+                            }
+                        }
+
+                        if (!allStrings) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid type for " + arg + ": all elements must be strings");
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
@@ -1072,7 +1131,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
 
-                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    let schema = argProperties[arg].discriminator ? argProperties[arg].discriminator(args[arg]) : argProperties[arg].type;
+
+                    let subret = common.validateArgs(args[arg], schema, returnErrors);
                     if (returnErrors && !subret.result) {
                         returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
                         returnObj.result = false;
@@ -1099,6 +1160,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (args[arg].length) {
                         let type,
+                            discriminator = argProperties[arg].discriminator,
                             scheme = {},
                             ret;
 
@@ -1110,7 +1172,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
+                            scheme[i] = { type: discriminator ? discriminator(v) : type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);
@@ -1315,6 +1377,32 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].regex) {
+                try {
+                    var re = new RegExp(argProperties[arg].regex);
+                    if (!re.test(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push(arg + " is not correct format");
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                catch (ex) {
+                    if (returnErrors) {
+                        returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
@@ -1364,6 +1452,9 @@ common.blockResponses = function(params) {
 common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
+
+
+
 
 /**
 * Custom API response handler callback
@@ -1560,11 +1651,25 @@ var ipLogger = common.log('ip:api');
 * @returns {string} ip address
 */
 common.getIpAddress = function(req) {
-    var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
+    var ipAddress = "";
+    if (req) {
+        if (req.headers) {
+            ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
+        }
+        else if (req.connection && req.connection.remoteAddress) {
+            ipAddress = req.connection.remoteAddress;
+        }
+        else if (req.socket && req.socket.remoteAddress) {
+            ipAddress = req.socket.remoteAddress;
+        }
+        else if (req.connection && req.connection.socket && req.connection.socket.remoteAddress) {
+            ipAddress = req.connection.socket.remoteAddress;
+        }
+    }
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
-    if (req.headers['x-real-ip']) {
+    if (req?.headers?.['x-real-ip']) {
         ips.push(req.headers['x-real-ip']);
     }
 
@@ -1641,7 +1746,9 @@ function stripPort(ip) {
 common.fillTimeObjectZero = function(params, object, property, increment, isUnique) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
-
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month) {
         return false;
     }
@@ -1700,6 +1807,9 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
 
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month || !timeObj.weekly || !timeObj.day || !timeObj.hour) {
         return false;
     }
@@ -1787,6 +1897,69 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
+        });
+    }
+};
+
+/**
+* Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
+* Can be used by plugins to record data, similar to sessions and users, with optional segments
+* @param {params} params - {@link params} object
+* @param {string} collection - name of the collections where to store data
+* @param {string} id - id to prefix document ids, like app_id or segment id, etc
+* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {number=} value - value to increment all metrics for, default 1
+* @param {object} segments - object with segments to record data, key segment name and value segment value
+* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
+* @example
+* //recording attribution
+* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
+*/
+common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
+    value = value || 0;
+    params.defaultValue = 0;
+    var updateUsersZero = {},
+        updateUsersMonth = {},
+        tmpSet = {};
+
+    if (metrics) {
+        for (let i = 0; i < metrics.length; i++) {
+            recordMetric(params, metrics[i], {
+                segments: segments,
+                value: value,
+                unique: (uniques && uniques.indexOf(metrics[i]) !== -1) ? true : false,
+                lastTimestamp: lastTimestamp
+            },
+            tmpSet, updateUsersZero, updateUsersMonth);
+        }
+    }
+
+    var dbDateIds = common.getDateIds(params);
+
+    if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
+        updateUsersZero = updateUsersZero || {};
+        updateUsersZero.m = dbDateIds.zero;
+        updateUsersZero.a = params.app_id + "";
+
+        var update = {
+            $set: updateUsersZero
+        };
+
+        if (Object.keys(tmpSet).length) {
+            update.$addToSet = {};
+            for (let i in tmpSet) {
+                update.$addToSet[i] = {$each: tmpSet[i]};
+            }
+        }
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.zero, update);
+
+    }
+    if (Object.keys(updateUsersMonth).length) {
+        updateUsersMonth.m = dbDateIds.month;
+        updateUsersMonth.a = params.app_id + "";
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
+            $set: updateUsersMonth
         });
     }
 };
@@ -2404,15 +2577,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 update.$set.last_req = params.request_hash;
-            }
-        }
-
-        if (params.qstring.device_id && typeof user.did === "undefined") {
-            if (!update.$set) {
-                update.$set = {};
-            }
-            if (!update.$set.did) {
-                update.$set.did = params.qstring.device_id;
+                if (params.href && user.last_req_get !== params.href) {
+                    update.$set.last_req_get = (params.href + "") || "";
+                }
+                if (params.req && params.req.body && user.last_req_post !== params.req.body) {
+                    update.$set.last_req_post = (params.req.body + "") || "";
+                }
+                if (!user.req_count || user.req_count < 100) {
+                    if (!update.$inc) {
+                        update.$inc = {};
+                    }
+                    update.$inc.req_count = 1;
+                }
             }
         }
 
@@ -2433,7 +2609,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (!update.$set.t) {
                 update.$set.t = params.qstring.t;
             }
-            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+            if (params.qstring.t + "" === "0" && !user.hasInfo) {
                 update.$set.hasInfo = true;
             }
         }
@@ -2575,6 +2751,44 @@ common.reviver = (key, value) => {
 };
 
 /**
+ * Shuffle string using getRandomValues
+ * @param {string} text - text to be shuffled
+ * @returns {string} shuffled password
+ */
+common.shuffleString = function(text) {
+    var j, x, i;
+    for (i = text.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = text[i - 1];
+        text[i - 1] = text[j];
+        text[j] = x;
+    }
+
+    return text.join("");
+};
+
+/**
+ * Gets a random string from given character set string with given length
+ * @param {string} charSet - charSet string
+ * @param {number} length - length of the random string. default 1 
+ * @returns {string} random string from charset
+ */
+common.getRandomValue = function(charSet, length = 1) {
+    const randomValues = getRandomValues(new Uint8Array(charSet.length));
+    let randomValue = "";
+
+    if (length > charSet.length) {
+        length = charSet.length;
+    }
+
+    for (let i = 0; i < length; i++) {
+        randomValue += charSet[randomValues[i] % charSet.length];
+    }
+
+    return randomValue;
+};
+
+/**
     * Generate random password
     * @param {number} length - length of the password
     * @param {boolean} no_special - do not include special characters
@@ -2595,29 +2809,20 @@ common.generatePassword = function(length, no_special) {
     }
 
     //1 char
-    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+    text.push(this.getRandomValue(upchars));
     //1 number
-    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    text.push(this.getRandomValue(numbers));
     //1 special char
     if (!no_special) {
-        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        text.push(this.getRandomValue(specials));
         length--;
     }
 
-    var j, x, i;
     //5 any chars
-    for (i = 0; i < Math.max(length - 2, 5); i++) {
-        text.push(all.charAt(Math.floor(Math.random() * all.length)));
-    }
+    text.push(this.getRandomValue(all, Math.max(length - 2, 5)));
 
     //randomize order
-    for (i = text.length; i; i--) {
-        j = Math.floor(Math.random() * i);
-        x = text[i - 1];
-        text[i - 1] = text[j];
-        text[j] = x;
-    }
-    return text.join("");
+    return this.shuffleString(text);
 };
 
 /**
@@ -2772,6 +2977,152 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/^\.+/, replacement);
 };
 
+/**
+ * Sanitizes html content by allowing only safe tags
+ * @param {string} html - html content to sanitize
+ * @returns {string} sanitizedHTML - sanitized html content
+ */
+common.sanitizeHTML = (html) => {
+    const whiteList = {
+        a: ["target", "title"],
+        abbr: ["title"],
+        address: [],
+        area: ["shape", "coords", "href", "alt"],
+        article: [],
+        aside: [],
+        audio: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "preload",
+            "src",
+        ],
+        b: [],
+        bdi: ["dir"],
+        bdo: ["dir"],
+        big: [],
+        blockquote: ["cite"],
+        br: [],
+        caption: [],
+        center: [],
+        cite: [],
+        code: [],
+        col: ["align", "valign", "span", "width"],
+        colgroup: ["align", "valign", "span", "width"],
+        dd: [],
+        del: ["datetime"],
+        details: ["open"],
+        div: [],
+        dl: [],
+        dt: [],
+        em: [],
+        figcaption: [],
+        figure: [],
+        font: ["color", "size", "face"],
+        footer: [],
+        h1: [],
+        h2: [],
+        h3: [],
+        h4: [],
+        h5: [],
+        h6: [],
+        header: [],
+        hr: [],
+        i: [],
+        img: ["src", "alt", "title", "width", "height"],
+        ins: ["datetime"],
+        li: [],
+        mark: [],
+        nav: [],
+        ol: [],
+        p: [],
+        pre: [],
+        s: [],
+        section: [],
+        small: [],
+        span: [],
+        sub: [],
+        summary: [],
+        sup: [],
+        strong: [],
+        strike: [],
+        table: ["width", "border", "align", "valign"],
+        tbody: ["align", "valign"],
+        td: ["width", "rowspan", "colspan", "align", "valign"],
+        tfoot: ["align", "valign"],
+        th: ["width", "rowspan", "colspan", "align", "valign"],
+        thead: ["align", "valign"],
+        tr: ["rowspan", "align", "valign"],
+        tt: [],
+        u: [],
+        ul: [],
+        video: [
+            "autoplay",
+            "controls",
+            "crossorigin",
+            "loop",
+            "muted",
+            "playsinline",
+            "poster",
+            "preload",
+            "src",
+            "height",
+            "width",
+        ],
+    };
+
+    return html.replace(/<\/?([^>]+)>/gi, (tag) => {
+        const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
+
+        if (!Object.getOwnPropertyDescriptor(whiteList, tagName)) {
+            return "";
+        }
+
+        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+        var doubleQuote = '"',
+            singleQuote = "'";
+        let matches;
+        let filteredAttributes = [];
+        let allowedAttributes = Object.getOwnPropertyDescriptor(whiteList, tagName).value;
+        let tagHasAttributes = false;
+        while ((matches = attributesRegex.exec(tag)) !== null) {
+            tagHasAttributes = true;
+            let fullAttribute = matches[0];
+            let attributeName = matches[1];
+            let attributeValue = matches[2];
+            if (allowedAttributes.indexOf(attributeName) > -1) {
+
+                var attributeValueStart = fullAttribute.indexOf(attributeValue);
+                if (attributeValueStart >= 1) {
+                    var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
+                    if (attributeWithQuote.indexOf(doubleQuote) === 0) {
+                        filteredAttributes.push(`${attributeName}=${doubleQuote}${attributeValue}${doubleQuote}`);
+                    }
+                    else if ((attributeWithQuote.indexOf(singleQuote) === 0)) {
+                        filteredAttributes.push(`${attributeName}=${singleQuote}${attributeValue}${singleQuote}`);
+                    }
+                    else { //no quote
+                        filteredAttributes.push(`${attributeName}=${attributeValue}`);
+                    }
+                }
+            }
+        }
+        if (!tagHasAttributes) { //closing tag or tag without any attributes
+            return tag;
+        }
+        if (filteredAttributes.length <= 0) { //tag had attributes but none of them on whilelist
+            return `<${tagName}>`;
+        }
+
+        return `<${tagName} ${filteredAttributes.join(" ")}>`;
+
+    });
+
+};
+
+
 
 /**
  *  Merge 2 mongodb update queries
@@ -2864,6 +3215,24 @@ common.mergeQuery = function(ob1, ob2) {
                 if (key.startsWith("data.")) {
                     ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
                     delete ob1.$inc[key];
+                }
+            }
+        }
+        if (ob1 && ob1.$set && ob1.$unset) {
+            for (let key in ob1.$unset) {
+                if (key.startsWith("engagement.")) {
+                    if (ob1.$set[key + ".sd"]) {
+                        delete ob1.$set[key + ".sd"];
+                    }
+                    if (ob1.$set[key + ".sc"]) {
+                        delete ob1.$set[key + ".sc"];
+                    }
+                    if (ob1.$inc[key + ".sd"]) {
+                        delete ob1.$inc[key + ".sd"];
+                    }
+                    if (ob1.$inc[key + ".sc"]) {
+                        delete ob1.$inc[key + ".sc"];
+                    }
                 }
             }
         }
@@ -3193,5 +3562,81 @@ class DataTable {
 }
 
 common.DataTable = DataTable;
+
+/**
+ * Assign license check results to request (and session if present)
+ * 
+ * @param {object} req request
+ * @param {object|undefined} check check results
+ */
+common.licenseAssign = function(req, check) {
+    if (check && check.error) {
+        req.licenseError = check.error;
+        if (req.session) {
+            req.session.licenseError = req.licenseError;
+        }
+    }
+    if (check && check.notify && check.notify.length) {
+        req.licenseNotification = JSON.stringify(check.notify);
+        if (req.session) {
+            req.session.licenseNotification = req.licenseNotification;
+        }
+    }
+};
+
+/**
+* Standard number formatter, taken from frontend's countly.common.js
+
+* @memberof countlyCommon
+* @param {number} x - number to format
+* @returns {string} formatted number
+* @example
+* //outputs 1,234,567
+* countlyCommon.formatNumber(1234567);
+*/
+common.formatNumber = function(x) {
+    x = parseFloat(parseFloat(x).toFixed(2));
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+};
+
+/**
+* Second formatter
+
+* @memberof countlyCommon
+* @param {number} number - number of seconds to format
+* @returns {string} formatted seconds
+*/
+common.formatSecond = function(number) {
+    if (number === 0) {
+        return '0';
+    }
+
+    const days = Math.floor(number / (24 * 60 * 60));
+    const hours = Math.floor((number % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((number % (60 * 60)) / 60);
+    const seconds = Math.floor((number % 60)); //floor to discard decimals;
+
+    let formattedDuration = '';
+
+    if (days > 0) {
+        formattedDuration += `${days}d `;
+    }
+
+    if (hours > 0) {
+        formattedDuration += `${hours}h `;
+    }
+
+    if (minutes > 0) {
+        formattedDuration += `${minutes}m `;
+    }
+
+    if (seconds > 0) {
+        formattedDuration += `${seconds}s`;
+    }
+
+    return formattedDuration.trim();
+};
 
 module.exports = common;

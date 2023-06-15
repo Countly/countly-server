@@ -150,7 +150,7 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
-                common.db.collection("consent_history" + params.qstring.app_id).find(query).count(function(err, total) {
+                common.db.collection("consent_history" + params.qstring.app_id).count(query, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
                     }
@@ -169,7 +169,12 @@ const FEATURE_NAME = 'compliance_hub';
                         }
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                            try {
+                                params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                            }
+                            catch {
+                                console.log('Could not use as regex: ' + params.qstring.sSearch);
+                            }
                         }
 
                         var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];

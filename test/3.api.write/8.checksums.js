@@ -17,13 +17,13 @@ function calculate_checksum(message, salt, algorithm = "sha1") {
 }
 
 describe("Testing checksum validations", function() {
-    describe("Setting the checksum_salt for the app", function() {
+    describe("Setting the salt for the app", function() {
         it("should successfully update the app", function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
 
-            const args = {app_id: APP_ID, checksum_salt: TEST_SALT};
+            const args = {app_id: APP_ID, salt: TEST_SALT};
 
             request
                 .get("/i/apps/update")
@@ -35,7 +35,7 @@ describe("Testing checksum validations", function() {
                     }
 
                     const responseObject = JSON.parse(response.text);
-                    responseObject.should.have.property("checksum_salt", TEST_SALT);
+                    responseObject.should.have.property("salt", TEST_SALT);
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
@@ -185,9 +185,9 @@ describe("Testing checksum validations", function() {
         });
     });
 
-    describe("Removing the checksum_salt for the app", function() {
+    describe("Removing the salt for the app", function() {
         it("should successfully update it as an empty string", function(done) {
-            const args = {app_id: APP_ID, checksum_salt: ""};
+            const args = {app_id: APP_ID, salt: ""};
 
             request
                 .get("/i/apps/update")
@@ -199,7 +199,7 @@ describe("Testing checksum validations", function() {
                     }
 
                     const responseObject = JSON.parse(response.text);
-                    responseObject.should.have.property("checksum_salt", "");
+                    responseObject.should.have.property("salt", "");
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });

@@ -11,7 +11,10 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
+    mail = require("../../../api/parts/mgmt/mail"),
     { validateUser } = require('../../../api/utils/rights.js');
+
+var ejs = require("ejs");
 
 plugins.setConfigs("dashboards", {
     sharing_status: true
@@ -568,6 +571,7 @@ plugins.setConfigs("dashboards", {
                 sharedEmailView = params.qstring.shared_email_view || [],
                 sharedUserGroupEdit = params.qstring.shared_user_groups_edit || [],
                 sharedUserGroupView = params.qstring.shared_user_groups_view || [],
+                send_email_invitation = params.qstring.send_email_invitation,
                 theme = params.qstring.theme || 1,
                 memberId = params.member._id + "",
                 shareWith = params.qstring.share_with || "",
@@ -656,13 +660,17 @@ plugins.setConfigs("dashboards", {
 
             seriesTasks.push(insertDashboards.bind(null, dataWrapper));
 
-            async.series(seriesTasks, function(err) {
+            async.series(seriesTasks, async function(err) {
                 if (err) {
                     return common.returnMessage(params, 500, "Failed to create dashboard");
                 }
 
                 var dashId = dataWrapper.dashboard_id;
-
+                if (send_email_invitation === 'true') {
+                    let {viewEmailList, editEmailList} = await getEmailList(params.member, shareWith, sharedEmailEdit, sharedEmailView,
+                        sharedUserGroupEdit, sharedUserGroupView);
+                    sendEmailInvitaion(params.member, viewEmailList, editEmailList, dashboardName, dashId);
+                }
                 common.returnOutput(params, dashId);
             });
 
@@ -815,6 +823,7 @@ plugins.setConfigs("dashboards", {
                 sharedUserGroupView = params.qstring.shared_user_groups_view,
                 theme = params.qstring.theme || 1,
                 shareWith = params.qstring.share_with || "",
+                send_email_invitation = params.qstring.send_email_invitation,
                 memberId = params.member._id + "";
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -950,8 +959,27 @@ plugins.setConfigs("dashboards", {
                                 $set: changedFields,
                                 $unset: {shared_with_view: "", shared_with_edit: ""}
                             },
-                            function(e, res) {
+                            async function(e, res) {
                                 if (!e && res) {
+                                    if (send_email_invitation === 'true') {
+                                        const previousList = await getEmailList(params.member, dashboard.shareWith, dashboard.shared_email_edit, dashboard.shared_email_view, dashboard.shared_user_groups_edit, dashboard.shared_user_groups_view);
+
+                                        let {viewEmailList, editEmailList} = await getEmailList(params.member, shareWith, sharedEmailEdit, sharedEmailView,
+                                            sharedUserGroupEdit, sharedUserGroupView);
+
+                                        viewEmailList = viewEmailList.filter((i) => {
+                                            if (previousList.viewEmailList.indexOf(i) === -1) {
+                                                return true;
+                                            } return false;
+                                        });
+                                        editEmailList = editEmailList.filter((i) => {
+                                            if (previousList.editEmailList.indexOf(i) === -1) {
+                                                return true;
+                                            } return false;
+                                        });
+
+                                        sendEmailInvitaion(params.member, viewEmailList, editEmailList, dashboardName, dashboardId);
+                                    }
                                     plugins.dispatch("/systemlogs", {params: params, action: "dashboard_edited", data: {before: dashboard, update: changedFields}});
                                     common.returnOutput(params, res);
                                 }
@@ -1050,7 +1078,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
@@ -1129,7 +1157,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
@@ -1156,9 +1184,12 @@ plugins.setConfigs("dashboards", {
                     ], function(error, results) {
                         var hasEditAccess = results[0];
                         var hasViewAccess = results[1];
-
+                        var unsetQuery = {};
+                        if (widget.feature === "core") {
+                            unsetQuery.$unset = {"isPluginWidget": ""};
+                        }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget}, {new: false}, function(er, result) {
+                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
                                 if (er || !result || !result.value) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
@@ -1310,7 +1341,7 @@ plugins.setConfigs("dashboards", {
                                 options.report = report;
                                 options.view = "/dashboard?ssr=true#" + "/custom/" + report.dashboards; //Set ssr=true (server side rendering)
                                 options.savePath = path.resolve(__dirname, savePath);
-                                options.dimensions = {width: 750, padding: 100};
+                                options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
                                 options.timeout = 120000;
@@ -1682,8 +1713,130 @@ plugins.setConfigs("dashboards", {
             (shareWith === "selected-users" && (sharedEmailEdit.length || sharedEmailView.length || sharedUserGroupEdit.length || sharedUserGroupView.length))) {
             sharing = shartingStatus || (globalAdmin && (restrict.indexOf("#/manage/configurations") < 0));
         }
-
         return sharing;
+    }
+
+    /**
+     * Get emaillist for view & edit permission
+     * @param {Object} member - countly member object
+     * @param {String} shareWith - share type
+     * @param {Array} sharedEmailEdit - email address list shared to edit 
+     * @param {Array} sharedEmailView - email address list shared to view
+     * @param {Array} sharedUserGroupEdit - group ids from countly user group
+     * @param {Array} sharedUserGroupView - group ids from countly user group 
+     * @returns {Object} {viewEmailList, editEmailList} - email list for view & edit permission
+     */
+    async function getEmailList(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView) {
+        let viewEmailList = [];
+        let editEmailList = [];
+        if (shareWith === 'all-users') {
+            const allMemberEmail = await common.db.collection("members").find({_id: {$ne: member._id}}, {"email": 1, "_id": -1}).toArray();
+            viewEmailList = viewEmailList.concat(allMemberEmail.map(item => item.email));
+        }
+        if (sharedUserGroupView && sharedUserGroupView.length > 0) {
+            const viewGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupView }}, {"email": 1, "_id": -1}).toArray();
+            viewEmailList = viewEmailList.concat(viewGroupEmail.map(item => item.email));
+        }
+        if (sharedUserGroupEdit && sharedUserGroupEdit.length > 0) {
+            const editGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupEdit }}, {"email": 1, "_id": -1}).toArray();
+            editEmailList = editEmailList.concat(editGroupEmail.map(item => item.email));
+        }
+
+        viewEmailList = viewEmailList.concat(sharedEmailView);
+        editEmailList = editEmailList.concat(sharedEmailEdit);
+
+        viewEmailList = viewEmailList.filter((item, idx) => {
+            if (viewEmailList.indexOf(item) !== idx) {
+                return false;
+            }
+            return true;
+        });
+
+
+        editEmailList = editEmailList.filter((item, idx) => {
+            if (editEmailList.indexOf(item) !== idx) {
+                return false;
+            }
+            return true;
+        });
+        return {viewEmailList, editEmailList};
+    }
+
+    /**
+     * Send email base on configuration
+     * @param {object} member - dashboard owner
+     * @param {array} viewEmailList - email address list shared to edit 
+     * @param {array} editEmailList - email address list shared to view
+     * @param {string} dashboardName - dashboard name
+     * @param {string} dashboardID - generated dashboard ID
+     */
+    async function sendEmailInvitaion(member, viewEmailList, editEmailList, dashboardName, dashboardID) {
+        const templateString = await readReportTemplate();
+
+        versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
+        versionInfo.title = versionInfo.title || "Countly";
+
+
+        localize.getProperties(member.lang, function(gpErr, props) {
+            ip.getHost(function(e, host) {
+                host = host + common.config.path;
+                const templateVariabies = {
+                    host: host,
+                    version: versionInfo,
+                    dashboardName: dashboardName,
+                    dashboardLink: host + "/dashboard#/custom/" + dashboardID,
+                    subTitle: props["dashboards.dashboard-invite-subtitle"],
+                    contentView: props["dashboards.dashboard-invite-content"],
+                    contentEdit: props["dashboards.dashbhoard-invite-content-edit"],
+                    dashboardLinkButtonText: props["dashboards.dashboard-invite-link-text"],
+                };
+                const viewMsg = {
+                    bcc: viewEmailList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: false})),
+                };
+                const editMsg = {
+                    bcc: editEmailList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: true})),
+                };
+                sendEmail(viewMsg);
+                sendEmail(editMsg);
+            });
+        });
+
+    }
+
+    /**
+    * load ReportTemplate file
+    * @returns {Promise} - template promise object.
+    */
+    const readReportTemplate = () => {
+        return new Promise((resolve, reject) => {
+            const templatePath = path.resolve(__dirname, '../frontend/public/templates/invite-email.html');
+            fs.readFile(templatePath, 'utf8', function(err1, template) {
+                if (err1) {
+                    return reject(err1);
+                }
+                return resolve(template);
+            });
+        }).catch((e) => console.log(e));
+    };
+
+    /**
+     * send email with email libs
+     * @param {object} msg - email sending object
+     */
+    function sendEmail(msg) {
+        if (mail.sendPoolMail) {
+            mail.sendPoolMail(msg, null);
+
+        }
+        else {
+            mail.sendMail(msg, null);
+        }
     }
 
     /**
@@ -1890,10 +2043,16 @@ plugins.setConfigs("dashboards", {
                 break;
             }
             case 'drill': {
-                let drillIds = widget.drill_report;
-                if (drillIds.length) {
-                    let longTasks = await params.fetchDependencies(app_id, drillIds, 'drill_reports', params);
-                    dependencies.push(...longTasks);
+                if (widget.drill_query && widget.drill_query.length) {
+                    let drillIds = widget.drill_query
+                        .map(q => {
+                            return q._id;
+                        })
+                        .filter(qId => !!qId);
+                    if (drillIds.length) {
+                        let drillQueries = await params.fetchDependencies(app_id, drillIds, 'drill_query', params);
+                        dependencies.push(...drillQueries);
+                    }
                 }
                 break;
             }
@@ -1906,10 +2065,16 @@ plugins.setConfigs("dashboards", {
                 break;
             }
             case 'formulas': {
-                let formulaIds = widget.cmetrics;
-                if (formulaIds.length) {
-                    let longTasks = await params.fetchDependencies(app_id, formulaIds, 'formula_reports', params);
-                    dependencies.push(...longTasks);
+                if (widget.cmetric_refs && widget.cmetric_refs.length) {
+                    let formulaIds = widget.cmetric_refs
+                        .map(metric => {
+                            return metric._id;
+                        })
+                        .filter(fId => !!fId);
+                    if (formulaIds.length) {
+                        let formulas = await params.fetchDependencies(app_id, formulaIds, 'formulas', params);
+                        dependencies.push(...formulas);
+                    }
                 }
                 break;
             }
@@ -1976,11 +2141,19 @@ plugins.setConfigs("dashboards", {
      */
     function importWidgets(params, importData) {
         return new Promise((resolve, reject)=>{
-            importData.data._id = common.db.ObjectID(importData.data._id);
+            if (importData.data?._id) {
+                importData.data._id = common.db.ObjectID(importData.data._id);
+            }
+            if (importData.data?.widget_type === 'formulas') {
+                delete importData.data.cmetrics;
+            }
+            if (importData.data?.widget_type === 'drill') {
+                delete importData.data.drill_report;
+            }
             common.db.collection("widgets").insert(importData.data, function(er, result) {
                 if (!er && result && result.insertedIds && result.insertedIds[0]) {
                     plugins.dispatch("/systemlogs", {params: params, action: "widget_added", data: importData.data});
-                    // TODO: dispatch widget_imported
+                    plugins.dispatch("/dashboard/widget/created", { params: params, widget: importData.data });
                     resolve();
                 }
                 else {

@@ -9,7 +9,7 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
-    { hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+    { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
@@ -143,7 +143,7 @@ usersApi.resetTimeBan = function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user created
 **/
-usersApi.createUser = function(params) {
+usersApi.createUser = async function(params) {
     var argProps = {
             'full_name': {
                 'required': true,
@@ -188,6 +188,7 @@ usersApi.createUser = function(params) {
         },
         newMember = {};
 
+    await depCheck(params);
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
         common.returnMessage(params, 400, createUserValidation.errors);
@@ -196,6 +197,14 @@ usersApi.createUser = function(params) {
 
     //adding backwards compatability
     newMember.permission = newMember.permission || {};
+
+    if (!newMember.permission._) {
+        newMember.permission._ = {
+            a: newMember.admin_of || [],
+            u: newMember.user_of ? [newMember.user_of] : []
+        };
+    }
+
     if (newMember.admin_of) {
         if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
             newMember.permission.c = newMember.permission.c || {};
@@ -250,7 +259,7 @@ usersApi.createUser = function(params) {
         }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
-        newMember.email = newMember.email.trim();
+        newMember.email = newMember.email.trim().toString().toLowerCase();
         crypto.randomBytes(48, function(errorBuff, buffer) {
             newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
             common.db.collection('members').insert(newMember, function(err, member) {
@@ -350,6 +359,53 @@ usersApi.updateHomeSettings = function(params) {
         });
     }
 };
+
+
+/**
+ * Checks the permission dependencies of features for each app based on the enabled features, enabling the required permission dependencies if necessary.
+ * @param {object} params - params object.
+*/
+async function depCheck(params) {
+    var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
+    var featuresPermissionDependency = {};
+    plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+        //read permission check, making sure that read is present in every dependency array if any other permission is given
+        for (var feature in featuresPermissionDependency) {
+            var perms = Object.keys(featuresPermissionDependency[feature]);
+            for (var perm of perms) {
+                var permFeatures = Object.keys(featuresPermissionDependency[feature][perm]);
+                for (var permFeature of permFeatures) {
+                    var targetAr = featuresPermissionDependency[feature][perm][permFeature];
+                    if (targetAr.length && targetAr.indexOf('r') === -1) {
+                        featuresPermissionDependency[feature][perm][permFeature].push('r');
+                    }
+                }
+            }
+        }
+        //check permission dependency for each app
+        const crudTypes = ["c", "r", "u", "d"];
+        crudTypes.forEach(function(crudType) {
+            let apps = params.qstring.args.permission[crudType];
+            Object.keys(apps).forEach(function(app) {
+                let feats = apps[app].allowed;
+                Object.keys(feats).forEach(function(feat) {
+                    let featEnabled = feats[feat];
+                    //check if feature is enabled and if it has any dependency
+                    if (featEnabled && featuresPermissionDependency[feat] && featuresPermissionDependency[feat][crudType]) {
+                        let depFeats = featuresPermissionDependency[feat][crudType];
+                        Object.keys(depFeats).forEach(function(depFeat) {
+                            depFeats[depFeat].forEach(function(crudPerm) {
+                                //add dependency permissions
+                                params.qstring.args.permission[crudPerm][app].allowed[depFeat] = true;
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    });
+}
+
 /**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
@@ -409,10 +465,6 @@ usersApi.updateUser = async function(params) {
                 'type': 'Boolean',
                 'exclude-from-ret-obj': true
             },
-            'member_image': {
-                'type': 'String',
-                'required': false
-            },
             'permission': {
                 'required': false,
                 'type': 'Object'
@@ -421,6 +473,7 @@ usersApi.updateUser = async function(params) {
         updatedMember = {},
         passwordNoHash = "";
 
+    await depCheck(params);
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
         common.returnMessage(params, 400, updateUserValidation.errors);
@@ -439,10 +492,10 @@ usersApi.updateUser = async function(params) {
         updatedMember.username = updatedMember.username.trim();
     }
     if (updatedMember.email) {
-        updatedMember.email = updatedMember.email.trim();
+        updatedMember.email = updatedMember.email.trim().toString().toLowerCase();
     }
 
-    if (updatedMember.member_image && updatedMember.member_image === 'delete') {
+    if (params.qstring.args.member_image && params.qstring.args.member_image === 'delete') {
         updatedMember.member_image = "";
     }
 
@@ -542,7 +595,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
-                    usersApi.deleteUserNotes(params);
+                    usersApi.deleteUserNotes({member: {_id: user.value._id.toString()}});
                 }
             });
         }
@@ -666,7 +719,7 @@ usersApi.deleteOwnAccount = function(params) {
         verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
             if (member) {
                 if (member.global_admin) {
-                    common.db.collection('members').find({'global_admin': true}).count(function(err2, count) {
+                    common.db.collection('members').count({'global_admin': true}, function(err2, count) {
                         if (err2) {
                             console.log(err2);
                             common.returnMessage(params, 400, 'Mongo error');
@@ -744,7 +797,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return reject(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.args.app_id);
+                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.app_id);
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -784,13 +837,17 @@ usersApi.saveNote = async function(params) {
         'category': {
             'required': false,
             'type': 'Boolean'
+        },
+        "indicator": {
+            'required': false,
+            'type': 'String'
         }
     };
     const args = params.qstring.args;
     const noteValidation = common.validateArgs(args, argProps, true);
     if (noteValidation) {
         const note = {
-            app_id: params.qstring.app_id,
+            app_id: args.app_id,
             note: args.note,
             ts: args.ts,
             noteType: args.noteType,
@@ -799,7 +856,7 @@ usersApi.saveNote = async function(params) {
             category: args.category,
             owner: params.member._id + "",
             created_at: new Date().getTime(),
-            updated_at: new Date().getTime(),
+            updated_at: new Date().getTime()
         };
 
         if (args._id) {
@@ -821,6 +878,7 @@ usersApi.saveNote = async function(params) {
             }
         }
         else {
+            note.indicator = args.indicator;
             common.db.collection('notes').insert(note, (err) => {
                 if (err) {
                     common.returnMessage(params, 503, 'Insert Note failed.');
@@ -914,17 +972,17 @@ usersApi.fetchUserAppIds = async function(params) {
 **/
 usersApi.fetchNotes = async function(params) {
     countlyCommon.getPeriodObj(params);
+    // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
-    const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
     let appIds = [];
-    let filtedAppIds = [];
+    let filteredAppIds = [];
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
         if (!appIds || appIds.length === 0) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
-        filtedAppIds = appIds.filter((appId) => {
-            if (hasAdminAccess(params.member, appId)) {
+        filteredAppIds = appIds.filter((appId) => {
+            if (hasAdminAccess(params.member, appId) || hasReadRight('core', appId, params.member)) {
                 return true;
             }
             return false;
@@ -934,8 +992,8 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes appIds request', e);
     }
     const query = {
-        'app_id': {$in: filtedAppIds},
-        'ts': timestampRange,
+        'app_id': {$in: filteredAppIds},
+        'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},
@@ -944,12 +1002,13 @@ usersApi.fetchNotes = async function(params) {
     };
 
     if (params.qstring.category) {
-        query.category = params.qstring.category;
+        query.category = {$in: JSON.parse(params.qstring.category)};
     }
 
     if (params.qstring.note_type) {
         query.noteType = params.qstring.note_type;
     }
+
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
@@ -972,7 +1031,8 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes request', e);
     }
     let count = 0;
-    common.db.collection('notes').find(query).count(function(error, noteCount) {
+
+    common.db.collection('notes').count(query, function(error, noteCount) {
         if (!error && noteCount) {
             count = noteCount;
             common.db.collection('notes').find(query)

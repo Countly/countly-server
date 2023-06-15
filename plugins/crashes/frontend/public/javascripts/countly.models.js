@@ -1,4 +1,88 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
+
+/**
+ *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
+ *  @param {string} inpVersion - an app version string
+ *  @return {array} [regex.exec result, version scheme name]
+ */
+function checkAppVersion(inpVersion) {
+    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    var semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+    // Half semver is similar to semver but with only one dot
+    var halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    var execResult = semverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'semver'];
+    }
+
+    execResult = halfSemverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'halfSemver'];
+    }
+
+    return [null, null];
+}
+
+/**
+ *  Transform a version string so it will be numerically correct when sorted
+ *  For example '1.10.2' will be transformed to '100001.100010.100002'
+ *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
+ *  @param {string} inpVersion - an app version string
+ *  @return {string} the transformed app version
+ */
+function transformAppVersion(inpVersion) {
+    var [execResult, versionScheme] = checkAppVersion(inpVersion);
+
+    if (execResult === null) {
+        // Version string does not follow any scheme, just return it
+        return inpVersion;
+    }
+
+    // Mark version parts based on semver scheme
+    var prefixIdx = 1;
+    var majorIdx = 2;
+    var minorIdx = 3;
+    var patchIdx = 4;
+    var preReleaseIdx = 5;
+    var buildIdx = 6;
+
+    if (versionScheme === 'halfSemver') {
+        patchIdx -= 1;
+        preReleaseIdx -= 1;
+        buildIdx -= 1;
+    }
+
+    var transformed = '';
+    // Rejoin version parts to a new string
+    for (var idx = prefixIdx; idx < buildIdx; idx += 1) {
+        var part = execResult[idx];
+
+        if (part) {
+            if (idx >= majorIdx && idx <= patchIdx) {
+                part = 100000 + parseInt(part, 10);
+            }
+
+            if (idx >= minorIdx && idx <= patchIdx) {
+                part = '.' + part;
+            }
+
+            if (idx === preReleaseIdx) {
+                part = '-' + part;
+            }
+
+            if (idx === buildIdx) {
+                part = '+' + part;
+            }
+
+            transformed += part;
+        }
+    }
+
+    return transformed;
+}
 
 (function(countlyCrashes) {
     var _list = {};
@@ -17,6 +101,7 @@
                     rawData: {},
                     filteredData: {},
                     isLoading: false,
+                    realSession: {},
                 };
             },
             getters: {},
@@ -38,6 +123,8 @@
         };
 
         _overviewSubmodule.getters.dashboardData = function(state) {
+            var realSession = state.realSession;
+            var realTotalSession = (realSession.usage && realSession.usage['total-sessions'].total) || 0;
             var dashboard = {};
 
             if ("data" in state.rawData) {
@@ -129,7 +216,22 @@
 
             ["crses", "crnfses", "crfses"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100));
+                    var propValue = 0;
+
+                    if (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) {
+                        propValue = 100;
+                    }
+                    else {
+                        if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
+                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                        }
+                        else {
+                            // Use real total session if cr_s value is too low
+                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                        }
+                    }
+
+                    dashboard[name][prop] = Math.min(100, propValue);
                 });
                 populateMetric(name, true);
             });
@@ -392,6 +494,10 @@
                 }
             }));
 
+            ajaxPromises.push(countlySession.initialize().then(function() {
+                context.state.realSession = countlySession.getSessionData();
+            }));
+
             return Promise.all(ajaxPromises);
         };
 
@@ -457,9 +563,27 @@
             }
         };
 
+        _crashgroupSubmodule.getters.crashgroupUnsymbolicatedStacktrace = function(state) {
+            var crashId = state.crashgroup.lrid;
+
+            var crash = state.crashgroup.data.find(function(item) {
+                return item._id === crashId;
+            });
+
+            if (crash && crash.symbolicated) {
+                return crash.olderror;
+            }
+
+            return "";
+        };
+
         _crashgroupSubmodule.getters.crashes = function(state) {
             if ("data" in state.crashgroup) {
-                return state.crashgroup.data;
+                return state.crashgroup.data.map(function(item) {
+                    var transformedAppVersion = transformAppVersion(item.app_version);
+                    item.app_version_for_sort = transformedAppVersion;
+                    return item;
+                });
             }
             else {
                 return [];
@@ -470,7 +594,7 @@
             if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
-                    occurrences: state.crashgroup.total,
+                    occurrences: state.crashgroup.reports,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version
@@ -690,20 +814,38 @@
                             }
 
                             if (typeof countlyCrashSymbols !== "undefined") {
+                                var latestCrash = crashgroupJson.data.find(function(item) {
+                                    return item._id === crashgroupJson.lrid;
+                                });
+
+                                crashgroupJson.binary_images = latestCrash && latestCrash.binary_images;
+
+                                let buildUuid = latestCrash && latestCrash.build_uuid;
+
+                                if (!buildUuid) {
+                                    crashgroupJson.data.every(function(item) {
+                                        buildUuid = item.build_uuid;
+
+                                        return !buildUuid;
+                                    });
+                                }
+
                                 var crashes = [{
                                     _id: crashgroupJson.lrid,
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
-                                    app_version: crashgroupJson.latest_version
+                                    app_version: crashgroupJson.latest_version,
+                                    build_uuid: buildUuid,
+                                    javascript: crashgroupJson.javascript
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
 
                                 var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
                                 ajaxPromises.push(ajaxPromise);
-                                ajaxPromise.then(function(symbolIndexing) {
+                                ajaxPromise.then(function(fetchSymbolsResponse) {
                                     crashes.forEach(function(crash, crashIndex) {
-                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
                                         if (typeof symbol_id !== "undefined") {
                                             if (crashIndex === 0) {
                                                 crashgroupJson._symbol_id = symbol_id;
@@ -775,8 +917,8 @@
                     reject(null);
                 }
                 else {
-                    countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
-                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                    countlyCrashSymbols.fetchSymbols(false).then(function(fetchSymbolsResponse) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
                                 resolve(json);
@@ -956,14 +1098,19 @@
             args.app_id = countlyCommon.ACTIVE_APP_ID;
         }
 
-        return countlyVue.$.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/crashes/" + path,
-            data: {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                args: JSON.stringify(args)
-            },
-            dataType: "json"
+        return new Promise(function(resolve) {
+            countlyVue.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.w + "/crashes/" + path,
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    args: JSON.stringify(args)
+                },
+                dataType: "json",
+                success: function(response) {
+                    resolve(response);
+                }
+            });
         });
     };
 
@@ -1079,6 +1226,39 @@
             return _list[id];
         }
         return id;
+    };
+
+    countlyCrashes.modifyExistsQueries = function(inpQuery) {
+        var resultQuery = {};
+        var existsGroups = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (inpQuery[key].$exists) {
+                var prefix = key.split(".")[0];
+                var obj = {};
+                obj[key] = inpQuery[key];
+
+                if (existsGroups[prefix]) {
+                    existsGroups[prefix] = existsGroups[prefix].concat(obj);
+                }
+                else {
+                    existsGroups[prefix] = [obj];
+                }
+            }
+            else {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        Object.values(existsGroups).forEach(function(group, idx) {
+            if (idx === 0) {
+                resultQuery.$and = [];
+            }
+
+            resultQuery.$and.push({$or: group});
+        });
+
+        return resultQuery;
     };
 
 }(window.countlyCrashes = window.countlyCrashes || {}));

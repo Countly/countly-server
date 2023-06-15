@@ -48,10 +48,10 @@
 			<div id="login-logo"></div>
 		</div>
 		<% if (message){ %>
-			<div class="cly-vue-notification__alert-box cly-vue-notification__alert-box__alert-text--light-destructive" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
+			<div class="cly-vue-notification__alert-box" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
 				<div style="display: flex;justify-content: space-between; margin:8px; overflow: hidden;">
 					<div style="display: flex;">
-						<img src="images/icons/notification-toast-destructive.svg" class="cly-vue-notification__alert-box-alert-image"/>
+						<img id="notification-image" class="cly-vue-notification__alert-box-alert-image"/>
 						<span style="margin-block: auto; margin-left: 16px; white-space:nowrap" id ="message">
 						</span>
 					</div>
@@ -69,11 +69,11 @@
 					<div></div>
 					<div>
 						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress-or-username"></p>
-						<input type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<input tabindex="1" type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" oninput="this.value = this.value.toLowerCase();" />
 						</div>
 					<div>
-						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
-						<input name="password" type="password" placeholder="Enter your password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a tabindex="4" id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
+						<input tabindex="2" name="password" type="password" placeholder="Enter your password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 					</div>
 					<% if (typeof inject_template.form != "undefined") { %>
 						<%- inject_template.form %>
@@ -81,7 +81,7 @@
 					<div>
 						<input type="hidden" value="<%= csrf %>" name="_csrf" />
 						<input type="hidden" value="en" name="lang" id="form-lang" />
-						<input id="login-button" value="Login" type="submit" data-localize="login.button"/>
+						<input tabindex="3" id="login-button" value="Login" type="submit" data-localize="login.button"/>
 					</div>
 				</form>
 			</div>
@@ -109,15 +109,24 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.validate.min.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.validate.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.js"></script>
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
+		var resetResultMessage = "<%= message %>";
 		$(document).ready(function() {
-			<% if (message && message.length >0 ){ %>
+			<% if (message && message.length >0){ %>
 				$('.cly-vue-notification__alert-box').show();
 				$('#header').css("margin-top","18px");
-				showMessage("<%= message %>");
+				if (resetResultMessage.indexOf("reset.result") !== -1 && resetResultMessage.length === 12){
+					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-successful');
+					$('#notification-image').attr("src", "images/icons/notification-toast-successful.svg")
+				}
+				else{
+					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-destructive');
+					$('#notification-image').attr("src", "images/icons/notification-toast-destructive.svg")
+				}
+				showMessage(resetResultMessage);
 			<% } 
 			else{ %>
 				$('#header').css("margin-top","72px");
@@ -158,9 +167,10 @@
 				},
 				messages: {
 					username: {
-						required: jQuery.i18n.map["login.error-message"]
+						required:  encodeSomeHtml(jQuery.i18n.map["login.error-message"])
 					}
-				}
+				},
+				escapeHtml: true
 			});
 		});
 	</script>

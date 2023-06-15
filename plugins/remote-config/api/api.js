@@ -18,6 +18,74 @@ plugins.setConfigs("remote-config", {
         ob.features.push(FEATURE_NAME);
     });
 
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+        if (params.qstring.method !== "rc") {
+            return false;
+        }
+        return getRemoteConfig(params);
+
+    });
+
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+        if (params.qstring.method !== "ab") {
+            return false;
+        }
+        return new Promise(function(resolve, reject) {
+            params.qstring.app_id = params.app_id;
+            var keys = [];
+
+            if (params.qstring.keys) {
+                try {
+                    keys = JSON.parse(params.qstring.keys);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse keys failed: ', params.qstring.keys);
+                }
+            }
+            params.parameter_criteria = { "$and": [] };
+            if (keys.length) {
+                params.parameter_criteria.$and.push({ "parameter_key": { $in: keys } });
+            }
+            else {
+                common.returnMessage(params, 400, 'Missing Keys');
+                return reject(true);
+            }
+            params.app_user = params.app_user || {};
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            var processMetrics = params.processed_metrics;
+
+            for (var prop in processMetrics) {
+                if ((processMetrics[prop] !== undefined) && (processMetrics[prop] !== null)) {
+                    user[prop] = processMetrics[prop];
+                    params.app_user[prop] = processMetrics[prop];
+                }
+            }
+
+
+            async.series([
+                fetchParametersFromAB.bind(null, params)
+            ], function(err, result) {
+                if (err || !result) {
+                    common.returnMessage(params, 400, 'Error while fetching remote config data.');
+                    return reject(true);
+                }
+                var abParameters = result[0] || [];
+                var output = {};
+                for (let i = 0; i < abParameters.length; i++) {
+                    var parameterKey = abParameters[i].parameter_key;
+                    var paramValue = abParameters[i].value;
+
+                    output[parameterKey] = paramValue;
+                }
+                common.returnMessage(params, 200, "Successfully enrolled in ab tests");
+                return resolve(true);
+
+            });
+        });
+    });
+
     /**
      * @api {get} /o/sdk?method=fetch_remote_config Get remote configs in sdk
      * @apiName GetRemoteConfigInSdk
@@ -54,194 +122,7 @@ plugins.setConfigs("remote-config", {
         if (params.qstring.method !== "fetch_remote_config") {
             return false;
         }
-
-        return new Promise(function(resolve, reject) {
-            params.qstring.app_id = params.app_id;
-            var keys = [];
-            var omitKeys = [];
-            var parametersCountArray = [];
-
-            if (params.qstring.keys) {
-                try {
-                    keys = JSON.parse(params.qstring.keys);
-                }
-                catch (SyntaxError) {
-                    console.log('Parse keys failed: ', params.qstring.keys);
-                }
-            }
-
-            if (params.qstring.omit_keys) {
-                try {
-                    omitKeys = JSON.parse(params.qstring.omit_keys);
-                }
-                catch (SyntaxError) {
-                    console.log('Parse omit keys failed: ', params.qstring.omit_keys);
-                }
-            }
-            params.parameter_criteria = {"$and": []};
-            params.parameter_criteria.$and.push({
-                $or: [
-                    {"status": {$exists: false}},
-                    {"status": {$exists: true, $eq: "Running"}},
-                ]
-            });
-            params.parameter_criteria.$and.push({
-                $or: [
-                    {"expiry_dttm": {$exists: true, $gt: Date.now()}},
-                    {"expiry_dttm": null}
-                ]
-            });
-            if (keys.length || omitKeys.length) {
-                if (keys.length) {
-                    params.parameter_criteria.$and.push({"parameter_key": { $in: keys }});
-                }
-
-                if (omitKeys.length) {
-                    params.parameter_criteria.$and.push({"parameter_key": { $nin: omitKeys }});
-                }
-            }
-            params.app_user = params.app_user || {};
-            var user = JSON.parse(JSON.stringify(params.app_user));
-            var processMetrics = params.processed_metrics;
-
-            for (var prop in processMetrics) {
-                if ((processMetrics[prop] !== undefined) && (processMetrics[prop] !== null)) {
-                    user[prop] = processMetrics[prop];
-                    params.app_user[prop] = processMetrics[prop];
-                }
-            }
-
-            async.series([
-                fetchParametersFromRCDB.bind(null, params),
-                fetchParametersFromAB.bind(null, params)
-            ], function(err, result) {
-                if (err || !result) {
-                    common.returnMessage(params, 400, 'Error while fetching remote config data.');
-                    return reject(true);
-                }
-
-                var parameters = result[0] || [];
-                var abParameters = result[1] || [];
-                var output = {};
-
-                var parametersArray = [];
-                for (let i = 0; i < parameters.length; i++) {
-                    parametersArray.push(parameters[i].parameter_key);
-                }
-
-                //PRIORITY GIVEN TO PARAMETERS PRESENT IN AB TESTING
-                for (let i = 0; i < abParameters.length; i++) {
-                    var parameterKey = abParameters[i].parameter_key;
-                    var paramValue = abParameters[i].value;
-
-                    var indexOfKey = parametersArray.indexOf(parameterKey);
-                    if (indexOfKey > -1) {
-                        parameters.splice(indexOfKey, 1);
-                        parametersArray.splice(indexOfKey, 1);
-                    }
-
-                    output[parameterKey] = paramValue;
-                }
-
-                async.map(parameters, function(parameter, callback) {
-                    var paramConditions = parameter.conditions || [];
-                    var parameterValue = parameter.default_value;
-                    var paramConditionIds = [];
-                    for (let i = 0; i < paramConditions.length; i++) {
-                        paramConditionIds.push(common.outDb.ObjectID(paramConditions[i].condition_id));
-                    }
-
-                    params.condition_criteria = {
-                        _id: {
-                            $in: paramConditionIds
-                        }
-                    };
-
-                    async.series([fetchConditions.bind(null, params)], function(er, res) {
-                        if (er || !res) {
-                            output[parameter.parameter_key] = parameterValue;
-                            log.w("Error while fetching condition", parameter);
-                            if (parameter.c) {
-                                parameter.c = parameter.c + 1;
-                            }
-                            else {
-                                parameter.c = 1;
-                            }
-                            parametersCountArray.push({
-                                parameter
-                            });
-                            return callback(null);
-                        }
-
-                        var paramConditionsInfo = res[0];
-                        var conditionCount = false;
-
-                        for (let i = 0; i < paramConditions.length; i++) {
-                            var conditionInfo = paramConditionsInfo.filter(function(cond) {
-                                return cond._id.toString() === paramConditions[i].condition_id.toString();
-                            });
-
-                            if (!conditionInfo.length) {
-                                continue;
-                            }
-
-                            var conditionObj = conditionInfo[0];
-                            conditionObj.value = paramConditions[i].value;
-
-                            try {
-                                conditionObj.condition = JSON.parse(conditionObj.condition);
-                                plugins.dispatch("/drill/preprocess_query", {
-                                    query: conditionObj.condition
-                                });
-                            }
-                            catch (e) {
-                                log.w("Skipping condition", conditionObj);
-                                continue;
-                            }
-
-                            var seed = conditionObj.seed_value || "";
-                            var deviceId = params.qstring.device_id || "";
-                            user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
-
-                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
-
-                            if (conditionStatus) {
-                                parameterValue = conditionObj.value;
-                                conditionCount = true;
-                                if (parameter.conditions[i].c) {
-                                    parameter.conditions[i].c = parameter.conditions[i].c + 1;
-                                }
-                                else {
-                                    parameter.conditions[i].c = 1;
-                                }
-                                break;
-                            }
-                        }
-                        if (!conditionCount) {
-                            if (parameter.c) {
-                                parameter.c = parameter.c + 1;
-                            }
-                            else {
-                                parameter.c = 1;
-                            }
-                        }
-                        output[parameter.parameter_key] = parameterValue;
-                        parametersCountArray.push({
-                            parameter
-                        });
-                        return callback(null);
-                    });
-                }, function(e) {
-                    if (e) {
-                        common.returnMessage(params, 400, 'Error while fetching remote config data.');
-                        return reject(true);
-                    }
-                    updateParametersInDb(params, parametersCountArray);
-                    common.returnOutput(params, output, true);
-                    return resolve(true);
-                });
-            });
-        });
+        return getRemoteConfig(params);
     });
 
     plugins.register("/i/remote-config", function(ob) {
@@ -682,6 +563,202 @@ plugins.setConfigs("remote-config", {
     }
 
     /**
+     * Function to get all remote configs
+     * @param  {Object} params - params object
+     * @returns {String} response
+     */
+    function getRemoteConfig(params) {
+        return new Promise(function(resolve, reject) {
+            params.qstring.app_id = params.app_id;
+            var keys = [];
+            var omitKeys = [];
+            var parametersCountArray = [];
+
+            if (params.qstring.keys) {
+                try {
+                    keys = JSON.parse(params.qstring.keys);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse keys failed: ', params.qstring.keys);
+                }
+            }
+
+            if (params.qstring.omit_keys) {
+                try {
+                    omitKeys = JSON.parse(params.qstring.omit_keys);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse omit keys failed: ', params.qstring.omit_keys);
+                }
+            }
+            params.parameter_criteria = {"$and": []};
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"status": {$exists: false}},
+                    {"status": {$exists: true, $eq: "Running"}},
+                ]
+            });
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"expiry_dttm": {$exists: true, $gt: Date.now()}},
+                    {"expiry_dttm": null}
+                ]
+            });
+            if (keys.length || omitKeys.length) {
+                if (keys.length) {
+                    params.parameter_criteria.$and.push({"parameter_key": { $in: keys }});
+                }
+
+                if (omitKeys.length) {
+                    params.parameter_criteria.$and.push({"parameter_key": { $nin: omitKeys }});
+                }
+            }
+            params.app_user = params.app_user || {};
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            var processMetrics = params.processed_metrics;
+
+            for (var prop in processMetrics) {
+                if ((processMetrics[prop] !== undefined) && (processMetrics[prop] !== null)) {
+                    user[prop] = processMetrics[prop];
+                    params.app_user[prop] = processMetrics[prop];
+                }
+            }
+
+            async.series([
+                fetchParametersFromRCDB.bind(null, params),
+                fetchParametersFromAB.bind(null, params)
+            ], function(err, result) {
+                if (err || !result) {
+                    common.returnMessage(params, 400, 'Error while fetching remote config data.');
+                    return reject(true);
+                }
+
+                var parameters = result[0] || [];
+                var abParameters = result[1] || [];
+                var output = {};
+
+                var parametersArray = [];
+                for (let i = 0; i < parameters.length; i++) {
+                    parametersArray.push(parameters[i].parameter_key);
+                }
+
+                //PRIORITY GIVEN TO PARAMETERS PRESENT IN AB TESTING
+                for (let i = 0; i < abParameters.length; i++) {
+                    var parameterKey = abParameters[i].parameter_key;
+                    var paramValue = abParameters[i].value;
+
+                    var indexOfKey = parametersArray.indexOf(parameterKey);
+                    if (indexOfKey > -1) {
+                        parameters.splice(indexOfKey, 1);
+                        parametersArray.splice(indexOfKey, 1);
+                    }
+
+                    output[parameterKey] = paramValue;
+                }
+
+                async.map(parameters, function(parameter, callback) {
+                    var paramConditions = parameter.conditions || [];
+                    var parameterValue = parameter.default_value;
+                    var paramConditionIds = [];
+                    for (let i = 0; i < paramConditions.length; i++) {
+                        paramConditionIds.push(common.outDb.ObjectID(paramConditions[i].condition_id));
+                    }
+
+                    params.condition_criteria = {
+                        _id: {
+                            $in: paramConditionIds
+                        }
+                    };
+
+                    async.series([fetchConditions.bind(null, params)], function(er, res) {
+                        if (er || !res) {
+                            output[parameter.parameter_key] = parameterValue;
+                            log.w("Error while fetching condition", parameter);
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                            parametersCountArray.push({
+                                parameter
+                            });
+                            return callback(null);
+                        }
+
+                        var paramConditionsInfo = res[0];
+                        var conditionCount = false;
+
+                        for (let i = 0; i < paramConditions.length; i++) {
+                            var conditionInfo = paramConditionsInfo.filter(function(cond) {
+                                return cond._id.toString() === paramConditions[i].condition_id.toString();
+                            });
+
+                            if (!conditionInfo.length) {
+                                continue;
+                            }
+
+                            var conditionObj = conditionInfo[0];
+                            conditionObj.value = paramConditions[i].value;
+
+                            try {
+                                conditionObj.condition = JSON.parse(conditionObj.condition);
+                                plugins.dispatch("/drill/preprocess_query", {
+                                    query: conditionObj.condition
+                                });
+                            }
+                            catch (e) {
+                                log.w("Skipping condition", conditionObj);
+                                continue;
+                            }
+
+                            var seed = conditionObj.seed_value || "";
+                            var deviceId = params.qstring.device_id || "";
+                            user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
+
+                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
+
+                            if (conditionStatus) {
+                                parameterValue = conditionObj.value;
+                                conditionCount = true;
+                                if (parameter.conditions[i].c) {
+                                    parameter.conditions[i].c = parameter.conditions[i].c + 1;
+                                }
+                                else {
+                                    parameter.conditions[i].c = 1;
+                                }
+                                break;
+                            }
+                        }
+                        if (!conditionCount) {
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                        }
+                        output[parameter.parameter_key] = parameterValue;
+                        parametersCountArray.push({
+                            parameter
+                        });
+                        return callback(null);
+                    });
+                }, function(e) {
+                    if (e) {
+                        common.returnMessage(params, 400, 'Error while fetching remote config data.');
+                        return reject(true);
+                    }
+                    updateParametersInDb(params, parametersCountArray);
+                    common.returnOutput(params, output, true);
+                    return resolve(true);
+                });
+            });
+
+        });
+    }
+
+    /**
      * @api {get} /i/remote-config/update-parameter Update a parameter
      * @apiName UpdateRcParameter
      * @apiGroup Remote Config
@@ -719,7 +796,7 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
-        if (!defaultValue) {
+        if (!defaultValue && defaultValue !== false) {
             common.returnMessage(params, 400, 'Invalid parameter: default_value');
             return true;
         }
@@ -774,6 +851,13 @@ plugins.setConfigs("remote-config", {
         common.outDb.collection(collectionName).findOne({"_id": common.outDb.ObjectID(parameterId)}, function(err, beforeData) {
             if (!err) {
                 common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(parameterId)}, update, function(updateErr) {
+                    delete beforeData.valuesList;
+                    if (!beforeData.expiry_dttm) {
+                        beforeData.expiry_dttm = "-";
+                    }
+                    if (!parameter.expiry_dttm) {
+                        parameter.expiry_dttm = "-";
+                    }
                     plugins.dispatch("/systemlogs", {params: params, action: "rc_parameter_edited", data: { before: beforeData, after: parameter }});
                     return callback(updateErr);
                 });
@@ -810,9 +894,6 @@ plugins.setConfigs("remote-config", {
                 common.outDb.collection(collectionName).bulkWrite(bulkArray, function(error) {
                     if (error) {
                         log.w("Error while bulk write of updating parameters count", error);
-                    }
-                    else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "rc_parameters_edited", data: { parameters: parameters }});
                     }
                 });
             }

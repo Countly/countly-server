@@ -58,6 +58,7 @@
         priority: 3,
         name: "times-of-day",
         permission: featureName,
+        pluginName: "times-of-day",
         title: CV.i18n('times-of-day.title'),
         route: "#/analytics/loyalty/times-of-day",
         component: TimesOfDayView,
@@ -122,6 +123,7 @@
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        pluginName: "times-of-day",
         primary: true,
         getter: function(widget) {
             return widget.widget_type === "times-of-day";
@@ -136,8 +138,9 @@
                     isPluginWidget: true,
                     apps: [],
                     data_type: "",
-                    events: [],
+                    events: "",
                     period: "",
+                    visualization: "punchcard"
                 };
             },
             beforeLoadFn: function(doc, isEdited) {
@@ -161,12 +164,12 @@
             component: TimesOfDayWidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 2,
+                    minWidth: 4,
                     minHeight: 4,
-                    width: 3,
+                    width: 4,
                     height: 4
                 };
-            },
+            }
         }
     });
 })();

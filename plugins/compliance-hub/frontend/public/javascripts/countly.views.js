@@ -1,4 +1,4 @@
-/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
+/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
 (function() {
     var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
@@ -150,9 +150,6 @@
                         label: this.i18n("consent.opt-o")
                     }
                 ],
-                selectedfilter1: 'all',
-                selectedfilter0: 'sessions',
-                selectedfilterforConsent: 'i',
             };
         },
         beforeCreate: function() {
@@ -160,12 +157,27 @@
             this.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
         },
         computed: {
-            selectedfilterforMetrics: {
+            selectedfilterforConsent: {
                 get: function() {
-                    return this.selectedfilter0;
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].type;
                 },
                 set: function(newValue) {
-                    this.selectedfilter0 = newValue;
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'type',
+                        value: newValue,
+                    });
+                    this.initializeStoreData();
+                }
+            },
+            selectedfilterforMetrics: {
+                get: function() {
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].change;
+                },
+                set: function(newValue) {
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'change',
+                        value: newValue,
+                    });
                     this.initializeStoreData();
                 }
             },
@@ -190,9 +202,14 @@
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
                     self.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
-
                 });
             },
+            tableRowClickHandler: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            }
         }
 
     });
@@ -207,48 +224,16 @@
                         label: this.i18n("common.all")
                     },
                     {
-                        value: 'sessions',
-                        label: this.i18n("compliance_hub.Sessions")
+                        value: 'export_app_user',
+                        label: this.i18n("compliance_hub.Export-finished")
                     },
                     {
-                        value: "events",
-                        label: this.i18n('compliance_hub.Events')
+                        value: 'app_user_deleted',
+                        label: this.i18n("compliance_hub.App-user-deleted")
                     },
                     {
-                        value: 'views',
-                        label: this.i18n('compliance_hub.Views')
-                    },
-                    {
-                        value: 'scrolls',
-                        label: this.i18n('compliance_hub.Scrolls')
-                    },
-                    {
-                        value: 'clicks',
-                        label: this.i18n('compliance_hub.Clicks')
-                    },
-                    {
-                        value: 'forms',
-                        label: this.i18n('compliance_hub.Forms')
-                    },
-                    {
-                        value: 'crashes',
-                        label: this.i18n("compliance_hub.Crashes")
-                    },
-                    {
-                        value: 'push',
-                        label: this.i18n('compliance_hub.Push')
-                    },
-                    {
-                        value: 'attribution',
-                        label: this.i18n('compliance_hub.Attribution')
-                    },
-                    {
-                        value: 'users',
-                        label: this.i18n('compliance_hub.Users')
-                    },
-                    {
-                        value: 'star-rating',
-                        label: this.i18n('compliance_hub.Star-rating')
+                        value: 'export_app_user_deleted',
+                        label: this.i18n("compliance_hub.Export-file-deleted")
                     }
                 ],
                 filter1: [
@@ -266,7 +251,7 @@
                     }
                 ],
                 selectedfilter1: 'all',
-                selectedfilter0: 'sessions',
+                selectedfilter0: 'all',
                 selectedfilterforConsent: 'i',
             };
         },
@@ -303,6 +288,7 @@
                     self.$store.dispatch("countlyConsentManager/_exportDP", payload);
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
+                    self.$store.commit("countlyConsentManager/exportHistoryFilter", self.selectedfilter0);
                     self.$store.dispatch("countlyConsentManager/fetchExportHistoryDataResource");
 
                 });
@@ -615,6 +601,7 @@
         priority: 3,
         title: CV.i18n("consent.title"),
         name: 'Consent',
+        pluginName: "compliance-hub",
         permission: "compliance_hub",
         component: countlyVue.components.create({
             template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
@@ -634,8 +621,7 @@
                 if (userDetails.uid) {
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
-            },
-
+            }
         }),
         vuex: [{
             clyModel: countlyConsentManager
@@ -672,8 +658,6 @@
         renderedView.params = params;
         this.renderWhenReady(renderedView);
     });
-    $(document).ready(function() {
-        app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
-    });
+    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", pluginName: "compliance-hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
 
 })();

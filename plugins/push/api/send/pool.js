@@ -17,13 +17,13 @@ class Pool extends Duplex {
      * @param {State} state state instance
      * @param {Object} cfg cfg object
      * @param {integer} cfg.pool.bytes how much bytes can be processed simultaniously by a single connection
-     * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel
+     * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel within particular pool
      */
     constructor(id, type, creds, state, cfg) {
         super({
             // writableHighWaterMark: cfg.bytes * cfg.workers,
             readableObjectMode: true,
-            readableHighWaterMark: 10000,
+            writableHighWaterMark: cfg.pool.bytes,
             writableObjectMode: false,
         });
         this.platform = type.substr(0, 1);
@@ -51,7 +51,7 @@ class Pool extends Duplex {
         });
 
         this.state.on('message', message => {
-            this.log.d('Sending new message %s', message.id);
+            this.log.d('Sending new message %j', message.json);
             this.write(encode(FRAME.CONNECT, [message.json]));
         });
 
@@ -276,7 +276,7 @@ class Pool extends Duplex {
             connection.destroy();
         });
         connection.on('push_done', () => {
-            this.log.i('worker is done');
+            this.log.i('worker %s %s is done', this.id, connection.id);
             if (!this.destroyed) { // connections are reset to undefined on destroy
                 let idx = this.connections.indexOf(connection);
                 if (idx !== -1) {
@@ -385,7 +385,11 @@ class Pool extends Duplex {
                 if (type === FRAME.CONNECT) {
                     this.log.d('sending messages %j', decode(data.buffer).payload.map(m => m._id));
                     let times = timesCallback(this.connections.length, chunkCallback);
-                    this.connections.forEach(conn => conn.write(data, times));
+                    this.connections.forEach(conn => {
+                        let buf = Buffer.alloc(data.length);
+                        data.copy(buf);
+                        conn.write(buf, times);
+                    });
                 }
                 else if (type === FRAME.SEND) {
                     let sent = false,
@@ -415,7 +419,7 @@ class Pool extends Duplex {
                         else {
                             let conn = this.connections[Math.floor(Math.random() * this.connections.length)];
                             this.processing += length;
-                            conn.write(data, data, chunkCallback);
+                            conn.write(data, chunkCallback);
                         }
                     }
                 }

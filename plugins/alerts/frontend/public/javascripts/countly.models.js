@@ -44,7 +44,7 @@
     * @return {string} eventKey - return event parsed key name
 	*/
     function getEventLongName(eventKey, eventMap) {
-        var mapKey = eventKey.replace("\\", "\\\\").replace('$', "\\u0024").replace(".", "\\u002e");
+        var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
         if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }

@@ -54,7 +54,7 @@ class DataStore {
     constructor(size, age, dispose, Cls) {
         this.size = size;
         this.age = age;
-        this.lru = new LRU({max: size || Number.MAX_SAFE_INTEGER, maxAge: age || Number.MAX_SAFE_INTEGER, dispose: dispose, noDisposeOnSet: true, updateAgeOnGet: true});
+        this.lru = new LRU({max: size || 10000, ttl: age || Number.MAX_SAFE_INTEGER, dispose: dispose, noDisposeOnSet: true, updateAgeOnGet: true});
         if (Cls) {
             this.Cls = Cls;
             this.Clas = require('../../../' + Cls[0])[Cls[1]];
@@ -76,7 +76,9 @@ class DataStore {
      * @return {Any}    value or undefined if no value under such key is stored
      */
     read(id) {
-        return this.lru.get(id.toString());
+        if (id && id.toString) {
+            return this.lru.get(id.toString());
+        }
     }
 
     /**
@@ -93,6 +95,9 @@ class DataStore {
             }
             this.lru.set(id.toString(), data);
             return data;
+        }
+        else if (!id) {
+            this.lru.reset();
         }
         else if (this.read(id) !== null) {
             this.lru.del(id.toString());
@@ -588,7 +593,7 @@ class CacheMaster {
         this.operators[group] = {init, Cls, read, write, update, remove};
 
         if (!size && size !== 0) {
-            size = config.api && config.api.cache && config.api.cache[group] && config.api.cache[group].size !== undefined ? config.api.cache[group].size : Number.MAX_SAFE_INTEGER;
+            size = config.api && config.api.cache && config.api.cache[group] && config.api.cache[group].size !== undefined ? config.api.cache[group].size : 10000;
         }
 
         if (!age && age !== 0) {
@@ -1000,13 +1005,9 @@ class StreamedCollection {
      */
     close() {
         if (this.stream) {
-            this.stream.close(e => {
-                this.stream = undefined;
-                if (e) {
-                    log.e('Error while closing stream', e);
-                }
-                log.d('Stream closedd');
-            });
+            this.stream.destroy();
+            this.stream = undefined;
+            log.d('Stream closedd');
         }
     }
 

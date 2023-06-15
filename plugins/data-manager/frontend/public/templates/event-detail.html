@@ -6,7 +6,7 @@
             <div>
                 <cly-back-link link="/manage/data-manager/events/events" title="Back to Manage Events"></cly-back-link>
                 <div class="bu-mt-4">
-                    <h3 class="bu-is-capitalized"> {{event.name || event.key}} </h3>
+                    <h3 class="bu-is-capitalized"><div v-html="event.name || event.key"></div></h3>
                     <div class="bu-mt-4 bu-mr-2">
                         <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(event.status)" class="bu-tag bu-mt-1"> 
@@ -62,12 +62,12 @@
                             <tr>
                                 <td><span>{{i18n('data-manager.events.key')}}</span>
                                 </td>
-                                <td>{{event.key}}</td>
+                                <td v-html="event.key"></td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.event-name')}}</span>
                                 </td>
-                                <td>{{event.name}}</td>
+                                <td v-html="event.name"></td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.description')}}</span>
@@ -77,7 +77,7 @@
                             <tr>
                                 <td><span>{{i18n('data-manager.category')}}</span>
                                 </td>
-                                <td>{{categoriesMap[event.category] || i18n('data-manager.uncategorized') }}</td>
+                                <td v-html="categoriesMap[event.category] || i18n('data-manager.uncategorized')"></td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.first-triggered')}}</span>
@@ -103,12 +103,12 @@
             <template v-slot="scope">
                 <el-table-column :label="i18n('data-manager.segment-name')" sortable="custom" prop="name">
                     <template v-slot="rowScope">
-                        {{rowScope.row.name}}
+                        <div v-html="rowScope.row.name"></div>
                     </template>
                 </el-table-column>
                 <el-table-column :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
-                        {{rowScope.row.description}}
+                        <div v-html="rowScope.row.description"></div>
                     </template>
                 </el-table-column>
                 <el-table-column :label="i18n('data-manager.status')" sortable="custom" prop="status">
@@ -121,7 +121,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="i18n('data-manager.last-modified')" prop="auditTs" sortable="custom">
+                <el-table-column :label="i18n('data-manager.last-modified')" column-key="auditDate" prop="auditTs" sortable="custom">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
                             <div>{{rowScope.row.auditDate}}</div>
@@ -129,7 +129,7 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column type="options" width="90px" align="center">
+                <el-table-column v-if="canUserUpdate" type="options" width="90px" align="center">
                     <template v-slot="rowScope">
                         <el-button v-if="rowScope.row.hover" @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
                     </template>

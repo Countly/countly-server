@@ -6,9 +6,8 @@
     :gs-y="widget.position && widget.position[1]"
     :gs-w="validateWidgetSize(settings, widget, 'w')"
     :gs-h="validateWidgetSize(settings, widget, 'h')"
-    :gs-auto-position="autoPosition"
-    :gs-min-w="validateWidgetDimension(settings, 'w')"
-    :gs-min-h="validateWidgetDimension(settings, 'h')"
+    :gs-min-w="validateWidgetDimension(settings, widget, 'w')"
+    :gs-min-h="validateWidgetDimension(settings, widget, 'h')"
     @click="settings.grid.onClick && settings.grid.onClick(widget)">
 
     <!--
@@ -22,7 +21,7 @@
 
     <div class="grid-stack-item-content bu-p-4">
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
-            <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
+            <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
@@ -43,8 +42,8 @@
             <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
-                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                        <el-dropdown-item class="dashboard-more-options" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                        <el-dropdown-item class="dashboard-more-options" command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                     </cly-more-options>
                 </div>
             </template>

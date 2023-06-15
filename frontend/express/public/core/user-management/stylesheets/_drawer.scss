@@ -167,11 +167,13 @@
     //box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
   }
 
-  &__feature-name-col {
+  &__feature-search {
     width: calc(40% - 15px);
-    text-align: left;
-    padding-left: 15px;
-    text-transform: uppercase;
+    margin-left: 10px;
+    
+    .el-input__inner { 
+      background-color: white !important;
+    }
   }
 
   &__permission-type-cols {
@@ -184,6 +186,7 @@
     text-align: center;
     font-size: 11px;
     width: 25%;
+    margin: auto;
 
     .check-label {
       font-size: 15px;

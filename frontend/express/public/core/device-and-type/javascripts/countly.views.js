@@ -1,4 +1,4 @@
-/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
+/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal, countlyGraphNotesCommon*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -369,7 +369,10 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+    components: {
+        "drawer": countlyGraphNotesCommon.drawer
+    },
     data: function() {
         return {
             showBuckets: false,
@@ -381,7 +384,7 @@ var GridComponent = countlyVue.views.create({
                 "carriers": this.i18n("carriers.title"),
                 "devices": this.i18n("devices.title"),
                 "browser": this.i18n("browser.title"),
-                "device_type": this.i18n("device_type.device_types"),
+                "device_type": this.i18n("device_type.title"),
             },
             tableMap: {
                 "u": this.i18n("common.table.total-users"),
@@ -420,9 +423,23 @@ var GridComponent = countlyVue.views.create({
         stackedBarOptions: function() {
             return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
         },
+        stackedBarTimeSeriesOptions: function() {
+            return this.calculateStackedBarTimeSeriesOptionsFromWidget(this.data, this.tableMap);
+        },
         pieGraph: function() {
             return this.calculatePieGraphFromWidget(this.data, this.tableMap);
         }
+    },
+    methods: {
+        refresh: function() {
+            this.refreshNotes();
+        },
+        valFormatter: function(val) {
+            if (this.data.displaytype !== "value") {
+                return val + " %";
+            }
+            return val;
+        },
     }
 });
 
@@ -442,7 +459,10 @@ var DrawerComponent = countlyVue.views.create({
             ];
         },
         enabledVisualizationTypes: function() {
-            return ['pie-chart', 'bar-chart', 'table'];
+            if (this.scope.editedObject.breakdowns.indexOf("devices") !== -1 || this.scope.editedObject.breakdowns.indexOf("resolutions") !== -1 || this.scope.editedObject.breakdowns.indexOf("carriers") !== -1 || this.scope.editedObject.breakdowns.indexOf("density") !== -1) {
+                return ['pie-chart', 'bar-chart', 'table'];
+            }
+            return ['time-series', 'pie-chart', 'bar-chart', 'table'];
         },
         isMultipleMetric: function() {
             var multiple = false;
@@ -453,6 +473,9 @@ var DrawerComponent = countlyVue.views.create({
 
             return multiple;
         },
+        showDisplayType: function() {
+            return this.scope.editedObject.data_type === 'technology' && this.scope.editedObject.visualization === 'time-series';
+        }
     },
     mounted: function() {
         if (this.scope.editedObject.breakdowns.length === 0) {
@@ -506,6 +529,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 data_type: "technology",
                 app_count: 'single',
                 metrics: [],
+                displaytype: "",
                 apps: [],
                 visualization: "",
                 breakdowns: ['devices'],
@@ -519,15 +543,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         }
     },
     grid: {
-        component: GridComponent,
-        dimensions: function() {
-            return {
-                minWidth: 2,
-                minHeight: 4,
-                width: 2,
-                height: 4
-            };
-        }
+        component: GridComponent
     }
 
 });

@@ -1,8 +1,10 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
+/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers, _ */
 
 (function() {
 
     var FEATURE_NAME = "data_manager";
+    var SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
+    var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
@@ -229,7 +231,7 @@
                 var cats = this.$store.getters["countlyDataManager/categories"] || [];
                 return [{ label: CV.i18n('data-manager.uncategorized'), value: null }].concat(cats.map(function(ev) {
                     return {
-                        label: ev.name,
+                        label: countlyCommon.unescapeHtml(ev.name),
                         value: ev._id
                     };
                 }));
@@ -246,7 +248,15 @@
             },
             onSubmit: function(doc) {
                 if (doc.isEditMode) {
-                    this.$store.dispatch('countlyDataManager/editEvent', doc);
+                    if (!doc.status || doc.status === 'unplanned') {
+                        if (!doc.is_visible) {
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
+                        }
+                        doc.is_visible = true;
+                    }
+                    if (!(_.isEqual(doc, this.$refs.eventDrawer.initialEditedObject))) {
+                        this.$store.dispatch('countlyDataManager/editEvent', doc);
+                    }
                 }
                 else {
                     this.$store.dispatch('countlyDataManager/saveEvent', doc);
@@ -275,7 +285,7 @@
                 var events = this.$store.getters["countlyDataManager/events"] || [];
                 return events.map(function(ev) {
                     return {
-                        label: ev.name || ev.key || ev.e,
+                        label: countlyCommon.unescapeHtml(ev.name || ev.key || ev.e),
                         value: ev.key || ev.e
                     };
                 });
@@ -293,7 +303,9 @@
             onSubmit: function(doc) {
                 if (doc.isEditMode) {
                     doc.app_id = countlyCommon.ACTIVE_APP_ID;
-                    this.$store.dispatch('countlyDataManager/editEventGroups', doc);
+                    if (!(_.isEqual(doc, this.$refs.eventGroupDrawer.initialEditedObject))) {
+                        this.$store.dispatch('countlyDataManager/editEventGroups', doc);
+                    }
                 }
                 else {
                     doc.app_id = countlyCommon.ACTIVE_APP_ID;
@@ -339,6 +351,14 @@
                 this.$store.dispatch('countlyDataManager/loadEventGroups');
             },
             handleEdit: function() {
+                var doc = this.eventGroup;
+                doc.name = countlyCommon.unescapeHtml(doc.name);
+                doc.description = countlyCommon.unescapeHtml(doc.description);
+                if (Array.isArray(doc.source_events)) {
+                    doc.source_events = doc.source_events.map(function(val) {
+                        return countlyCommon.unescapeHtml(val);
+                    });
+                }
                 this.openDrawer('eventgroup', this.eventGroup);
             },
             handleCommand: function(ev, eventGroup) {
@@ -530,7 +550,7 @@
                         if (e.isSelected === undefined) {
                             e.isSelected = false;
                         }
-                        e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
+                        e.categoryName = self.categoriesMap[e.category] || CV.i18n('data-manager.uncategorized');
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
@@ -539,6 +559,12 @@
                         }
                         if (!e.e) {
                             e.e = e.key;
+                        }
+                        if (!e.name) {
+                            e.name = e.key;
+                        }
+                        if (!e.description) {
+                            e.description = '';
                         }
                         if (isEventCountAvailable) {
                             e.totalCount = eventCount[e.key] || 0;
@@ -555,7 +581,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -605,7 +631,7 @@
                         options: [
                             {value: "all", label: "All Categories"},
                         ].concat(this.categories.map(function(c) {
-                            return {value: c.name, label: c.name};
+                            return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
@@ -647,7 +673,7 @@
                 this.$store.dispatch("countlyDataManager/changeCategory", {
                     category: cat,
                     events: rows.map(function(ev) {
-                        return ev.key;
+                        return countlyCommon.unescapeHtml(ev.key);
                     })
                 });
             },
@@ -743,9 +769,11 @@
                 var rows = this.deleteQueue;
                 var events = [];
                 rows.forEach(function(row) {
-                    events.push(row.key);
+                    var delKey = row.key || row.e || row.name;
+                    events.push(delKey);
                 });
                 this.$store.dispatch('countlyDataManager/deleteEvents', events);
+                this.deleteQueue = null;
                 this.showDeleteDialog = false;
             },
             statusClassObject: statusClassObject,
@@ -880,6 +908,25 @@
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME)) {
+                localTabs.push(
+                    {
+                        title: this.i18n('data-manager.events'),
+                        priority: 1,
+                        name: "events",
+                        component: EventsDefaultTabView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
+                    }
+                );
+                localTabs.push({
+                    priority: 3,
+                    title: CV.i18n('data-manager.event-groups'),
+                    name: "event-groups",
+                    component: EventsGroupsTabView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
+                });
+            }
             return {
                 isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
                 currentSecondaryTab: (this.$route.params && this.$route.params.secondaryTab) || "events",
@@ -895,22 +942,7 @@
                     previewTemplate: '<div class="cly-vue-data-manager__dropzone__preview bu-level bu-mx-4 bu-mt-3">\
                                       <div class="dz-filename bu-ml-2"><span data-dz-name></span></div></div>'
                 },
-                localTabs: [
-                    {
-                        title: this.i18n('data-manager.events'),
-                        priority: 1,
-                        name: "events",
-                        component: EventsDefaultTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/events"
-                    },
-                    {
-                        priority: 3,
-                        title: CV.i18n('data-manager.event-groups'),
-                        name: "event-groups",
-                        component: EventsGroupsTabView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events/event-groups"
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
@@ -922,6 +954,9 @@
                 });
 
                 return allTabs;
+            },
+            canUserCreateTransform: function() {
+                return countlyAuth.validateCreate(SUB_FEATURE_TRANSFORMATIONS);
             }
         },
         components: {
@@ -942,7 +977,9 @@
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
                     this.$store.dispatch('countlyDataManager/loadInternalEvents');
-                    this.$store.dispatch('countlyDataManager/loadViews');
+                    if (countlyGlobal.plugins.indexOf("views") > -1) {
+                        this.$store.dispatch('countlyDataManager/loadViews');
+                    }
                 }
             },
             handleCreateCommand: function(event, tab) {
@@ -1029,7 +1066,7 @@
                                 if (segment) {
                                     try {
                                         var sg = data.sg[segment];
-                                        sg.name = segment;
+                                        sg.name = countlyCommon.unescapeHtml(segment);
                                         segments.push(sg);
                                     }
                                     catch (e) {
@@ -1043,12 +1080,31 @@
                 else {
                     data.segments = data.segments.map(function(seg) {
                         return {
-                            name: seg
+                            name: countlyCommon.unescapeHtml(seg)
                         };
                     });
                 }
                 data.isEditMode = true;
                 data.is_visible = data.is_visible === undefined ? true : data.is_visible;
+                data.description = countlyCommon.unescapeHtml(data.description);
+                data.e = countlyCommon.unescapeHtml(data.e);
+                if (data.key) {
+                    data.key = countlyCommon.unescapeHtml(data.key);
+                }
+                data.categoryName = countlyCommon.unescapeHtml(data.categoryName);
+                data.name = countlyCommon.unescapeHtml(data.name);
+                if (data.sg) {
+                    Object.keys(data.sg).forEach(function(key) {
+                        var decodedKey = countlyCommon.unescapeHtml(key);
+                        if (data.sg[key].name) {
+                            data.sg[key].name = countlyCommon.unescapeHtml(data.sg[key].name);
+                        }
+                        if (decodedKey !== key) {
+                            data.sg[decodedKey] = data.sg[key];
+                            delete data.sg[key];
+                        }
+                    });
+                }
                 self.openDrawer("events", data);
             });
             this.$root.$on('dm-open-edit-transform-drawer', function(doc) {
@@ -1058,7 +1114,7 @@
                 if (doc.actionType.split('_')[1] !== "MERGE") {
                     doc.transformTarget = doc.transformTarget[0];
                 }
-                if (doc.actionType === 'EVENT_MERGE' && doc.isRegex === true) {
+                if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
                 }
                 else {
@@ -1067,13 +1123,26 @@
                 doc.isExistingEvent = 'true';
                 // doc.tab;
                 // delete doc.transformType;
+                doc.name = countlyCommon.unescapeHtml(doc.name);
+                doc.transformResult = countlyCommon.unescapeHtml(doc.transformResult);
                 if (doc.actionType === 'value') {
                     doc.actionType = 'change-value';
                 }
                 doc.isEditMode = true;
                 if (doc.parentEvent) {
+                    doc.parentEvent = countlyCommon.unescapeHtml(doc.parentEvent);
                     doc.selectedParentEvent = doc.parentEvent;
                 }
+                if (!doc.targetRegex) {
+                    doc.targetRegex = false;
+                }
+                if (!doc.isRegex) {
+                    doc.isRegex = false;
+                }
+                if (!doc.isRegexMerge) {
+                    doc.isRegexMerge = false;
+                }
+
                 self.openDrawer("transform", doc);
             });
             this.$root.$on('dm-open-edit-event-group-drawer', function(data) {
@@ -1103,17 +1172,19 @@
             })
         ],
         data: function() {
+            var localTabs = [];
+            if (countlyAuth.validateRead(FEATURE_NAME) || countlyAuth.validateRead(SUB_FEATURE_TRANSFORMATIONS)) {
+                localTabs.push({
+                    priority: 1,
+                    title: this.i18n('data-manager.events'),
+                    name: "events",
+                    component: EventsView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
+                });
+            }
             return {
                 currentPrimaryTab: (this.$route.params && this.$route.params.primaryTab) || "events",
-                localTabs: [
-                    {
-                        priority: 1,
-                        title: this.i18n('data-manager.events'),
-                        name: "events",
-                        component: EventsView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/data-manager/events",
-                    }
-                ]
+                localTabs
             };
         },
         computed: {
@@ -1306,8 +1377,5 @@
         this.renderWhenReady(detailView);
     });
 
-    $(document).ready(function() {
-        app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
-    });
-
+    app.addSubMenu("management", { code: "data-manager", permission: [FEATURE_NAME, SUB_FEATURE_REDACTION, SUB_FEATURE_TRANSFORMATIONS], pluginName: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

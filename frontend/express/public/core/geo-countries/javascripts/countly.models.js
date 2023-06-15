@@ -1,11 +1,16 @@
-/* global CountlyHelpers, jQuery, $,countlyCommon,countlyVue, countlySession, countlyLocation*/
+/* global CountlyHelpers, jQuery, $,countlyCommon,countlyVue, countlySession, countlyTotalUsers, countlyLocation*/
 (function(countlyCountry) {
 
     CountlyHelpers.createMetricModel(countlyCountry, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
 
     countlyCountry.service = {
         fetchData: function() {
-            return $.when(countlySession.initialize()).then(function() {});
+            return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"))
+                .then(function() {
+                })
+                .catch(function(err) {
+                    return err;
+                });
         },
         calculateData: function() {
             countlyCountry.setDb(countlySession.getDb());
@@ -36,7 +41,7 @@
             locationData = locationData || {};
             locationData = locationData.chartData || [];
             locationData = countlyCommon.mergeMetricsByName(locationData, "country");
-            var totals = countlyCommon.getDashboardData(countlyCountry.getDb(), ["u", "t", "n"], ["u"], {"u": "countries"}, countlyCountry.clearObject); //get totals with change
+            var totals = countlyCommon.getDashboardData(countlyCountry.getDb(), ["u", "t", "n"], ["u"], {"u": "users"}, countlyCountry.clearObject); //get totals with change
 
             return {"table": locationData, "totals": totals};
         },

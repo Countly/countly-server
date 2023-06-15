@@ -7,7 +7,8 @@ var pluginObject = {},
     apiUtils = require("../../../api/utils/utils.js"),
     members = require("../../../frontend/express/libs/members.js"),
     versionInfo = require("../../../frontend/express/version.info"),
-    languages = require('../../../frontend/express/locale.conf');
+    languages = require('../../../frontend/express/locale.conf'),
+    preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js');
 
 /**
  @param {string} username - user identifier
@@ -246,6 +247,8 @@ function generateQRCode(username, secret, callback) {
                                 }
                                 // 2fa is already set up
                                 else {
+                                    // otp is wrong, increase fails
+                                    preventBruteforce.fail("login", req.body.username);
                                     res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
                                         cdn: countlyConfig.cdn || "",
                                         countlyFavicon: req.countly.favicon,

@@ -60,7 +60,7 @@
                 return this.$attrs.cancelButtonLabel || this.cancelButtonLabel;
             },
             confirmStyle: function() {
-                if (this.dialogType === "success" || this.dialogType === "danger") {
+                if (this.dialogType === "success" || this.dialogType === "danger" || this.dialogType === "warning") {
                     return this.dialogType;
                 }
                 return "success";
@@ -82,6 +82,7 @@
 						<template v-slot:footer><div class="cly-vue-formdialog__buttons is-single-step bu-is-justify-content-flex-end bu-is-flex">\
 							<el-button size="small" @click="cancelClicked"  type="secondary" >{{cancelLabel}}</el-button>\
 							<el-button size="small" @click="confirmClicked" type="success" v-if="confirmStyle==\'success\'" >{{saveLabel}}</el-button>\
+                            <el-button size="small" @click="confirmClicked" type="warning" v-else-if="confirmStyle==\'warning\'" >{{saveLabel}}</el-button>\
 							<el-button size="small" @click="confirmClicked" type="danger" v-else >{{saveLabel}}</el-button>\
 						</div></template>\
                     </el-dialog>'

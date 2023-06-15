@@ -240,7 +240,7 @@ var SessionHomeWidget = countlyVue.views.create({
             var series = [];
             if (sessionDP && sessionDP.chartDP && sessionDP.chartDP[0] && sessionDP.chartDP[1]) {
                 series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
-                series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
+                series.push({"name": sessionDP.chartDP[0].label + " (" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
             }
             if (value === "d" || value === "d-avg") {
                 return {

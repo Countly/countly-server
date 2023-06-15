@@ -1,7 +1,9 @@
 'use strict';
 
 const { PushError, ERROR } = require('./error'),
-    { toDate, Validatable } = require('./const');
+    { toDate, Validatable } = require('./const'),
+    MAX_RUNS = 10,
+    MAX_ERRORS = 10;
 
 /**
  * Message sending result
@@ -29,7 +31,7 @@ class Result extends Validatable {
             this._data.lastError = PushError.deserialize(this._data.lastError);
         }
         if (this._data.lastErrors) {
-            this._data.lastErrors = this._data.lastErrors.map(PushError.deserialize);
+            this._data.lastErrors = this._data.lastErrors.map(e => PushError.deserialize(e));
         }
 
         if (this._data.subs) {
@@ -247,7 +249,7 @@ class Result extends Validatable {
         if (!this._data.lastErrors) {
             this._data.lastErrors = [];
         }
-        while (this._data.lastErrors.length >= 10) {
+        while (this._data.lastErrors.length >= MAX_ERRORS) {
             this._data.lastErrors.shift();
         }
         this._data.lastErrors.push(error);
@@ -281,6 +283,15 @@ class Result extends Validatable {
     }
 
     /**
+     * Getter for last of lastRuns
+     * 
+     * @returns {object|undefined} last run object with start, processed, errored & end? keys
+     */
+    get lastRun() {
+        return this._data.lastRuns && this._data.lastRuns[this._data.lastRuns.length - 1] || undefined;
+    }
+
+    /**
      * Getter for lastRuns
      * 
      * @returns {object[]|undefined} last 10 lastRuns array
@@ -292,16 +303,19 @@ class Result extends Validatable {
     /**
      * Add another run to lastRuns
      * 
-     * @param {object} run the run to push
+     * @param {Date} date date of run start
+     * @returns {object} run object with start, processed & errored props
      */
-    pushRun(run) {
+    startRun(date) {
         if (!this._data.lastRuns) {
             this._data.lastRuns = [];
         }
-        while (this._data.lastRuns.length >= 10) {
+        while (this._data.lastRuns.length >= MAX_RUNS) {
             this._data.lastRuns.shift();
         }
+        let run = {start: date, processed: 0, errored: 0};
         this._data.lastRuns.push(run);
+        return run;
     }
 
     /**
@@ -437,5 +451,5 @@ class Result extends Validatable {
 
 
 
-module.exports = { Result };
+module.exports = { Result, MAX_RUNS, MAX_ERRORS };
 

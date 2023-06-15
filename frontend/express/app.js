@@ -30,7 +30,7 @@ var versionInfo = require('./version.info'),
     fs = require('fs'),
     path = require('path'),
     jimp = require('jimp'),
-    request = require('request'),
+    request = require('countly-request'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
     formidable = require('formidable'),
@@ -60,7 +60,7 @@ var versionInfo = require('./version.info'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
     { validateCreate } = require('../../api/utils/rights.js');
 
-console.log("Starting Countly", "version", pack.version);
+console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
@@ -354,7 +354,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         if (!loadedThemes[theme]) {
             var tempThemeFiles = {css: [], js: []};
             if (theme && theme.length) {
-                var themeDir = path.resolve(__dirname, "public/themes/" + theme + "/");
+                var themeDir = path.resolve(__dirname, "public/themes/" + common.sanitizeFilename(theme) + "/");
                 fs.readdir(themeDir, function(err, list) {
                     if (err) {
                         if (callback) {
@@ -585,6 +585,19 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {
+                //handle bakcwards compatability with formiddble v1
+                for (let i in files) {
+                    if (files[i].filepath) {
+                        files[i].path = files[i].filepath;
+                    }
+                    if (files[i].mimetype) {
+                        files[i].type = files[i].mimetype;
+                    }
+                    if (files[i].originalFilename) {
+                        files[i].name = files[i].originalFilename;
+                    }
+                }
+
                 req.files = files;
                 if (!req.body) {
                     req.body = {};
@@ -838,7 +851,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     /**
      * Stringify all object nested properties named `prop`
-     * 
+     *
      * @param {object} obj object to fix
      * @param {string} prop property name
      */
@@ -865,7 +878,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
-        var configs = plugins.getConfig("frontend", member.settings);
+        var configs = plugins.getConfig("frontend", member.settings),
+            licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -880,6 +894,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
+            }
+            if (req.session.licenseNotification) {
+                try {
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
+                }
+                catch (e) {
+                    log.e('Failed to parse notify', e);
+                }
             }
 
             member._id += "";
@@ -912,10 +938,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 member: member,
                 config: req.config,
                 security: plugins.getConfig("security"),
-                plugins: plugins.getPlugins(),
+                plugins: plugins.getPlugins(true),
+                pluginsFull: plugins.getPlugins(),
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
+                licenseNotification,
+                licenseError,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
@@ -951,8 +980,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 frontend_app: versionInfo.frontend_app,
                 frontend_server: versionInfo.frontend_server,
                 production: configs.production || false,
-                pluginsSHA: sha1Hash(plugins.getPlugins()),
-                plugins: plugins.getPlugins(),
+                pluginsSHA: sha1Hash(plugins.getPlugins(true)),
+                plugins: plugins.getPlugins(true),
                 config: req.config,
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
@@ -963,7 +992,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 stylesheets: [],
                 offline_mode: configs.offline_mode || false
             };
-
             // google services cannot work when offline mode enable
             if (toDashboard.offline_mode) {
                 toDashboard.use_google = false;
@@ -979,15 +1007,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plgns.forEach(plugin => {
                 try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
-                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                 }
                 catch (e) {
                     console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                 }
                 try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/stylesheets`) || [];
-                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
                 }
                 catch (e) {
                     console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
@@ -1025,6 +1053,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             userOfApps = apps;
 
                             for (let i = 0; i < apps.length; i++) {
+                                if (apps[i].checksum_salt) {
+                                    apps[i].salt = apps[i].salt || apps[i].checksum_salt;
+                                }
                                 apps[i].type = apps[i].type || "mobile";
                                 countlyGlobalApps[apps[i]._id] = apps[i];
                                 countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
@@ -1453,7 +1484,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     app.get(countlyConfig.path + '/sdks.js', function(req, res) {
         if (!plugins.getConfig("api").offline_mode) {
-            var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+            var options = {uri: "https://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
             request(options, function(a, c, b) {
                 res.set('Content-type', 'application/javascript').status(200).send(b);
             });
@@ -1512,9 +1543,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
+        if (req.body.app_image_id) {
+            req.body.app_id = req.body.app_image_id;
+        }
         var params = paramsGenerator({req, res});
         validateCreate(params, 'global_upload', function() {
-            if (!req.session.uid) {
+            if (!req.session.uid && !req.body.app_image_id) {
                 res.end();
                 return false;
             }
@@ -1540,6 +1574,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 jimp.read(tmp_path, function(err, icon) {
                     if (err) {
                         console.log(err, err.stack);
+                        fs.unlink(tmp_path, function() {});
+                        res.status(400).send(false);
+                        return true;
                     }
                     icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                         countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
@@ -1555,10 +1592,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
-    app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
+    app.post(countlyConfig.path + '/member/icon', async function(req, res, next) {
 
         var params = paramsGenerator({req, res});
-        validateCreate(params, 'global_upload', function() {
+        validateCreate(params, 'global_upload', async function() {
             if (!req.files.member_image || !req.body.member_image_id) {
                 res.end();
                 return true;
@@ -1574,6 +1611,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.send(false);
                 return true;
             }
+            try {
+                // This is to check that the uploaded image is a real image
+                // If jimp cannot read it then it is not a real image
+                const image = await jimp.read(tmp_path);
+
+                if (!image) {
+                    fs.unlink(tmp_path, function() {});
+                    res.status(400).send(false);
+                    return true;
+                }
+            }
+            catch (err) {
+                console.log(err.stack);
+                fs.unlink(tmp_path, function() {});
+                res.status(400).send(false);
+                return true;
+            }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
                 jimp.read(tmp_path, function(err, icon) {
@@ -1583,7 +1637,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                         countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
                             fs.unlink(tmp_path, function() {});
-                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
                                 res.send("memberimages/" + req.body.member_image_id + ".png");
                             });
                         });
@@ -1665,6 +1719,39 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         else {
             res.send(false);
             return false;
+        }
+    });
+
+    app.post(countlyConfig.path + '/user/settings/column-order', function(req, res) {
+        if (!req.session.uid) {
+            return res.end();
+        }
+
+        if (req.body.columnOrderKey && (req.body.tableSortMap || req.body.reorderSortMap)) {
+            let reorderSortMapKey = `columnOrder.${req.body.columnOrderKey}.reorderSortMap`;
+            let tableSortMapKey = `columnOrder.${req.body.columnOrderKey}.tableSortMap`;
+
+            if (!req.body.tableSortMap) {
+                tableSortMapKey = undefined;
+            }
+            if (!req.body.reorderSortMap) {
+                reorderSortMapKey = undefined;
+            }
+
+            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, {
+                '$set': {
+                    [reorderSortMapKey]: req.body.reorderSortMap,
+                    [tableSortMapKey]: req.body.tableSortMap
+                }
+            }, { safe: true, upsert: true }, function(err, member) {
+                if (member && !err) {
+                    return res.send(true);
+                }
+                return res.send(false);
+            });
+        }
+        else {
+            return res.send(false);
         }
     });
 

@@ -18,7 +18,7 @@
       </template>
   </cly-header>
   <cly-main>
-  <cly-date-picker-g class="acquisition-sources-view__date-picker-container"></cly-date-picker-g>    
+  <cly-date-picker-g class="acquisition-sources-view__date-picker-container"></cly-date-picker-g>
   <cly-section>
     <div class="bu-columns bu-is-gapless">
       <div class="bu-column bu-is-6">
@@ -30,7 +30,7 @@
     </div>
   </cly-section>
   <cly-section>
-    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading">
+    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading" ref="table" @row-click="handleTableRowClick" row-class-name="bu-is-clickable">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
@@ -46,21 +46,21 @@
               </div>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="total-sessions" :label="i18n('common.table.total-sessions')">
+        <el-table-column sortable="true" prop="t" :label="i18n('common.table.total-sessions')">
             <template v-slot="rowScope">
                 <div>
                     {{ formatNumber(rowScope.row.t) }}
                 </div>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="total-users" :label="i18n('common.table.total-users')">
+        <el-table-column sortable="true" prop="u" :label="i18n('common.table.total-users')">
             <template v-slot="rowScope">
                 <div>
                     {{ formatNumber(rowScope.row.u) }}
                 </div>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="new-users" :label="i18n('common.new-users')">
+        <el-table-column sortable="true" prop="n" :label="i18n('common.new-users')">
         <template v-slot="rowScope">
             <div>
                 {{ formatNumber(rowScope.row.n) }}
@@ -70,5 +70,5 @@
       </template>
     </cly-datatable-n>
   </cly-section>
-  </cly-main> 
+  </cly-main>
 </div>

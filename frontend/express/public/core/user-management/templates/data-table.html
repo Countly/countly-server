@@ -2,39 +2,97 @@
   <cly-datatable-n
     :rows="filteredRows"
     :force-loading="loading"
+    :exportFormat="formatExportFunction"
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
-        <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">
-          <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
-          <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
-          <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
-          <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
-        </el-select>
+        <cly-dropdown :width="360" ref="filterDropdown" @hide="reloadFilterValues">
+            <template v-slot:trigger="dropdown">
+                <cly-input-dropdown-trigger
+                    v-tooltip="filterSummary"
+                    :selected-options="filterSummary"
+                    :focused="dropdown.focused"
+                    :opened="dropdown.visible"
+                    :adaptive-length="true">
+                </cly-input-dropdown-trigger>
+            </template>
+            <template>
+                <cly-form
+                    :initial-edited-object="currentFilter"
+                    class="user-management-filter-form"
+                    ref="filterForm"
+                    @submit="handleSubmitFilter">
+                    <template v-slot="formScope">
+                        <cly-form-step id="filter-form-step">
+                            <div class="bu-m-4">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item">
+                                            <h4>{{i18n('management-users.view-title')}}</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bu-level-right">
+                                        <div class="bu-level-item">
+                                            <el-button type="text" class="cly-multi-select__reset" @click="handleResetFilterClick">{{i18n('management-users.reset-filters')}}</el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <cly-form-field :label="i18n('management-users.role')">
+                                    <el-select placement="bottom-start" class="select-full-width" v-model="formScope.editedObject.role" :placeholder="i18n('management-users.all-roles')">
+                                        <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+                                        <el-option v-for="(value, key, idx) in roleMap" :key="idx + 1" :label="value" :value="key"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field v-if="isGroupPluginEnabled" :label="i18n('management-users.group')">
+                                    <el-select placement="bottom-start" class="select-full-width" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
+                                        <el-option key="0" :label="i18n('management-users.all-groups')" :value="null"></el-option>
+                                        <el-option v-for="(value, key, idx) in groupMap" :key="idx + 1" :label="value" :value="key"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <div class="bu-has-text-right bu-pt-3">
+                                    <el-button type="secondary" @click="handleCancelFilterClick">{{i18n('common.cancel')}}</el-button>
+                                    <el-button type="success" @click="formScope.submit()">{{i18n('common.apply')}}</el-button>
+                                </div>
+                            </div>
+                        </cly-form-step>
+                    </template>
+                </cly-form>
+            </template>
+        </cly-dropdown>
       </template>
       <template v-slot="scope">
         <template v-for="(col, idx) in scope.dynamicCols">
-          <el-table-column 
-            v-if="col.value === 'username'"  
-            sortable="true" prop="username" :label="i18n('management-users.username')">
-          </el-table-column>
           <el-table-column
-            v-if="col.value === 'full_name'"  
+            v-if="col.value === 'full_name'"
             sortable="true" prop="full_name" :label="i18n('management-users.user')">
           </el-table-column>
           <el-table-column
-            v-if="col.value === 'email'"  
-            sortable="true" prop="email" :label="i18n('management-users.email')">
+            v-if="col.value === 'username'"
+            sortable="true" prop="username" :label="i18n('management-users.username')">
           </el-table-column>
           <el-table-column
             v-if="col.value === 'role'"
-            prop="role"
+            prop="dispRole"
+            sortable="true"
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
-              <span class="text-medium">
-                {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission && rowScope.row.permission._ && rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
-              </span>
+              <span class="text-medium">{{rowScope.row.dispRole}}</span>
             </template>
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'email'"
+            sortable="true" prop="email" :label="i18n('management-users.email')">
+          </el-table-column>
+          <el-table-column v-if="col.value === 'group'" sortable="true" prop="groupNames" :label="i18n('management-users.group')">
+            <template v-slot="rowScope">
+              <div v-if="!rowScope.row.groupNames">{{i18n('management-users.group-blank')}}</div>
+              <div v-else class="manage-users-table__groups" :key="index" v-for="(groupId, index) in rowScope.row.group_id">
+                  <a :href="'#/manage/users/group/' + groupId + '?from=userlist'" :title="rowScope.row.groupNames.trim().split(',')[index]">
+                    <span>{{rowScope.row.groupNames.trim().split(',')[index]}}</span>
+                  </a>
+                  <span class="manage-users-table__groups-label" v-if="index !== rowScope.row.group_id.length - 1">,</span>
+              </div>
+          </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'created_at'"
@@ -61,10 +119,11 @@
             <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row._id)">
               <el-dropdown-item command="edit-user">{{ i18n('management-users.edit-user') }}</el-dropdown-item>
               <el-dropdown-item v-if="showLogs" command="show-logs">{{ i18n('management-users.view-user-logs') }}</el-dropdown-item>
+              <el-dropdown-item command="reset-logins">{{ i18n('management-users.reset-failed-logins') }}</el-dropdown-item>
               <el-dropdown-item command="delete-user">{{ i18n('management-users.delete-user') }}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
-      </template> 
+      </template>
   </cly-datatable-n>
 </div>

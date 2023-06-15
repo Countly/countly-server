@@ -94,7 +94,7 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                    var url = '/i/reports/preview?auth_token=' + countlyGlobal.auth_token + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                     window.open(url, "_blank");
                     break;
                 default:
@@ -371,20 +371,18 @@
         this.renderWhenReady(reportsView);
     });
 
-    $(document).ready(function() {
-        app.addMenu("management", {code: "reports", permission: FEATURE_NAME, url: "#/manage/reports", text: "reports.title", priority: 90});
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("reports", "reports.title");
-            app.configurationsView.registerLabel(
-                "reports.secretKey",
-                "reports.secretKey"
-            );
-        }
+    app.addMenu("management", {code: "reports", permission: FEATURE_NAME, url: "#/manage/reports", text: "reports.title", priority: 90});
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("reports", "reports.title");
+        app.configurationsView.registerLabel(
+            "reports.secretKey",
+            "reports.secretKey"
+        );
+    }
 
-        if (countlyGlobal.plugins.indexOf("dashboards") > -1) {
-            countlyVue.container.registerData("/reports/data-type", {label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
-        }
-    });
+    if (countlyGlobal.plugins.indexOf("dashboards") > -1) {
+        countlyVue.container.registerData("/reports/data-type", {label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+    }
 
 
     app.addReportsCallbacks = function(plugin, options) {

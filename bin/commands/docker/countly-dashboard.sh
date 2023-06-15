@@ -2,7 +2,7 @@
 
 if [ "$COUNTLY_MONGO_INSIDE" == "1" ]
 then
-	until mongo localhost --eval "db.stats()" | grep "collections"
+	until mongosh localhost --eval "db.stats()" | grep "collections"
 	do
 	    echo
 	    echo "[dashboard] waiting for MongoDB to allocate files ..."

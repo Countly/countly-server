@@ -1,11 +1,11 @@
-const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, DBMAP } = require('./const'),
+const { S, State, Status, STATUSES, TriggerKind, RecurringType, Time, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, DBMAP } = require('./const'),
     { PushError, SendError, ConnectionError, ValidationError, ERROR } = require('./error'),
-    { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger } = require('./trigger'),
+    { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger, MultiTrigger, RecurringTrigger } = require('./trigger'),
     { Info } = require('./info'),
     { Creds } = require('./creds'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
-    { Result } = require('./result'),
+    { Result, MAX_ERRORS, MAX_RUNS } = require('./result'),
     { Message } = require('./message'),
     { Template } = require('./template'),
     dbext = require('./db');
@@ -20,16 +20,23 @@ module.exports = {
     Creds,
 
     TriggerKind,
+    RecurringType,
+    Time,
     Trigger,
     PlainTrigger,
     EventTrigger,
     CohortTrigger,
     APITrigger,
+    MultiTrigger,
+    RecurringTrigger,
 
     Filter,
     Content,
-    Result,
     Info,
+
+    Result,
+    MAX_ERRORS,
+    MAX_RUNS,
 
     Message,
 

@@ -1,4 +1,4 @@
-/*global VeeValidate,countlyPushNotification,Promise*/
+/*global VeeValidate,countlyPushNotification*/
 (function() {
     var PushNotificationMessageMediaURLValidator = {
         MAX_IMAGE_FILE_SIZE_IN_MB: 10,

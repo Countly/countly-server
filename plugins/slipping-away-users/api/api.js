@@ -77,8 +77,8 @@ catch (ex) {
     plugins.register("/o/slipping", function(ob) {
         const params = ob.params;
         const app_id = params.qstring.app_id;
-        let user_query = params.qstring.query;
-        if (user_query) {
+        let user_query = params.qstring.query || {};
+        if (typeof user_query === "string") {
             try {
                 user_query = JSON.parse(user_query);
             }
@@ -115,13 +115,12 @@ catch (ex) {
 
             conditions.forEach((condition) => {
                 tasks.push(new BPromise(function(resolve, reject) {
-                    countlyDb.collection('app_users' + app_id).find(condition)
-                        .count(function(err, count) {
-                            if (err) {
-                                return reject(err);
-                            }
-                            return resolve(count);
-                        });
+                    countlyDb.collection('app_users' + app_id).count(condition, function(err, count) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(count);
+                    });
                 }));
             });
 

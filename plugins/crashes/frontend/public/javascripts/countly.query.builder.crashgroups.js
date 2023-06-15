@@ -13,7 +13,6 @@
                 "opengl",
                 "orientation",
                 "os_version",
-                "os",
                 "resolution",
                 "root",
                 "signal",
@@ -46,6 +45,7 @@
                             "cly.=": "$in",
                             "cly.!=": "$nin",
                             "cly.contains": "$regex",
+                            "cly.beginswith": "$regex",
                             "cly.between": function(r) {
                                 return {
                                     $gte: r.value.data[0],

@@ -1324,6 +1324,42 @@ describe('Writing app events', function() {
             });
         });
     });
+    describe('Verifying array values are skipped', function() {
+        describe('creating event', function() {
+            it('should success', function(done) {
+                var params = [{
+                    "key": "testArray",
+                    "count": 1,
+                    "sum": 5,
+                    "segmentation": {
+                        "arrayValues": ["Ping", "Pong"],
+                        "test": "bat"
+                    }
+                }];
+                request
+                    .get('/i?device_id=' + DEVICE_ID + 'A&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.property('result', 'Success');
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+        });
+        describe('verify specific event', function() {
+            it('should have add count and sum', function(done) {
+                request
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testArray')
+                    .expect(200)
+                    .end(function(err, res) {
+                        testUtils.validateEvents(err, res, done, {meta: {"test": ["bat"], "segments": ["test"]}, c: 1, s: 5});
+                    });
+            });
+        });
+    });
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {

@@ -1,9 +1,12 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon, countlyGraphNotesCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -11,7 +14,7 @@
                     "t": this.i18n("common.total-sessions"),
                     "u": this.i18n("common.unique-sessions"),
                     "n": this.i18n("common.new-sessions")
-                }
+                },
             };
         },
         computed: {
@@ -71,6 +74,15 @@
                         lineOptions: {xAxis: { data: dates}, "series": series}
                     };
                 }
+                else if (countlyCommon.periodObj.daysInPeriod === 1 && countlyCommon.periodObj.isSpecialPeriod === true) {
+                    dates = [dates[0] + " 00:00", dates[0] + " 24:00"];
+                    for (var z = 0; z < series.length; z++) {
+                        series[z].data.push(series[z].data[0]);
+                    }
+                    return {
+                        lineOptions: {xAxis: { data: dates}, "series": series}
+                    };
+                }
                 else {
                     return {
                         lineOptions: {"series": series}
@@ -116,8 +128,24 @@
         methods: {
             beforeCopy: function(data) {
                 return data;
-            }
-        }
+            },
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
+        },
     });
 
     var DrawerComponent = countlyVue.views.create({
@@ -233,14 +261,6 @@
         },
         grid: {
             component: WidgetComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 2,
-                    height: 4
-                };
-            },
             onClick: function() {}
         }
     });

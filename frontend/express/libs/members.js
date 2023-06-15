@@ -16,10 +16,12 @@ var { getUserApps } = require('./../../../api/utils/rights.js');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var countlyStats = require('./../../../api/parts/data/stats.js');
-var request = require('request');
+var request = require('countly-request');
 var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
+
+const log = common.log('members');
 
 var versionInfo = require('./../version.info'),
     COUNTLY_TYPE = versionInfo.type;
@@ -163,7 +165,14 @@ function sha512Hash(str, addSalt) {
  * @param {Function} callback | Callback function
  */
 function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
-    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
+    var emailVal = null;
+    if (username && typeof username === 'string') {
+        emailVal = username.toString().toLocaleLowerCase();
+    }
+    else {
+        emailVal = username;
+    }
+    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": emailVal}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
                 verifyArgon2Hash(member.password, password).then(match => {
@@ -249,6 +258,12 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
     var reuse = true;
     if (req.session.temporary_token) {
         reuse = false;
+    }
+    if (req.licenseError) {
+        req.session.licenseError = req.licenseError;
+    }
+    if (req.licenseNotification) {
+        req.session.licenseNotification = req.licenseNotification;
     }
 
     authorize.save({
@@ -400,37 +415,44 @@ membersUtility.login = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callMethod("loginSuccessful", {req: req, data: member});
+            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
+                plugins.callMethod("loginSuccessful", {req: req, data: member});
 
-            // update stats
-            membersUtility.updateStats(member);
+                // update stats
+                membersUtility.updateStats(member);
 
-            req.session.regenerate(function() {
-                // will have a new session here
-                var update = {last_login: Math.round(new Date().getTime() / 1000)};
-                if (typeof member.password_changed === "undefined") {
-                    update.password_changed = Math.round(new Date().getTime() / 1000);
-                }
-                if (req.body.lang && req.body.lang !== member.lang) {
-                    update.lang = req.body.lang;
-                }
+                req.session.regenerate(function() {
+                    common.licenseAssign(req, licenseCheck);
 
-                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                    // will have a new session here
+                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                    if (typeof member.password_changed === "undefined") {
+                        update.password_changed = Math.round(new Date().getTime() / 1000);
+                    }
+                    if (req.body.lang && req.body.lang !== member.lang) {
+                        update.lang = req.body.lang;
+                    }
 
-                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
-                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
-                }
-                if (member.upgrade) {
-                    res.set({
-                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
-                        'Expires': '0',
-                        'Pragma': 'no-cache'
+                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+
+                    if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                        req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                    }
+                    if (member.upgrade) {
+                        res.set({
+                            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                            'Expires': '0',
+                            'Pragma': 'no-cache'
+                        });
+                    }
+
+                    setLoggedInVariables(req, member, membersUtility.db, function() {
+                        callback(member, true);
                     });
-                }
-
-                setLoggedInVariables(req, member, membersUtility.db, function() {
-                    callback(member, true);
                 });
+            }, e => {
+                log.e('Error while checking member login', e);
+                callback(undefined);
             });
         }
     });
@@ -472,36 +494,43 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callMethod("loginSuccessful", {req: req, data: member});
+            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
+                plugins.callMethod("loginSuccessful", {req: req, data: member});
 
-            // update stats
-            membersUtility.updateStats(member);
+                // update stats
+                membersUtility.updateStats(member);
 
-            req.session.regenerate(function() {
-                // will have a new session here
-                var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                req.session.regenerate(function() {
+                    common.licenseAssign(req, licenseCheck);
 
-                if (req.body.lang && req.body.lang !== member.lang) {
-                    update.lang = req.body.lang;
-                }
+                    // will have a new session here
+                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
 
-                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                    if (req.body.lang && req.body.lang !== member.lang) {
+                        update.lang = req.body.lang;
+                    }
 
-                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
-                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
-                }
-                if (member.upgrade) {
-                    res.set({
-                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
-                        'Expires': '0',
-                        'Pragma': 'no-cache'
+                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+
+                    if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                        req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                    }
+                    if (member.upgrade) {
+                        res.set({
+                            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                            'Expires': '0',
+                            'Pragma': 'no-cache'
+                        });
+                    }
+
+                    setLoggedInVariables(req, member, membersUtility.db, function() {
+                        req.session.settings = member.settings;
+                        callback(member, true);
                     });
-                }
-
-                setLoggedInVariables(req, member, membersUtility.db, function() {
-                    req.session.settings = member.settings;
-                    callback(member, true);
                 });
+            }, e => {
+                log.e('Error while checking member login', e);
+                callback(undefined);
             });
         }
     });
@@ -573,13 +602,21 @@ membersUtility.loginWithToken = function(req, callback) {
                     callback(undefined);
                 }
                 else {
-                    plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
-                    if (valid.temporary) {
-                        req.session.temporary_token = true;
-                    }
-                    setLoggedInVariables(req, member, membersUtility.db, function() {
-                        req.session.settings = member.settings;
-                        callback(member);
+                    plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
+                        common.licenseAssign(req, licenseCheck);
+
+                        plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
+
+                        if (valid.temporary) {
+                            req.session.temporary_token = true;
+                        }
+                        setLoggedInVariables(req, member, membersUtility.db, function() {
+                            req.session.settings = member.settings;
+                            callback(member);
+                        });
+                    }, e => {
+                        log.e('Error while checking member login', e);
+                        callback(undefined);
                     });
                 }
             });
@@ -1067,7 +1104,14 @@ membersUtility.findMembers = async function(query = {}) {
 */
 membersUtility.updateMember = async function(query = {}, data = {}, upsert = true) {
     return new Promise((resolve, reject) => {
-        this.db.collection('members').update(query, { $set: data }, { upsert }, (err) => {
+        try {
+            var copy = JSON.parse(JSON.stringify(data));
+        }
+        catch (ex) {
+            return reject(ex);
+        }
+        delete copy._id; // update on the path '_id' would modify the immutable field '_id'
+        this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
             if (err) {
                 reject(err);
             }

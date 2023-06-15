@@ -1,4 +1,4 @@
-/*global countlyCommon,countlyVue,CV,Promise*/
+/*global countlyCommon,countlyVue,CV*/
 (function(countlySlippingAwayUsers) {
 
     countlySlippingAwayUsers.service = {

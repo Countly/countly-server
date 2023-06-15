@@ -5,8 +5,9 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
+const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
 var spawn = require('child_process').spawn,
@@ -97,7 +98,7 @@ var spawn = require('child_process').spawn,
         **/
         function objectIdCheck(doc) {
             if (typeof doc === "string") {
-                doc = JSON.parse(doc);
+                doc = EJSON.parse(doc);
             }
             for (var key in doc) {
                 if (doc[key] && typeof doc[key].toHexString !== "undefined" && typeof doc[key].toHexString === "function") {
@@ -133,7 +134,7 @@ var spawn = require('child_process').spawn,
         /**
         * Get collection data from db
         **/
-        function dbGetCollection() {
+        async function dbGetCollection() {
             var limit = parseInt(params.qstring.limit || 20);
             var skip = parseInt(params.qstring.skip || 0);
             var filter = params.qstring.filter || params.qstring.query || "{}";
@@ -142,13 +143,13 @@ var spawn = require('child_process').spawn,
             var sort = params.qstring.sort || "{}";
 
             try {
-                sort = JSON.parse(sort);
+                sort = EJSON.parse(sort);
             }
             catch (SyntaxError) {
                 sort = {};
             }
             try {
-                filter = JSON.parse(filter);
+                filter = EJSON.parse(filter);
             }
             catch (SyntaxError) {
                 filter = {};
@@ -160,10 +161,13 @@ var spawn = require('child_process').spawn,
                 filter._id = new RegExp(sSearch);
             }
             try {
-                projection = JSON.parse(projection);
+                projection = EJSON.parse(projection);
             }
             catch (SyntaxError) {
                 projection = {};
+            }
+            if (typeof filter !== 'object' || Array.isArray(filter)) {
+                filter = {};
             }
 
             if (dbs[dbNameOnParam]) {
@@ -171,10 +175,16 @@ var spawn = require('child_process').spawn,
                 if (Object.keys(sort).length > 0) {
                     cursor.sort(sort);
                 }
-                cursor.count(function(err, total) {
+                try {
+                    var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return JSON.stringify(objectIdCheck(doc));
+                            try {
+                                return EJSON.stringify(objectIdCheck(doc));
+                            }
+                            catch (SyntaxError) {
+                                return JSON.stringify(objectIdCheck(doc));
+                            }
                         }
                     });
                     var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
@@ -207,7 +217,10 @@ var spawn = require('child_process').spawn,
                             params.res.end();
                         });
                     }
-                });
+                }
+                catch (err) {
+                    common.returnMessage(params, 500, err);
+                }
             }
         }
         /**
@@ -243,7 +256,7 @@ var spawn = require('child_process').spawn,
                             var db = { name: name, collections: {} };
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
-                                    dbUserHasAccessToCollection(params, col.collectionName, function(hasAccess) {
+                                    userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
                                         if (hasAccess) {
                                             ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
@@ -276,53 +289,99 @@ var spawn = require('child_process').spawn,
             if (params.qstring.iDisplayLength) {
                 aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
             }
-            // check task is already running?
-            taskManager.checkIfRunning({
-                db: dbs[dbNameOnParam],
-                params: params
-            }, function(task_id) {
-                if (task_id) {
-                    common.returnOutput(params, { task_id: task_id });
-                }
-                else {
-                    var taskCb = taskManager.longtask({
-                        db: dbs[dbNameOnParam],
-                        threshold: plugins.getConfig("api").request_threshold,
-                        params: params,
-                        type: "dbviewer",
-                        force: params.qstring.save_report || false,
-                        meta: JSON.stringify({
-                            db: dbNameOnParam,
-                            collection: params.qstring.collection,
-                            aggregation: aggregation
-                        }),
-                        view: "#/manage/db/task/",
-                        report_name: params.qstring.report_name,
-                        report_desc: params.qstring.report_desc,
-                        period_desc: params.qstring.period_desc,
-                        name: 'Aggregation-' + Date.now(),
-                        creator: params.member._id + "",
-                        global: params.qstring.global === 'true',
-                        autoRefresh: params.qstring.autoRefresh === 'true',
-                        manually_create: params.qstring.manually_create === 'true',
-                        processData: function(error, result, callback) {
-                            callback(error, result);
-                        },
-                        outputData: function(aggregationErr, result) {
-                            if (!aggregationErr) {
-                                common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+            if (!Array.isArray(aggregation)) {
+                common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
+            }
+            else {
+                // check task is already running?
+                taskManager.checkIfRunning({
+                    db: dbs[dbNameOnParam],
+                    params: params
+                }, function(task_id) {
+                    if (task_id) {
+                        common.returnOutput(params, { task_id: task_id });
+                    }
+                    else {
+                        var name = 'Aggregation-' + Date.now();
+                        var taskCb = taskManager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            params: params,
+                            type: "dbviewer",
+                            force: params.qstring.save_report || false,
+                            gridfs: true,
+                            meta: JSON.stringify({
+                                db: dbNameOnParam,
+                                collection: params.qstring.collection,
+                                aggregation: aggregation
+                            }),
+                            view: "#/manage/db/task/",
+                            report_name: params.qstring.report_name || name + "." + params.qstring.type,
+                            report_desc: params.qstring.report_desc,
+                            period_desc: params.qstring.period_desc,
+                            name,
+                            creator: params.member._id + "",
+                            global: params.qstring.global === 'true',
+                            autoRefresh: params.qstring.autoRefresh === 'true',
+                            manually_create: params.qstring.manually_create === 'true',
+                            processData: function(error, result, callback) {
+                                callback(error, result);
+                            },
+                            outputData: function(aggregationErr, result) {
+                                if (!aggregationErr) {
+                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+                                }
+                                else {
+                                    common.returnMessage(params, 500, aggregationErr);
+                                }
                             }
-                            else {
-                                common.returnMessage(params, 500, aggregationErr);
-                            }
-                        }
-                    });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
-                }
-            });
+                        });
+                        dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
+                    }
+                });
+            }
         }
 
-        //console.log(userApps);
+        /**
+        * Wrapper for dbUserHasAccessToCollection.  Checks if user has access to dbViewer plugin
+        * If user has access to dbViewer plugin,  dbUserHasAccessToCollection is called
+        * @param {object} parameters - {@link parameters} object
+        * @param {string} collection - collection will be checked for access
+        * @param {string} appId - appId to which to restrict access
+        * @param {function} callback - callback method includes boolean variable as argument  
+        * @returns {function} returns callback
+         */
+        async function userHasAccess(parameters, collection, appId, callback) {
+            if (typeof appId === "function") {
+                callback = appId;
+                appId = null;
+            }
+            if (parameters.member.global_admin && !appId) {
+                //global admin without app_id restriction just has access to everything
+                return callback(true);
+            }
+
+            if (appId) {
+                if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
+                    return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                }
+            }
+            else {
+                var userApps = getUserApps(parameters.member);
+                //go through all apps of user and check if any of them has access to collection
+                var result = await Promise.all(userApps.map(function(id) {
+                    if (hasReadRight(FEATURE_NAME, id, parameters.member)) {
+                        return new Promise(function(resolve) {
+                            dbUserHasAccessToCollection(parameters, collection, id, resolve);
+                        });
+                    }
+                }));
+                return callback(result.some(function(val) {
+                    return val;
+                }));
+            }
+            return callback(false);
+        }
 
         validateUser(params, function() {
             // conditions
@@ -340,7 +399,7 @@ var spawn = require('child_process').spawn,
                     getIndexes();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             getIndexes();
                         }
@@ -356,7 +415,7 @@ var spawn = require('child_process').spawn,
                     dbGetDocument();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetDocument();
                         }
@@ -370,7 +429,7 @@ var spawn = require('child_process').spawn,
             else if (isContainDb && params.qstring.aggregation) {
                 if (params.member.global_admin) {
                     try {
-                        let aggregation = JSON.parse(params.qstring.aggregation);
+                        let aggregation = EJSON.parse(params.qstring.aggregation);
                         aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
@@ -379,10 +438,10 @@ var spawn = require('child_process').spawn,
                     }
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             try {
-                                let aggregation = JSON.parse(params.qstring.aggregation);
+                                let aggregation = EJSON.parse(params.qstring.aggregation);
                                 aggregate(params.qstring.collection, aggregation);
                             }
                             catch (e) {
@@ -402,7 +461,7 @@ var spawn = require('child_process').spawn,
                     dbGetCollection();
                 }
                 else {
-                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
+                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetCollection();
                         }

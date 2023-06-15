@@ -2,23 +2,17 @@
     name="events"
     rules="required"
     :label="i18nM(multiple ? 'dashboards.events': 'dashboards.event')">
-    <el-select
-        :is-full-width="true"
+    <cly-select-x
+        class="cly-is-fullwidth"
+        :auto-commit="true"
+        :hide-all-options-tab="true"
         :key="rerender"
-        style="width: 100%;"
-        v-bind="$attrs"
-        v-on="allListeners"
+        :max-items="multipleLimit"
+        :mode="multiple ? 'multi-check' : 'single-list'"
+        :options="allEvents"
+        :placeholder="placeholderText"
+        :width="500"
         v-model="selectedEvents"
-        :collapse-tags="false"
-        :multiple="multiple"
-		:filterable = "true"
-        :multiple-limit="multipleLimit"
-        :placeholder="placeholderText">
-        <el-option
-            v-for="event in allEvents"
-            :key="event.value"
-            :label="event.label"
-            :value="event.value">
-        </el-option>
-    </el-select>
+        v-on="allListeners">
+    </cly-select-x>
 </cly-form-field>

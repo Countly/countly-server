@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager, _merge */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -43,6 +43,10 @@
                     return { prop: '_id', order: 'asc' };
                 },
                 required: false
+            },
+            preventDefaultSort: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -270,7 +274,7 @@
                 if (elTableSorting.order) {
                     this.updateControlParams({
                         sort: [{
-                            field: elTableSorting.prop,
+                            field: elTableSorting.column.sortBy || elTableSorting.prop,
                             type: elTableSorting.order === "ascending" ? "asc" : "desc"
                         }]
                     });
@@ -301,12 +305,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-
-                if (this.defaultSort) {
+                if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
                         type: this.defaultSort.order === "ascending" ? "asc" : "desc"
                     }];
+                }
+                else {
+                    this.defaultSort = {};
                 }
 
                 if (!this.persistKey) {
@@ -314,11 +320,14 @@
                 }
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
+                    if (countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistKey].tableSortMap) {
+                        defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
+                    }
                     if (loadedState) {
                         var parsed = JSON.parse(loadedState);
-                        // disable loading of persisted searchQuery
-                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
-                        return parsed;
+                        defaultState.page = parsed.page;
+                        defaultState.perPage = parsed.perPage;
+                        defaultState.sort = parsed.sort;
                     }
                     return defaultState;
                 }
@@ -328,7 +337,31 @@
             },
             setControlParams: function() {
                 if (this.persistKey) {
-                    localStorage.setItem(this.persistKey, JSON.stringify(this.controlParams));
+                    var self = this;
+                    var localControlParams = {};
+                    localControlParams.page = this.controlParams.page;
+                    localControlParams.perPage = this.controlParams.perPage;
+                    localControlParams.sort = this.controlParams.sort;
+                    localStorage.setItem(this.persistKey, JSON.stringify(localControlParams));
+                    $.ajax({
+                        type: "POST",
+                        url: countlyGlobal.path + "/user/settings/column-order",
+                        data: {
+                            "tableSortMap": this.controlParams.selectedDynamicCols,
+                            "columnOrderKey": this.persistKey,
+                            _csrf: countlyGlobal.csrf_token
+                        },
+                        success: function() {
+                            //since countlyGlobal.member does not updates automatically till refresh
+                            if (!countlyGlobal.member.columnOrder) {
+                                countlyGlobal.member.columnOrder = {};
+                            }
+                            if (!countlyGlobal.member.columnOrder[self.persistKey]) {
+                                countlyGlobal.member.columnOrder[self.persistKey] = {};
+                            }
+                            countlyGlobal.member.columnOrder[self.persistKey].tableSortMap = self.controlParams.selectedDynamicCols;
+                        }
+                    });
                 }
             }
         }
@@ -588,7 +621,29 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            customFileName: {
+                type: String,
+                default: null,
+                required: false
+            },
+            customExportFileName: {
+                type: Boolean,
+                default: true,
+                required: false
             }
+        },
+        watch: {
+            customFileName: function(newVal) {
+                this.exportFileName = newVal;
+            }
+        },
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-date-change", function() {
+                self.exportFileName = this.customFileName || self.getDefaultFileName();
+            });
+
         },
         data: function() {
             return {
@@ -599,7 +654,8 @@
                     {'name': '.JSON', value: 'json'},
                     {'name': '.XLSX', value: 'xlsx'}
                 ],
-                searchQuery: ''
+                searchQuery: '',
+                exportFileName: this.customFileName || this.getDefaultFileName(),
             };
         },
         methods: {
@@ -608,40 +664,112 @@
                     type: this.selectedExportType
                 });
             },
-            getDefaultFileName: function(params) {
-                var name = "countly";
-                if (params.title) {
-                    name = params.title.replace(/[\r\n]+/g, "");
+            getDefaultFileName: function() {
+                var siteName = countlyGlobal.countlyTitle;
+                var sectionName = "";
+                var selectedMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                if (selectedMenuItem && selectedMenuItem.item && selectedMenuItem.item.title) {
+                    sectionName = this.i18n(selectedMenuItem.item.title);
                 }
-                if (params.timeDependent) {
-                    //include export range
-                    name += "_for_" + countlyCommon.getDateRange();
+                var appName = "";
+                if (this.$store.getters["countlyCommon/getActiveApp"]) {
+                    appName = this.$store.getters["countlyCommon/getActiveApp"].name;
                 }
-                else {
-                    //include export date
-                    name += "_on_" + moment().format("DD-MMM-YYYY");
-                }
-                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+                var date = countlyCommon.getDateRangeForCalendar();
+
+                var filename = siteName + " - " + appName + " - " + sectionName + " " + "(" + date + ")";
+                return filename;
             },
             getLocalExportContent: function() {
                 if (this.exportFormat) {
                     return this.exportFormat(this.rows);
                 }
-                return this.rows;
+                else {
+                    return this.formatExportFunction();
+                }
+            },
+            getOrderedDataForExport: function() {
+                var currentArray = this.localSearchedRows;
+                if (this.controlParams.sort.length > 0) {
+                    var sorting = this.controlParams.sort[0],
+                        dir = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray = currentArray.slice();
+                    currentArray.sort(function(a, b) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
+                            return -dir;
+                        }
+                        if (priA > priB) {
+                            return dir;
+                        }
+                        return 0;
+                    });
+                }
+                return currentArray;
+            },
+            formatExportFunction: function() {
+                var rows = this.getOrderedDataForExport();
+                if (rows && rows.length && this.$refs.elTable && this.$refs.elTable.columns && this.$refs.elTable.columns.length) {
+                    var table = [];
+                    var columns = this.$refs.elTable.columns;
+                    columns = columns.filter(object => (Object.prototype.hasOwnProperty.call(object, "label") && Object.prototype.hasOwnProperty.call(object, "property") && typeof object.label !== "undefined" && typeof object.property !== "undefined"));
+                    for (var r = 0; r < rows.length; r++) {
+                        var item = {};
+                        for (var c = 0; c < columns.length; c++) {
+                            var property;
+                            if (columns[c].columnKey && columns[c].columnKey.length) {
+                                var columnKey = columns[c].columnKey;
+                                if (columnKey.includes(".")) {
+                                    property = rows[r];
+                                    var dotSplittedArr = columnKey.split(".");
+                                    for (var i = 0; i < dotSplittedArr.length; i++) {
+                                        if (property[dotSplittedArr[i]]) {
+                                            property = property[dotSplittedArr[i]];
+                                        }
+                                    }
+                                }
+                                else {
+                                    property = rows[r][columnKey];
+                                }
+                            }
+                            else {
+                                property = rows[r][columns[c].property];
+                            }
+                            item[columns[c].label.toUpperCase()] = property;
+                        }
+                        table.push(item);
+                    }
+                    return table;
+                }
+                else {
+                    return this.rows;
+                }
             },
             initiateExport: function(params) {
-
                 var formData = null,
                     url = null;
-
                 if (this.exportApi) {
                     formData = this.exportApi();
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                     url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables
@@ -666,7 +794,7 @@
                         type: params.type,
                         path: path,
                         prop: "aaData",
-                        filename: this.getDefaultFileName(params),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
                 }
@@ -675,9 +803,12 @@
                     formData = {
                         type: params.type,
                         data: JSON.stringify(this.getLocalExportContent()),
-                        filename: this.getDefaultFileName(params),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
+                }
+                if (!formData.filename) {
+                    formData.filename = this.exportFileName;
                 }
 
                 if (formData.url === "/o/export/requestQuery") {
@@ -714,7 +845,6 @@
                 }
                 else {
                     var form = $('<form method="POST" action="' + url + '">');
-
                     $.each(formData, function(k, v) {
                         if (CountlyHelpers.isJSON(v)) {
                             form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
@@ -821,7 +951,7 @@
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right',
                     'bottomline': 'bottomline'
-                }
+                },
             };
         },
         computed: {

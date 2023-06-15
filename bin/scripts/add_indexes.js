@@ -42,8 +42,10 @@ pluginManager.dbConnection().then((countlyDb) => {
             }
         }
         async.forEach(apps, upgrade, function() {
-            console.log("Finished adding core indexes");
-            countlyDb.close();
+            countlyDb.collection('exports').ensureIndex({"_eid": 1}, {background: true}, function() {
+                console.log("Finished adding core indexes");
+                countlyDb.close();
+            });
         });
     });
 });

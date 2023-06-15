@@ -1,4 +1,4 @@
-/*global $, _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
+/*global _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
 
 (function() {
     var FEATURE_NAME = "remote_config";
@@ -166,7 +166,7 @@
                     id: "disallowOperator",
                     params: {
                         selector: function(operator) {
-                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset"].includes(operator.id);
+                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset", "cly.beginswith"].includes(operator.id);
                         }
                     }
                 })]
@@ -230,15 +230,23 @@
                     this.conditionDialog.condition_definition = this.managedPropertySegmentation.queryText;
                 }
                 this.$store.dispatch(action, this.conditionDialog).then(function(data) {
-                    var ob = {
-                        name: self.conditionDialog.condition_name,
-                        id: data
-                    };
-                    self.$emit("input", ob);
-                    self.$emit("closeConditionDialog");
+                    if (data) {
+                        var ob = {
+                            name: self.conditionDialog.condition_name,
+                            id: data
+                        };
+                        self.$emit("input", ob);
+                        self.$emit("closeConditionDialog");
+                    }
+                    else {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: self.$store.getters["countlyRemoteConfig/conditions/conditionError"],
+                            type: "error"
+                        });
+                    }
                 });
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
-
             },
             cancel: function() {
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", false);
@@ -412,7 +420,7 @@
             },
             createFilter: function(queryString) {
                 return function(value) {
-                    return value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
+                    return typeof value === 'string' && value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
                 };
             },
             querySearchForCondition: function(queryStringForCondition, cb) {
@@ -433,8 +441,11 @@
                 };
             },
             onSubmit: function(doc) {
-                if (doc.expiry_dttm) {
-                    doc.expiry_dttm = doc.expiry_dttm - this.getOffset() * 60 * 1000;
+                if (doc.expiry_dttm && doc.showExpirationDate) {
+                    doc.expiry_dttm = doc.expiry_dttm + new Date().getTimezoneOffset() * 60 * 1000;
+                }
+                if (!doc.showExpirationDate) {
+                    doc.expiry_dttm = null;
                 }
                 var self = this;
                 doc.conditions = [];
@@ -466,6 +477,9 @@
             },
             onCopy: function(doc) {
                 if (doc._id) {
+                    if (doc.expiry_dttm) {
+                        doc.expiry_dttm = doc.expiry_dttm - new Date().getTimezoneOffset() * 60 * 1000;
+                    }
                     this.showExpirationDate = false;
                     this.defaultValue = doc.default_value;
 
@@ -489,6 +503,10 @@
                     if (doc.conditions) {
                         var allConditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
                         doc.conditions.forEach(function(item) {
+                            item.open = false;
+                            if (typeof (item.value) === 'object') {
+                                item.value = JSON.stringify(item.value);
+                            }
                             var conditionsArr = allConditions.filter(function(ob) {
                                 return ob._id === item.condition_id;
                             });
@@ -755,7 +773,32 @@
             },
             onSubmit: function() {
                 this.$store.dispatch("countlyRemoteConfig/initialize");
-            }
+            },
+            handleTableRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return "bu-is-clickable";
+            },
+            formatExportFunction: function() {
+                var tableData = this.$store.getters["countlyRemoteConfig/parameters/all"];
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('remote-config.parameter').toUpperCase()] = tableData[i].parameter_key + (this.isDrillEnabled ? this.getNumberOfConditionsText(tableData[i].conditions) : "");
+                    item[CV.i18n('remote-config.parameter.status').toUpperCase()] = tableData[i].status;
+                    item[CV.i18n('remote-config.description').toUpperCase()] = tableData[i].description === "-" ? "" : tableData[i].description;
+                    item[CV.i18n('remote-config.parameter.created').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].ts).text;
+                    item[CV.i18n('remote-config.parameter.ab.status').toUpperCase()] = tableData[i].abStatus;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         }
     });
 
@@ -910,8 +953,5 @@
         mainView.params = params;
         this.renderWhenReady(mainView);
     });
-    $(document).ready(function() {
-        //We shouldn't be using $ (jquery)
-        app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
-    });
+    app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, pluginName: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
 })();

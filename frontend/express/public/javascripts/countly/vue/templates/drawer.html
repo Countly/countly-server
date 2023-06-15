@@ -69,6 +69,9 @@
                         <slot name="controls-left"
                             v-bind="passedScope">
                         </slot>
+                        <slot name="notification"
+                            v-bind="passedScope">
+                        </slot>
                     </div>
                     <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
                         <el-button type="secondary" @click="doClose" size="small" v-if="currentStepIndex === 0 && hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>

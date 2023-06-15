@@ -1,7 +1,7 @@
 <div>
   <cly-datatable-n class="bu-mx-5" :rows="list" :persist-key="importsTablePersistKey">
       <template v-slot="scope">
-          <el-table-column sortable="true" prop="app_names" :label="i18n('data-migration.applications')">
+          <el-table-column sortable="true" prop="app_list" :label="i18n('data-migration.applications')">
               <template v-slot="rowScope">
                 <span class="text-medium">
                   <div>
@@ -14,7 +14,7 @@
                 </span>
               </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="step" :label="i18n('data-migration.table.step')">
+          <el-table-column sortable="true" prop="status_text" :label="i18n('data-migration.table.step')">
             <template v-slot="rowScope">
               <div class="bu-py-6">
                 <span class="text-medium">
@@ -23,7 +23,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="created" :label="i18n('data-migration.table.last-update')">
+          <el-table-column sortable="true" prop="last_update" :label="i18n('data-migration.table.last-update')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{ rowScope.row.last_update }}

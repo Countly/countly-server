@@ -1219,7 +1219,12 @@ fetch.fetchDataTopEvents = function(params) {
             const { data, _id, ts, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount } = result;
             let _data = Object.keys(data).map(function(key) {
                 const decodeKey = countlyCommon.decode(key);
-                return { name: decodeKey, count: data[key].data.count.total, sum: data[key].data.sum.total, duration: data[key].data.duration.total };
+                return {
+                    name: decodeKey,
+                    count: (data[key].data.count && data[key].data.count.total) || 0,
+                    sum: (data[key].data.sum && data[key].data.sum.total) || 0,
+                    duration: (data[key].data.duration && data[key].data.duration.total) || 0
+                };
             });
             const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
             common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount });
@@ -1444,7 +1449,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             }
 
             if (groupBy === "users") {
-                options.db.collection("app_users" + params.app_id).find(match).count(function(error, appUsersDbResult) {
+                options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     if (!error && appUsersDbResult) {
                         callback([{ "_id": "users", "u": appUsersDbResult }]);
                     }
@@ -1608,7 +1613,12 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
 
-    if (params.qstring.action === "refresh") {
+    if (params.qstring.fullRange) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + options.id + ".*" } }).toArray(function(err1, data) {
+            callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
+        });
+    }
+    else if (params.qstring.action === "refresh") {
         var dbDateIds = common.getDateIds(params),
             fetchFromZero = {},
             fetchFromMonth = {};
@@ -2019,9 +2029,16 @@ fetch.alljobs = async function(metric, params) {
         }
     ];
     if (params.qstring.sSearch) {
-        pipeline.unshift({
-            $match: { name: { $regex: new RegExp(params.qstring.sSearch, "i") } }
-        });
+        var rr;
+        try {
+            rr = new RegExp(params.qstring.sSearch, "i");
+            pipeline.unshift({
+                $match: { name: { $regex: rr } }
+            });
+        }
+        catch (e) {
+            console.log('Could not use as regex:' + params.qstring.sSearch);
+        }
     }
     const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
@@ -2045,8 +2062,8 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
+    const total = await common.db.collection('jobs').count({ name: params.qstring.name });
     const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
-    const total = await cursor.count();
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));

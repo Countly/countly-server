@@ -8,7 +8,8 @@ var locale = {},
     fs = require('fs'),
     path = require('path'),
     parser = require('properties-parser'),
-    log = require('./log')('api:localization');
+    log = require('./log')('api:localization'),
+    common = require('./common');
 
 var dir = path.resolve(__dirname, '../../frontend/express/public/localization/min');
 var file = "locale";
@@ -72,7 +73,7 @@ locale.getProperty = function(lang, name, callback) {
     }
     else if (!localized[lang]) {
         localized[lang] = JSON.parse(JSON.stringify(orig));
-        fs.readFile(dir + '/' + file + '_' + lang + '.properties', 'utf8', function(err, local_properties) {
+        fs.readFile(dir + '/' + common.sanitizeFilename(file) + '_' + common.sanitizeFilename(lang) + '.properties', 'utf8', function(err, local_properties) {
             if (!err && local_properties) {
                 local_properties = parser.parse(local_properties);
                 for (var i in local_properties) {
@@ -103,7 +104,7 @@ locale.getProperties = function(lang, callback) {
     }
     else if (!localized[lang]) {
         localized[lang] = JSON.parse(JSON.stringify(orig));
-        fs.readFile(dir + '/' + file + '_' + lang + '.properties', 'utf8', function(err, local_properties) {
+        fs.readFile(dir + '/' + common.sanitizeFilename(file) + '_' + common.sanitizeFilename(lang) + '.properties', 'utf8', function(err, local_properties) {
             if (!err && local_properties) {
                 local_properties = parser.parse(local_properties);
                 for (var i in local_properties) {

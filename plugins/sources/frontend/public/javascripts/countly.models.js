@@ -8,15 +8,17 @@
  */
 (function() {
     var stores;
-    $.ajax({
-        type: "GET",
-        url: countlyCommon.API_PARTS.data.r + "/sources",
-        data: {"preventGlobalAbort": true},
-        dataType: "json",
-        success: function(json) {
-            stores = json;
-        }
-    });
+    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf('sources') !== -1) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/sources",
+            data: {"preventGlobalAbort": true},
+            dataType: "json",
+            success: function(json) {
+                stores = json;
+            }
+        });
+    }
 
     /**
 	 * get source readable name

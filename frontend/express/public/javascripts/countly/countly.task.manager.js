@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise, Vue*/
+/* global countlyCommon, CountlyHelpers, store, app, jQuery, countlyVue, CV, Vue*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
@@ -285,20 +285,20 @@
         return _resultData;
     };
 
-    countlyTaskManager.makeTaskNotification = function(title, message, info, data, notifSubType, i18nId, notificationVersion) {
-        var contentData = data;
-        var ownerName = "ReportManager";
-        var notifType = 4;//informational notification, check assistant.js for additional types
-        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
-            if (!res) {
-                CountlyHelpers.notify({
-                    title: title,
-                    message: message,
-                    info: info,
-                    type: "info"
-                });
-            }
+    countlyTaskManager.makeTaskNotification = function(title, message, info) {
+        //var contentData = data;
+        //var ownerName = "ReportManager";
+        //var notifType = 4;//informational notification, check assistant.js for additional types
+        //countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
+        //    if (!res) {
+        CountlyHelpers.notify({
+            title: title,
+            message: message,
+            info: info,
+            type: "info"
         });
+        //    }
+        //});
     };
 
     var notifiers = {

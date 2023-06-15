@@ -30,11 +30,6 @@ var countlyConfig = {
         /*
         dbOptions:{
             //db options
-            native_parser: true
-        },
-        serverOptions:{
-            //server options
-            ssl:false
         }
         */
     },
@@ -51,11 +46,6 @@ var countlyConfig = {
         max_pool_size: 100,
         dbOptions:{
             //db options
-            native_parser: true
-        },
-        serverOptions:{
-            //server options
-            ssl:false
         }
     },
     */
@@ -129,8 +119,8 @@ var countlyConfig = {
      */
     /*
     mail: {
-        // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
-        transport: 'nodemailer-smtp-transport',
+        // provide optional transported if needed
+        //transport: 'nodemailer-smtp-transport',
         
         // config object passed to the transport
         config: {

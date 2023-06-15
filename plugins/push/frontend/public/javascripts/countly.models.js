@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -19,7 +19,36 @@
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
         AUTOMATIC: "automatic",
-        TRANSACTIONAL: "transactional"
+        TRANSACTIONAL: "transactional",
+        RECURRING: "rec",
+        MULTIPLE: "multi",
+        EVENTS: "event",
+        COHORTS: "cohort",
+    });
+    var KindEnum = Object.freeze({
+        ALL: ["plain", "event", "cohort", "api", "rec", "multi"],
+        Plain: 'plain',
+        Automatic: "auto",
+        // Event: 'event',
+        // Cohort: 'cohort',
+        API: 'api',
+        Recurring: 'rec',
+        Multi: 'multi',
+    });
+    var CampaignTypes = [
+        {label: CV.i18n('push-notification-drawer.one-time'), description: CV.i18n('push-notification-drawer.one-time-description')},
+        {label: CV.i18n('push-notification-drawer.automated'), description: CV.i18n('push-notification-drawer.automated-description')},
+        {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
+        {label: CV.i18n('push-notification-drawer.multiple-days'), description: CV.i18n('push-notification-drawer.multiple-days-description')},
+        {label: CV.i18n('push-notification-drawer.api'), description: CV.i18n('push-notification-drawer.api-description')}
+    ];
+    var TriggerTypeEnum = Object.freeze({
+        PLAIN: "One-Time",
+        API: "API",
+        EVENT: "Automated",
+        COHORT: "Automated",
+        REC: "Recurring",
+        MULTI: "Multiple Days"
     });
     var PeriodEnum = Object.freeze({
         WEEKLY: "weekly",
@@ -129,6 +158,9 @@
     targetingOptions[TargetingEnum.ALL] = {label: CV.i18n('push-notification.all-push-enabled-users'), value: TargetingEnum.ALL};
     targetingOptions[TargetingEnum.SEGMENTED] = {label: CV.i18n('push-notification.segmented-push-enabled-users'), value: TargetingEnum.SEGMENTED};
 
+    var bucketList = ["daily", "weekly", "monthly"];
+    var weeklyRepetitionOptions = [{label: CV.i18n('common.monday'), value: 1}, {label: CV.i18n('common.tuesday'), value: 2}, {label: CV.i18n('common.wednesday'), value: 3}, {label: CV.i18n('common.thursday'), value: 4}, {label: CV.i18n('common.friday'), value: 5}, {label: CV.i18n('common.saturday'), value: 6}, {label: CV.i18n('common.sunday'), value: 7}];
+
     var triggerOptions = {};
     triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: CV.i18n('push-notification.cohorts-entry'), value: TriggerEnum.COHORT_ENTRY};
     triggerOptions[TriggerEnum.COHORT_EXIT] = {label: CV.i18n('push-notification.cohorts-exit'), value: TriggerEnum.COHORT_EXIT};
@@ -217,11 +249,14 @@
             result[PlatformEnum.ALL] = this.getInitialModelDashboardPlatform();
             return result;
         },
-        getInitialBaseModel: function() {
+        getInitialBaseModel: function(dto) {
             return {
+                isEe: typeof countlySegmentation !== 'undefined',
+                isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
-                name: "",
+                name: (dto && dto.name ? dto.name : ""),
                 platforms: [],
                 message: {
                     default: {
@@ -277,11 +312,12 @@
                     days: 7,
                     hours: 0
                 },
-                dashboard: {}
+                dashboard: {},
+                campaignType: ''
             };
         },
-        getInitialOneTimeModel: function() {
-            var baseModel = this.getInitialBaseModel();
+        getInitialOneTimeModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
                 pastSchedule: PastScheduleEnum.SKIP,
@@ -289,8 +325,8 @@
             };
             return baseModel;
         },
-        getInitialAutomaticModel: function() {
-            var baseModel = this.getInitialBaseModel();
+        getInitialAutomaticModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
             baseModel.automatic = {
                 deliveryMethod: DeliveryMethodEnum.IMMEDIATELY,
                 delayed: {
@@ -298,7 +334,7 @@
                     hours: 0
                 },
                 deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-                trigger: TriggerEnum.COHORT_ENTRY,
+                trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
                 cohorts: [],
@@ -308,22 +344,55 @@
                     days: 0,
                     hours: 0
                 },
-                usersTimezone: "00"
+                usersTimezone: "00",
+                pastSchedule: PastScheduleEnum.SKIP,
             };
             return baseModel;
         },
-        getInitialTransactionalModel: function() {
-            return this.getInitialBaseModel();
+        getInitialTransactionalModel: function(dto) {
+            return this.getInitialBaseModel(dto);
         },
-        getInitialModel: function(type) {
+        getInitialRecurringModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
+            baseModel.rec = {
+                targeting: TargetingEnum.ALL,
+                pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
+            };
+            baseModel.delivery.repetition = {
+                bucket: bucketList[0],
+                every: 7,
+                at: moment().valueOf(),
+                on: []
+            };
+            return baseModel;
+        },
+        getInitialMultipleModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
+            baseModel.multi = {
+                targeting: TargetingEnum.ALL,
+                pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
+            };
+            var today = new Date();
+            baseModel.delivery.multipleDates = [today.getTime()];
+            return baseModel;
+        },
+        getInitialModel: function(type, dto) {
             if (type === TypeEnum.ONE_TIME) {
-                return this.getInitialOneTimeModel();
+                return this.getInitialOneTimeModel(dto);
             }
-            if (type === TypeEnum.AUTOMATIC) {
-                return this.getInitialAutomaticModel();
+            else if (type === TypeEnum.AUTOMATIC) {
+                return this.getInitialAutomaticModel(dto);
             }
-            if (type === TypeEnum.TRANSACTIONAL) {
-                return this.getInitialTransactionalModel();
+            else if (type === TypeEnum.TRANSACTIONAL) {
+                return this.getInitialTransactionalModel(dto);
+            }
+            else if (type === TypeEnum.RECURRING) {
+                return this.getInitialRecurringModel(dto);
+            }
+            else if (type === TypeEnum.MULTIPLE) {
+                return this.getInitialMultipleModel(dto);
             }
             throw new Error('Unknown push notification type:' + type);
         },
@@ -549,7 +618,49 @@
             return key !== CV.i18n(key);
         }
     };
+    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
+        onRequest: function(context) {
+            context.rootState.countlyPushNotificationMain.isLoadingTable = true;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
+            };
+            // var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            var status = context.rootState.countlyPushNotificationMain.statusFilter;
+            var kind = context.rootState.countlyPushNotificationMain.selectedPushNotificationKind;
+            // var params = countlyPushNotification.service.getFetchAllParameters(type, status);
+            var platform = context.rootState.countlyPushNotificationMain.platformFilter;
+            if (platform && platform.length && platform !== ALL_FILTER_OPTION_VALUE) {
+                data.platform = platform[0];
+            }
+            if (status && status.length && status !== ALL_FILTER_OPTION_VALUE) {
+                data.status = status;
+            }
 
+            data.kind = JSON.stringify(kind);
+            // for (var key in params) {
+            //     data[key] = params[key];
+            // }
+            return {
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data
+            };
+        },
+        onReady: function(context, rows) {
+            rows = countlyPushNotification.mapper.incoming.mapRows({"aaData": rows});
+            context.rootState.countlyPushNotificationMain.isLoadingTable = false;
+            return rows;
+        },
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) {
+                    console.log(error);
+                }
+            }
+        }
+    });
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
@@ -739,6 +850,9 @@
             });
         },
         findAllUserProperties: function() {
+            if (typeof countlySegmentation === 'undefined') {
+                return Promise.resolve({});
+            }
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
@@ -816,7 +930,12 @@
                     return;
                 }
                 Object.keys(userPropertiesDto).forEach(function(key) {
-                    userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    if (userPropertiesDto[key].t === UserPropertyTypeEnum.API) {
+                        userPropertiesDto[key].l = userPropertiesDto[key].k;
+                    }
+                    else {
+                        userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    }
                 });
             },
             getUserPropertyElement: function(index, userProperty) {
@@ -841,6 +960,20 @@
             isAdjacentIndex: function(previousIndex, currentIndex) {
                 return (parseInt(currentIndex) - 1) === parseInt(previousIndex);
             },
+            decodeHtml: function(str) {
+                var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'",
+                    '&#39;': "'"
+                };
+                return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
+                    return map[m];
+                });
+            },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
                 if (!message) {
@@ -849,7 +982,35 @@
                 if (!userPropertiesDto) {
                     return message;
                 }
-                var messageInHTMLString = message;
+                // var html = '',
+                //     keys = this.sortUserProperties(userPropertiesDto),
+                //     ranges = [-1]
+                //         .concat(keys.map(function(k) {
+                //             return parseInt(k);
+                //         }))
+                //         .concat([-1]);
+
+                // ranges.forEach(function(start, idx) {
+                //     if (idx === ranges.length - 1) {
+                //         return;
+                //     }
+
+                //     var end = ranges[idx + 1];
+                //     if (end === 0) { // prop at index 0
+                //         return;
+                //     }
+                //     else if (start === -1) { // first range
+                //         html += message.substr(0, end) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                //     else if (end === -1) { // last range
+                //         html += message.substr(start);
+                //     }
+                //     else {
+                //         html += message.substr(start, end - start) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                // });
+                // return html;
+                var messageInHTMLString = this.decodeHtml(message);
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
@@ -875,11 +1036,17 @@
                 if (dto.triggers[0].kind === 'plain') {
                     return TypeEnum.ONE_TIME;
                 }
-                if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'event') {
+                else if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'event') {
                     return TypeEnum.AUTOMATIC;
                 }
-                if (dto.triggers[0].kind === 'api') {
+                else if (dto.triggers[0].kind === 'api') {
                     return TypeEnum.TRANSACTIONAL;
+                }
+                else if (dto.triggers[0].kind === 'rec') {
+                    return TypeEnum.RECURRING;
+                }
+                else if (dto.triggers[0].kind === 'multi') {
+                    return TypeEnum.MULTIPLE;
                 }
                 throw new Error('Unknown push notification type:', dto);
             },
@@ -990,18 +1157,36 @@
                             date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
-                        sentDateTime: {
-                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
-                        },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
+                        notificationType: self.mapNotificationType(pushNotificationDtoItem),
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
+                        lastDate: {
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:00 a") : null,
+                        },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
                 });
                 return rowsModel;
+            },
+            mapNotificationType: function(dto) {
+                switch (dto.triggers[0].kind) {
+                case "plain":
+                    return TriggerTypeEnum.PLAIN;
+                case "api":
+                    return TriggerTypeEnum.API;
+                case "event":
+                case "cohort":
+                    return TriggerTypeEnum.EVENT;
+                case "rec":
+                    return TriggerTypeEnum.REC;
+                case "multi":
+                    return TriggerTypeEnum.MULTI;
+                default:
+                    return null;
+                }
             },
             mapTargeting: function(dto) {
                 if (dto.filter && (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length)) {
@@ -1021,6 +1206,7 @@
                     return {
                         code: dto.result.error,
                         affectedUsers: dto.result.total || '',
+                        description: CV.i18n('push-notification.error-code.' + dto.result.error + '.desc') || ''
                     };
                 }
                 return null;
@@ -1065,8 +1251,8 @@
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
-                    onClickURL: androidSettingsDto && androidSettingsDto.url || '',
-                    mediaURL: androidSettingsDto && androidSettingsDto.media || '',
+                    onClickURL: androidSettingsDto && androidSettingsDto.url ? countlyCommon.decodeHtml(androidSettingsDto.url) : '',
+                    mediaURL: androidSettingsDto && androidSettingsDto.media ? countlyCommon.decodeHtml(androidSettingsDto.media) : '',
                     mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
             },
@@ -1078,8 +1264,8 @@
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
-                    onClickURL: iosSettingsDto && iosSettingsDto.url || '',
-                    mediaURL: iosSettingsDto && iosSettingsDto.media || '',
+                    onClickURL: iosSettingsDto && iosSettingsDto.url ? countlyCommon.decodeHtml(iosSettingsDto.url) : '',
+                    mediaURL: iosSettingsDto && iosSettingsDto.media ? countlyCommon.decodeHtml(iosSettingsDto.media) : '',
                     mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
             },
@@ -1146,7 +1332,7 @@
                 result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
                 var defaultLocale = this.findDefaultLocaleItem(dto.contents);
                 result[PlatformEnum.ALL] = {};
-                result[PlatformEnum.ALL].mediaURL = defaultLocale.media || "";
+                result[PlatformEnum.ALL].mediaURL = defaultLocale.media ? countlyCommon.decodeHtml(defaultLocale.media) : "";
                 result[PlatformEnum.ALL].mediaMime = defaultLocale.mediaMime || "";
                 return result;
             },
@@ -1170,7 +1356,7 @@
             mapMessageLocalizationButtons: function(buttonsDto) {
                 var buttons = [];
                 buttonsDto.map(function(buttonDtoItem) {
-                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url});
+                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url ? countlyCommon.decodeHtml(buttonDtoItem.url) : buttonDtoItem.url});
                 });
                 return buttons;
             },
@@ -1333,6 +1519,7 @@
                     drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
                     dashboard: this.mapDashboard(dto),
+                    campaignType: ""
                 };
             },
             mapDtoToOneTimeModel: function(dto) {
@@ -1341,12 +1528,17 @@
                 model[TypeEnum.ONE_TIME].targeting = this.mapTargeting(dto);
                 model[TypeEnum.ONE_TIME].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
                 model.type = TypeEnum.ONE_TIME;
+                // model.campaignType = "One-Time";
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
                     startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
+                // overwrite date with now() for send-now drafts
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
                 model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
@@ -1354,6 +1546,7 @@
             mapDtoToAutomaticModel: function(dto) {
                 var model = this.mapDtoToBaseModel(dto);
                 model.type = TypeEnum.AUTOMATIC;
+                // model.campaignType = "Automated";
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
                 model.delivery = {
@@ -1368,8 +1561,9 @@
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
-                    capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
+                    pastSchedule: PastScheduleEnum.SKIP
                 };
                 if (triggerDto.time) {
                     var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
@@ -1392,16 +1586,71 @@
                 };
                 return model;
             },
+            mapDtoToRecurringModel: function(dto) {
+                var model = this.mapDtoToBaseModel(dto);
+                model.type = TypeEnum.RECURRING;
+                model[TypeEnum.RECURRING] = {};
+                model[TypeEnum.RECURRING].targeting = this.mapTargeting(dto);
+                model[TypeEnum.RECURRING].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
+                var triggerDto = dto.triggers[0];
+                model.delivery = {
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
+                    repetition: {bucket: triggerDto.bucket, every: parseInt(triggerDto.every), on: triggerDto.on || []},
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
+                };
+                if (triggerDto.time) {
+                    var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
+                    model.delivery.repetition.at = new Date();
+                    model.delivery.repetition.at.setHours(result.hours, result.minutes);
+                }
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
+                model[TypeEnum.RECURRING].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                return model;
+            },
+            mapDtoToMultipleModel: function(dto) {
+                var model = this.mapDtoToBaseModel(dto);
+                model[TypeEnum.MULTIPLE] = {};
+                model[TypeEnum.MULTIPLE].targeting = this.mapTargeting(dto);
+                model[TypeEnum.MULTIPLE].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
+                model.type = TypeEnum.MULTIPLE;
+                var triggerDto = dto.triggers[0];
+                model.delivery = {
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
+                    multipleDates: triggerDto.dates || [],
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
+                };
+
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
+                model[TypeEnum.MULTIPLE].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
+                return model;
+            },
             mapDtoToModel: function(dto) {
                 var pushNotificationType = this.mapType(dto);
                 if (pushNotificationType === TypeEnum.ONE_TIME) {
                     return this.mapDtoToOneTimeModel(dto);
                 }
-                if (pushNotificationType === TypeEnum.AUTOMATIC) {
+                else if (pushNotificationType === TypeEnum.AUTOMATIC) {
                     return this.mapDtoToAutomaticModel(dto);
                 }
-                if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
+                else if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
                     return this.mapDtoToTransactionalModel(dto);
+                }
+                else if (pushNotificationType === TypeEnum.RECURRING) {
+                    return this.mapDtoToRecurringModel(dto);
+                }
+                else if (pushNotificationType === TypeEnum.MULTIPLE) {
+                    return this.mapDtoToMultipleModel(dto);
                 }
                 throw new Error('Unknown push notification type:' + pushNotificationType);
             },
@@ -1625,7 +1874,7 @@
                         buttonDto.title = localizedButton.label;
                     }
                     if (localizedButton.url) {
-                        buttonDto.url = localizedButton.url;
+                        buttonDto.url = countlyCommon.decodeHtml(localizedButton.url);
                     }
                     result.push(buttonDto);
                 });
@@ -1661,13 +1910,13 @@
                     result.extras = iosSettings.userData;
                 }
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = iosSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
                     result.specific = [{subtitle: iosSettings.subtitle}];
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.IOS].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
                 return result;
@@ -1692,13 +1941,13 @@
                     result.extras = androidSettings.userData;
                 }
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = androidSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(androidSettings.onClickURL);
                 }
                 if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
                     result.specific = [{large_icon: androidSettings.icon}];
                 }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.ANDROID].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
                 }
                 return result;
@@ -1803,6 +2052,45 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
+            mapRecurringTrigger: function(model, options) {
+                var result = {
+                    kind: 'rec',
+                    start: model.delivery.startDate,
+                    bucket: model.delivery.repetition.bucket,
+                    every: parseInt(model.delivery.repetition.every),
+                    on: model.delivery.repetition.on
+                };
+                if (typeof model.delivery.repetition.at === 'number') {
+                    model.delivery.repetition.at = new Date(model.delivery.repetition.at);
+                }
+                var repeatedHour = {
+                    hours: model.delivery.repetition.at.getHours(),
+                    minutes: model.delivery.repetition.at.getMinutes()
+                };
+
+                if (options.isEndDateSet) {
+                    result.end = model.delivery.endDate;
+                }
+
+                result.time = countlyPushNotification.helper.convertDateTimeToMS(repeatedHour);
+                result.delayed = model[TypeEnum.RECURRING].audienceSelection === AudienceSelectionEnum.BEFORE;
+                result.tz = true;
+                result.sctz = new Date().getTimezoneOffset();
+                return [result];
+            },
+            mapMultipleTrigger: function(model) {
+                var result = {
+                    kind: 'multi',
+                    start: model.delivery.startDate,
+                    dates: model.delivery.multipleDates,
+                };
+                if (model.timezone === TimezoneEnum.DEVICE) {
+                    result.tz = true;
+                    result.sctz = new Date().getTimezoneOffset();
+                }
+                result.delayed = model[TypeEnum.MULTIPLE].audienceSelection === AudienceSelectionEnum.BEFORE;
+                return [result];
+            },
             mapFilters: function(model, options) {
                 var result = {};
                 if (model.user) {
@@ -1891,7 +2179,7 @@
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
                 if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL && pushNotificationModel.messageType === MessageTypeEnum.CONTENT) {
                     var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
-                    defaultLocale.media = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
+                    defaultLocale.media = countlyCommon.decodeHtml(pushNotificationModel.settings[PlatformEnum.ALL].mediaURL);
                     defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;
                 }
                 var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel, options);
@@ -1935,15 +2223,31 @@
                 dto.triggers = this.mapTransactionalTrigger(pushNotificationModel);
                 return dto;
             },
+            mapModelToRecurringDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
+                dto.triggers = this.mapRecurringTrigger(pushNotificationModel, options);
+                return dto;
+            },
+            mapModelToMultipleDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
+                dto.triggers = this.mapMultipleTrigger(pushNotificationModel, options);
+                return dto;
+            },
             mapModelToDto: function(pushNotificationModel, options) {
                 if (pushNotificationModel.type === TypeEnum.ONE_TIME) {
                     return this.mapModelToOneTimeDto(pushNotificationModel, options);
                 }
-                if (pushNotificationModel.type === TypeEnum.AUTOMATIC) {
+                else if (pushNotificationModel.type === TypeEnum.AUTOMATIC) {
                     return this.mapModelToAutomaticDto(pushNotificationModel, options);
                 }
-                if (pushNotificationModel.type === TypeEnum.TRANSACTIONAL) {
+                else if (pushNotificationModel.type === TypeEnum.TRANSACTIONAL) {
                     return this.mapModelToTransactionalDto(pushNotificationModel, options);
+                }
+                else if (pushNotificationModel.type === TypeEnum.RECURRING) {
+                    return this.mapModelToRecurringDto(pushNotificationModel, options);
+                }
+                else if (pushNotificationModel.type === TypeEnum.MULTIPLE) {
+                    return this.mapModelToMultipleDto(pushNotificationModel, options);
                 }
                 throw Error('Unknown push notification type:', pushNotificationModel.type);
             },
@@ -2047,7 +2351,10 @@
         ALL_FILTER_OPTION_VALUE: ALL_FILTER_OPTION_VALUE,
         ALL_FILTER_OPTION_LABEL: ALL_FILTER_OPTION_LABEL,
         TypeEnum: TypeEnum,
+        KindEnum: KindEnum,
+        CampaignTypes: CampaignTypes,
         PeriodEnum: PeriodEnum,
+        TriggerTypeEnum: TriggerTypeEnum,
         PlatformEnum: PlatformEnum,
         StatusEnum: StatusEnum,
         UserCommandEnum: UserCommandEnum,
@@ -2069,6 +2376,19 @@
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
         targetingOptions: targetingOptions,
+        bucketList: bucketList,
+        weeklyRepetitionOptions: weeklyRepetitionOptions,
+        monthlyRepetitionOptions: function() {
+            const days = [];
+            for (let i = 1; i <= 28; i++) {
+                days.push({ label: CV.i18n('push-notification.day') + " " + i, value: i });
+            }
+            days.push({ label: CV.i18n('push-notification.last-day'), value: 0 });
+            days.push({ label: CV.i18n('push-notification.x-day-before-the-last-day', 1), value: -1 });
+            days.push({ label: CV.i18n('push-notification.x-days-before-the-last-day', 2), value: -2 });
+
+            return days;
+        },
         triggerOptions: triggerOptions,
         triggerNotMetOptions: triggerNotMetOptions,
         deliveryDateCalculationOptions: deliveryDateCalculationOptions,
@@ -2090,17 +2410,24 @@
         hasApproverPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver;
         },
-        getTypeUrlParameter: function(type) {
+        getFetchAllParameters: function(type, status) {
+            var ret = {};
             if (type === this.TypeEnum.AUTOMATIC) {
-                return {auto: true};
+                ret.auto = true;
             }
             if (type === this.TypeEnum.TRANSACTIONAL) {
-                return {api: true};
+                ret.api = true;
             }
-            return {};
+            if (status !== ALL_FILTER_OPTION_VALUE) {
+                ret.status = status;
+            }
+            return ret;
         },
-        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
+        fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty, appId) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyCohorts === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -2108,7 +2435,7 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        app_id: appId || countlyCommon.ACTIVE_APP_ID,
                         method: "get_cohorts",
                         outputFormat: "full"
                     },
@@ -2139,6 +2466,9 @@
         },
         fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyLocationTargetComponent === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -2192,10 +2522,10 @@
                     });
             });
         },
-        fetchAll: function(type) {
+        fetchAll: function(type, status) {
             var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findAll(self.getTypeUrlParameter(type))
+                countlyPushNotification.api.findAll(self.getFetchAllParameters(type, status))
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapRows(response));
@@ -2682,6 +3012,8 @@
         return {
             rows: [],
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
+            selectedPushNotificationKind: countlyPushNotification.service.KindEnum.ALL,
+            selectedTriggerKind: countlyPushNotification.service.TriggerTypeEnum.PLAIN,
             statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             areRowsLoading: false,
@@ -2690,22 +3022,17 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            isLoadingTable: true,
+            activeFilter: {
+                platform: "all",
+                status: "all"
+            },
         };
     };
 
     var mainActions = {
-        fetchAll: function(context, useLoader) {
-            if (useLoader) {
-                context.dispatch('onSetAreRowsLoading', true);
-            }
-            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
-                .then(function(response) {
-                    context.commit('setRows', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetAreRowsLoading', false);
-                });
+        fetchAll: function(context) {
+            context.dispatch('fetchPushTable');
         },
         onDelete: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
@@ -2765,9 +3092,16 @@
         onSetAreRowsLoading: function(context, value) {
             context.commit('setAreRowsLoading', value);
         },
+        onSetTriggerKind: function(context, value) {
+            context.commit('setTriggerKind', value);
+        },
         onSetPushNotificationType: function(context, value) {
             context.commit('resetPushNotifications');
             context.commit('setPushNotificationType', value);
+        },
+        onSetPushNotificationKind: function(context, value) {
+            context.commit('resetPushNotifications');
+            context.commit('setPushNotificationKind', value);
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
@@ -2775,11 +3109,23 @@
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
         },
+        onSetActiveFilter: function(context, value) {
+            context.commit('setActiveFilter', value);
+        }
     };
 
     var mainMutations = {
         setPushNotificationType: function(state, value) {
             state.selectedPushNotificationType = value;
+        },
+        setTriggerKind: function(state, value) {
+            state.selectedTriggerKind = value;
+        },
+        setPushNotificationKind: function(state, value) {
+            state.selectedPushNotificationKind = value;
+        },
+        setActiveFilter: function(state, value) {
+            state.activeFilter = value;
         },
         resetPushNotifications: function(state) {
             Object.assign(state, getMainInitialState());
@@ -2806,11 +3152,17 @@
 
     countlyPushNotification.main = {};
     countlyPushNotification.main.getVuexModule = function() {
+        var getters = {
+            isLoadingTable: function(state) {
+                return state.isLoadingTable;
+            },
+        };
         return countlyVue.vuex.Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            getters: getters,
+            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };
 
@@ -2922,5 +3274,25 @@
             submodules: [countlyVue.vuex.FetchMixin()],
             destroy: false,
         });
+    };
+
+    var TT = {
+        tkid: 'iOS Development Token',
+        tkia: 'iOS Ad Hoc / TestFlight Token',
+        tkip: 'iOS Production Token',
+        tkap: 'Android Firebase Token',
+        tkhp: 'Android Huawei Token'
+    };
+
+    countlyPushNotification.getTokenTypes = function() {
+        return Object.keys(TT);
+    };
+
+    countlyPushNotification.getTokenNames = function() {
+        return Object.values(TT);
+    };
+
+    countlyPushNotification.getTokenName = function(type) {
+        return TT[type];
     };
 }(window.countlyPushNotification = window.countlyPushNotification || {}));

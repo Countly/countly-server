@@ -1,0 +1,26 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="48" cy="48" r="48" fill="#E1EFFF"/>
+<mask id="mask0_40004_246810" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="96" height="96">
+<circle cx="48" cy="48" r="48" fill="#E1EFFF"/>
+</mask>
+<g mask="url(#mask0_40004_246810)">
+<rect x="-65.8613" y="24" width="145.861" height="91.0075" rx="4.98671" fill="white"/>
+<rect x="42.0015" y="44.0005" width="30" height="6" rx="1" fill="#ECECEC"/>
+<rect x="30.001" y="44" width="9" height="6" rx="1" fill="#ECECEC"/>
+<rect x="-99.999" y="52.001" width="172" height="6" rx="1" fill="#E2E4E8"/>
+<rect x="8" y="61" width="8" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="8" y="70" width="8" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="8" y="79" width="8" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="8" y="88" width="8" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="35" y="61" width="37" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="35" y="70" width="37" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="35" y="79" width="37" height="3" rx="0.5" fill="#ECECEC"/>
+<rect x="35" y="88" width="37" height="3" rx="0.5" fill="#ECECEC"/>
+<path d="M-97.9985 67H72.0015" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-97.9985 76H72.0015" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-97.9985 85H72.0015" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-97.9985 94H72.0015" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M64.3805 67.5437C67.3985 63.5003 69.2605 58.4784 69.2605 53.0001C69.2605 39.7609 58.6657 29 45.6303 29C32.5951 29 22 39.7612 22 53.0001C22 66.2394 32.5953 77.0003 45.6303 77.0003C50.5103 77.0003 55.0055 75.5004 58.7938 72.8914L73.4986 87.8263C74.269 88.6088 75.2324 89 76.1955 89C77.1585 89 78.186 88.6088 78.8924 87.8263C80.3692 86.3264 80.3692 83.848 78.8924 82.2826L64.3805 67.5437ZM29.7056 53.0001C29.7056 44.1305 36.8332 36.8261 45.6304 36.8261C54.4275 36.8261 61.5551 44.1304 61.5551 53.0001C61.5551 61.9349 54.4275 69.1741 45.6304 69.1741C36.8332 69.1741 29.7056 61.935 29.7056 53.0001Z" fill="#E49700"/>
+<circle opacity="0.3" cx="45.5" cy="53" r="16.5" fill="#99C2EF" stroke="#E2E4E8"/>
+</g>
+</svg>

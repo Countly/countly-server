@@ -74,18 +74,21 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue2-leaflet.min.js',
                     'frontend/express/public/javascripts/utils/vue/inViewportMixin.js',
                     'frontend/express/public/javascripts/utils/vue/vuescroll.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-json-pretty.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/codemirror.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.min.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/json2.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsonlint.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
-                    'frontend/express/public/javascripts/utils/countly.checkbox.js'
+                    'frontend/express/public/javascripts/utils/countly.checkbox.js',
+                    'frontend/express/public/javascripts/utils/lodash.mergeWith.js',
+                    'frontend/express/public/javascripts/utils/element-tiptap.umd.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -126,9 +129,10 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.carrier.js',
                     'frontend/express/public/javascripts/countly/countly.total.users.js',
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
-                    'frontend/express/public/javascripts/countly/countly.template.js',
+                    'frontend/express/public/javascripts/countly/countly.view.js',
                     'frontend/express/public/javascripts/countly/vue/core.js',
                     'frontend/express/public/javascripts/countly/vue/container.js',
+                    'frontend/express/public/javascripts/countly/countly.template.js',
                     'frontend/express/public/javascripts/countly/vue/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/data/vuex.js',
                     'frontend/express/public/javascripts/countly/countly.task.manager.js',
@@ -143,6 +147,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
                     'frontend/express/public/javascripts/countly/vue/components/dialog.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
+                    'frontend/express/public/core/notes/javascripts/countly.models.js',
+                    'frontend/express/public/core/notes/javascripts/countly.common.notes.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/components/sidebar.js',
@@ -187,7 +193,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/geo-countries/javascripts/countly.views.js',
                     'frontend/express/public/core/geo-countries/javascripts/countly.widgets.geo.js',
                     'frontend/express/public/core/home/javascripts/countly.models.js',
-                    'frontend/express/public/core/home/javascripts/countly.views.js'
+                    'frontend/express/public/core/home/javascripts/countly.views.js',
+                    'frontend/express/public/core/notes/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
@@ -215,6 +222,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
                         'frontend/express/public/stylesheets/vue/clyvue.css',
+                        'frontend/express/public/stylesheets/vue/vue-json-pretty.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/leaflet/leaflet.css',
@@ -222,13 +230,13 @@ module.exports = function(grunt) {
                         'frontend/express/public/stylesheets/countly-checkbox/countly.checkbox.css',
                         'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
                         'frontend/express/public/javascripts/dom/gridstack/gridstack.css',
-                        'frontend/express/public/javascripts/dom/gridstack/gridstack-extra.css',
                         'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
                         'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                         'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
                         'frontend/express/public/stylesheets/styles/manifest.css',
+                        'frontend/express/public/stylesheets/vue/element-tiptap.css',
                     ]
                 }
             }
