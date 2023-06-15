@@ -119,11 +119,26 @@ appsApi.getAppsDetails = function(params) {
                     full_name: 1,
                     username: 1
                 }).toArray(function(err3, global_admins) {
-                    common.db.collection('members').find({ admin_of: params.qstring.app_id }, {
+                    common.db.collection('members').find({
+                        '$or': [
+                            { admin_of: params.qstring.app_id },
+                            { 'permission._.a': params.qstring.app_id }
+                        ]
+                    }, {
                         full_name: 1,
                         username: 1
                     }).toArray(function(err4, admins) {
-                        common.db.collection('members').find({ user_of: params.qstring.app_id }, {
+                        common.db.collection('members').find({
+                            '$or': [
+                                { user_of: params.qstring.app_id },
+                                {
+                                    'permission._.u':
+                                    {
+                                        $elemMatch: { $elemMatch: { $eq: params.qstring.app_id } }
+                                    }
+                                }
+                            ]
+                        }, {
                             full_name: 1,
                             username: 1
                         }).toArray(function(err5, users) {
@@ -213,6 +228,10 @@ appsApi.createApp = async function(params) {
                 'required': false,
                 'type': 'String'
             },
+            'key': {
+                'required': false,
+                'type': 'String'
+            },
             'timezone': {
                 'required': false,
                 'type': 'String'
@@ -261,38 +280,40 @@ appsApi.createApp = async function(params) {
         }
     }
     const appKey = common.sha1Hash(seed, true);
-    if (!newApp.key) {
+    if (!newApp.key || newApp.key === "") {
         newApp.key = appKey;
     }
 
-    common.db.collection('apps').insert(newApp, function(err, app) {
-        if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
-            newApp._id = app.ops[0]._id;
+    checkUniqueKey(params, function() {
+        common.db.collection('apps').insert(newApp, function(err, app) {
+            if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
+                newApp._id = app.ops[0]._id;
 
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-            common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
-                expireAfterSeconds: 60 * 60 * 3,
-                background: true
-            }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
-            plugins.dispatch("/i/apps/create", {
-                params: params,
-                appId: app.ops[0]._id,
-                data: newApp
-            });
-            iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
-            common.returnOutput(params, newApp);
-        }
-        else {
-            common.returnMessage(params, 500, "Error creating App: " + err);
-        }
-    });
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
+                common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
+                    expireAfterSeconds: 60 * 60 * 3,
+                    background: true
+                }, function() {});
+                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
+                plugins.dispatch("/i/apps/create", {
+                    params: params,
+                    appId: app.ops[0]._id,
+                    data: newApp
+                });
+                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
+                common.returnOutput(params, newApp);
+            }
+            else {
+                common.returnMessage(params, 500, "Error creating App: " + err);
+            }
+        });
+    }, false);
 };
 
 /**
@@ -355,6 +376,11 @@ appsApi.updateApp = function(params) {
         return false;
     }
 
+    if (params.qstring.args.key && updateAppValidation.obj.key === "") {
+        common.returnMessage(params, 400, 'Invalid app key');
+        return false;
+    }
+
     var invalidProps = validateAppUpdateProps(updatedApp);
     if (invalidProps.length > 0) {
         common.returnMessage(params, 400, 'Invalid props: ' + invalidProps);
@@ -380,22 +406,8 @@ appsApi.updateApp = function(params) {
             common.returnMessage(params, 404, 'App not found');
         }
         else {
-            if (params.member && params.member.global_admin) {
-                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
-                    plugins.dispatch("/i/apps/update", {
-                        params: params,
-                        appId: params.qstring.args.app_id,
-                        data: {
-                            app: appBefore,
-                            update: updatedApp
-                        }
-                    });
-                    iconUpload(params);
-                    common.returnOutput(params, updatedApp);
-                });
-            }
-            else {
-                if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+            checkUniqueKey(params, function() {
+                if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
                     common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
@@ -412,7 +424,7 @@ appsApi.updateApp = function(params) {
                 else {
                     common.returnMessage(params, 401, 'User does not have admin rights for this app');
                 }
-            }
+            }, true);
         }
     });
 
@@ -646,11 +658,42 @@ appsApi.deleteApp = function(params) {
     }
 
     /**
+    * Removes 'appId' from group permission
+    **/
+    async function updateGroupPermission() {
+        common.db.collection('groups').update({}, {
+            $pull: {
+                'permission._.a': appId,
+            },
+            $unset: {
+                [`permission.c.${appId}`]: '',
+                [`permission.r.${appId}`]: '',
+                [`permission.u.${appId}`]: '',
+                [`permission.d.${appId}`]: '',
+            }
+        }, {multi: true}, function() {});
+
+        // permission._.u is nested array so it has to be queried to remove 'appId' from it
+        await common.db.collection('groups').update({
+            'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+        }, {
+            $pull: { 'permission._.u.$': appId },
+        }, {multi: true});
+
+        // Cleanup empty permission._.u array
+        common.db.collection('groups').update({
+            'permission._.u': { $elemMatch: { $size: 0 } },
+        }, {
+            $pull: { 'permission._.u': { $size: 0 } },
+        }, {multi: true}, function() {});
+    }
+
+    /**
     * Removes the app after validation of params and calls deleteAppData
     * @param {object} app - app document
     **/
     function removeApp(app) {
-        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err) {
+        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, async function(err) {
             if (err) {
                 common.returnMessage(params, 500, 'Error deleting app');
                 return false;
@@ -663,10 +706,34 @@ appsApi.deleteApp = function(params) {
                 $pull: {
                     'apps': appId,
                     'admin_of': appId,
-                    'user_of': appId
+                    'user_of': appId,
+                    'permission._.a': appId,
+                },
+                $unset: {
+                    [`permission.c.${appId}`]: '',
+                    [`permission.r.${appId}`]: '',
+                    [`permission.u.${appId}`]: '',
+                    [`permission.d.${appId}`]: '',
                 }
             }, {multi: true}, function() {});
 
+            // permission._.u is nested array so it has to be queried to remove 'appId' from it
+            await common.db.collection('members').update({
+                'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+            }, {
+                $pull: { 'permission._.u.$': appId },
+            }, {multi: true});
+
+            // Cleanup empty permission._.u array
+            common.db.collection('members').update({
+                'permission._.u': { $elemMatch: { $size: 0 } },
+            }, {
+                $pull: { 'permission._.u': { $size: 0 } },
+            }, {multi: true}, function() {});
+
+            if (plugins.isPluginEnabled('groups')) {
+                updateGroupPermission();
+            }
             deleteAppData(appId, true, params, app);
             deleteTopEventsData();
             common.returnMessage(params, 200, 'Success');
@@ -1045,6 +1112,33 @@ function isValidCountry(country) {
     var countries = ["AF", "AX", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AU", "AT", "AZ", "BS", "BH", "BD", "BB", "BY", "BE", "BZ", "BJ", "BM", "BT", "BO", "BQ", "BA", "BW", "BV", "BR", "IO", "BN", "BG", "BF", "BI", "KH", "CM", "CA", "CV", "KY", "CF", "TD", "CL", "CN", "CX", "CC", "CO", "KM", "CG", "CD", "CK", "CR", "CI", "HR", "CU", "CW", "CY", "CZ", "DK", "DJ", "DM", "DO", "EC", "EG", "SV", "GQ", "ER", "EE", "ET", "FK", "FO", "FJ", "FI", "FR", "GF", "PF", "TF", "GA", "GM", "GE", "DE", "GH", "GI", "GR", "GL", "GD", "GP", "GU", "GT", "GG", "GN", "GW", "GY", "HT", "HM", "VA", "HN", "HK", "HU", "IS", "IN", "ID", "IR", "IQ", "IE", "IM", "IL", "IT", "JM", "JP", "JE", "JO", "KZ", "KE", "KI", "KP", "KR", "KW", "KG", "LA", "LV", "LB", "LS", "LR", "LY", "LI", "LT", "LU", "MO", "MK", "MG", "MW", "MY", "MV", "ML", "MT", "MH", "MQ", "MR", "MU", "YT", "MX", "FM", "MD", "MC", "MN", "ME", "MS", "MA", "MZ", "MM", "NA", "NR", "NP", "NL", "NC", "NZ", "NI", "NE", "NG", "NU", "NF", "MP", "NO", "OM", "PK", "PW", "PS", "PA", "PG", "PY", "PE", "PH", "PN", "PL", "PT", "PR", "QA", "RE", "RO", "RU", "RW", "BL", "SH", "KN", "LC", "MF", "PM", "VC", "WS", "SM", "ST", "SA", "SN", "RS", "SC", "SL", "SG", "SX", "SK", "SI", "SB", "SO", "ZA", "GS", "SS", "ES", "LK", "SD", "SR", "SJ", "SZ", "SE", "CH", "SY", "TW", "TJ", "TZ", "TH", "TL", "TG", "TK", "TO", "TT", "TN", "TR", "TM", "TC", "TV", "UG", "UA", "AE", "GB", "US", "UM", "UY", "UZ", "VU", "VE", "VN", "VG", "VI", "WF", "EH", "YE", "ZM", "ZW"];
 
     return countries.indexOf(country) !== -1;
+}
+
+/**
+* Check if APP KEY is unique before updating app
+* @param {params} params - params object 
+* @param {function} callback - callback to update app
+* @param {boolean} update - true when updating app, false when creating new app
+**/
+function checkUniqueKey(params, callback, update) {
+    if (!params.qstring.args.key) {
+        callback();
+    }
+    else {
+        var query = {key: params.qstring.args.key};
+        if (update) {
+            query._id = {$ne: common.db.ObjectID(params.qstring.args.app_id + "")};
+        }
+        common.db.collection('apps').findOne(query, function(error, keyExists) {
+            if (keyExists) {
+                common.returnMessage(params, 400, 'App key already in use');
+                return false;
+            }
+            else {
+                callback();
+            }
+        });
+    }
 }
 
 module.exports = appsApi;

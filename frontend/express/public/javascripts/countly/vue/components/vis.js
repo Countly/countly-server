@@ -1,6 +1,5 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
-
-// _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+// _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
 
@@ -41,7 +40,7 @@
         },
         computed: {
             legendOptions: function() {
-                var options = _merge({}, this.calculatedLegend, this.legend || {});
+                var options = _mergeWith({}, this.calculatedLegend, this.legend || {});
 
                 delete options.data;
 
@@ -313,7 +312,7 @@
                         this.getGraphNotes(); // when chart updated (date change etc.)
                     }
                 }, 0);
-                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+                return _mergeWith({}, this.internalUpdateOptions, this.updateOptions || {});
             }
         }
     };
@@ -334,6 +333,21 @@
     };
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
+
+    /**
+     * Merging default object into array of objects
+     * @param {Object|Array} objValue The destination object
+     * @param {Object|Array} srcValue The source object
+     * @returns {Object|Array} merged object/array
+    */
+    function mergeWithCustomizer(objValue, srcValue) {
+        if (Array.isArray(srcValue) && typeof objValue === 'object') {
+            srcValue.forEach(function(value, index) {
+                srcValue[index] = _mergeWith({}, objValue, value);
+            });
+            return srcValue;
+        }
+    }
 
     /**
      * Calculating width of text
@@ -375,7 +389,7 @@
                     h: this.chartHeight
                 });
                 if (xAxisOverflowPatch) {
-                    opt = _merge(opt, xAxisOverflowPatch);
+                    opt = _mergeWith(opt, xAxisOverflowPatch);
                 }
                 return opt;
             },
@@ -600,13 +614,14 @@
                         },
                         formatter: function(params) {
                             var template = "";
+                            let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
+                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -628,13 +643,19 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
+                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                        formatter = countlyCommon.formatSecond;
+                                    }
+                                    else {
+                                        formatter = self.valFormatter;
+                                    }
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small">' + params[i].seriesName + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -780,7 +801,7 @@
                     return false;
                 }
                 var isEmpty = true;
-                var options = _merge({}, this.option);
+                var options = _mergeWith({}, this.option);
 
                 if (options.series) {
                     for (var i = 0; i < options.series.length; i++) {
@@ -911,10 +932,10 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option, mergeWithCustomizer);
                 var series = opt.series || [];
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
                 this.setCalculatedLegendData(opt, series);
 
@@ -930,17 +951,53 @@
 
                 return opt;
             },
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
+            }
         },
         methods: {
             dateChanged: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
-                    this.getGraphNotes();
+                if (!this.areNotesHidden) {
+                    this.seriesOptions.markPoint.data = [];
+                    var self = this;
+                    setTimeout(() => {
+                        self.getGraphNotes();
+                    }, 500);
                 }
             },
+            getDateFormat: function(date) {
+                var dateFormats = {
+                    "yyyy-mm-d-hh-mm": "YYYY-MM-D HH:00",
+                    "yyyy-mm-d-h-mm": "YYYY-MM-D H:00",
+                    "d-mmm": "D MMM",
+                    "dd-mmm": "DD MMM",
+                    "d-mmm-yyyy": "D MMM YYYY",
+                    "yyyy-mm-d": "YYYY-MM-D",
+                    "yyyy-m-d": "YYYY-M-D",
+                    "yyyy-mm-dd": "YYYY-MM-DD",
+                    "yyyy-mm": "YYYY-MM",
+                    "yyyy-m": "YYYY-M",
+                    "mmm-yyyy": "MMM YYYY",
+                    "h-00": "H:00",
+                    "hh-00": "HH:00",
+                    "dd/mm/yyyy": "DD/MM/YY",
+                    "mmm": "MMM"
+                    //define other well known formats
+                };
+
+                for (var prop in dateFormats) {
+                    if (moment(date, dateFormats[prop], true).isValid()) {
+                        return dateFormats[prop];
+                    }
+                }
+                return null;
+            },
             graphNotesTimeConverter: function(ts) {
-                var currentPeriod = countlyCommon.periodObj._period;
                 var graphNoteDate = new Date(ts);
-                if (this.category === "drill" || this.category === "formulas") {
+                if (this.seriesType === "bar") {
+                    return null;
+                }
+                else if (this.category === "drill" || this.category === "formulas") {
                     if (this.notationSelectedBucket === "hourly") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
                     }
@@ -954,44 +1011,47 @@
                         return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
                     }
                 }
-                else {
-                    if (this.$parent && this.$parent.data && this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
-                        if (this.category !== "active-users") {
-                            return countlyCommon.formatDate(moment(ts), "YYYY-MM-D") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "DD/MM/YY") || 0;
-                        }
+                else if (this.category === "push-notification") {
+                    if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek();
                     }
-                    else if (currentPeriod === "hour") {
-                        return graphNoteDate.getUTCHours();
-                    }
-                    else if (currentPeriod === "yesterday") {
-                        return moment.utc(ts).format("D MMM, hh:00");
-                    }
-                    else if (currentPeriod === "day") {
-                        return moment.utc(ts).format("D MMM");
-                    }
-                    else if (currentPeriod === "month") {
-                        if (this.category === "session" || this.category === "crashes") {
-                            return countlyCommon.formatDate(moment(ts), "MMM") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "MMM YYYY") || 0;
-                        }
-                    }
-                    else {
-                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM") || 0;
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "YYYY MMM");
                     }
                 }
+                else {
+                    var xAxisLabel = null;
+                    if (this.$refs.echarts && this.$refs.echarts.option && this.$refs.echarts.option.xAxis.data) {
+                        xAxisLabel = this.$refs.echarts.option.xAxis.data[0];
+                    }
+                    else {
+                        return null;
+                    }
+                    var formatType = this.getDateFormat(xAxisLabel);
+                    return countlyCommon.formatDate(moment(ts), formatType) || 0;
+                }
             },
-            mergeGraphNotesByDate: function(notes) {
+            mergeGraphNotesByDate: function(notes, mergeByWeek) {
                 var self = this;
                 const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-
+                var multiplierCount = 2;
+                if (this.$refs.echarts && (this.$refs.echarts.getWidth() < 500 && this.$refs.echarts.getWidth() !== 100)) {
+                    multiplierCount = 8;
+                }
                 notes.forEach(function(orderedItem) {
                     orderedItem.dateStr = self.graphNotesTimeConverter(orderedItem.ts);
+                    orderedItem.weekCount = moment(orderedItem.ts).year() - moment(orderedItem.ts).week();
                 });
+
+                if (mergeByWeek) {
+                    for (var k = 1; k < notes.length; k++) {
+                        for (var m = 0; m < k; m++) {
+                            if (notes[k].weekCount === notes[m].weekCount) {
+                                notes[k].dateStr = notes[m].dateStr;
+                            }
+                        }
+                    }
+                }
 
                 notes.map(function(item) {
                     item.times = notes.filter(obj => obj.dateStr === item.dateStr).length;
@@ -1001,15 +1061,30 @@
                     return new Date(b.ts) - new Date(a.ts);
                 });
                 for (var i = 0; i < notes.length - 1; i++) {
-                    if ((i !== notes.length - 1) && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) === 1) {
+                    if ((i !== notes.length - 1) && (Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) > 0 && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) < multiplierCount)) {
                         notes[i].hasCloseDate = true;
                     }
                 }
                 return notes;
             },
             graphNotesTooltipFormatter: function(arr, params) {
-                var template = "";
                 var filteredNotes = arr.filter(x=>x.dateStr === params.data.note.dateStr && x.times > 1);
+                var minimizeTooltip = false;
+                var template = "";
+                var conditionalClassName = "graph-notes-tooltip";
+
+                if ((this.$refs && this.$refs.echarts) && (this.$refs.echarts.getHeight() < 200 || this.$refs.echarts.getWidth() < 500)) {
+                    minimizeTooltip = true;
+                }
+
+
+                if (minimizeTooltip) {
+                    conditionalClassName = 'graph-notes-tooltip minimize';
+                }
+                else if (!minimizeTooltip && filteredNotes.length > 0) {
+                    conditionalClassName = 'graph-notes-tooltip bu-mb-4 bu-mx-2';
+                }
+
                 if (filteredNotes.length > 0) {
                     for (var i = 0; i < filteredNotes.length; i++) {
                         if (i === 0) {
@@ -1020,18 +1095,18 @@
                                         </div>\
                                         <div class="graph-tooltip-wrapper__container">';
                         }
-                        template += '<div class="graph-notes-tooltip bu-mb-4 bu-mx-2">\
+                        template += '<div class="' + conditionalClassName + '">\
                                         <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
                                                 <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
-                                                <div class="text-small color-cool-gray-50">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                                <div class="text-small color-cool-gray-50 note-date">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                                <span class="text-small color-cool-gray-50 bu-is-capitalized">' + filteredNotes[i].noteType + '</span>\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1039,11 +1114,11 @@
                     }
                 }
                 else {
-                    template = '<div class="graph-notes-tooltip">\
+                    template += '<div class="' + conditionalClassName + '">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
                                             <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
-                                            <div class="text-small color-cool-gray-50">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                            <div class="text-small color-cool-gray-50 note-date">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
@@ -1052,7 +1127,7 @@
                                             <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
                                         </div>\
                                     </div>\
-                                    <div class="bu-mt-3 graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
                                 </div>';
                 }
                 return template;
@@ -1080,13 +1155,14 @@
                         }
                     }
                 }
+
                 if ((this.category === "formulas" || this.category === "drill") && (this.$parent && this.$parent.data)) {
                     var xAxisLabels = this.option.xAxis.data;
                     var customPeriodStartDate;
                     var customPeriodEndDate;
                     if (this.$parent.data.bucket === "daily") {
                         customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
-                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).setHours(23, 59);
                         filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
                     }
                     else if (this.$parent.data.bucket === "weekly") {
@@ -1095,7 +1171,10 @@
                         filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
                     }
                     else if (this.$parent.data.bucket === "monthly") {
-                        return;
+                        customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        customPeriodEndDate = moment(customPeriodEndDate).endOf('month')._d.valueOf();
+                        filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
                     }
                 }
                 returnedObj.appIds = appIds;
@@ -1103,11 +1182,12 @@
                 return returnedObj;
             },
             getGraphNotes: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
+                if (!this.hideNotation && !this.areNotesHidden) {
                     var self = this;
                     var chartHeight = 300;
                     var yAxisHeight = '';
-
+                    var filter = {};
+                    var mergeByDate = false;
                     // sub category parser
                     var categories = [];
                     if (this.subCategory.length) {
@@ -1116,7 +1196,6 @@
                         });
                     }
 
-                    var filter = {};
                     filter = this.graphNotesFilterChecks();
                     countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod /*{category: categories.length ? categories : [this.category]}*/).then(function(data) {
                         self.notes = data.aaData;
@@ -1126,22 +1205,28 @@
                             if (self.$refs.echarts) {
                                 chartHeight = self.$refs.echarts.getHeight();
                             }
-                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
+                            // if custom range date is bigger than 30days, then group notes by week
+                            if ((Array.isArray(countlyCommon.periodObj._period) && countlyCommon.periodObj.currentPeriodArr.length > 30)) {
+                                mergeByDate = true;
+                            }
+                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes, mergeByDate);
                             self.mergedNotes.forEach(function(note, index) {
-                                if (chartHeight < 250) {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '65%';
+                                if (note.dateStr) {
+                                    if (chartHeight < 250 && chartHeight !== 100) {
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '65%';
+                                        }
+                                        else {
+                                            yAxisHeight = '60%';
+                                        }
                                     }
                                     else {
-                                        yAxisHeight = '60%';
-                                    }
-                                }
-                                else {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '80%';
-                                    }
-                                    else {
-                                        yAxisHeight = '75%';
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '80%';
+                                        }
+                                        else {
+                                            yAxisHeight = '75%';
+                                        }
                                     }
                                 }
 
@@ -1153,6 +1238,7 @@
                                     symbolRotate: -20,
                                     symbolSize: note.indicator.length === 1 ? 30 : 40,
                                 });
+
                                 self.seriesOptions.markPoint.data[index].itemStyle = {
                                     color: note.times > 1 ? countlyGraphNotesCommon.COLOR_TAGS[0].label : countlyGraphNotesCommon.COLOR_TAGS.find(x=>x.value === note.color).label
                                 };
@@ -1169,59 +1255,6 @@
                                 confine: true,
                                 extraCssText: 'z-index: 1000',
                                 alwaysShowContent: true,
-                                position: function(canvasMousePos, params, tooltipDom, rect, sizes) {
-                                    if (params.value !== " ") {
-                                        return "top";
-                                        // return 'left';
-                                    }
-                                    else {
-                                        var margin = 10; // How far away from the mouse should the tooltip be
-                                        var overflowMargin = 5; // If no satisfactory position can be found, how far away from the edge of the window should the tooltip be kept
-
-                                        // The chart canvas position
-                                        var canvasRect = tooltipDom.parentElement.getElementsByTagName('canvas')[0].getBoundingClientRect();
-                                        // The mouse coordinates relative to the whole window
-                                        // The first parameter to the position function is the mouse position relative to the canvas
-                                        var mouseX = canvasMousePos[0] + canvasRect.x;
-                                        var mouseY = canvasMousePos[1] + canvasRect.y;
-                                        // The width and height of the tooltip dom element
-                                        var tooltipWidth = sizes.contentSize[0];
-                                        var tooltipHeight = sizes.contentSize[1];
-
-                                        // Start by placing the tooltip top and right relative to the mouse position
-                                        var xPos = mouseX + margin;
-                                        var yPos = mouseY - margin - tooltipHeight;
-
-                                        // The tooltip is overflowing past the right edge of the window
-                                        if (xPos + tooltipWidth >= document.documentElement.clientWidth) {
-
-                                            // Attempt to place the tooltip to the left of the mouse position
-                                            xPos = mouseX - margin - tooltipWidth;
-
-                                            // The tooltip is overflowing past the left edge of the window
-                                            if (xPos <= 0) {
-                                                // Place the tooltip a fixed distance from the left edge of the window
-                                                xPos = overflowMargin;
-                                            }
-                                        }
-
-                                        // The tooltip is overflowing past the top edge of the window
-                                        if (yPos <= 0) {
-
-                                            // Attempt to place the tooltip to the bottom of the mouse position
-                                            yPos = mouseY + margin;
-
-                                            // The tooltip is overflowing past the bottom edge of the window
-                                            if (yPos + tooltipHeight >= document.documentElement.clientHeight) {
-
-                                                // Place the tooltip a fixed distance from the top edge of the window
-                                                yPos = overflowMargin;
-                                            }
-                                        }
-                                        // Return the position (converted back to a relative position on the canvas)
-                                        return [xPos - canvasRect.x, yPos - canvasRect.y];
-                                    }
-                                },
                                 formatter: function(params) {
                                     return self.graphNotesTooltipFormatter(self.mergedNotes, params);
                                 }
@@ -1229,13 +1262,15 @@
                         }
                     });
                 }
+                else {
+                    this.seriesOptions.markPoint.data = [];
+                }
             },
-            onClick() {
+            onClick: function() {
                 if (!document.querySelectorAll(".graph-overlay").length) {
                     var overlay = document.createElement("div");
                     overlay.setAttribute("class", "graph-overlay");
                     overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
-
                     var echarts = document.querySelectorAll('.echarts');
                     for (var i = 0; i < echarts.length; i++) {
                         if (typeof echarts[i] !== 'undefined') {
@@ -1260,40 +1295,31 @@
                     }
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-                }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-
-                }
-
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-notes-tooltip').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-tooltip-wrapper').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = true;
             }
         },
         watch: {
             notationSelectedBucket: function() {
-                this.getGraphNotes();
+                this.seriesOptions.markPoint.data = [];
+                var self = this;
+                setTimeout(() => {
+                    self.getGraphNotes();
+                }, 0);
             },
             category: function() {
+                this.getGraphNotes();
+            },
+            areNotesHidden: function() {
                 this.getGraphNotes();
             }
         },
@@ -1320,11 +1346,11 @@
                 }
 
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = false;
@@ -1362,11 +1388,11 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
                 this.setCalculatedLegendData(opt, series);
@@ -1459,7 +1485,7 @@
                 return true;
             },
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -1469,7 +1495,7 @@
                     seriesArr = [];
                     sumOfOthers = 0;
 
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
 
                     series[i].data = series[i].data.filter(function(el) {
                         return el.value > 0;
@@ -1744,7 +1770,6 @@
     var AnnotationHandleCommand = {
         data: function() {
             return {
-                notesVisibilityLabel: true,
                 drawerSettingsForWidgets: {
                     createTitle: CV.i18n('notes.add-new-note'),
                     editTitle: CV.i18n('notes.edit-note'),
@@ -1754,9 +1779,14 @@
                 },
             };
         },
+        computed: {
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
+            }
+        },
         methods: {
             refreshNotes: function() {
-                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
+                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions.type === "line") {
                     this.$refs.echartRef.getGraphNotes();
                 }
             },
@@ -1767,7 +1797,8 @@
                         ts: Date.now(),
                         color: {value: 1, label: '#39C0C8'},
                         emails: [],
-                        category: this.category
+                        category: this.category,
+                        appIds: this.data ? this.data.apps : null
                     });
                 }
                 else if (event === "manage") {
@@ -1775,51 +1806,12 @@
                 }
                 else if (event === "show") {
                     this.notesVisibility();
-                    if (!countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
-                        this.$refs.echartRef.seriesOptions.markPoint.data = [];
-                    }
-                    else {
-                        if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
-                            this.$refs.echartRef.getGraphNotes();
-                        }
-                    }
-                }
-            },
-            handleCommand(command) {
-                switch (command) {
-                case "add":
-                    this.openDrawer("annotation", {
-                        noteType: "private",
-                        ts: Date.now(),
-                        color: {value: 1, label: '#39C0C8'},
-                        emails: [],
-                        category: this.category
-                    });
-                    break;
-                case "manage":
-                    window.location.href = '#/analytics/graph-notes';
-                    break;
-                case "show":
-                    this.notesVisibility();
-                    break;
-                default:
-                    break;
                 }
             },
             notesVisibility: function() {
-                var persistData = {};
-                this.notesVisibilityLabel = !this.notesVisibilityLabel;
-                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = this.notesVisibilityLabel;
-                countlyCommon.setPersistentSettings(persistData);
-                this.$emit('notes-visibility-change');
+                this.$store.dispatch('countlyCommon/setAreNotesHidden', !this.areNotesHidden);
             },
-        },
-        created: function() {
-            if (typeof countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] === "undefined") {
-                countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = true;
-            }
-            this.notesVisibilityLabel = countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID];
-        },
+        }
     };
 
     countlyVue.mixins.graphNotesCommand = AnnotationHandleCommand;
@@ -1855,14 +1847,14 @@
         },
         template:
             '<div class="chart-type-annotation-wrapper">\
-                <el-dropdown trigger="click" @command="handleCommand($event)">\
+                <el-dropdown trigger="click" @command="graphNotesHandleCommand($event)">\
                     <el-button size="small">\
                         <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
                         <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
                         <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{notesVisibilityLabel ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
@@ -1985,7 +1977,7 @@
                         <div class="bu-level-right bu-mt-1">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
-                                <add-note :category="this.category" @refresh="refresh" @notes-visibility-change="notesVisibility"></add-note>\
+                                <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
                             <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
                                 <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
@@ -2241,7 +2233,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.option);
                 opt = this.patchChart(opt);
                 return opt;
             }
@@ -2306,7 +2298,7 @@
         },
         computed: {
             chartOptions: function() {
-                var ops = _merge({}, this.baseOptions, this.option);
+                var ops = _mergeWith({}, this.baseOptions, this.option);
                 delete ops.grid;
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
@@ -2368,7 +2360,12 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
@@ -2380,12 +2377,12 @@
                 if (this.seriesOptions.type !== "line") {
                     this.seriesOptions.markPoint.data = [];
                 }
-                else if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                else if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
             },
             notesVisibility: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
                 else {
@@ -2458,6 +2455,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            noHourly: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         components: {
@@ -2466,7 +2468,12 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 var xAxisData = [];
                 if (!opt.xAxis.data) {
@@ -2483,8 +2490,14 @@
 
                     var tickObj = {};
 
-                    if (period === "month" && !this.bucket) {
+                    if (period === "month" && this.category !== "active-users" && !this.bucket) {
                         tickObj = chartsCommon.getTickObj("monthly", false, true);
+                    }
+                    else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
+                        tickObj = {
+                            ticks: [[0, countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]],
+                            tickTexts: [countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]
+                        };
                     }
                     else {
                         tickObj = chartsCommon.getTickObj(this.bucket, false, true);
@@ -2531,12 +2544,12 @@
                 if (this.seriesOptions.type !== "line") {
                     this.seriesOptions.markPoint.data = [];
                 }
-                else if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                else if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
             },
             notesVisibility: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
                 else {
@@ -2585,15 +2598,24 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            patchXAxis: {
+                type: Boolean,
+                default: true,
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                opt = this.patchOptionsForXAxis(opt);
+                if (this.patchXAxis) {
+                    opt = this.patchOptionsForXAxis(opt);
+                }
                 return opt;
             }
         },
@@ -2642,7 +2664,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
                 return opt;
             },
@@ -2661,7 +2683,7 @@
                 return classes;
             },
             pieLegendOptions: function() {
-                var opt = _merge({}, this.legendOptions);
+                var opt = _mergeWith({}, this.legendOptions);
                 opt.type = "secondary";
 
                 if (opt.position === "bottom") {

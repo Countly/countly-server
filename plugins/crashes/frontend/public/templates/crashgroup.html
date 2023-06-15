@@ -76,7 +76,7 @@
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
-            <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
+            <cly-section id="crash-tabs" v-if="!!(crashgroup && (crashgroup.error || crashgroupUnsymbolicatedStacktrace))">
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                         <crash-stacktrace :code="(!showSymbolicated && crashgroupUnsymbolicatedStacktrace) ? crashgroupUnsymbolicatedStacktrace : crashgroup.error">
@@ -268,7 +268,7 @@
                 <cly-chart-bar :option="chartData" :legend="{show: true}" :force-loading="isLoading"></cly-chart-bar>
             </cly-section>
             <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
-                <cly-datatable-n :force-loading="isLoading" :rows="crashes" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
+                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
                     </template>
@@ -389,7 +389,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="device" :label="i18n('crashes.device')" sortable></el-table-column>
-                        <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable>
+                        <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable sort-by="app_version_for_sort">
                         </el-table-column>
                         <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')">
                             <template slot-scope="col">
@@ -404,4 +404,15 @@
         </div>
     </cly-main>
     <component v-for="item in externalDialogs" :is="item.component"></component>
+    <el-dialog
+        :visible.sync="symbolicationErrorDialog.show"
+        :title="i18n('crash_symbolication.symbolication-failed')"
+        width="400px">
+        <div class="bu-is-flex-direction-column">
+            <cly-notification
+                :closable="false"
+                color="light-destructive"
+                :text="symbolicationErrorDialog.msg" />
+        </div>
+    </el-dialog>
 </div>

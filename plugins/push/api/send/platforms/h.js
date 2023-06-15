@@ -22,7 +22,8 @@ const key = 'h';
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && (qstring.token_provider === 'HMS' || qstring.token_provider === 'HPK')) {
-        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        const token = qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token;
+        return [key, FIELDS['0'], token, util.hashInt(token)];
     }
 }
 
@@ -168,7 +169,7 @@ class HPK extends Splitter {
                 }
                 catch (error) {
                     this.log.e('Bad HW response format: %j', resp, error);
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
 
 
@@ -296,7 +297,7 @@ class HPK extends Splitter {
             }, ([code, error]) => {
                 this.log.w('Huawei error %d / %j', code, error);
                 if (code === 0) {
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
                 else if (code >= 500) {
                     throw new ConnectionError(`Huawei Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
@@ -511,7 +512,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkhp/tkht
  */
 const FIELDS_TITLES = {
-    '0': 'HMS Token',
+    '0': 'Android Huawei Token',
 };
 
 /**

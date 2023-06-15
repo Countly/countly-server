@@ -110,7 +110,7 @@
 </div>
 <script src="../../star-rating/javascripts/tippy.all.min.js">
 </script>
-<script src="../../javascripts/dom/jquery/jquery-1.8.3.min.js">
+<script src="../../javascripts/dom/jquery/jquery.js">
 </script>
 <script>
     (function() {
@@ -219,6 +219,9 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+                removeClass(sendButton, 'disabled-send-button');
+                addClass(sendButton, 'send-button');
+                sendButton.removeAttribute('disabled');
                 response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
                 if (response.rating_symbol) {
                   symbol = response.rating_symbol;
@@ -241,10 +244,13 @@
                     $('#cf-submit-button').css({'color':response.trigger_font_color});
                 }
 
-                if (response.logo) {
+                if ((response.logo && !response.logoType) || (response.logo && response.logoType && response.logoType === "custom")) {
                     $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
                     $('#powered-by-countly').parent().attr('href', 'void(0)');
                     $('#powered-by-countly').css({'width':'100px'});
+                }
+                if(response.logoType && response.logoType === "none"){
+                    $('.modal-footer').find('img').remove();
                 }
                 if (response.comment_enable === "false") {
                     $('#comment-section').hide();

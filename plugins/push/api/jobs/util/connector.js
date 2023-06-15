@@ -1,6 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send'),
-    { FRAME_NAME } = require('../../send/proto');
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -46,7 +45,7 @@ class Connector extends DoFinish {
      * @param {function} callback callback
      */
     _transform(push, encoding, callback) {
-        this.log.d('in connector transform', FRAME_NAME[push.frame]);
+        // this.log.d('in connector transform', FRAME_NAME[push.frame]);
         this.do_transform(push, encoding, callback);
     }
 
@@ -127,7 +126,7 @@ class Connector extends DoFinish {
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
                 }
                 else {
-                    this.log.e('message not found', push.m);
+                    this.log.e('message not found', push.m, query);
                     this.state.discardMessage(push.m);
                 }
                 this.do_transform(push, encoding, callback);
@@ -179,7 +178,7 @@ class Connector extends DoFinish {
                 let creds = app.creds[push.p],
                     pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
-                    this.log.d('push goes to connection', push._id);
+                    // this.log.d('pgc', push._id); // Push Goes to Connection
                     callback(null, push);
                 }
                 else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time
@@ -220,7 +219,7 @@ class Connector extends DoFinish {
      */
     do_flush(callback, ifNeeded) {
         let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noProxyConnection.affectedBytes + this.expiredCreds.affectedBytes + this.tooLateToSend.affectedBytes;
-        this.log.d('in connector do_flush, total', total);
+        // this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
             if (callback) {

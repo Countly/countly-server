@@ -12,7 +12,12 @@
         if (data.noteType === 'shared') {
             args.emails = data.emails;
         }
-
+        if (data.appIds) {
+            args.app_id = data.appIds;
+        }
+        else {
+            args.app_id = countlyCommon.ACTIVE_APP_ID;
+        }
         if (data._id) {
             args._id = data._id;
             return $.ajax({
@@ -20,7 +25,7 @@
                 url: countlyCommon.API_PARTS.data.w + '/notes/save',
                 data: {
                     args: JSON.stringify(args),
-                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    app_id: args.app_id
                 },
                 dataType: "json",
                 success: function() {

@@ -10,14 +10,45 @@
 }
 
 .cly-in-page-notification {
-  border-radius: 4px;
-  text-align: center;
-  margin-bottom: 32px;
-
-  a {
-    text-decoration: underline;
-    cursor: hand;
-	}
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 32px;
+    &--light-informational {
+        background-color: #E1EFFF;
+        color: #333C48;
+    }
+    &--light-successful {
+        background-color: #EBFAEE;
+        color: #333C48;
+    }
+    &--light-destructive {
+        background-color: #FBECE5;
+        color: #333C48;
+    }
+    &--light-warning {
+        background-color: #FCF5E5;
+        color: #333C48;
+    }            
+    &--dark-successful {
+        background-color: #24292E;
+        color: #FFFFFF;
+    }
+    &--dark-informational {
+        background-color: #24292E;
+        color: #FFFFFF;
+    }
+    &--dark-warning {
+        background-color: #24292E;
+        color: #FFFFFF;
+    }
+    &--dark-destructive {
+        background-color: #24292E;
+        color: #FFFFFF;
+    }
+    a:hover {
+        text-decoration: underline;
+        cursor: hand;
+    }
 }
 .cly-vue-back-link {
     cursor: pointer;

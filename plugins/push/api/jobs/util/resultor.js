@@ -161,7 +161,7 @@ class Resultor extends DoFinish {
                 results.forEach(res => {
                     let id, token;
                     if (typeof res === 'string') {
-                        this.log.d('Ok for %s', id);
+                        // this.log.d('Ok for %s', id);
                         id = res;
                     }
                     else {
@@ -185,7 +185,7 @@ class Resultor extends DoFinish {
                         result.lastRun.processed++;
                     }
                     else {
-                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                        result = this.noMessage[p.m] || (this.noMessage[p.m] = new Result());
                     }
                     rp = result.sub(p.p, undefined, PLATFORM[p.p].parent);
                     rl = rp.sub(p.pr.la || 'default');
@@ -247,25 +247,32 @@ class Resultor extends DoFinish {
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
-                    m = this.data.message(m);
-                    if (m) {
-                        result = m.result;
+                    let msg = this.data.message(m);
+                    if (msg) {
+                        result = msg.result;
                     }
                     else {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
                     }
 
+                    result.processed++;
+                    result.recordError(results.message, 1);
+
                     rp = result.sub(p, undefined, PLATFORM[p].parent);
                     rl = rp.sub(pr.la || 'default');
 
                     rp.processed++;
+                    rp.recordError(results.message, 1);
                     rl.processed++;
+                    rl.recordError(results.message, 1);
 
                     if (PLATFORM[p].parent) {
                         rp = result.sub(PLATFORM[p].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
+                        rp.recordError(results.message, 1);
                         rl.processed++;
+                        rl.recordError(results.message, 1);
                     }
                 });
 
@@ -279,9 +286,8 @@ class Resultor extends DoFinish {
                     result = m.result;
                 }
                 else {
-                    result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    result = this.noMessage[mid] || (this.noMessage[mid] = new Result());
                 }
-                result.processed[m] += mids[mid];
 
                 let run = result.lastRun;
                 if (run) {
@@ -290,7 +296,7 @@ class Resultor extends DoFinish {
                 }
 
                 result.pushError(error);
-                this.data.decSending(mid);
+                this.data.decSending(mid, mids[mid]);
             }
         }
 
@@ -332,6 +338,33 @@ class Resultor extends DoFinish {
                         status = Status.Scheduled;
                     }
                 }
+                else if (m.triggerRescheduleable()) {
+                    let resch = m.triggerRescheduleable();
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Stopped;
+                        error = 'Failed to send all notifications';
+                    }
+                    else if (m.result.total === m.result.processed) {
+                        if (!resch.nextReference(resch.last)) { // TODO: this will probably result in skipping last reference if it's scheduled before last message in queue is sent
+                            state = State.Created | State.Done;
+                            status = Status.Sent;
+                        }
+                        else {
+                            state = m.state & ~State.Streaming;
+                            status = Status.Scheduled;
+                        }
+                    }
+                    else { // shouldn't happen, but possible in some weird cases
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                        m.schedule(this.log).then(() => {
+                            this.log.i('Rescheduled %s from resultor', m.id);
+                        }, e => {
+                            this.log.e('Rescheduling error for %s from resultor', m.id, e);
+                        });
+                    }
+                }
                 else {
                     if (m.result.total === m.result.errored) {
                         state = State.Created | State.Error | State.Done;
@@ -370,7 +403,7 @@ class Resultor extends DoFinish {
 
                 let count = this.noMessage[mid].processed;
                 delete this.noMessage[mid];
-                return this.db.updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
             }));
 
         if (this.toDelete.length) {

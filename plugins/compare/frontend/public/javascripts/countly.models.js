@@ -15,26 +15,32 @@
         },
         getTableRows: function(context) {
             var tableData = [];
-            var tableStateMap = context.state.tableStateMap;
-            for (var i = 0; i < context.state.selectedEvents.length; i++) {
+            const tableStateMap = context.state.tableStateMap;
+            const selectedEvents = context.state.selectedEvents;
+            const allEventsData = context.state.allEventsData;
+            const eventsData = context.state.allEventsCompareData;
+            for (var i = 0; i < selectedEvents.length; i++) {
                 var props = countlyCompareEvents.helpers.getProperties(),
                     tableRow = {
-                        "id": context.state.selectedEvents[i],
-                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? countlyCompareEvents.helpers.decode(context.state.groupData[context.state.selectedEvents[i]]) : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
-                        "checked": _.isEmpty(tableStateMap) ? true : tableStateMap[context.state.selectedEvents[i]]
-                    };
-
+                        "id": selectedEvents[i],
+                        "name": selectedEvents[i].startsWith("[CLY]_group") ? countlyCompareEvents.helpers.decode(context.state.groupData[selectedEvents[i]]) : countlyCompareEvents.helpers.getEventLongName(selectedEvents[i], allEventsData.map),
+                        "checked": _.isEmpty(tableStateMap) ? true : tableStateMap[selectedEvents[i]]
+                    },
+                    chartData = [],
+                    propData = [];
                 for (var prop in props) {
-                    var data = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(context.state.selectedEvents[i]), prop),
-                        tmpPropVals = _.pluck(data.chartData, prop);
-
-                    if (tmpPropVals.length) {
-                        tableRow[prop] = countlyCommon.formatNumber(_.reduce(tmpPropVals, function(memo, num) {
-                            return memo + num;
-                        }, 0));
-                    }
+                    chartData.push({"data": [], label: prop});
+                    propData.push({"name": prop});
                 }
-
+                const data = countlyCommon.extractChartData(eventsData[countlyCompareEvents.helpers.encode(selectedEvents[i])], countlyCompareEvents.helpers.clearObject, chartData, propData);
+                const totals = data.chartData.reduce(function(acc, curr) {
+                    for (const key in acc) {
+                        acc[key] += curr[key] || 0;
+                    }
+                    return acc;
+                }, {"c": 0, "s": 0, "dur": 0});
+                totals.avgDur = totals.dur / (totals.c || 1);
+                Object.assign(tableRow, totals);
                 tableData.push(tableRow);
             }
 
@@ -89,18 +95,46 @@
                     },
                     { name: metric}
                 ];
-
+            if (metric === "avgDur") {
+                dataProps = [
+                    {
+                        "name": "pdur",
+                        func: function(dataObj2) {
+                            return dataObj2.dur;
+                        },
+                        period: "previous"
+                    },
+                    {"name": "dur"},
+                    {
+                        "name": "pc",
+                        func: function(dataObj2) {
+                            return dataObj2.c;
+                        },
+                        period: "previous"
+                    },
+                    {"name": "c"}
+                ];
+                chartData.push(
+                    { data: [], label: forEvent, color: '#DDDDDD', mode: "ghost" },
+                    { data: [], label: forEvent, color: '#333933' }
+                );
+            }
             return countlyCommon.extractChartData(context.state.allEventsCompareData[forEvent], countlyCompareEvents.helpers.clearObject, chartData, dataProps);
         },
         getLineChartData: function(context, selectedEvents) {
             var series = [];
+            const metric = context.state.selectedGraphMetric;
             if (selectedEvents.length === 1) {
                 var dataObj = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[0]), context.state.selectedGraphMetric);
                 var data = [];
                 var prevData = [];
                 for (var j = 0;j < dataObj.chartData.length;j++) {
-                    data.push(dataObj.chartData[j][context.state.selectedGraphMetric]);
-                    prevData.push(dataObj.chartData[j]["p" + context.state.selectedGraphMetric]);
+                    if (metric === "avgDur") {
+                        dataObj.chartData[j][metric] = dataObj.chartData[j].dur / (dataObj.chartData[j].c || 1);
+                        dataObj.chartData[j]["p" + metric] = dataObj.chartData[j].pdur / (dataObj.chartData[j].pc || 1);
+                    }
+                    data.push(dataObj.chartData[j][metric]);
+                    prevData.push(dataObj.chartData[j]["p" + metric]);
                 }
                 var obj = {
                     name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[0], context.state.allEventsData.map)),
@@ -114,10 +148,13 @@
             }
             else {
                 for (var i = 0;i < selectedEvents.length; i++) {
-                    var dataOb = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[i]), context.state.selectedGraphMetric);
+                    var dataOb = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[i]), metric);
                     var seriesData = [];
-                    for (var k = 0;k < dataOb.chartData.length;k++) {
-                        seriesData.push(dataOb.chartData[k][context.state.selectedGraphMetric]);
+                    for (var k = 0; k < dataOb.chartData.length;k++) {
+                        if (metric === "avgDur") {
+                            dataOb.chartData[k][metric] = dataOb.chartData[k].dur / (dataOb.chartData[k].c || 1);
+                        }
+                        seriesData.push(dataOb.chartData[k][metric]);
                     }
                     var ob = {
                         name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[i]), context.state.allEventsData.map),
@@ -126,7 +163,17 @@
                     series.push(ob);
                 }
             }
-            return {series: series};
+            var lineOptions = {series: series};
+            if (["dur", "avgDur"].includes(metric)) {
+                lineOptions.yAxis = {
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+            }
+            return lineOptions;
         },
         getLegendData: function(selectedEvents, groupData, map) {
             var lineLegend = {};

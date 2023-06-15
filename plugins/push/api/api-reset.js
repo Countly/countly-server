@@ -1,6 +1,6 @@
 const common = require('../../../api/utils/common'),
     plugins = require('../../pluginManager'),
-    { Creds, dbext, FIELDS_TITLES } = require('./send');
+    { Creds, dbext, FIELDS_TITLES, PushError } = require('./send');
 
 /**
  * Reset the app by removing all push artifacts
@@ -52,8 +52,8 @@ async function clear(ob) {
  * @param {string[]} uids user uids to remove
  * @param {string} error error code (consent is default) 
  */
-async function removeUsers(appId, uids, error = "consent") {
-    let stream = common.db.collection('push').find({u: {$in: uids}}).stream(),
+async function removeUsers(appId, uids, error = 'consent') {
+    let stream = common.db.collection('push').find({a: dbext.oid(appId), u: {$in: uids}}).stream(),
         updates = {},
         ids = [];
 
@@ -103,7 +103,15 @@ async function removeUsers(appId, uids, error = "consent") {
 
     await common.db.collection('push').deleteMany({_id: {$in: ids}});
 
-    await common.db.collection(`push_${appId}`).deleteMany({_id: {$in: uids}});
+    if (error === 'consent') {
+        await common.db.collection(`push_${appId}`).updateMany({_id: {$in: uids}}, {$set: {tk: {}}});
+    }
+    else if (error === 'purge') {
+        await common.db.collection(`push_${appId}`).deleteMany({_id: {$in: uids}});
+    }
+    else {
+        throw new PushError('Invalid error value in removeUsers');
+    }
 }
 
 module.exports = { reset, clear, removeUsers };

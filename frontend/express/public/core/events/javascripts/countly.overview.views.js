@@ -16,6 +16,9 @@
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
+            },
+            formatDurNumber: function(val) {
+                return countlyCommon.formatSecond(val);
             }
         },
         computed: {
@@ -150,7 +153,7 @@
                 type: String
             }
         },
-        template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
+        template: '<div class="cly-events-breakdown-horizontal-tile bu-column">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
         <slot name="title"></slot>\
@@ -242,6 +245,14 @@
             onMetricClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
+            durCheck: function(item) {
+                var eventMapKey = item.eventKey;
+                var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                return item.eventProperty === (eventMap[eventMapKey]).dur.toUpperCase();
+            },
+            valFormatter: function(val) {
+                return countlyCommon.formatSecond(val);
+            }
         },
         computed: {
             selectedEvents: function() {
@@ -293,7 +304,19 @@
                                 }
                             }
                         }
-                        editedMonitorEventsData.push({
+                        var total = countlyCommon.formatNumber(currentData[j].total);
+                        var yAxis = this.monitorEventsOptions.yAxis;
+                        var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                        var eventMapKey = currentData[j].eventKey;
+                        if (currentData[j].eventProperty === (eventMap[eventMapKey]).dur.toUpperCase()) {
+                            total = countlyCommon.formatSecond(currentData[j].total, 2);
+                            yAxis.axisLabel = {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value, 2);
+                                },
+                            };
+                        }
+                        var editedMonitorEventsDataObj = {
                             "barData": {
                                 "series": [{
                                     "data": currentData[j].barData.series[0].data,
@@ -302,13 +325,15 @@
                                 }],
                                 "legend": this.monitorEventsOptions.legend,
                                 "xAxis": this.monitorEventsOptions.xAxis,
-                                "yAxis": this.monitorEventsOptions.yAxis
+                                "yAxis": yAxis
                             },
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
-                            "total": currentData[j].total,
-                            "name": currentData[j].name
-                        });
+                            "total": total,
+                            "name": currentData[j].name,
+                            "eventKey": currentData[j].eventKey
+                        };
+                        editedMonitorEventsData.push(editedMonitorEventsDataObj);
                     }
                     return editedMonitorEventsData;
                 }

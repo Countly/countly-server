@@ -207,6 +207,9 @@ class IncomingDataTrigger {
             if (filterObj.rgxcn && (filterObj.rgxcn[0] !== undefined) && value.indexOf(filterObj.rgxcn[0]) === -1) {
                 matched = false;
             }
+            if (filterObj.rgxbw && (filterObj.rgxbw[0] !== undefined) && value.indexOf(filterObj.rgxbw[0]) === -1) {
+                matched = false;
+            }
             if ((filterObj.$lte !== undefined) && value > filterObj.$lte) {
                 matched = false;
             }

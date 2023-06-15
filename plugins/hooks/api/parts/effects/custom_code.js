@@ -1,7 +1,7 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const request = require("request");
+const request = require("countly-request");
 const {NodeVM} = require('vm2');
 
 /**
@@ -34,9 +34,7 @@ class CustomCodeEffect {
                 const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
                     runtimePassed = false;
                     log.e("got error when executing custom code", e, genCode, options);
-                    logs.push(`message:${e.message}
-                        stack: ${JSON.stringify(e.stack)}
-                    `);
+                    logs.push(`Error: ${e.message}`);
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 };
 
@@ -65,9 +63,7 @@ class CustomCodeEffect {
         catch (e) {
             runtimePassed = false;
             log.e("got error when executing custom code", e, genCode, options);
-            logs.push(`message:${e.message}
-                stack: ${JSON.stringify(e.stack)}
-            `);
+            logs.push(`Error: ${e.message}`);
             utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
         }
         return runtimePassed ? options : {...options, logs};

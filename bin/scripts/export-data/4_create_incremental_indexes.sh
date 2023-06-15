@@ -14,7 +14,7 @@ prefix="app_users"
 db="countly"
 tmp_file="fadlfhsdofheinwvw.js"
 echo "db.getCollectionNames().forEach(function(c){if(c.indexOf(\"${prefix}\") === 0){db[c].createIndex({last_sync: -1},{background: true})}})" > $tmp_file
-mongo "${connection_string}/${db}" $tmp_file
+mongosh "${connection_string}/${db}" $tmp_file
 rm $tmp_file
 
 
@@ -22,5 +22,5 @@ prefix="drill_events"
 db="countly_drill"
 tmp_file="fadlfhsdofheinwvw.js"
 echo "db.getCollectionNames().forEach(function(c){if(c.indexOf(\"${prefix}\") === 0){db[c].createIndex({cd: -1},{background: true})}})" > $tmp_file
-mongo "${connection_string}/${db}" $tmp_file
+mongosh "${connection_string}/${db}" $tmp_file
 rm $tmp_file

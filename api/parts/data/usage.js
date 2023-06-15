@@ -216,15 +216,40 @@ usage.getPredefinedMetrics = function(params, userProps) {
 
     if (params.qstring.metrics) {
         common.processCarrier(params.qstring.metrics);
-
-        if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+        if (params.qstring.metrics._os && params.qstring.metrics._os_version && !params.is_os_processed) {
             params.qstring.metrics._os += "";
             params.qstring.metrics._os_version += "";
+
             if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
                 params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
             }
-            else if (!params.qstring.metrics._os_version.startsWith(params.qstring.metrics._os[0].toLowerCase())) {
-                params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+            else {
+                var value;
+                var length;
+                for (var key in common.os_mapping) {
+                    if (params.qstring.metrics._os.toLowerCase().startsWith(key)) {
+                        if (value) {
+                            if (length < key.length) {
+                                value = common.os_mapping[key];
+                                length = key.length;
+                            }
+                        }
+                        else {
+                            value = common.os_mapping[key];
+                            length = key.length;
+                        }
+                    }
+                }
+
+                if (!value) {
+                    params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
+                else {
+                    params.qstring.metrics._os_version = value + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
             }
         }
         if (params.qstring.metrics._app_version) {
@@ -343,6 +368,7 @@ usage.getPredefinedMetrics = function(params, userProps) {
     return predefinedMetrics;
 };
 
+
 /**
  * Process all metrics and return
  * @param  {params} params - params object
@@ -366,11 +392,11 @@ usage.returnAllProcessedMetrics = function(params) {
             }
 
             // We check if country data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "country" && (plugins.getConfig("api").country_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
             // We check if city data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "city" && (plugins.getConfig("api").city_data === false || params.app_cc !== params.user.country)) {
+            if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
 
@@ -391,7 +417,7 @@ usage.returnAllProcessedMetrics = function(params) {
 * @param {params} params - params object
 * @param {function} done - callback when done
 **/
-function processSessionDurationRange(totalSessionDuration, params, done) {
+usage.processSessionDurationRange = function(totalSessionDuration, params, done) {
     var durationRanges = [
             [0, 10],
             [11, 30],
@@ -435,7 +461,7 @@ function processSessionDurationRange(totalSessionDuration, params, done) {
     if (done) {
         done();
     }
-}
+};
 
 /**
 * Process ending user session and calculate loyalty and frequency range metrics
@@ -876,7 +902,7 @@ plugins.register("/i", function(ob) {
                 }
                 //if new session did not start during cooldown, then we can post process this session
                 if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
-                    processSessionDurationRange(params.session_duration || 0, params);
+                    usage.processSessionDurationRange(params.session_duration || 0, params);
                     let updates = [];
                     plugins.dispatch("/session/end", {
                         params: params,
@@ -889,14 +915,16 @@ plugins.register("/i", function(ob) {
                         updates: updates,
                         session_duration: params.session_duration,
                         end_session: true
+                    }, function() {
+                        updates.push({$set: {sd: 0, data: {}}});
+                        let updateUser = {};
+                        for (let i = 0; i < updates.length; i++) {
+                            updateUser = common.mergeQuery(updateUser, updates[i]);
+                        }
+                        common.updateAppUser(params, updateUser);
                     });
 
-                    updates.push({$set: {sd: 0, data: {}}});
-                    let updateUser = {};
-                    for (let i = 0; i < updates.length; i++) {
-                        updateUser = common.mergeQuery(updateUser, updates[i]);
-                    }
-                    common.updateAppUser(params, updateUser);
+
                 }
             });
         }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
@@ -1118,7 +1146,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
             userProps.lsid = params.request_id;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                processSessionDurationRange(params.session_duration || 0, params);
+                usage.processSessionDurationRange(params.session_duration || 0, params);
 
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {

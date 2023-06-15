@@ -26,6 +26,37 @@
             },
         },
         methods: {
+            customSortSegments(a, b) {
+                a = a.curr_segment;
+                b = b.curr_segment;
+                var aRight = parseInt(a) || a;
+                if (typeof a === 'string') {
+                    if (a.indexOf('+') !== -1) {
+                        return 1;
+                    }
+                    else if (a.indexOf('-') !== -1) {
+                        aRight = parseInt(a.split('-')[1]);
+                    }
+                }
+                var bRight = parseInt(b) || b;
+                if (typeof b === 'string') {
+                    if (b.indexOf('+') !== -1) {
+                        return -1;
+                    }
+                    else if (b.indexOf('-') !== -1) {
+                        bRight = parseInt(b.split('-')[1]);
+                    }
+                }
+                if (aRight < bRight) {
+                    return -1;
+                }
+                else if (aRight > bRight) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
+            },
             isColumnAllowed: function(column) {
                 var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
                 if (column === 'count') {
@@ -53,6 +84,44 @@
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
+            },
+            formatDurNumber: function(val) {
+                return countlyCommon.formatSecond(val);
+            },
+            formatExportTable: function(data0) {
+                var data = [];
+                data0 = data0 || [];
+                var cols = ["curr_segment", "count", "sum", "dur"];
+                if (this.selectedSegment !== "segment") {
+                    cols = [{"key": "curr_segment", "label": this.i18n("events.table.segmentation")}];
+                }
+                else {
+                    cols = [{"key": "date", "label": this.i18n("date")}];
+                }
+                if (this.isColumnAllowed("count")) {
+                    cols.push({"key": "c", "label": this.labels.count});
+                }
+                if (this.isColumnAllowed("sum")) {
+                    cols.push({"key": "s", "label": this.labels.sum});
+                }
+                if (this.isColumnAllowed("AvgSum")) {
+                    cols.push({"key": "avgSum", "label": this.i18n("events.table.avg-sum")});
+                }
+                if (this.isColumnAllowed("dur")) {
+                    cols.push({"key": "dur", "label": this.labels.dur});
+                }
+                if (this.isColumnAllowed("AvgDur")) {
+                    cols.push({"key": "avgDur", "label": this.i18n("events.table.avg-dur")});
+                }
+
+                for (var p = 0; p < data0.length; p++) {
+                    var temp = {};
+                    for (var q = 0; q < cols.length; q++) {
+                        temp[cols[q].label] = data0[p][cols[q].key];
+                    }
+                    data.push(temp);
+                }
+                return data;
             }
         },
     });
@@ -81,6 +150,12 @@
         components: {
             "detail-tables": EventsTable,
         },
+        mixins: [
+            countlyVue.container.dataMixin({
+                'externalLinks': '/analytics/events/links'
+            }),
+            countlyVue.mixins.commonFormatters
+        ],
         methods: {
             dateChanged: function() {
                 this.$store.dispatch('countlyAllEvents/setTableLoading', true);
@@ -89,7 +164,7 @@
             },
             decode: function(str) {
                 if (typeof str === 'string') {
-                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&amp;/g, '&');
                 }
                 return str;
             }
@@ -106,6 +181,31 @@
                     this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
                     this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
                     this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                }
+            },
+            topDropdown: function() {
+                var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];//gets event key(not name)
+                if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                    var dropdown = [];
+                    for (var z = 0; z < this.externalLinks.length; z++) {
+                        if (this.externalLinks[z].data && this.externalLinks[z].data.event) {
+                            var coppied = JSON.parse(JSON.stringify(this.externalLinks[z].data));
+                            coppied.event = eventName;
+                            var segment = this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
+                            if (segment && segment !== "segment") {
+                                coppied.byVal = ["sg." + segment];
+                            }
+                            var link = this.externalLinks[z].getLink(coppied);
+                            dropdown.push({"label": this.externalLinks[z].label, "value": link});
+                        }
+                        else {
+                            dropdown.push({"label": this.externalLinks[z].label, "value": this.externalLinks[z].value});
+                        }
+                    }
+                    return dropdown;
+                }
+                else {
+                    return null;
                 }
             },
             selectedSegment: {
@@ -126,6 +226,22 @@
                     this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData");
                     this.$store.dispatch("countlyAllEvents/setSegmentDescription");
                 }
+            },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters["countlyAllEvents/omittedSegments"];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
             },
             hasSegments: function() {
                 return this.$store.getters["countlyAllEvents/hasSegments"];

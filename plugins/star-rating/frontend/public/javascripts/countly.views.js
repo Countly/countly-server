@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -23,10 +23,16 @@
                 imageSource: '',
                 deleteLogo: false,
                 imageSrc: '',
+                logoType: 'default',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
                     trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
+                    logoOptions: [
+                        { label: this.i18n("surveys.appearance.logo.option.default"), value: "default" },
+                        { label: this.i18n("surveys.appearance.logo.option.custom"), value: "custom" },
+                        { label: this.i18n("surveys.appearance.logo.option.no.logo"), value: "none" }
+                    ],
                     trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
                 },
                 ratingSymbols: ['emojis', 'thumbs', 'stars'],
@@ -78,8 +84,12 @@
                     submitted.logo = this.logoFile;
                 }
 
-                if (!this.imageSource) {
+                if (!this.imageSource || submitted.logoType !== 'custom') {
                     submitted.logo = '';
+                }
+
+                if (!submitted.logoType) {
+                    submitted.logoType = 'default';
                 }
 
                 if (this.cohortsEnabled) {
@@ -145,7 +155,9 @@
                 }, 1);
             },
             onComplete: function(res) {
-                this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+                var fileName = res.upload.filename;
+                var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                this.logoFile = this.stamp + '.' + fileExtension;
             },
             remove: function() {
                 this.imageSource = '';
@@ -244,6 +256,32 @@
             }
         },
         methods: {
+            parseTargetingForExport: function(widget) {
+                var targeting = countlyCohorts.getSegmentationDescription(widget);
+                var html = targeting.behavior;
+                var div = document.createElement('div');
+                div.innerHTML = html;
+                return div.textContent || div.innerText || "";
+            },
+            formatExportFunction: function() {
+                var tableData = this.widgets;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+
+                    item[CV.i18n('feedback.status').toUpperCase()] = tableData[i].status ? "Active" : "Inactive";
+                    item[CV.i18n('feedback.ratings-widget-name').toUpperCase()] = tableData[i].popup_header_text;
+                    item[CV.i18n('feedback.widget-id').toUpperCase()] = tableData[i]._id;
+                    item[CV.i18n('feedback.targeting').toUpperCase()] = this.parseTargetingForExport(tableData[i].targeting).trim();
+                    item[CV.i18n('feedback.rating-score').toUpperCase()] = tableData[i].ratingScore;
+                    item[CV.i18n('feedback.responses').toUpperCase()] = tableData[i].ratingsCount;
+                    item[CV.i18n('feedback.pages').toUpperCase()] = tableData[i].target_pages;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
             goWidgetDetail: function(id) {
                 window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
             },
@@ -556,7 +594,8 @@
                     status: true,
                     logo: null,
                     target_pages: ["/"],
-                    target_page: false
+                    target_page: false,
+                    logoType: 'default'
                 });
             },
             refresh: function() {
@@ -840,6 +879,9 @@
                 if (!this.widget.logo) {
                     this.widget.logo = null;
                 }
+                if (!this.widget.logoType) {
+                    this.widget.logoType = 'default';
+                }
                 if (!this.widget.targeting) {
                     this.widget.targeting = {
                         user_segmentation: null,
@@ -905,7 +947,7 @@
                     }
                 });
                 // set widget filter as current one
-                this.activeFilter.widget = this.widget._id;
+                this.activeFilter.widget = this.widget._id || this.$route.params.id;
                 if (force) {
                     this.isLoading = true;
                 }
@@ -982,7 +1024,10 @@
                 ];
             },
             ratingRate: function() {
-                var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
+                var timesShown = this.widget.timesShown === 0 || !this.widget.timesShown ? 1 : this.widget.timesShown;
+                if (timesShown < this.count) {
+                    timesShown = this.count;
+                }
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             }
         },
@@ -1035,6 +1080,7 @@
         title: 'Feedback',
         name: 'feedback',
         permission: FEATURE_NAME,
+        pluginName: "star-rating",
         component: countlyVue.components.create({
             template: CV.T("/star-rating/templates/users-tab.html"),
             components: {
@@ -1098,7 +1144,7 @@
     });
 
     app.addPageScript("/manage/reports", function() {
-        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], pluginName: "star-rating", value: "star-rating"});
     });
 
     /*
@@ -1231,10 +1277,11 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-    app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addMenu("reach", {code: "feedback", permission: FEATURE_NAME, text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
     app.addSubMenu("feedback", {
         code: "star-rating",
         permission: FEATURE_NAME,
+        pluginName: "star-rating",
         url: "#/feedback/ratings",
         text: "star.menu-title",
         icon: '<div class="logo ion-android-star-half"></div>',
@@ -1242,6 +1289,7 @@ app.addPageScript("/drill#", function() {
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "star-rating",
         beforeCreate: function() {
             var self = this;
             $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {

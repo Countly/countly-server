@@ -117,6 +117,7 @@
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
+                    var self = this;
                     CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
@@ -131,6 +132,7 @@
                                 message: CV.i18n('management-users.removed-message'),
                                 type: 'success'
                             });
+                            self.$emit('refresh-table');
                         });
                     }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
@@ -139,6 +141,21 @@
                     break;
                 case 'show-logs':
                     window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
+                    break;
+                case 'reset-logins':
+                    countlyUserManagement.resetFailedLogins(index, function(err) {
+                        if (err) {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.reset-failed-logins-failed'),
+                                type: 'error'
+                            });
+                            return;
+                        }
+                        CountlyHelpers.notify({
+                            message: CV.i18n('management-users.reset-failed-logins-success'),
+                            type: 'success'
+                        });
+                    });
                     break;
                 }
             },
@@ -159,7 +176,25 @@
             },
             reloadFilterValues: function() {
                 this.$refs.filterForm.reload();
-            }
+            },
+            formatExportFunction: function() {
+                var tableData = this.filteredRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('management-users.user').toUpperCase()] = tableData[i].full_name;
+                    item[CV.i18n('management-users.username').toUpperCase()] = tableData[i].username;
+                    item[CV.i18n('management-users.role').toUpperCase()] = tableData[i].global_admin ? CV.i18n('management-users.global-admin') : ((tableData[i].permission && tableData[i].permission._ && tableData[i].permission._.a.length > 0) ? CV.i18n('management-users.admin') : CV.i18n('management-users.user'));
+                    item[CV.i18n('management-users.email').toUpperCase()] = tableData[i].email;
+                    item[CV.i18n('management-users.group').toUpperCase()] = tableData[i].groupNames ? tableData[i].groupNames : '';
+                    item[CV.i18n('management-users.created').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].created_at).text;
+                    item[CV.i18n('management-users.last_login').toUpperCase()] = tableData[i].last_login === 0 ? CV.i18n('management-users.not-logged-in-yet') : countlyCommon.formatTimeAgoText(tableData[i].last_login).text;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         }
     });
 
@@ -171,6 +206,14 @@
             features: {
                 type: Array,
                 default: []
+            },
+            featuresPermissionDependency: {
+                type: Object,
+                default: {}
+            },
+            inverseFeaturesPermissionDependency: {
+                type: Object,
+                default: {}
             },
             editMode: {
                 type: Boolean,
@@ -192,6 +235,7 @@
                 apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
+                filteredFeatures: [],
                 dropzoneOptions: {
                     member: null,
                     url: "/member/icon",
@@ -213,6 +257,60 @@
             };
         },
         methods: {
+            toggleFilteredAll: function(index) {
+                var self = this;
+                var crudTypes = ['c', 'r', 'u', 'd'];
+                var remCrudTypes = ['c', 'r', 'u', 'd'];
+                var all = this.filteredFeatures[index].all;
+
+                if (self.filteredFeatures[index].features.length === 0) {
+                    // Uncheck all CRUD types if filtered features is empty
+                    crudTypes.forEach(function(type) {
+                        all[type] = false;
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features.forEach(function(feature) {
+                        crudTypes.forEach(function(type) {
+                            // Remove the current CRUD type from the remaining CRUD types
+                            if (!self.permissionSets[index][type].allowed[feature]) {
+                                // Remove the current CRUD type from the remaining CRUD types
+                                var idx = remCrudTypes.indexOf(type);
+                                if (idx !== -1) {
+                                    remCrudTypes.splice(idx, 1);
+                                }
+                                all[type] = false;
+                            }
+                        });
+                        if (remCrudTypes.length === 0) {
+                            return;
+                        }
+                    });
+                    // Check the "all" checkbox for each remaining CRUD type
+                    remCrudTypes.forEach(function(type) {
+                        all[type] = true;
+                    });
+                }
+            },
+            search: function(index) {
+                var self = this;
+                var query = self.filteredFeatures[index].searchQuery;
+                if (query && query !== "") {
+                    query = query.toLowerCase();
+                    self.filteredFeatures[index].features = self.features.filter(function(feature) {
+                        return self.featureBeautifier(feature).toLowerCase().includes(query);
+                    });
+                }
+                else {
+                    self.filteredFeatures[index].features = self.features;
+                }
+                this.toggleFilteredAll(index);
+            },
+            clearSearch: function(index) {
+                this.filteredFeatures[index].searchQuery = '';
+                this.filteredFeatures[index].features = this.features;
+                this.toggleFilteredAll(index);
+            },
             featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
@@ -352,6 +450,16 @@
                 }
 
                 this.permissionSets.push(permissionSet);
+                this.filteredFeatures.push({
+                    searchQuery: '',
+                    features: this.features,
+                    all: {
+                        c: false,
+                        r: false,
+                        u: false,
+                        d: false
+                    }
+                });
             },
             removePermissionSet: function(index) {
                 if (this.$refs.userDrawer.editedObject.permission._.u[index]) {
@@ -364,11 +472,97 @@
                     }
                 }
                 this.permissionSets.splice(index, 1);
+                this.filteredFeatures.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
+            },
+            /**
+            * Set/Remove permissions for dependency features
+            * @param {number} index - The index of the permission set to modify.
+            * @param {string} type - The type of permission to modify (c, r, u, or d).
+            * @param {string} feature - The feature to modify permissions for.
+            * @example setPermissionByDependency(0, 'u', 'data_manager_transformations'), when the function is called with these params it means the user is toggling 'update' permission of data_manager_transformations for permissionSet of index 0,
+            * we need to make sure incase if the user is enabling it, that the dependency permission data_manager - 'read' is also enabled, we get these dependency details from featuresPermissionDependency.
+            * In case of disabling something let's say data_manager - 'read' we need to check if there are other feature(s) permission(s) which had dependency of data_manager - 'read', and disable them too, we get this inverse dependency from inverseFeaturesPermissionDependency.
+            */
+            setPermissionByDependency: function(index, type, feature) {
+                var self = this;
+                var crudTypes = {
+                    'c': 'Create',
+                    'r': 'Read',
+                    'u': 'Update',
+                    'd': 'Delete'
+                };
+                var permissionSets = this.permissionSets[index];
+                var singleFeaturePermDependency = this.featuresPermissionDependency[feature];
+                var featuresPermDependency = this.featuresPermissionDependency;
+                var inverseFeaturesPermissionDependency = this.inverseFeaturesPermissionDependency[feature];
+
+                //traverse singleFeaturePermDependency object,enable the dependency features
+                var setPermission = function(permType) {
+                    var preReqfeatures = singleFeaturePermDependency[permType];
+                    Object.keys(preReqfeatures).forEach(function(preReqfeature) {
+                        //group together similar toast msg
+                        var msg = [];
+                        preReqfeatures[preReqfeature].forEach(function(preReqfeaturePerm) {
+                            if (!permissionSets[preReqfeaturePerm].allowed[preReqfeature]) {
+                                permissionSets[preReqfeaturePerm].allowed[preReqfeature] = true;
+                                msg.push(crudTypes[preReqfeaturePerm]);
+                            }
+                        });
+                        if (msg.length) {
+                            CountlyHelpers.notify({
+                                message: `${msg.join(', ')} permission(s) granted automatically for` + ' ' + self.featureBeautifier(preReqfeature),
+                                type: 'info'
+                            });
+                        }
+                    });
+                };
+
+                //for enabling
+                if (permissionSets[type].allowed[feature] && singleFeaturePermDependency && singleFeaturePermDependency[type]) {
+                    if (type !== 'r' && singleFeaturePermDependency.r) {
+                        setPermission('r');
+                    }
+                    setPermission(type);
+                }
+                //for disabling
+                else if (!permissionSets[type].allowed[feature] && inverseFeaturesPermissionDependency && inverseFeaturesPermissionDependency[type]) {
+                    var invPreReqfeatures = inverseFeaturesPermissionDependency[type];
+                    //traverse inverseFeaturesPermissionDependency object,disable the dependency features
+                    Object.keys(invPreReqfeatures).forEach(function(invPreReqfeature) {
+                        if (featuresPermDependency[invPreReqfeature]) {
+                            //group together similar toast msg
+                            var invMsg = [];
+                            Object.keys(featuresPermDependency[invPreReqfeature]).forEach(function(typeKey) {
+                                var preReqPerms = featuresPermDependency[invPreReqfeature][typeKey][feature];
+                                if (preReqPerms && preReqPerms.indexOf(type) !== -1) {
+                                    if (permissionSets[typeKey].allowed[invPreReqfeature]) {
+                                        permissionSets[typeKey].allowed[invPreReqfeature] = false;
+                                        invMsg.push(crudTypes[typeKey]);
+                                        //disable all other permission if Read is disabled
+                                        if (typeKey === 'r') {
+                                            for (var cudType of ['c', 'u', 'd']) {
+                                                if (permissionSets[cudType].allowed[invPreReqfeature]) {
+                                                    permissionSets[cudType].allowed[invPreReqfeature] = false;
+                                                    invMsg.push(crudTypes[cudType]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            if (invMsg.length) {
+                                CountlyHelpers.notify({
+                                    message: self.featureBeautifier(invPreReqfeature) + ' ' + `${invMsg.join(', ')} permission(s) disabled automatically due to dependency permission being disabled`,
+                                    type: 'info'
+                                });
+                            }
+                        }
+                    });
+                }
             },
             setPermissionByFeature: function(index, type, feature) {
                 var types = ['c', 'r', 'u', 'd'];
-
                 if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
                     this.permissionSets[index].r.allowed[feature] = true;
                     CountlyHelpers.notify({
@@ -396,15 +590,23 @@
                 if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
                     this.permissionSets[index][type].all = false;
                 }
+                this.setPermissionByDependency(index, type, feature);
+                this.toggleFilteredAll(index);
             },
             setPermissionByType: function(index, type) {
                 var types = ['c', 'r', 'u', 'd'];
+                var features = this.filteredFeatures[index].features;
+                var all = this.filteredFeatures[index].all;
+
                 // set true read permissions automatically if read not selected yet
-                if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
-                    this.permissionSets[index].r.all = true;
-                    for (var feature in this.features) {
-                        if (this.features[feature] !== 'core') {
-                            this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                if (all[type] && type !== 'r' && !all.r) {
+                    all.r = true;
+                    if (features.length === this.features.length) {
+                        this.permissionSets[index].r.all = true;
+                    }
+                    for (var feature in features) {
+                        if (features[feature] !== 'core') {
+                            this.permissionSets[index].r.allowed[features[feature]] = all[type];
                         }
                     }
                     CountlyHelpers.notify({
@@ -413,12 +615,15 @@
                     });
                 }
                 // set false all other permissions automatically if read set as false
-                if (type === 'r' && !this.permissionSets[index].r.all) {
+                if (type === 'r' && !all.r) {
                     for (var _type in types) {
-                        this.permissionSets[index][types[_type]].all = false;
-                        for (var feature1 in this.features) {
-                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
-                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
+                        all[types[_type]] = false;
+                        if (features.length === this.features.length) {
+                            this.permissionSets[index][types[_type]].all = false;
+                        }
+                        for (var feature1 in features) {
+                            if (!(types[_type] === 'r' && features[feature1] === 'core')) {
+                                this.permissionSets[index][types[_type]].allowed[features[feature1]] = false;
                             }
                         }
                     }
@@ -428,17 +633,42 @@
                     });
                 }
                 // set type specific features for other cases
-                for (var feature2 in this.features) {
-                    if (!(type === 'r' && this.features[feature2] === 'core')) {
-                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
+                for (var feature2 in features) {
+                    if (!(type === 'r' && features[feature2] === 'core')) {
+                        this.permissionSets[index][type].allowed[features[feature2]] = all[type];
+                    }
+                    this.setPermissionByDependency(index, type, features[feature2]);
+                }
+
+                //change permission set all only if all[type] is false or if every feature is enabled
+                if (!all[type]) {
+                    this.permissionSets[index][type].all = all[type];
+                }
+                else {
+                    if (features.length === this.features.length) {
+                        this.permissionSets[index][type].all = true;
+                    }
+                    else {
+                        var isTrue = true;
+                        for (var featName of this.features) {
+                            if (!this.permissionSets[index][type].allowed[featName]) {
+                                isTrue = false;
+                                break;
+                            }
+                        }
+                        if (isTrue) {
+                            this.permissionSets[index][type].all = true;
+                        }
                     }
                 }
-                if (this.permissionSets[index][type].all) {
+
+                if (all[type]) {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.future-plugins'),
                         type: 'info'
                     });
                 }
+                this.toggleFilteredAll(index);
             },
             handleCommand: function(command, index) {
                 switch (command) {
@@ -602,6 +832,9 @@
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
+                // clear filtered features
+                this.filteredFeatures = [];
+
                 // clear permission sets
                 this.permissionSets = [];
                 this.groups = [];
@@ -631,9 +864,23 @@
                                 for (var type in types) {
                                     for (var feature in this.features) {
                                         // TODO: these checks will be converted to helper method
-                                        permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet]) {
+                                            permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        }
+                                        else {
+                                            permissionSet[types[type]].all = false;
+                                        }
+
                                         if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all || (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            if (permissionSet[types[type]].all) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all;
+                                            }
+                                            else if (this.user.permission[types[type]] && this.user.permission[types[type]][appFromSet] && this.user.permission[types[type]][appFromSet].allowed) {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
+                                            }
+                                            else {
+                                                permissionSet[types[type]].allowed[this.features[feature]] = false;
+                                            }
                                         }
                                     }
                                 }
@@ -668,12 +915,31 @@
 
                     this.permissionSets.push(permissionSet_);
                 }
+
+                // initialize filtered features
+                for (let i = 0; i < this.permissionSets.length; i++) {
+                    this.filteredFeatures.push({
+                        features: this.features,
+                        searchQuery: '',
+                        all: {
+                            c: this.permissionSets[i].c.all,
+                            r: this.permissionSets[i].r.all,
+                            u: this.permissionSets[i].u.all,
+                            d: this.permissionSets[i].d.all
+                        }
+                    });
+                }
+
             },
             onGroupChange: function(groupVal) {
                 this.groups = groupVal;
                 if (groupVal.length === 0) {
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
+                    this.$refs.userDrawer.editedObject.permission.c = {};
+                    this.$refs.userDrawer.editedObject.permission.r = {};
+                    this.$refs.userDrawer.editedObject.permission.u = {};
+                    this.$refs.userDrawer.editedObject.permission.d = {};
                 }
             },
             onRoleChange: function(role) {
@@ -722,7 +988,10 @@
                     editMode: false
                 },
                 features: [],
-                loading: true
+                featuresPermissionDependency: {},
+                inverseFeaturesPermissionDependency: {},
+                loading: true,
+                groupModelData: []
             };
         },
         computed: {
@@ -730,7 +999,8 @@
                 var map = {};
 
                 if (isGroupPluginEnabled) {
-                    groupsModel.data().forEach(function(group) {
+                    this.groupModelData = groupsModel.data();
+                    this.groupModelData.forEach(function(group) {
                         map[group._id] = group.name;
                     });
                 }
@@ -741,13 +1011,14 @@
         methods: {
             refresh: function() {
                 var self = this;
-                countlyUserManagement.fetchUsers()
-                    .then(function() {
-                        var usersObj = countlyUserManagement.getUsers();
-                        self.users = [];
-                        self.fillOutUsers(usersObj);
-                    })
-                    .catch(function() {});
+                setTimeout(function() {
+                    countlyUserManagement.fetchUsers()
+                        .then(function() {
+                            var usersObj = countlyUserManagement.getUsers();
+                            self.users = [];
+                            self.fillOutUsers(usersObj);
+                        }).catch(function() {});
+                }, 100);
             },
             createUser: function() {
                 this.drawerSettings.editMode = false;
@@ -784,6 +1055,19 @@
 
                         user.groupNames = groupNames.join(", ");
                     }
+                    else {
+                        user.groupNames = '';
+                    }
+
+                    user.dispRole = CV.i18n('management-users.global-admin');
+                    if (!user.global_admin) {
+                        if (user.permission && user.permission._ && user.permission._.a.length > 0) {
+                            user.dispRole = CV.i18n('management-users.admin');
+                        }
+                        else {
+                            user.dispRole = CV.i18n('management-users.user');
+                        }
+                    }
 
                     this.users.push(user);
                 }
@@ -791,11 +1075,18 @@
         },
         mounted: function() {
             var self = this;
+            if (isGroupPluginEnabled) {
+                groupsModel.initialize().then(function() {
+                    self.groupModelData = groupsModel.data();
+                });
+            }
             $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
                 var usersObj = countlyUserManagement.getUsers();
                 self.fillOutUsers(usersObj);
                 self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
+                self.featuresPermissionDependency = countlyUserManagement.getFeaturesPermissionDependency();
+                self.inverseFeaturesPermissionDependency = countlyUserManagement.getInverseFeaturesPermissionDependency();
             });
         }
     });

@@ -29,9 +29,9 @@ apt-get update
 apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install iptables
-DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent
+DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
 
-apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
+apt-get install -y build-essential || (echo "Failed to install build-essential." ; exit)
 
 #drop packages coming from 0/0 going through mongodb port
 #allow those coming from localhost
@@ -39,7 +39,7 @@ iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localh
 iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
 
 #install iptables-persistent
-apt-get -y install iptables-persistent
+apt-get install -y iptables-persistent
 
 #install npm modules
 ( cd "$DIR/../../.." ; npm install )

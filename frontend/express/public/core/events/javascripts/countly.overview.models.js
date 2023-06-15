@@ -93,10 +93,11 @@
                         obj["prev-total"] = values["prev-total"];
                         obj.sparkline = values.sparkline;
                         obj.barData = countlyEventsOverview.helpers.getBarData(obj.sparkline, eventProperty);
-                        obj.total = countlyCommon.getShortNumber((values.total));
+                        obj.total = values.total;
                         obj.trend = values.trend;
                         obj.eventProperty = mapping[eventProperty].toUpperCase();
                         obj.name = mapping.eventName;
+                        obj.eventKey = key;
                         monitorEvents.overview[i].propertyName = mapping[eventProperty];
                         monitorEvents.overview[i].eventName = mapping.eventName;
                         monitorData.push(obj);

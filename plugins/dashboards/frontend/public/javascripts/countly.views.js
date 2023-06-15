@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull*/
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull, countlyCommon */
 
 (function() {
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -85,6 +85,11 @@
 
                 if (widgetSettings) {
                     var defaultEmpty = widgetSettings.drawer.getEmpty();
+                    if (this.widgetId) {
+                        // it is create
+                        defaultEmpty._id = this.widgetId;
+                        defaultEmpty.__action = "edit";
+                    }
                     this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
                 }
             },
@@ -371,7 +376,6 @@
                  * All widgets can be resized.
                  */
                 var disabled = this.isWidgetDisabled(widget);
-
                 if (disabled) {
                     return true;
                 }
@@ -944,6 +948,7 @@
         data: function() {
             return {
                 grid: null,
+                widgetId: null
             };
         },
         computed: {
@@ -980,6 +985,7 @@
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     var settings = Object.assign({}, empty, d);
+                    this.widgetId = settings._id;
                     this.openDrawer("widgets", settings);
                     break;
 
@@ -1375,6 +1381,8 @@
                     dashboard.creation.by = dashboard.owner.full_name;
                 }
 
+                dashboard.name = countlyCommon.unescapeHtml(dashboard.name);
+
                 return dashboard;
             },
             canUpdateGrid: function() {
@@ -1724,6 +1732,7 @@
 
     countlyVue.container.registerData("/sidebar/menu/main", {
         name: "dashboards",
+        pluginName: "dashboards",
         icon: "cly-icon-sidebar-dashboards",
         tooltip: CV.i18n("sidebar.dashboard-tooltip"),
         component: DashboardsMenu
@@ -1731,6 +1740,7 @@
 
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "dashboards",
         beforeCreate: function() {
             var self = this;
             this.$store.dispatch("countlyDashboards/getAll").then(function(res) {

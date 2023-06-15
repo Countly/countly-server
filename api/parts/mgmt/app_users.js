@@ -10,8 +10,8 @@ var usersApi = {},
 var path = require('path');
 const fs = require('fs');
 var countlyFs = require('./../../utils/countlyFs.js');
-var cp = require('child_process'); //call process
-var spawn = cp.spawn; //for calling comannd line
+//var cp = require('child_process'); //call process
+//var spawn = cp.spawn; //for calling comannd line
 const fse = require('fs-extra');
 var crypto = require('crypto');
 var log = common.log('core:app_users');
@@ -59,6 +59,18 @@ usersApi.create = function(app_id, doc, params, callback) {
             usersApi.getUid(app_id, function(err1, uid) {
                 if (uid) {
                     doc.uid = uid;
+                    if (params && params.href) {
+                        doc.first_req_get = (params.href + "") || "";
+                    }
+                    else {
+                        doc.first_req_get = "";
+                    }
+                    if (params && params.req && params.req.body) {
+                        doc.first_req_post = (params.req.body + "") || "";
+                    }
+                    else {
+                        doc.first_req_post = "";
+                    }
                     common.db.collection('app_users' + app_id).insert(doc, function(err2) {
                         if (!err2) {
                             plugins.dispatch("/i/app_users/create", {
@@ -474,6 +486,7 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             //store last merged uid for reference
             newAppUserP.merged_uid = oldAppUser.uid;
+            newAppUserP.merged_did = oldAppUser.did;
             if (typeof newAppUserP.merges === "undefined") {
                 newAppUserP.merges = 0;
             }
@@ -593,7 +606,8 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
         }
 
         countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
-            if (error && error.message && error.message.substring(0, 12) !== "FileNotFound") {
+            if (error && error.message && error.message.substring(0, 12) !== "FileNotFound" && error.message.substring(0, 14) !== 'File not found') {
+                log.e(error.message.substring(0, 14));
                 errors.push(error.message);
             }
             if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
@@ -637,41 +651,46 @@ usersApi.deleteExport = function(filename, params, callback) {
             //remove archive
             deleteMyExport(base_name[0]).then(
                 function() {
-                    if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
-                        //update user info
-                        common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
-                            if (err) {
-                                callback(err, "");
-                            }
-                            else {
-                                plugins.dispatch("/systemlogs", {
-                                    params: params,
-                                    action: "export_app_user_deleted",
-                                    data: {
-                                        result: "ok",
-                                        uids: name_parts[2],
-                                        id: base_name[0],
-                                        app_id: name_parts[1],
-                                        info: "Exported data deleted"
-                                    }
-                                });
-                                callback(null, "Export deleted");
-                            }
-                        });
-                    }
-                    else {
-                        plugins.dispatch("/systemlogs", {
-                            params: params,
-                            action: "export_app_user_deleted",
-                            data: {
-                                result: "ok",
-                                id: base_name[0],
-                                app_id: name_parts[1],
-                                info: "Exported data deleted"
-                            }
-                        });
-                        callback(null, "Export deleted");
-                    }
+                    common.db.collection("exports").remove({"_eid": base_name[0]}, function(err0) {
+                        if (err0) {
+                            log.e(err0);
+                        }
+                        if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
+                            //update user info
+                            common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
+                                if (err) {
+                                    callback(err, "");
+                                }
+                                else {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "export_app_user_deleted",
+                                        data: {
+                                            result: "ok",
+                                            uids: name_parts[2],
+                                            id: base_name[0],
+                                            app_id: name_parts[1],
+                                            info: "Exported data deleted"
+                                        }
+                                    });
+                                    callback(null, "Export deleted");
+                                }
+                            });
+                        }
+                        else {
+                            plugins.dispatch("/systemlogs", {
+                                params: params,
+                                action: "export_app_user_deleted",
+                                data: {
+                                    result: "ok",
+                                    id: base_name[0],
+                                    app_id: name_parts[1],
+                                    info: "Exported data deleted"
+                                }
+                            });
+                            callback(null, "Export deleted");
+                        }
+                    });
                 },
                 function(err) {
                     console.log(err);
@@ -685,6 +704,7 @@ usersApi.deleteExport = function(filename, params, callback) {
     }
 };
 
+/*
 var run_command = function(my_command, my_args) {
     log.d("run_command:" + my_command + JSON.stringify(my_args));
     return new Promise(function(resolve, reject) {
@@ -728,6 +748,55 @@ var clear_out_empty_files = function(folder) {
                 resolve(); //resolve anyway(not so bad if empty files not deleted)
             }
         );
+    });
+};*/
+
+var export_safely = function(options) {
+    return new Promise(function(resolve) {
+        var args = options.args;
+
+        var params_countly = plugins.getDbConnectionParams('countly');
+
+        var dbName = 'countly';
+        var collection = "";
+        var query = "{}";
+        for (var z = 0; z < args.length; z++) {
+            if (args[z] === '--collection') {
+                collection = args[z + 1];
+            }
+            if (args[z] === '-q') {
+                query = args[z + 1];
+            }
+
+            if (args[z] === '--db') {
+                dbName = args[z + 1];
+            }
+        }
+        try {
+            query = JSON.parse(query);
+        }
+        catch (e) {
+            log.e(e);
+            query = {};
+        }
+
+        var pipeline = [{"$match": query}, {"$addFields": {"_col": collection, "__id": "$_id", "_eid": options.export_id}}, {"$project": {"_id": 0}}, {"$merge": {"into": {"db": "countly", "coll": "exports"}}}];
+        if (dbName === params_countly.db) {
+            common.db.collection(collection).aggregate(pipeline, function(err) {
+                if (err) {
+                    log.e(err);
+                }
+                resolve();
+            });
+        }
+        else {
+            common.drillDb.collection(collection).aggregate(pipeline, function(err2) {
+                if (err2) {
+                    log.e(err2);
+                }
+                resolve();
+            });
+        }
     });
 };
 /**
@@ -793,50 +862,8 @@ usersApi.export = function(app_id, query, params, callback) {
             }
 
             var export_folder = path.resolve(__dirname, './../../../export');
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-
-            export_folder = path.resolve(__dirname, './../../../export/AppUser');
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-
             export_folder = path.resolve(__dirname, './../../../export/AppUser/appUser_' + app_id + '_' + eid);
-
-            if (fs.existsSync(export_folder + '.tar.gz')) {
-                callback({
-                    message: 'There is exported data for given users on server.Delete it to start new',
-                    filename: 'appUser_' + app_id + '_' + eid + '.tar.gz'
-                }, "");
-                return;
-            }
-
-            if (!fs.existsSync(export_folder)) {
-                try {
-                    fs.mkdirSync(export_folder);
-                }
-                catch (err1) {
-                    callback(err1, []);
-                }
-            }
-            else {
-                callback({
-                    message: 'There is ongoing export data on server with the same users.Wait till finish or delete it to start new',
-                    filename: 'appUser_' + app_id + '_' + eid
-                }, "");
-                return;
-            }
+            var export_id = 'appUser_' + app_id + '_' + eid;
             var export_filename = 'appUser_' + app_id + '_' + eid;
 
             var dbargs = [];
@@ -855,34 +882,38 @@ usersApi.export = function(app_id, query, params, callback) {
                     uids: res[0].uid.join(", "),
                     app_id: app_id,
                     info: "Export started",
-                    export_file: export_folder + ".tar.gz"
+                    export_file: export_filename + ".json"
                 }
             });
 
             //update db if one user
-            new Promise(function(resolve, reject) {
-                if (single_user) {
-                    common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
-                        if (err_sel) {
-                            reject(err_sel);
-                        }
-                        else {
-                            resolve();
-                        }
-                    });
-                }
-                else {
-                    resolve();
-                }
-            }).then(function() {
+            // new Promise(function(resolve, reject) {
+            //commented out the below code as we do not want appUserExport in the exported json file
+            // if (single_user) {
+            //     common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
+            //         if (err_sel) {
+            //             reject(err_sel);
+            //         }
+            //         else {
+            //             resolve();
+            //         }
+            //     });
+            // }
+            // else {
+            // resolve();
+            // }
+            new Promise(function(resolve) {
                 log.d("collection marked");
                 //export data from metric_changes
-                return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
 
+                export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
+                    resolve();
+                });
             }).then(function() {
                 log.d("metric_changes exported");
                 //export data from app_users
-                return run_command('mongoexport', [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]);
+                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
+
             }).then(
                 function() {
                     log.d("app_users exported");
@@ -899,117 +930,31 @@ usersApi.export = function(app_id, query, params, callback) {
                         var commands = [];
                         for (var prop in export_commands) {
                             for (let k = 0; k < export_commands[prop].length; k++) {
-                                commands.push(run_command(export_commands[prop][k].cmd, export_commands[prop][k].args));
+                                commands.push(export_safely({export_id: export_id, app_id: app_id, args: export_commands[prop][k].args}));
                             }
                         }
                         Promise.all(commands).then(
                             function() {
                                 log.d("plugins colections exported");
-                                //pack export
-                                clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
-                                    .then(function() {
-                                        log.d("empty files cleared");
-                                        return run_command("tar", ["-zcvf", export_filename + ".tar.gz", export_filename]);
-                                    }) //create archive
-                                    .then(function() {
-                                        log.d("packed");
-                                        return new Promise(function(resolve, reject) { /*save export in gridFS*/
-                                            var my_filename = path.resolve(__dirname, './../../../export/AppUser/' + export_filename + '.tar.gz');
-                                            countlyFs.gridfs.saveFile("appUsers", my_filename, my_filename, {
-                                                id: export_filename + ".tar.gz",
-                                                writeMode: "overwrite"
-                                            }, function(err5) {
-                                                if (err5) {
-                                                    console.log(err5);
-                                                    reject("unable to store exported file. There is more information in log.");
-                                                }
-                                                else {
-                                                    //remove archive, because it is saved in db.
-                                                    try {
-                                                        fs.unlinkSync(my_filename);
-                                                    }
-                                                    catch (err6) {
-                                                        console.log(err6);
-                                                    }
-                                                    resolve();//resolve anyway because export is still OK
+                                if (single_user === true) {
+                                    //update user document
+                                    common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
+                                        if (!err4 && res1.result && res1.result.nMatched !== 0) { //check against nMatched for cases when there is already false record of export file(to do not fail)
+                                            plugins.dispatch("/systemlogs", {
+                                                params: params,
+                                                action: "export_app_user",
+                                                data: {
+                                                    result: "ok",
+                                                    uids: res[0].uid.join(", "),
+                                                    app_id: app_id,
+                                                    info: "Export successful",
+                                                    export_file: export_filename + ".json"
                                                 }
                                             });
-                                        });
-                                    })
-                                    .then(
-                                        function() {
-                                            fse.remove(export_folder, err => {
-                                                if (err) {
-                                                    plugins.dispatch("/systemlogs", {
-                                                        params: params,
-                                                        action: "export_app_user",
-                                                        data: {
-                                                            result: "error",
-                                                            uids: res[0].uid.join(", "),
-                                                            app_id: app_id,
-                                                            info: "There was error during cleanup. you should remove data folder manualy.",
-                                                            export_file: export_folder + ".tar.gz",
-                                                            export_folder: export_folder
-                                                        }
-                                                    });
-                                                    callback({
-                                                        message: "Export successful. Export saved as given filename.  Was  unable to clean up data associated with export. You can try to delete it via api.",
-                                                        filename: "export_filename+".tar.gz
-                                                    }, "");
-                                                }
-                                                else {
-                                                    if (single_user === true) {
-                                                        //update user document
-                                                        common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
-                                                            if (!err4 && res1.result && res1.result.n !== 0 && res1.result.nModified !== 0) {
-                                                                plugins.dispatch("/systemlogs", {
-                                                                    params: params,
-                                                                    action: "export_app_user",
-                                                                    data: {
-                                                                        result: "ok",
-                                                                        uids: res[0].uid.join(", "),
-                                                                        app_id: app_id,
-                                                                        info: "Export successful",
-                                                                        export_file: export_folder + ".tar.gz"
-                                                                    }
-                                                                });
-                                                                callback(null, export_filename + ".tar.gz");
-                                                            }
-                                                            //not updated (not exist or errored)
-                                                            else {
-                                                                plugins.dispatch("/systemlogs", {
-                                                                    params: params,
-                                                                    action: "export_app_user",
-                                                                    data: {
-                                                                        result: "error",
-                                                                        uids: res[0].uid.join(", "),
-                                                                        app_id: app_id,
-                                                                        info: "User not exist",
-                                                                        export_folder: export_folder
-                                                                    }
-                                                                });
-                                                                callDeleteExport(export_filename, params, app_id, eid, "Exporting failed. User does not exist. Unable to clean exported data", "Exporting failed. User does not exist. Partially exported data deleted.", callback);
-                                                            }
-                                                        });
-                                                    }
-                                                    else {
-                                                        plugins.dispatch("/systemlogs", {
-                                                            params: params,
-                                                            action: "export_app_user",
-                                                            data: {
-                                                                result: "ok",
-                                                                uids: res[0].uid.join(", "),
-                                                                app_id: app_id,
-                                                                info: "Export successful",
-                                                                export_file: export_folder + ".tar.gz"
-                                                            }
-                                                        });
-                                                        callback(null, export_filename + ".tar.gz");
-                                                    }
-                                                }
-                                            });
-                                        },
-                                        function(err_promise) {
+                                            callback(null, export_filename + ".json");
+                                        }
+                                        //not updated (not exist or errored)
+                                        else {
                                             plugins.dispatch("/systemlogs", {
                                                 params: params,
                                                 action: "export_app_user",
@@ -1017,23 +962,36 @@ usersApi.export = function(app_id, query, params, callback) {
                                                     result: "error",
                                                     uids: res[0].uid.join(", "),
                                                     app_id: app_id,
-                                                    info: err_promise,
-                                                    export_folder: export_folder
+                                                    info: "User not exist",
+                                                    export_file: export_filename + ".json"
                                                 }
                                             });
-                                            callDeleteExport(export_filename, params, app_id, eid, "Storing exported files failed. Unable to clean up file system.", "Storing exported files failed. Partially exported data deleted.", callback);
-                                        }
-                                    ).catch(err => {
-                                        plugins.dispatch("/systemlogs", {
-                                            params: params,
-                                            action: "export_app_user",
-                                            data: {
-                                                result: "error",
-                                                info: err + ""
+                                            if (res1 && res1.result) {
+                                                log.e(JSON.stringify(res1.result));
                                             }
-                                        });
-                                        callDeleteExport(export_filename, params, app_id, eid, "Storing exported files failed. Unable to clean up file system.", "Storing exported files failed. Partially exported data deleted.", callback);
+                                            callDeleteExport(export_filename, params, app_id, eid, "Exporting failed. User does not exist. Unable to clean exported data", "Exporting failed. User does not exist. Partially exported data deleted.", callback);
+                                        }
                                     });
+                                }
+                                else {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "export_app_user",
+                                        data: {
+                                            result: "ok",
+                                            uids: res[0].uid.join(", "),
+                                            app_id: app_id,
+                                            info: "Export successful",
+                                            export_file: export_filename + ".json"
+                                        }
+                                    });
+                                    callback(null, export_filename + ".json");
+                                }
+
+                                //Now we don't have empty files.
+
+
+
                             },
                             function(error) {
                                 console.log(error);
@@ -1045,7 +1003,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                         uids: res[0].uid.join(", "),
                                         app_id: app_id,
                                         info: "Error during exporting files",
-                                        export_folder: export_folder
+                                        export_file: export_filename + ".json"
                                     }
                                 });
                                 callDeleteExport(export_filename, params, app_id, eid, "Export failed while running commands from other plugins. Unable to clean up file system.", "Export failed while running commands from other plugins. Partially exported data deleted.", callback);

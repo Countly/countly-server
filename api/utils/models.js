@@ -91,6 +91,16 @@ class Validatable extends Jsonable {
     }
 
     /**
+     * Class schema per given data, allows schema variativity for given data (validates according to subclasses schemas using a discriminator field)
+     * @see push/api/data/trigger.js
+     * 
+     * @returns {object} class schema by default
+     */
+    static discriminator(/*data*/) {
+        return this.constructor.scheme;
+    }
+
+    /**
      * Override Jsonable logic allowing only valid data to be saved
      */
     get json() {
@@ -103,20 +113,14 @@ class Validatable extends Jsonable {
                 if (v instanceof Validatable) {
                     json[k] = v.json;
                 }
-                else if (Array.isArray(v)) {
-                    json[k] = v.map(x => x instanceof Validatable ? x.json : x);
+                else if (Array.isArray(v) && v.filter(vv => vv instanceof Validatable).length === v.length) {
+                    json[k] = v.map(vv => vv.json);
                 }
-                else if (scheme[k].type === 'Object') {
-                    let ret = {};
-                    for (let key in v) {
-                        if (v[key] && v[key] instanceof Validatable) {
-                            ret[key] = v[key].json;
-                        }
-                        else {
-                            ret[key] = v[key];
-                        }
+                else if (scheme[k].type === 'Object' && Object.values(v).filter(vv => vv instanceof Validatable).length === Object.values(v).length) {
+                    json[k] = {};
+                    for (let kk in v) {
+                        json[k][kk] = v[kk].json;
                     }
-                    json[k] = ret;
                 }
                 else {
                     let valid = require('./common').validateArgs({data: this._data[k]}, {data: scheme[k]});

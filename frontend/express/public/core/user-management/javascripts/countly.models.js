@@ -5,7 +5,9 @@
         _user = {},
         _emptyPermissionObject = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
         _permissionSet = {c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}},
-        _features = [];
+        _features = [],
+        _featuresPermissionDependency = {},
+        _inverseFeaturesPermissionDependency = {};
 
     countlyUserManagement.getEmptyPermissionObject = function() {
         return _emptyPermissionObject;
@@ -17,6 +19,14 @@
 
     countlyUserManagement.getFeatures = function() {
         return _features;
+    };
+
+    countlyUserManagement.getFeaturesPermissionDependency = function() {
+        return _featuresPermissionDependency;
+    };
+
+    countlyUserManagement.getInverseFeaturesPermissionDependency = function() {
+        return _inverseFeaturesPermissionDependency;
     };
 
     countlyUserManagement.getUsers = function() {
@@ -47,7 +57,8 @@
             url: countlyCommon.API_PARTS.data.r + '/users/all',
             dataType: "json",
             data: {
-                app_id: countlyCommon.ACTIVE_APP_ID
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                "preventRequestAbort": true
             },
             success: function(json) {
                 _users = json;
@@ -141,9 +152,68 @@
                 _t: Date.now()
             },
             success: function(res) {
-                _features = res;
+                _features = res.features;
+                _featuresPermissionDependency = res.featuresPermissionDependency;
+                //read permission check, making sure that read is present in every dependency array if any other permission is given
+                for (var feature in _featuresPermissionDependency) {
+                    var perms = Object.keys(_featuresPermissionDependency[feature]);
+                    for (var perm of perms) {
+                        var permFeatures = Object.keys(_featuresPermissionDependency[feature][perm]);
+                        for (var permFeature of permFeatures) {
+                            var targetAr = _featuresPermissionDependency[feature][perm][permFeature];
+                            if (targetAr.length && targetAr.indexOf('r') === -1) {
+                                _featuresPermissionDependency[feature][perm][permFeature].push('r');
+                            }
+                        }
+                    }
+                }
+                //building inverse featuresPermissionDependency object to ease up reverse dependency lookup
+                var inverseComboPermissionSets = {};
+                for (var invFeature in _featuresPermissionDependency) {
+                    var invPerms = Object.keys(_featuresPermissionDependency[invFeature]);
+                    for (var invPerm of invPerms) {
+                        var invPermFeatures = Object.keys(_featuresPermissionDependency[invFeature][invPerm]);
+                        for (var invPermFeature of invPermFeatures) {
+                            if (!inverseComboPermissionSets[invPermFeature]) {
+                                inverseComboPermissionSets[invPermFeature] = {c: {}, r: {}, u: {}, d: {}};
+                            }
+                            for (var index = 0; index < _featuresPermissionDependency[invFeature][invPerm][invPermFeature].length; index++) {
+                                var localPerm = _featuresPermissionDependency[invFeature][invPerm][invPermFeature][index];
+                                if (!inverseComboPermissionSets[invPermFeature][localPerm][invFeature]) {
+                                    inverseComboPermissionSets[invPermFeature][localPerm][invFeature] = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                _inverseFeaturesPermissionDependency = inverseComboPermissionSets;
             }
         });
+    };
+
+    countlyUserManagement.resetFailedLogins = function(id, callback) {
+        var sendRequest = function(username) {
+            return $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/users/reset_timeban',
+                dataType: "json",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    username,
+                }
+            });
+        };
+
+        var resetLoginsWithEmail = sendRequest(_users[id].email);
+        var resetLoginsWithUsername = sendRequest(_users[id].username);
+
+        $.when(resetLoginsWithEmail, resetLoginsWithUsername)
+            .done(function() {
+                callback();
+            })
+            .fail(function(err) {
+                callback(err.responseJSON.result);
+            });
     };
 
 })((window.countlyUserManagement = window.countlyUserManagement || {}));

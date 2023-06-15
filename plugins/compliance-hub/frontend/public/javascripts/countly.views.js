@@ -150,9 +150,6 @@
                         label: this.i18n("consent.opt-o")
                     }
                 ],
-                selectedfilter1: 'all',
-                selectedfilter0: 'sessions',
-                selectedfilterforConsent: 'i',
             };
         },
         beforeCreate: function() {
@@ -160,12 +157,27 @@
             this.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
         },
         computed: {
-            selectedfilterforMetrics: {
+            selectedfilterforConsent: {
                 get: function() {
-                    return this.selectedfilter0;
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].type;
                 },
                 set: function(newValue) {
-                    this.selectedfilter0 = newValue;
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'type',
+                        value: newValue,
+                    });
+                    this.initializeStoreData();
+                }
+            },
+            selectedfilterforMetrics: {
+                get: function() {
+                    return this.$store.getters["countlyConsentManager/consentHistoryFilter"].change;
+                },
+                set: function(newValue) {
+                    this.$store.commit("countlyConsentManager/setConsentHistoryFilter", {
+                        key: 'change',
+                        value: newValue,
+                    });
                     this.initializeStoreData();
                 }
             },
@@ -190,7 +202,6 @@
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
                     self.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
-
                 });
             },
             tableRowClickHandler: function(row) {
@@ -214,15 +225,15 @@
                     },
                     {
                         value: 'export_app_user',
-                        label: this.i18n("compliance_hub.export_app_user")
+                        label: this.i18n("compliance_hub.Export-finished")
                     },
                     {
                         value: 'app_user_deleted',
-                        label: this.i18n("compliance_hub.app_user_deleted")
+                        label: this.i18n("compliance_hub.App-user-deleted")
                     },
                     {
                         value: 'export_app_user_deleted',
-                        label: this.i18n("compliance_hub.export_app_user_deleted")
+                        label: this.i18n("compliance_hub.Export-file-deleted")
                     }
                 ],
                 filter1: [
@@ -590,6 +601,7 @@
         priority: 3,
         title: CV.i18n("consent.title"),
         name: 'Consent',
+        pluginName: "compliance-hub",
         permission: "compliance_hub",
         component: countlyVue.components.create({
             template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
@@ -609,8 +621,7 @@
                 if (userDetails.uid) {
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
-            },
-
+            }
         }),
         vuex: [{
             clyModel: countlyConsentManager
@@ -647,6 +658,6 @@
         renderedView.params = params;
         this.renderWhenReady(renderedView);
     });
-    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
+    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", pluginName: "compliance-hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
 
 })();

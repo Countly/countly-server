@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCompareEvents, CV*/
+/* global countlyVue, countlyCompareEvents, CV, countlyCommon*/
 (function() {
     var FEATURE_NAME = "compare";
     var CompareEventsTable = countlyVue.views.create({
@@ -54,6 +54,9 @@
                 this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
+            },
+            formatDuration: function(value) {
+                return countlyCommon.formatSecond(value);
             }
         },
     });
@@ -80,6 +83,12 @@
                 this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
                 this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
+            },
+            formatChartValue: function(value) {
+                if (["Duration", "AvgDuration"].includes(this.selectedMetric)) {
+                    return countlyCommon.formatSecond(value);
+                }
+                return countlyCommon.getShortNumber(value);
             }
         },
         computed: {
@@ -95,34 +104,23 @@
             selectedGraph: {
                 get: function() {
                     var self = this;
-                    if (self.selectedMetric === "Sum") {
-                        return this.i18n("compare.events.results.by.sum");
-                    }
-                    else if (self.selectedMetric === "Duration") {
-                        return this.i18n("compare.events.results.by.duration");
-                    }
-                    return this.i18n("compare.events.results.by.count");
+                    let metric = this.availableMetrics.find(function(item) {
+                        return item.key === self.selectedMetric;
+                    });
+                    return metric.label || this.i18n("compare.events.results.by.count");
                 },
                 set: function(selectedItem) {
-                    var self = this;
                     this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
                     this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                     var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
-                    if (selectedItem === "Sum") {
-                        self.selectedMetric = "Sum";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
-                    }
-                    else if (selectedItem === "Duration") {
-                        self.selectedMetric = "Duration";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
-                    }
-                    else {
-                        self.selectedMetric = "Count";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "c");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
-                    }
+                    let metric = this.availableMetrics.find(function(item) {
+                        return item.key === selectedItem;
+                    });
+                    metric = metric || this.availableMetrics[0];
+
+                    this.selectedMetric = metric.key;
+                    this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', metric.graphMetric);
+                    this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 }
             },
             isChartLoading: function() {
@@ -134,9 +132,10 @@
                 value: "",
                 maxLimit: 20,
                 availableMetrics: [
-                    { key: "Count", label: this.i18n("compare.events.results.by.count")},
-                    { key: "Sum", label: this.i18n("compare.events.results.by.sum")},
-                    { key: "Duration", label: this.i18n("compare.events.results.by.duration")}
+                    { key: "Count", label: this.i18n("compare.events.results.by.count"), graphMetric: "c"},
+                    { key: "Sum", label: this.i18n("compare.events.results.by.sum"), graphMetric: "s"},
+                    { key: "Duration", label: this.i18n("compare.events.results.by.duration"), graphMetric: "dur"},
+                    { key: "AvgDuration", label: this.i18n("compare.events.results.by.avg.duration"), graphMetric: "avgDur"}
                 ],
                 selectedMetric: "Count"
             };

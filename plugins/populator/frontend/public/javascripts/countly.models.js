@@ -1,9 +1,9 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
-        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
-        desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
+        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_density", "_locale", "_store", "_browser"],
+        desktop: ["_os", "_os_version", "_resolution", "_locale"]
     };
     var props = {
         _os: ["Android", "iOS"],
@@ -27,7 +27,6 @@
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],
         _carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
-        _app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
         _cpu: ["armv6", "armv7", "x86"],
         _opengl: ["opengl_es1", "opengl_es2"],
         _density_android: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI"],
@@ -302,6 +301,26 @@
         }
     }
     /**
+     * Get version based on current timestamp for better version adoption plotting,
+     * @param {number} ts - current timestamp
+     * @param {boolean} trimYear - trim year to look it like semantic versioning
+     * @returns {string} returns version
+     **/
+    function getVersion(ts, trimYear) {
+        var seed = ts || Date.now();
+        seed = (seed + "").length === 13 ? seed : seed * 1000;
+        var d = moment(seed);
+        if (parseInt(d.format('DD')[1], 10) < 5) {
+            if (Math.random() > 0.5) {
+                seed -= 1000 * 60 * 60 * 24 * 6;
+                d = moment(seed);
+            }
+        }
+        var year = trimYear ? d.format('YY')[1] : d.format('YY');
+        var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
+        return year + "." + d.format('MM') + "." + day;
+    }
+    /**
      * Generate a user with random properties and actions
      * @param {object} templateUp user properties template, if available
      **/
@@ -348,7 +367,9 @@
         else {
             this.platform = this.getProp("_os");
         }
+        this.app_version = getVersion(this.ts, true);
         this.metrics._os = this.platform;
+        this.metrics._app_version = this.app_version;
         var m_props = metric_props.mobile;
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
             m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
@@ -379,7 +400,7 @@
             crash._device = this.metrics._device;
             crash._manufacture = this.getProp("_manufacture");
             crash._resolution = this.metrics._resolution;
-            crash._app_version = this.metrics._app_version;
+            crash._app_version = this.app_version;
             crash._cpu = this.getProp("_cpu");
             crash._opengl = this.getProp("_opengl");
 
@@ -650,7 +671,7 @@
             event.segmentation.email = chance.email();
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             if (ratingWidgetList.length) {
                 event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
@@ -674,7 +695,7 @@
             event.segmentation = {};
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(0, 10);
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             if (npsWidgetList.length) {
@@ -697,7 +718,7 @@
 
             this.ts += 1000;
             event.segmentation = {};
-            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.app_version = this.app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             var keys = Object.keys(surveyWidgetList);
@@ -860,6 +881,10 @@
                 this.stats.u++;
                 // note login event was here
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                }
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 this.stats.p++;
                 req.events = req.events.concat(this.getHeatmapEvents());
@@ -868,6 +893,10 @@
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+                //force users to generate first event in the template to be used later in Funnels
+                if (template && template.events && Object.keys(template.events).length > 0) {
+                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                }
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -896,7 +925,7 @@
         };
 
         this.startSessionForAb = function() {
-            this.createUsersForAB(getRandomInt(1, countlyPopulator.getUserAmount() * 10));
+            this.createUsersForAB(this.id);
         };
 
         this.extendSession = function(template) {
@@ -945,6 +974,13 @@
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                params.sdk_name = "javascript_native_web";
+            }
+            else {
+                params.sdk_name = (Math.random() > 0.5) ? "objc-native-ios" : "java-native-android";
+            }
+            params.sdk_version = getVersion(params.timestamp);
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
@@ -976,6 +1012,7 @@
     var generating = false;
     var stopCallback = null;
     var users = [];
+    var usersForAb = [];
     var userAmount = 1000;
     var totalUserCount = 0;
     var totalCountWithoutUserProps = 0;
@@ -1345,10 +1382,54 @@
         }
 
         /**
-         *  Create survey widgets
+         *  Create survey widget 1
          *  @param {function} callback - callback method
          */
-        function generateSurveyWidgets(callback) {
+        function generateSurveyWidgets1(callback) {
+            createSurveyWidget("Customer support example", [
+                {
+                    "type": "radio",
+                    "question": "Were you able to find the information you were looking for?",
+                    "choices": ["Yes", "No"],
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What type of support communication methods do you prefer?",
+                    "required": true
+                },
+                {
+                    "type": "rating",
+                    "question": "How would you rate our service on a scale of 0-10?",
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 2
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets2(callback) {
             createSurveyWidget("Product Feedback example", [
                 {
                     "type": "rating",
@@ -1367,61 +1448,67 @@
                     "required": true
                 }
             ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                createSurveyWidget("User Experience example", [
-                    {
-                        "type": "rating",
-                        "question": "How satisfied are you with the look and feel of the app?",
-                        "required": true
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
-                    {
-                        "type": "text",
-                        "question": "What confused/annoyed you about the app?",
-                        "required": true
-                    },
-                    {
-                        "type": "dropdown",
-                        "question": "Which feature did you like most on new version?",
-                        "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
-                        "required": true
-                    }
-                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                    createSurveyWidget("Customer support example", [
-                        {
-                            "type": "radio",
-                            "question": "Were you able to find the information you were looking for?",
-                            "choices": ["Yes", "No"],
-                            "required": true
-                        },
-                        {
-                            "type": "text",
-                            "question": "What type of support communication methods do you prefer?",
-                            "required": true
-                        },
-                        {
-                            "type": "rating",
-                            "question": "How would you rate our service on a scale of 0-10?",
-                            "required": true
-                        }
-                    ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
-                        $.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID
-                            },
-                            success: function(json) {
-                                if (json && json.aaData) {
-                                    for (var i = 0; i < json.aaData.length; i++) {
-                                        surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
-                                    }
-                                }
-                                callback();
-                            },
-                            error: function() {
-                                callback();
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
                             }
-                        });
-                    });
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        }
+
+        /**
+         *  Create survey widget 3
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets3(callback) {
+            createSurveyWidget("User Experience example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the look and feel of the app?",
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What confused/annoyed you about the app?",
+                    "required": true
+                },
+                {
+                    "type": "dropdown",
+                    "question": "Which feature did you like most on new version?",
+                    "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    success: function(json) {
+                        if (json && json.aaData) {
+                            for (var i = 0; i < json.aaData.length; i++) {
+                                surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                            }
+                        }
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
                 });
             });
         }
@@ -1429,7 +1516,17 @@
         generateRatingWidgets(function() {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 generateNPSWidgets(function() {
-                    generateSurveyWidgets(done);
+                    setTimeout(function() {
+                        generateSurveyWidgets1(done);
+                    }, 1000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets2(done);
+                    }, 3000);
+
+                    setTimeout(function() {
+                        generateSurveyWidgets3(done);
+                    }, 5000);
                 });
             }
             else {
@@ -1541,10 +1638,10 @@
      * @param {date} ts - date as timestamp
      * @param {number} userCount - users count will be generated
      * @param {array} ids - ids array
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
+    function generateRetentionUser(ts, userCount, ids, template, callback) {
         var bulker = [];
         for (var userIndex = 0; userIndex < userCount; userIndex++) {
             for (var j = 0; j < ids.length; j++) {
@@ -1583,7 +1680,7 @@
                     }
                 }
 
-                var userdetails = new getUser(templateUp);
+                var userdetails = new getUser(template && template.up);
                 userdetails.begin_session = 1;
                 userdetails.device_id = userIndex + "" + ids[j];
                 userdetails.dow = getRandomInt(0, 6);
@@ -1603,7 +1700,7 @@
 
         totalStats.r++;
         for (var index = 0; index < bulker.length; index++) {
-            bulker[index].startSession(templateUp);
+            bulker[index].startSession(template);
         }
 
         callback("");
@@ -1611,10 +1708,10 @@
 
     /**
      * Generate retentions
-     * @param {object} templateUp user properties template, if available
+     * @param {object} template template object
      * @param {callback} callback - callback function
      **/
-    function generateRetention(templateUp, callback) {
+    function generateRetention(template, callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
             return;
@@ -1634,28 +1731,28 @@
         totalUserCount += userAmount + retentionCall; // campaign users
         totalCountWithoutUserProps = 0;
 
-        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+        generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+            generateRetentionUser(ts, userCount--, ids, template, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                generateRetentionUser(ts, userCount--, ids, template, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                    generateRetentionUser(ts, userCount--, ids, template, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                        generateRetentionUser(ts, userCount--, ids, template, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                            generateRetentionUser(ts, userCount--, ids, template, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                                generateRetentionUser(ts, userCount--, ids, template, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, templateUp, callback);
+                                    generateRetentionUser(ts, userCount--, ids, template, callback);
                                 });
                             });
                         });
@@ -1763,6 +1860,17 @@
             }, Math.random() * timeout);
         }
 
+        /**
+         * Create new user for ab test
+         **/
+        function createUsersForABTest() {
+            var u = new getUser(template && template.up);
+            usersForAb.push(u);
+            u.timer = setTimeout(function() {
+                u.startSession(template);
+            }, Math.random() * timeout);
+        }
+
         var seg = {};
 
         if (template && template.name) {
@@ -1818,31 +1926,30 @@
          **/
         function processUsersForAb() {
             for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUserForAb(users[userAmountIndex]);
-            }
-        }
-        if ((countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) || countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                createUser();
+                processUserForAb(usersForAb[userAmountIndex]);
             }
         }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function() {
-                generateRetention(template, function() {
-                    generateCampaigns(function() {
-                        // Generate campaigns conversion for web
-                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            setTimeout(reportConversions, timeout);
-                        }
-                        setTimeout(processUsers, timeout);
-                    });
+        generateWidgets(function() {
+            generateRetention(template, function() {
+                generateCampaigns(function() {
+                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                        createUser();
+                    }
+                    // Generate campaigns conversion for web
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        setTimeout(reportConversions, timeout);
+                    }
+                    setTimeout(processUsers, timeout);
                 });
             });
-        }
+        });
 
         if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             abExampleName = "Pricing" + abExampleCount++;
+            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                createUsersForABTest();
+            }
             generateAbTests(function() {
                 processUsersForAb();
             });
@@ -1866,7 +1973,7 @@
         //}
     };
 
-    countlyPopulator.stopGenerating = function(callback) {
+    countlyPopulator.stopGenerating = function(ensureJobs, callback) {
         stopCallback = callback;
         generating = false;
 
@@ -1879,8 +1986,9 @@
         }
         users = [];
 
-
-        countlyPopulator.ensureJobs();
+        if (ensureJobs) {
+            countlyPopulator.ensureJobs();
+        }
 
         if (stopCallback) {
             stopCallback(!countlyPopulator.bulking);
@@ -2061,7 +2169,38 @@
             });
         }
 
+        if (typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
 
+            let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
+            let page1 = pages[getRandomInt(0, pages.length - 1)];
+            let page2 = pages[getRandomInt(0, pages.length - 1)];
+
+            countlyFunnel.createFunnel({
+                name: "View (View name = " + page1 + ") -> View (View name = " + page2 + ")",
+                description: "",
+                type: "session-independent",
+                steps: ["[CLY]_view", "[CLY]_view"],
+                queries: [{"sg.name": {"$in": [page1]}}, {"sg.name": {"$in": [page2]}}],
+                queryTexts: ["View name = " + page1 + ", View name = " + page2 + ""],
+                stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+            });
+
+            if (template && template.events && Object.keys(template.events).length > 0) {
+
+                let firstEvent = Object.keys(template.events)[0];
+                let secondEvent = Object.keys(template.events)[1] || "[CLY]_view";
+
+                countlyFunnel.createFunnel({
+                    name: firstEvent + " -> " + secondEvent + "",
+                    description: "",
+                    type: "session-independent",
+                    steps: [firstEvent, secondEvent],
+                    queries: [{}, {}],
+                    queryTexts: ["", ""],
+                    stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
+                });
+            }
+        }
 
         createMessage(messages[0]);
         createMessage(messages[1]);

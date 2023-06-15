@@ -71,11 +71,30 @@ countlyModel.create = function(fetchValue) {
     };
     //Private Properties
     var _Db = {},
+        _period = null,
         _metas = {},
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
         _totalUsersObj = {},
         _prevTotalUsersObj = {};
+
+    /**
+    * Get the current period Object for the model
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @return {module:api/lib/countly.common.periodObj} period object
+    */
+    countlyMetric.getPeriod = function() {
+        return _period;
+    };
+
+    /**
+    * Set period object for the model to use, for overriding calls to common methods
+    * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {module:api/lib/countly.common.periodObj} period - set period Object used by the model
+    */
+    countlyMetric.setPeriod = function(period) {
+        _period = period;
+    };
 
     /**
     * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -368,7 +387,7 @@ countlyModel.create = function(fetchValue) {
     * Get bar data for metric
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, or use date, for higher level metric without segments
-    * @param {number} maxItems - amount of top items to return
+    * @param {number} maxItems - amount of top items to return, if -1 return all
     * @param {string} metric - name of the to use for ordering and returning
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
@@ -427,7 +446,9 @@ countlyModel.create = function(fetchValue) {
                 maxItems = topUsers.length;
             }
 
-            barData = barData.slice(0, maxItems);
+            if (maxItems !== -1) {
+                barData = barData.slice(0, maxItems);
+            }
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;
@@ -488,6 +509,10 @@ countlyModel.create = function(fetchValue) {
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getNumber = function(metric, isSparklineNotRequired) {
+        var periodObject = null;
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         metric = metric || _metrics[0];
         var metrics = [metric];
         //include other default metrics for data correction
@@ -498,7 +523,7 @@ countlyModel.create = function(fetchValue) {
         if (metric === "n") {
             metrics.push("u");
         }
-        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users });
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users }, periodObject);
         if (isSparklineNotRequired) {
             return data[metric];
         }
@@ -516,7 +541,7 @@ countlyModel.create = function(fetchValue) {
             }
 
             return obj;
-        });
+        }, periodObject);
         for (let i in data) {
             if (sparkLines[i]) {
                 data[i].sparkline = sparkLines[i].split(",").map(function(item) {
@@ -534,10 +559,14 @@ countlyModel.create = function(fetchValue) {
     */
     countlyMetric.getTimelineData = function() {
         var dataProps = [];
+        var periodObject = null;
         for (let i = 0; i < _metrics.length; i++) {
             dataProps.push({ name: _metrics[i] });
         }
-        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps);
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
+        var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps, periodObject);
         var ret = {};
         for (let i = 0; i < data.length; i++) {
             ret[data[i]._id] = {};
@@ -546,6 +575,139 @@ countlyModel.create = function(fetchValue) {
             }
         }
         return ret;
+    };
+
+    /**
+    * Get timeline data for higher metrics with segments
+   * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {string} segment - name of the segment to get data for, or use date, for higher level metric without segments
+    * @param {number} maxItems - amount of top items to return, if -1 return all
+    * @param {string} metric - name of the to use for ordering and returning
+    * @param {string} displayType - type of data to return, "number" or "percentage"
+    * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
+    */
+    countlyMetric.getStackedBarData = function(segment, maxItems, metric, displayType) {
+        metric = metric || _metrics[0];
+        if (!metric) {
+            metric = "u";
+        }
+        var isPercentage = displayType === "percentage";
+        var data = this.getData(segment, true, true).chartData;
+        var chartData = [];
+        var dataProps = [];
+        for (let i = 0; i < data.length; i++) {
+            var segment_value = fetchValue ? fetchValue(data[i][segment]) : data[i][segment];
+            if (segment_value) {
+                chartData.push({ data: [], label: segment_value});
+                dataProps.push({ name: data[i][segment]});
+            }
+        }
+        var dd = countlyCommon.extractStackedBarData(this.getDb(), this.clearObject, chartData, dataProps, "", true);
+        var series = dd.chartDP;
+        var totals = [];
+        var percent = [];
+        var labels = [];
+
+        for (let z = 0; z < dd.chartData.length; z++) {
+            labels.push(dd.chartData[z].date);
+        }
+
+        var legend = {"type": "primary", data: []};
+        //lets sort series
+        series = series.sort(function(a, b) {
+            var v1 = a.label;
+            var v2 = b.label;
+            v1 = v1.split(".");
+            v2 = v2.split(".");
+            var longest = Math.max(v1.length, v2.length);
+
+            for (let z = 0; z < longest; z++) {
+                var i1 = 0;
+                var i2 = 0;
+                if (v1[z]) {
+                    i1 = parseInt(v1[z], 10);
+                }
+                if (v2[z]) {
+                    i2 = parseInt(v2[z], 10);
+                }
+                if (i1 !== i2) {
+                    if (i2 > i1) {
+                        return 1;
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+            }
+            return 1;
+        });
+        for (let i = 0; i < series.length; i++) {
+            for (let j = 0; j < series[i].data.length; j++) {
+                totals[j] = totals[j] || 0;
+                if (series[i].data[j][1]) {
+                    totals[j] += series[i].data[j][1][metric] || 0;
+                    percent[j] = 100;
+                    series[i].data[j] = series[i].data[j][1][metric] || 0;
+                }
+                else {
+                    series[i].data[j] = 0;
+                    if (!percent[j]) {
+                        percent[j] = 0;
+                    }
+                }
+            }
+        }
+        for (let i = 0; i < series.length; i++) {
+            series[i].name = series[i].label;
+            series[i].stack = "default";
+            legend.data[i] = {
+                "name": series[i].label,
+                "value": 0,
+                "trend": "",
+                "tooltip": "",
+                "percentage": 0
+            };
+            for (let j = 0; j < series[i].data.length; j++) {
+                legend.data[i].value += series[i].data[j];
+                if (isPercentage) {
+                    var value = Math.round(series[i].data[j] * 100 / totals[j]);
+                    if ((percent[j] - value) > 0) {
+                        series[i].data[j] = value;
+                        percent[j] = percent[j] - value;
+                        //if last value
+                        if (i + 1 === series.length && percent[j] > 0) {
+                            //find the largest value and assign the remainder to it
+                            let index = -1;
+                            let val = 0;
+                            for (let z = 0; z < series.length; z++) {
+                                if (series[z].data[j] > val) {
+                                    val = series[z].data[j];
+                                    index = z;
+                                }
+                            }
+                            if (index > -1) {
+                                series[index].data[j] += percent[j];
+                            }
+                        }
+                    }
+                    else {
+                        series[i].data[j] = percent[j];
+                        percent[j] = 0;
+                    }
+                }
+            }
+        }
+
+        var xAxis = {
+            type: 'category',
+            data: labels
+        };
+
+        var yAxis = {};
+        if (isPercentage) {
+            yAxis.axisLabel = {formatter: '{value} %'};
+        }
+        return {xAxis: xAxis/*,legend:legend*/, yAxis: yAxis, series: series};
     };
 
     /**

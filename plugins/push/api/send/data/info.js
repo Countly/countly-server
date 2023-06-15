@@ -33,7 +33,7 @@ class Info extends Validatable {
      * @param {Date}        data.started        date of first sending start
      * @param {Date}        data.startedLast    date of last sending start
      * @param {Date}        data.finished       date of state being set to Done
-     * @param {Date}        data.demo           true if this is a demo message
+     * @param {Boolean}     data.demo           true if this is a demo message
      */
     constructor(data) {
         super(data);
@@ -58,6 +58,9 @@ class Info extends Validatable {
             removed: {type: 'Date', required: false},
             removedBy: {type: 'ObjectID', required: false},
             removedByName: {type: 'String', required: false},
+            submitted: {type: 'Date', required: false},
+            submittedBy: {type: 'ObjectID', required: false},
+            submittedByName: {type: 'String', required: false},
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'ObjectID', required: false},
             approvedByName: {type: 'String', required: false},

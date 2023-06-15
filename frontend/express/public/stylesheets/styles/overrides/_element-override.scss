@@ -355,6 +355,11 @@
         border: 1px solid #cfd6e4 !important;
         border-top: 0 !important;
         border-bottom: 0 !important;
+        pre {
+            code {
+                font-family : "Courier New"
+            }
+        }
     }
     .el-tiptap-editor__footer {
         border-color: #cfd6e4;
@@ -369,6 +374,19 @@
     }
     .fa-icon {
         fill: #333C48; 
+    }
+}
+
+.el-tiptap-editor__content {
+    overflow-x: unset !important;
+    > pre > code {
+        font-family : "Courier New" !important;
+    }
+    span > span {
+        background-color: inherit;
+    }
+    hr {
+        width: 100%
     }
 }
 

@@ -109,10 +109,13 @@
                     :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
+                    :persistColumnOrderKey="persistColumnOrderKey"
+                    ref="checkListBox"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
                     v-model="innerValue">
                 </cly-checklistbox>
+                <slot name="selectList" :searchQuery="searchQuery"></slot>
             </el-tab-pane>
         </el-tabs>
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">

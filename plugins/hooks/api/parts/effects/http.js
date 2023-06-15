@@ -1,4 +1,4 @@
-const request = require("request");
+const request = require("countly-request");
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_endpoint_trigger");
@@ -55,8 +55,9 @@ class HTTPEffect {
                 await request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                     log.d("[http get effect]", e, body);
                     if (e) {
-                        logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                        logs.push(`Error: ${e.message}`);
                         utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+                        log.e("[hook http effect ]", e);
                     }
                 });
                 break;
@@ -71,7 +72,7 @@ class HTTPEffect {
                 }
                 catch (e) {
                     log.e('http efffect parse post data err:', e, parsedRequestData);
-                    logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)} with data: ${parsedRequestData}`);
+                    logs.push(`Error: ${e.message} \n with data: ${parsedRequestData}`);
 
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 }
@@ -83,10 +84,11 @@ class HTTPEffect {
                         timeout: this._timeout,
                     },
                     function(e, r, body) {
-                        log.e("[httpeffects]", e, body, rule);
+                        log.d("[httpeffects]", e, body, rule);
                         if (e) {
-                            logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                            logs.push(`Error: ${e.message}`);
                             utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+                            log.e("[hook http effect ]", e);
                         }
 
                     });
@@ -96,8 +98,9 @@ class HTTPEffect {
             }
         }
         catch (e) {
-            logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+            logs.push(`Error: ${e.message}`);
             utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+            log.e("[hook http effect ]", e);
         }
         return {...options, logs};
     }

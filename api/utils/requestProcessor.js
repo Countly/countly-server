@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('request');
+const request = require('countly-request');
 
 var loaded_configs_time = 0;
 
@@ -522,6 +522,27 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/deleteExport/:id Deletes user export.
+                 * @apiName Delete user export
+                 * @apiGroup App User Management
+				 * @apiDescription Deletes user export.
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result":"Export deleted"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'deleteExport': {
                     validateUserForWrite(params, function() {
                         countlyApi.mgmt.appUsers.deleteExport(paths[4], params, function(err) {
@@ -535,6 +556,26 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/app_users/export Exports all data collected about app user
+                 * @apiName Export user data
+                 * @apiGroup App User Management
+                 *
+                 * @apiDescription Creates export and stores in database. export is downloadable on demand.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} query Query to match users to run export on. Query should be runnable on mongodb database. For example: {"uid":"1"} will find user, for whuch uid === "1" If is possible to export also multiple users in same export.
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *   "result": "appUser_644658291e95e720503d5087_1.json"
+                 * }
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'export': {
                     if (!params.qstring.app_id) {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
@@ -640,7 +681,12 @@ const processRequest = (params) => {
                         validateAppAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        if (params.qstring.app_id) {
+                            validateAppAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
+                        else {
+                            validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
+                        }
                     }
                     break;
                 case 'delete':
@@ -884,8 +930,30 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, "You can't add more than 12 items in overview");
                                     return;
                                 }
+                                //sanitize overview
+                                var allowedEventKeys = event.list;
+                                var allowedProperties = ['dur', 'sum', 'count'];
+                                var propertyNames = {
+                                    'dur': 'Dur',
+                                    'sum': 'Sum',
+                                    'count': 'Count'
+                                };
+                                for (let i = 0; i < update_array.overview.length; i++) {
+                                    update_array.overview[i].order = i;
+                                    update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
+                                    update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
+                                    if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
+                                        update_array.overview.splice(i, 1);
+                                        i = i - 1;
+                                    }
+                                    else {
+                                        update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
+                                        update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
+                                        update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                    }
+                                }
                                 //check for duplicates
-                                var overview_map = {};
+                                var overview_map = Object.create(null);
                                 for (let p = 0; p < update_array.overview.length; p++) {
                                     if (!overview_map[update_array.overview[p].eventKey]) {
                                         overview_map[update_array.overview[p].eventKey] = {};
@@ -915,8 +983,12 @@ const processRequest = (params) => {
                             }
 
                             if (params.qstring.omitted_segments && params.qstring.omitted_segments !== "") {
+                                var omitted_segments_empty = false;
                                 try {
                                     params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);
+                                    if (JSON.stringify(params.qstring.omitted_segments) === '{}') {
+                                        omitted_segments_empty = true;
+                                    }
                                 }
                                 catch (SyntaxError) {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
@@ -929,6 +1001,14 @@ const processRequest = (params) => {
                                         "list": params.qstring.omitted_segments[k]
                                     });
                                     pull_us["segments." + k] = {$in: params.qstring.omitted_segments[k]};
+                                }
+                                if (omitted_segments_empty) {
+                                    var events = JSON.parse(params.qstring.event_map);
+                                    for (let k in events) {
+                                        if (update_array.omitted_segments[k]) {
+                                            delete update_array.omitted_segments[k];
+                                        }
+                                    }
                                 }
                             }
 
@@ -1106,6 +1186,33 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/events/delete_events Delete event
+                 * @apiName Delete Event
+                 * @apiGroup Events Management
+                 *
+                 * @apiDescription Deletes one or multiple events. Params can be send as POST and also as GET.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} events JSON array of event keys to delete. For example: ["event1", "event2"]. Value must be passed as string. (Array must be stringified before passing to API)
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Missing parameter \"api_key\" or \"auth_token\""
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Could not find event"
+                 * }
+                 */
                 case 'delete_events':
                 {
                     validateDelete(params, 'events', function() {
@@ -1125,6 +1232,7 @@ const processRequest = (params) => {
                         var updateThese = {"$unset": {}};
                         if (idss.length > 0) {
                             for (let i = 0; i < idss.length; i++) {
+                                idss[i] = idss[i] + ""; //make sure it is string to do not fail.
                                 if (idss[i].indexOf('.') !== -1) {
                                     updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                     updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
@@ -1402,8 +1510,36 @@ const processRequest = (params) => {
                 case 'permissions':
                     validateRead(params, 'core', function() {
                         var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
-                        plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
-                            common.returnOutput(params, features);
+                        /*
+                            Example structure for featuresPermissionDependency Object
+                            {
+                                [FEATURE name which need other permissions]:{
+                                    [CRUD permission of FEATURE]: {
+                                        [DEPENDENT_FEATURE name]:[DEPENDENT_FEATURE required CRUD permissions array]
+                                    },
+                                    .... other CRUD permission if necessary
+                                }
+                            },
+                            {
+                                data_manager: Transformations:{
+                                    c:{
+                                        data_manager:['r','u']
+                                    },
+                                    r:{
+                                        data_manager:['r']
+                                    },
+                                    u:{
+                                        data_manager:['r','u']
+                                    },
+                                    d:{
+                                        data_manager:['r','u']
+                                    },
+                                }
+                            }
+                        */
+                        var featuresPermissionDependency = {};
+                        plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+                            common.returnOutput(params, {features, featuresPermissionDependency});
                         });
                     });
                     break;
@@ -1433,6 +1569,22 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
                     break;
                 }
+                /**
+                 * @api {get} /o/app_users/download/:id Downloads user export.
+                 * @apiName Download user export
+                 * @apiGroup App User Management
+				 * @apiDescription Downloads users export
+				 *
+                 * @apiParam {Number} id Id of export. For single user it would be similar to: appUser_644658291e95e720503d5087_1, but  for multiple users - appUser_62e253489315313ffbc2c457_HASH_3e5b86cb367a6b8c0689ffd80652d2bbcb0a3edf
+                 *
+                 * @apiQuery {String} app_id Application id
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_id\""
+                 * }
+                 */
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
@@ -1458,7 +1610,31 @@ const processRequest = (params) => {
                                         common.returnMessage(params, 400, error);
                                     }
                                     else if (parseInt(size) === 0) {
-                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                        //export does not exist. lets check out export collection.
+                                        var eid = filename[0].split(".");
+                                        eid = eid[0];
+
+                                        var cursor = common.db.collection("exports").find({"_eid": eid}, {"_eid": 0, "_id": 0});
+                                        var options = {"type": "stream", "filename": eid + ".json", params: params};
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Disposition': 'inline; filename="' + eid + '.json'
+                                        });
+                                        options.streamOptions = {};
+                                        if (options.type === "stream" || options.type === "json") {
+                                            options.streamOptions.transform = function(doc) {
+                                                doc._id = doc.__id;
+                                                delete doc.__id;
+                                                return JSON.stringify(doc);
+                                            };
+                                        }
+
+                                        options.output = options.output || function(stream) {
+                                            countlyApi.data.exports.stream(options.params, stream, options);
+                                        };
+                                        options.output(cursor);
+
+
                                     }
                                     else {
                                         countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
@@ -1613,18 +1789,28 @@ const processRequest = (params) => {
                                 params.qstring.query = {};
                             }
                         }
-                        if (params.qstring.query.$or) {
-                            params.qstring.query.$and = [
-                                {"$or": Object.assign([], params.qstring.query.$or) },
-                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
-                            ];
-                            delete params.qstring.query.$or;
+                        params.qstring.query.$and = [];
+                        if (params.qstring.query.creator && params.qstring.query.creator === params.member._id) {
+                            params.qstring.query.$and.push({"creator": params.member._id + ""});
                         }
                         else {
-                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                            params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
+                        }
+
+                        if (params.qstring.data_source !== "all" && params.qstring.app_id) {
+                            if (params.qstring.data_source === "independent") {
+                                params.qstring.query.$and.push({"app_id": "undefined"});
+                            }
+                            else {
+                                params.qstring.query.$and.push({"app_id": params.qstring.app_id});
+                            }
+                        }
+
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and.push({"$or": Object.assign([], params.qstring.query.$or) });
+                            delete params.qstring.query.$or;
                         }
                         params.qstring.query.subtask = {$exists: false};
-                        params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -1807,6 +1993,15 @@ const processRequest = (params) => {
                             }
                         }
 
+                        if (typeof params.qstring.get_index === "string") {
+                            try {
+                                params.qstring.get_index = JSON.parse(params.qstring.get_index);
+                            }
+                            catch (ex) {
+                                params.qstring.get_index = null;
+                            }
+                        }
+
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
                                 countlyApi.data.exports.fromDatabase({
@@ -1818,8 +2013,7 @@ const processRequest = (params) => {
                                     sort: params.qstring.sort,
                                     limit: params.qstring.limit,
                                     skip: params.qstring.skip,
-                                    type: params.qstring.type,
-                                    filename: params.qstring.filename
+                                    type: params.qstring.type
                                 });
                             }
                             else {
@@ -1843,6 +2037,32 @@ const processRequest = (params) => {
                                 params.qstring.data = {};
                             }
                         }
+
+                        if (params.qstring.projection) {
+                            try {
+                                params.qstring.projection = JSON.parse(params.qstring.projection);
+                            }
+                            catch (ex) {
+                                params.qstring.projection = {};
+                            }
+                        }
+
+                        if (params.qstring.columnNames) {
+                            try {
+                                params.qstring.columnNames = JSON.parse(params.qstring.columnNames);
+                            }
+                            catch (ex) {
+                                params.qstring.columnNames = {};
+                            }
+                        }
+                        if (params.qstring.mapper) {
+                            try {
+                                params.qstring.mapper = JSON.parse(params.qstring.mapper);
+                            }
+                            catch (ex) {
+                                params.qstring.mapper = {};
+                            }
+                        }
                         countlyApi.data.exports.fromRequest({
                             params: params,
                             path: params.qstring.path,
@@ -1850,7 +2070,10 @@ const processRequest = (params) => {
                             method: params.qstring.method,
                             prop: params.qstring.prop,
                             type: params.qstring.type,
-                            filename: params.qstring.filename
+                            filename: params.qstring.filename,
+                            projection: params.qstring.projection,
+                            columnNames: params.qstring.columnNames,
+                            mapper: params.qstring.mapper,
                         });
                     }, params);
                     break;
@@ -1920,42 +2143,61 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'download': {
-                    if (paths[4] && paths[4] !== '') {
-                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
-
-                            var filename = data.report_name;
-                            var type = filename.split(".");
-                            type = type[type.length - 1];
-                            var myfile = paths[4];
-
-                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
-                                if (error) {
-                                    common.returnMessage(params, 400, error);
-                                }
-                                else if (parseInt(size) === 0) {
-                                    common.returnMessage(params, 400, "Export size is 0");
+                    validateRead(params, "core", () => {
+                        if (paths[4] && paths[4] !== '') {
+                            common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
                                 }
                                 else {
-                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
-                                        if (err5) {
-                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                    var filename = data.report_name;
+                                    var type = filename.split(".");
+                                    type = type[type.length - 1];
+                                    var myfile = paths[4];
+                                    var headers = {};
+
+                                    countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(err2, size) {
+                                        if (err2) {
+                                            common.returnMessage(params, 400, err2);
+                                        }
+                                        else if (parseInt(size) === 0) {
+                                            if (data.type !== "dbviewer") {
+                                                common.returnMessage(params, 400, "Export size is 0");
+                                            }
+                                            //handling older aggregations that aren't saved in countly_fs
+                                            else if (!data.gridfs && data.data) {
+                                                type = "json";
+                                                filename = data.name + "." + type;
+                                                headers = {};
+                                                headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                params.res.writeHead(200, headers);
+                                                params.res.write(data.data);
+                                                params.res.end();
+                                            }
                                         }
                                         else {
-                                            var headers = {};
-                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
-                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
-                                            params.res.writeHead(200, headers);
-                                            stream.pipe(params.res);
+                                            countlyFs.gridfs.getStream("task_results", myfile, {id: myfile}, function(err5, stream) {
+                                                if (err5) {
+                                                    common.returnMessage(params, 400, "Export stream does not exist");
+                                                }
+                                                else {
+                                                    headers = {};
+                                                    headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                                    headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                                    params.res.writeHead(200, headers);
+                                                    stream.pipe(params.res);
+                                                }
+                                            });
                                         }
                                     });
                                 }
                             });
-
-                        });
-                    }
-                    else {
-                        common.returnMessage(params, 400, 'Missing filename');
-                    }
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Missing filename');
+                        }
+                    });
                     break;
                 }
                 case 'data':
@@ -3162,11 +3404,24 @@ function processUser(params, initiator, done, try_times) {
                         //even if paralel request already inserted uid
                         //this insert will fail
                         //but we will retry again and fetch new inserted document
-                        common.db.collection('app_users' + params.app_id).insert({
+                        var doc = {
                             _id: params.app_user_id,
                             uid: uid,
                             did: params.qstring.device_id
-                        }, {ignore_errors: [11000]}, function() {
+                        };
+                        if (params && params.href) {
+                            doc.first_req_get = (params.href + "") || "";
+                        }
+                        else {
+                            doc.first_req_get = "";
+                        }
+                        if (params && params.req && params.req.body) {
+                            doc.first_req_post = (params.req.body + "") || "";
+                        }
+                        else {
+                            doc.first_req_post = "";
+                        }
+                        common.db.collection('app_users' + params.app_id).insert(doc, {ignore_errors: [11000]}, function() {
                             restartRequest(params, initiator, done, try_times, resolve);
                         });
                     }
@@ -3234,7 +3489,7 @@ const fetchAppUser = (params) => {
 const ignorePossibleDevices = (params) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
-        common.returnMessage(params, 400, 'Ignoring device_id');
+        common.returnMessage(params, 200, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
         params.cancelRequest = "Ignoring zero IDFA device_id";
         plugins.dispatch("/sdk/cancel", {params: params});

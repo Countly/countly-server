@@ -1,0 +1,15 @@
+<cly-section>
+	<cly-datatable-n :rows="versionDetail" :resizable="true" :force-loading="isLoading">
+		<template v-slot="scope">
+			<el-table-column sortable="custom" prop="sdk_version" :label="i18n('platforms.table.platform-version')"></el-table-column>
+			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
+			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
+			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+		</template>
+		<template v-slot:header-left>
+			<el-select v-model="selectedSDK" >
+				<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
+			</el-select>
+		</template>
+	</cly-datatable-n>
+</cly-section>

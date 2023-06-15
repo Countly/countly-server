@@ -139,6 +139,42 @@
         &__name {
             min-width:160px;
         }
+        &__radio {
+            .el-radio__label {
+                white-space: normal;
+            }
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            appearance: textfield;
+        }
+    }
+
+    &-property-drawer {
+        &__expire-input{
+            .el-input__inner{
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
+        &__expire-button{
+            margin-left: -4px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            &:focus{
+                border-color: #E2E4E8;
+            }
+            &:active{
+                border-color: #E2E4E8;
+            }
+            &:hover{
+                border-color: #E2E4E8;
+            }
+        }
     }
 
     &__dropzone{
@@ -197,5 +233,4 @@
                 text-decoration: underline
         }
     }
-    
 }

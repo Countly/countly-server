@@ -94,7 +94,9 @@
                     dbs: db,
                     collection: collection,
                     aggregation: aggregation,
-                    app_id: app_id
+                    app_id: app_id,
+                    type: "json",
+                    "preventRequestAbort": true
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {
@@ -104,11 +106,14 @@
                             "segmentation": { type: "dbviewer" }
                         });
                         countlyTaskManager.monitor(json.aaData.task_id);
-                        callback(false);
+                        callback(false, false);
                     }
                     else {
-                        callback(json);
+                        callback(false, json);
                     }
+                },
+                error: function(error) {
+                    callback(error, false);
                 }
             });
         }
@@ -140,6 +145,17 @@
     countlyDBviewer.getDocument = function() {
         return _document;
     };
+
+    countlyDBviewer.getName = function(db, collection) {
+        var currentDb = _data.find(function(dbObj) {
+            return dbObj.name === db;
+        }) || {};
+        var [key] = Object.entries(currentDb.collections || {}).find(function([, value]) {
+            return value === collection;
+        });
+        return key || collection;
+    };
+
     countlyDBviewer.getMongoTopData = function(callback) {
         return $.ajax({
             type: "GET",

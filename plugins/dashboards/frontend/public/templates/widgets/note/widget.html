@@ -7,10 +7,10 @@
     </div>
 	<div 
 		class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note" 
-		style="width: 100%; height: 100%"
+		
 	>
 		<vue-scroll :ops="scrollNote">
-			<span class="bu-pl-2 bu-pr-5" v-html="widgetHTML"></span>
+			<span class="el-tiptap-editor el-tiptap-editor__content ProseMirror" v-html="widgetHTML"></span>
 		</vue-scroll>
 	</div>
 </div>

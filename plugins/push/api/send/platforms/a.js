@@ -33,7 +33,8 @@ const virtuals = ['h'];
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
-        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        const token = qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token;
+        return [key, FIELDS['0'], token, util.hashInt(token)];
     }
 }
 
@@ -107,7 +108,7 @@ class FCM extends Splitter {
                 }
                 catch (error) {
                     this.log.e('Bad FCM response format: %j', resp, error);
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
 
                 if (resp.failure === 0 && resp.canonical_ids === 0) {
@@ -137,7 +138,13 @@ class FCM extends Splitter {
                     resp.results.forEach((r, i) => {
                         if (r.message_id) {
                             if (r.registration_id) {
-                                oks.push([pushes[i]._id, r.registration_id]);
+                                if (r.registration_id === 'BLACKLISTED') {
+                                    error(ERROR.DATA_TOKEN_INVALID, 'Blacklisted').addAffected(pushes[i]._id, one);
+                                    printBody = true;
+                                }
+                                else {
+                                    oks.push([pushes[i]._id, r.registration_id]);
+                                }
                                 // oks.push([pushes[i]._id, r.registration_id], one); ???
                             }
                             else {
@@ -189,7 +196,7 @@ class FCM extends Splitter {
                             .setConnectionError(error.code, `${error.errno} ${error.code} ${error.syscall}`)
                             .addAffected(pushes.map(p => p._id), bytes);
                     }
-                    let pe = PushError.deserialize(error);
+                    let pe = PushError.deserialize(error, SendError);
                     pe.addAffected(pushes.map(p => p._id), bytes);
                     throw pe;
                 }
@@ -403,7 +410,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'FCM Token',
+    '0': 'Android Firebase Token',
 };
 
 /**

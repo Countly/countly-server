@@ -1613,7 +1613,12 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
 
-    if (params.qstring.action === "refresh") {
+    if (params.qstring.fullRange) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + options.id + ".*" } }).toArray(function(err1, data) {
+            callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
+        });
+    }
+    else if (params.qstring.action === "refresh") {
         var dbDateIds = common.getDateIds(params),
             fetchFromZero = {},
             fetchFromMonth = {};
@@ -2024,9 +2029,16 @@ fetch.alljobs = async function(metric, params) {
         }
     ];
     if (params.qstring.sSearch) {
-        pipeline.unshift({
-            $match: { name: { $regex: new RegExp(params.qstring.sSearch, "i") } }
-        });
+        var rr;
+        try {
+            rr = new RegExp(params.qstring.sSearch, "i");
+            pipeline.unshift({
+                $match: { name: { $regex: rr } }
+            });
+        }
+        catch (e) {
+            console.log('Could not use as regex:' + params.qstring.sSearch);
+        }
     }
     const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;

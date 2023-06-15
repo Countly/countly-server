@@ -1,13 +1,14 @@
 const { Duplex } = require('stream'),
     Measurement = require('./measure'),
-    { XXHash64 } = require('xxhash-addon'),
+    { XXHash64, XXHash32 } = require('xxhash-addon'),
     // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
     { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
-const xx64 = new XXHash64();
+const xx64 = new XXHash64(),
+    xx32 = new XXHash32();
 
 /**
  * Waits for given time
@@ -251,12 +252,19 @@ class Base extends Duplex {
             catch (e) {
                 this.log.w('Retriable error %d of %d', attempt, max, e);
                 if (!(e instanceof PushError)) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isException) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isCredentials) {
+                    this.sending -= bytes;
+                    throw e;
+                }
+                else if (this.cannotRetry) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 // else if (e.hasAffected || e.hasLeft) {
@@ -346,6 +354,21 @@ function hash(data, seed) {
     // }
 }
 
+/**
+ * Simple 32-bit hashing
+ * 
+ * @param {string} string string to hash
+ * @returns {integer} 32 bit integer hash of the string, 0 if string is empty or no string is supplied
+ */
+function hashInt(string) {
+    if (typeof string === 'string' && string) {
+        xx32.reset();
+        xx32.update(Buffer.from(string, 'utf-8'));
+        return xx32.digest().readIntBE(0, 4);
+    }
+    return 0;
+}
+
 
 /** 
  * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
@@ -379,4 +402,4 @@ function flattenObject(ob) {
 }
 
 
-module.exports = { Base, util: {hash, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+module.exports = { Base, util: {hash, hashInt, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };

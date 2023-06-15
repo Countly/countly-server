@@ -126,10 +126,10 @@ dashboard.mapWidget = function(widget) {
             if (widget.interval === "adaily") {
                 widget.period = "d" + (widget.selected_span || 7);
             }
-            else if (widget.inerval === "aweekly") {
+            else if (widget.interval === "aweekly") {
                 widget.period = "w" + (widget.selected_span || 12);
             }
-            else if (widget.inerval === "amonthly") {
+            else if (widget.interval === "amonthly") {
                 widget.period = "m" + (widget.selected_span || 6);
             }
         }
@@ -172,7 +172,6 @@ dashboard.mapWidget = function(widget) {
                 textStyling = "",
                 text = "",
                 fontSize = 15,
-                lineHeight = 100,
                 colors = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb762", "#ede262", "#62edb0", "#62beed", "#6279ed", "#c162ed", "#ed62c7", "#9A1B2F", "#E2E4E8"];
 
             if (widget.font_size && !Number.isNaN(parseFloat(widget.font_size))) {
@@ -180,7 +179,6 @@ dashboard.mapWidget = function(widget) {
             }
 
             textStyling += 'font-size: ' + fontSize + 'px;';
-            textStyling += 'line-height: ' + lineHeight + '%;';
 
             if (widget.text_align) {
                 textStyling += "text-align: " + widget.text_align + ";";
@@ -210,8 +208,9 @@ dashboard.mapWidget = function(widget) {
 
             if (widget.add_link) {
                 if (widget.text_align) {
-                    linkStyling = 'text-align: ' + widget.text_align + ';';
+                    linkStyling += 'text-align: ' + widget.text_align + '; ';
                 }
+                linkStyling += 'white-space: normal !important;';
                 text += `<p style="${linkStyling}" class="bu-p-2">
                             <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
                         </p>`;
@@ -587,6 +586,7 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
     switch (visualization) {
     case 'bar-chart':
     case 'pie-chart':
+    case 'time-series':
     case 'table':
         if (!breakdowns || !breakdowns.length) {
             throw new Error("Breakdowns are required for bar chart and table");
@@ -617,6 +617,9 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
         break;
     case 'table':
         widgetData = model.getTableData(segment, 10);
+        break;
+    case 'time-series':
+        widgetData = model.getStackedBarData(segment, 10, widget.metrics[0] || "u", widget.displaytype || "percentage");
         break;
     default:
         break;
@@ -964,10 +967,9 @@ function getSessionModel(params, apps, appId, collection, segment, widget) {
             fetch.getTotalUsersObj(segment, paramsObj, function(dbTotalUsersObj) {
                 var formattedUserObj = fetch.formatTotalUsersObj(dbTotalUsersObj);
 
-                countlyCommon.setPeriod(paramsObj.qstring.period);
-
                 var model = countlyModel.load(toModel(segment));
 
+                model.setPeriod(paramsObj.qstring.period);
                 model.setDb(data);
 
                 if (formattedUserObj) {
@@ -1043,7 +1045,7 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
-
+            model.setPeriod(paramsObj.qstring.period);
             model.setDb(data);
 
             /**
@@ -1088,6 +1090,7 @@ function getPushModel(params, apps, appId, collection, segment, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 
@@ -1120,6 +1123,7 @@ function getCrashModel(params, apps, appId, collection, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = model = countlyModel.load(toModel("data"));
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 

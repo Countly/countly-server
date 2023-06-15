@@ -128,12 +128,12 @@
         //eslint-disable-next-line
         onRequest: function(context) {
             var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
+                app_id: countlyCommon.ACTIVE_APP_ID
             };
 
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + '/app_users/consents' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                url: countlyCommon.API_PARTS.data.r + '/app_users/consents',
                 data: data
             };
         },
@@ -177,12 +177,13 @@
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax(),
-                query: JSON.stringify({a: actionQuery})
+                query: JSON.stringify({a: actionQuery}),
+                method: "systemlogs"
             };
 
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs",
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -222,15 +223,40 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax()
             };
-            if (context.rootState.countlyConsentManager.uid !== "") {
-                data.filter = JSON.stringify({
-                    "uid": context.rootState.countlyConsentManager.uid
-                });
+            var filter = {};
+            var change = context.getters.consentHistoryFilter.change;
+            var type = context.getters.consentHistoryFilter.type;
+
+            if (change === "all") {
+                if (type !== "all") {
+                    var query = {};
+                    query.type = type;
+                    // Match type that is not in an array
+                    query["type.0"] = { "$exists": false };
+                    filter = query;
+                }
+            }
+            else {
+                if (type !== "all") {
+                    filter["change." + change] = type === 'i' ? true : false;
+                }
+                else {
+                    var q1 = {};
+                    q1["change." + change] = true;
+                    var q2 = {};
+                    q2["change." + change] = false;
+                    filter.$or = [q1, q2];
+                }
             }
 
+            if (context.rootState.countlyConsentManager.uid !== "") {
+                filter.uid = context.rootState.countlyConsentManager.uid;
+            }
+
+            data.filter = JSON.stringify(filter);
             return {
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + '/consent/search' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                url: countlyCommon.API_PARTS.data.r + '/consent/search',
                 data: data
             };
         },
@@ -263,12 +289,14 @@
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
             if (payload.uid) {
-                return {
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.data.r + '/consent/search' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&query=' + JSON.stringify({ uid: payload.uid }),
-                    data: data
-                };
+                data.query = JSON.stringify({ uid: payload.uid });
             }
+            return {
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + '/consent/search',
+                data: data
+            };
+
         },
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
@@ -300,6 +328,10 @@
                     _consentDP: {},
                     _exportDP: {},
                     _bigNumberData: {},
+                    consentHistoryFilter: {
+                        type: 'all',
+                        change: 'all',
+                    },
                     exportHistoryFilter: "all",
                     isLoading: false,
                     uid: ''
@@ -331,6 +363,9 @@
         _consentManagerDbModule.getters._bigNumberData = function(state) {
             return state._bigNumberData;
         };
+        _consentManagerDbModule.getters.consentHistoryFilter = function(state) {
+            return state.consentHistoryFilter;
+        };
         _consentManagerDbModule.getters.exportHistoryFilter = function(state) {
             return state.exportHistoryFilter;
         };
@@ -353,6 +388,9 @@
         _consentManagerDbModule.mutations._bigNumberData = function(state, payload) {
             state._bigNumberData = payload;
             state._bigNumberData = Object.assign({}, state._bigNumberData, {});
+        };
+        _consentManagerDbModule.mutations.setConsentHistoryFilter = function(state, payload) {
+            state.consentHistoryFilter[payload.key] = payload.value;
         };
         _consentManagerDbModule.mutations.exportHistoryFilter = function(state, value) {
             state.exportHistoryFilter = value;

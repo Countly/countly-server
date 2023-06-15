@@ -106,6 +106,81 @@
         }
     });
 
+    var DisplayTypeComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/display.html'),
+        props: {
+            values: {
+                type: Array,
+                default: function() {
+                    return [{label: "Percentage", value: "percentage"}, {label: "Value", value: "value"}];
+                }
+            },
+            placeholder: {
+                type: String
+            },
+            value: {
+                type: String,
+                required: true,
+                default: function() {
+                    return "";
+                }
+            }
+        },
+        data: function() {
+            return {
+                rerender: "_id_" + this.multiple
+            };
+        },
+        computed: {
+            placeholderText: function() {
+                return this.placeholder || "Select display type";
+            },
+            selectedValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(item) {
+                    this.$emit("input", item);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
+            }
+        },
+        watch: {
+            multiple: {
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple;
+                        this.$emit("input", "");
+                    }
+                }
+            }
+        }
+    });
+
     var BreakdownComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/breakdown.html'),
         mixins: [countlyVue.mixins.customDashboards.apps],
@@ -798,8 +873,13 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
                 default: ""
+            },
+            disabledShortcuts: {
+                type: [Array, Boolean],
+                default: false,
+                required: false,
             }
         },
         data: function() {
@@ -912,7 +992,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
             }
         },
         computed: {
@@ -930,6 +1010,12 @@
         methods: {
             formatPeriodString: function(period) {
                 if (Array.isArray(period)) {
+                    if ((period[0] + '').length === 10) {
+                        period[0] = period[0] * 1000;
+                    }
+                    if ((period[1] + '').length === 10) {
+                        period[1] = period[1] * 1000;
+                    }
                     var effectiveRange = [moment(period[0]), moment(period[1])];
                     if (effectiveRange[0].isSame(effectiveRange[1])) {
                         return effectiveRange[0].format("lll");
@@ -942,6 +1028,9 @@
                     }
                 }
                 else {
+                    if (period === "0days") {
+                        return CV.i18n("common.all-time");
+                    }
                     var periodNames = countlyCommon.convertToTimePeriodObj(period);
                     return periodNames.longName;
                 }
@@ -964,7 +1053,10 @@
                 }
             },
             customPeriod: {
-                type: [Array, String],
+                type: [Array, String, Object, Boolean],
+            },
+            customText: {
+                type: String,
             },
             reportInfo: {
                 type: Object
@@ -1099,6 +1191,7 @@
      * DRAWER HELPERS REGISTRATION
      */
     Vue.component("clyd-metric", MetricComponent);
+    Vue.component("clyd-displaytype", DisplayTypeComponent);
     Vue.component("clyd-breakdown", BreakdownComponent);
     Vue.component("clyd-event", EventComponent);
     Vue.component("clyd-datatype", DataTypeComponent);

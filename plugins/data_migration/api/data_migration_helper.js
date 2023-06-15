@@ -9,7 +9,7 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
 var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
-const request = require('request');
+const request = require('countly-request');
 var common = require('../../../api/utils/common.js');
 
 module.exports = function(my_db) {
@@ -107,7 +107,7 @@ module.exports = function(my_db) {
                 }
                 else {
                     var havefile = false;
-                    var dir = __dirname + '/../export/' + exportid + '.tar.gz';
+                    var dir = __dirname + '/../export/' + common.sanitizeFilename(exportid) + '.tar.gz';
                     havefile = fs.existsSync(dir);
 
                     if (res) {
@@ -213,9 +213,9 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             if (my_exportid !== "") {
                 if (remove_archive) {
-                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid + '.tar.gz'))) {
+                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + common.sanitizeFilename(my_exportid) + '.tar.gz'))) {
                         try {
-                            fs.unlinkSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid + '.tar.gz'));
+                            fs.unlinkSync(path.resolve(__dirname, './../' + folder + '/' + common.sanitizeFilename(my_exportid) + '.tar.gz'));
                         }
                         catch (err) {
                             log.e(err);
@@ -289,7 +289,7 @@ module.exports = function(my_db) {
                         });
                     }
                     else if (folder === 'import') {
-                        var infofile = path.resolve(__dirname, './../import/' + my_exportid + '.json');
+                        var infofile = path.resolve(__dirname, './../import/' + common.sanitizeFilename(my_exportid) + '.json');
                         if (fs.existsSync(infofile)) {
                             try {
                                 var data = fs.readFileSync(infofile);
@@ -897,7 +897,7 @@ module.exports = function(my_db) {
         var imported_apps = [];
         var imported_ids = [];
         try {
-            var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + my_exportid + '.json'));
+            var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + common.sanitizeFilename(my_exportid) + '.json'));
             var mydata = JSON.parse(data);
             if (mydata && mydata.app_names) {
                 imported_apps = mydata.app_names.split(',');
