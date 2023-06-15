@@ -546,6 +546,15 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    plugins.register("/o/dashboards/recheck_widgets", function(ob) {
+        var params = ob.params;
+        var apiKey = params.qstring.apiKey;
+        var matchOperator = params.qstring.matchOperator;
+        var result = customDashboards.callWidgetRecheck(apiKey, matchOperator);
+        return common.returnOutput(params, result);
+    });
+
+
     /**
      * @api {get} /i/dashboards/create Create a dashboard
      * @apiName CreateDashboard
