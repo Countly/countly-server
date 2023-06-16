@@ -59,6 +59,50 @@ describe('Updating user', function() {
                 });
         });
     });
+    describe('User permission when user is updated', async() => {
+        it('Should set correct permission when user is updated', async() => {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            // Create new user
+            const params = JSON.stringify({
+                full_name: 'testedit1',
+                username: 'testedit1',
+                password: 'p4ssw0rD!',
+                email: 'testedit1@mail.co',
+            });
+
+            let sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('args', params);
+
+            const response = await request.get(`/i/users/create?${sp.toString()}`);
+            const userId = response.body._id;
+
+            const editParams = JSON.stringify({user_id: userId, admin_of: ['appId']});
+
+            sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('args', editParams);
+
+            const editResponse = await request.get(`/i/users/update?${sp.toString()}`);
+
+            should(editResponse.status).equal(200);
+
+            sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+
+            const allUserResponse = await request.get(`/o/users/all?${sp.toString()}`);
+            const user = allUserResponse.body[userId];
+
+            should(user.permission._.a).deepEqual(['appId']);
+
+            // Delete user
+            sp = new URLSearchParams();
+            sp.append('api_key', API_KEY_ADMIN);
+            sp.append('args', JSON.stringify({ user_ids: [userId] }));
+
+            await request.get(`/i/users/delete?${sp.toString()}`);
+        });
+    });
     describe('Update user permission when app is deleted', async() => {
         it('Should update user permission when app is deleted', async() => {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
