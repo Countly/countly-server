@@ -4,13 +4,13 @@
             <img src="dashboards/images/no-widget.svg"></img>
         </template>
         <template v-slot:title>
-            <h3 class="bu-mt-4">...hmmm, seems its empty here</h3>
+            <h3 class="bu-mt-4">{{ i18n('common.emtpy-view-title') }}</h3>
         </template>
         <template v-slot:subTitle>
-            <p class="text-medium color-cool-gray-50 bu-m-0 bu-mt-4 bu-has-text-centered">Create dashboard and see<br/> some informative explanation</p>
+            <p class="text-medium color-cool-gray-50 bu-m-0 bu-mt-4 bu-has-text-centered">{{ i18n('common.no-dashboard-text') }}</p>
             <div class="bu-has-text-centered bu-mt-5">
                 <el-button type="text" size="small" @click="addDashboard">
-                    <span class="bu-has-text-weight-medium">+ Create a Dashboard</span>
+                    <span class="bu-has-text-weight-medium">{{ i18n('common.create-dashboard') }}</span>
                 </el-button>
             </div>
         </template>
