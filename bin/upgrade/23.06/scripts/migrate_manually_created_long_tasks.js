@@ -165,7 +165,10 @@ async function upgradeDrillReport(report, countlyDb, countlyDrill) {
 pluginManager.dbConnection().then(async (countlyDb) => {
     pluginManager.dbConnection('countly_drill').then(async (countlyDrill) => {
         const tasksToMigrate = await countlyDb.collection('long_tasks')
-            .find({ type: 'drill', manually_create: true, linked_to: { $exists: false } })
+            .find({ type: 'drill', manually_create: true, $or: [
+                { linked_to: { $exists: false } },
+                { linked_to: { $eq: null } },
+            ]})
             .toArray();
 
         for (let idx = 0; idx < tasksToMigrate.length; idx += 1) {
