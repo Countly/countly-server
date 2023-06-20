@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId, 'clyd-widget', 'cly-vue-dashboards__empty bu-is-flex bu-is-flex-direction-column bu-is-align-items-center']">
     <div class="cly-vue-dashboards__empty--rounded-image"></div>
     <h3>{{ i18n('common.emtpy-view-title') }}</h3>
-    <p class="text-medium color-cool-gray-50">{{ i18n('common.no-widget-text') }}</p>
+    <p class="text-medium color-cool-gray-50" v-html="i18n('common.no-widget-text')"></p>
 </div>
