@@ -5,8 +5,8 @@
             <slot name="action"></slot>
         </div>
     </div>
-    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center"style="height: calc(100% - 32px)">
-        <h4>{{ i18n('common.emtpy-view-title') }}</h4>
-        <p class="text-medium color-cool-gray-50">{{i18n('dashboards.plugin-invalid-data', widget.feature || widget.widget_type)}}</p>
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center" style="height: calc(100% - 32px); opacity: 0.6">
+        <h4 class="color-cool-gray-100">{{ i18n('common.emtpy-view-title') }}</h4>
+        <p class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{i18n('dashboards.plugin-invalid-data', widget.feature || widget.widget_type)}}</p>
     </div>
 </div>
