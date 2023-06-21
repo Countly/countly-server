@@ -503,6 +503,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.admin_of) {
         if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.a = updatedMember.admin_of;
             updatedMember.permission.c = updatedMember.permission.c || {};
             updatedMember.permission.r = updatedMember.permission.r || {};
             updatedMember.permission.u = updatedMember.permission.u || {};
@@ -520,6 +524,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.user_of) {
         if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.u = [updatedMember.user_of];
             updatedMember.permission.r = updatedMember.permission.r || {};
             for (let i = 0; i < updatedMember.user_of.length; i++) {
                 updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
