@@ -22,6 +22,11 @@
             tooltip: {
                 type: String,
                 required: false,
+            },
+            size: {
+                type: String,
+                default: 'medium',
+                required: false
             }
         },
         data: function() {
@@ -38,6 +43,17 @@
             },
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
+            },
+            calculatedHeight() {
+                if (this.size === 'small') {
+                    return '60px';
+                }
+                else if (this.size === 'large') {
+                    return '110px';
+                }
+                else {
+                    return '97px';
+                }
             }
         },
         template: "#large-radio-button-with-description"

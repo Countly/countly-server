@@ -481,15 +481,17 @@
                             {{i18n('push-notification.timezone')}}
                             <cly-tooltip-icon :tooltip="i18n('push-notification.timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
-                        <div class="bu-level bu-is-flex-wrap-wrap">
+                        <div class="bu-level bu-is-flex-wrap-wrap bu-mt-2">
                             <large-radio-button-with-description
                                 :label="TimezoneEnum.SAME"
+                                size="large"
                                 v-model="pushNotificationUnderEdit.timezone"
                                 :title="i18n('push-notification.deliver-to-all-users-same-time')"
                                 :description="i18n('push-notification.deliver-to-all-users-same-time-description')">
                             </large-radio-button-with-description>
                             <large-radio-button-with-description
                                 :label="TimezoneEnum.DEVICE"
+                                size="large"
                                 v-model="pushNotificationUnderEdit.timezone"
                                 :title="i18n('push-notification.deliver-to-all-users-device-time')"
                                 :description="i18n('push-notification.deliver-to-all-users-device-time-description')">
@@ -674,7 +676,7 @@
                             <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                 <el-input v-model="pushNotificationUnderEdit.delivery.repetition.every" :min="0" style="width:120px" :class="{'is-error': validation.errors.length > 0}">
                                     <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">
+                                        <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">
                                             {{pushNotificationUnderEdit.delivery.repetition.every === '0' || pushNotificationUnderEdit.delivery.repetition.every === '1' ? i18n('push-notification-drawer.repetition-' + pushNotificationUnderEdit.delivery.repetition.bucket) : i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket)}}
                                         </span>
                                     </template>
@@ -735,14 +737,14 @@
                         <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                             <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                 <template slot="suffix">
-                                    <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
+                                    <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
                                 </template>
                             </el-input>
                         </validation-provider>
                         <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23" class="bu-ml-1">
                             <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                 <template slot="suffix">
-                                    <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
+                                    <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
                                 </template>
                             </el-input>
                         </validation-provider>
