@@ -9,7 +9,6 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     countlyCommon = require('../../../../api/lib/countly.common'),
     fetch = require("../../../../api/parts/data/fetch.js"),
     log = common.log('dashboards:api'),
-    requestProcessor = require('../../../../api/utils/requestProcessor.js'),
     plugins = require("../../../pluginManager.js");
 
 /** @lends module:api/parts/data/dashboard */
@@ -563,23 +562,26 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
-
 /**
  * Remove deleted records from widgets
- * 
- * @param {string} apiKey user's api key
+ * @param {object} params params object
  * @param {object} matchOperator match operator for aggregation
+ * @param {object} db database object - if coming from script
  * @returns {boolean} true if success
  */
-dashboard.removeDeletedRecordsFromWidgets = async function(apiKey, matchOperator) {
+dashboard.removeDeletedRecordsFromWidgets = async function(params, matchOperator, db) {
     try {
-        if (!apiKey || !matchOperator) {
-            log.e('missing parameters for removeDeletedRecordsFromWidgets', apiKey, matchOperator);
+        if (!params || !matchOperator) {
+            log.e('missing parameters for removeDeletedRecordsFromWidgets', params, matchOperator);
             return false;
         }
 
         if (typeof matchOperator === 'string') {
             matchOperator = JSON.parse(matchOperator);
+        }
+
+        if (typeof db !== 'undefined') {
+            common.db = db;
         }
 
         var pipeline = [
@@ -614,22 +616,17 @@ dashboard.removeDeletedRecordsFromWidgets = async function(apiKey, matchOperator
                 log.e('dashbordId or widgetId could not found in remove widget');
                 continue;
             }
-            var params = {
-                'req': {
-                    url: "/i/dashboards/remove-widget?dashboard_id=" + dashboardId + "&widget_id=" + widgetId + "&api_key=" + apiKey
-                },
-                //adding custom processing for API responses
-                'APICallback': function(err, responseData, headers, returnCode) {
-                    if (err) {
-                        log.e('Error while removing widget from dashboard', err, responseData, headers, returnCode);
-                        return false;
+
+            await new Promise((resolve, reject) => {
+                dashboard.deleteWidget(params, dashboardId, widgetId, function(success) {
+                    if (success) {
+                        resolve();
                     }
                     else {
-                        return true;
+                        reject();
                     }
-                }
-            };
-            requestProcessor.processRequest(params);
+                });
+            });
         }
         return true;
     }
@@ -639,16 +636,34 @@ dashboard.removeDeletedRecordsFromWidgets = async function(apiKey, matchOperator
     }
 };
 
+dashboard.deleteWidget = function(params, dashboardId, widgetId, callback) {
+    common.db.collection("dashboards").update({_id: common.db.ObjectID(dashboardId)}, { $pull: {widgets: common.db.ObjectID(widgetId)}}, function(dashboardErr) {
+        if (!dashboardErr) {
+            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {}, {remove: true}, function(widgetErr, widgetResult) {
+                if (widgetErr || !widgetResult || !widgetResult.value) {
+                    common.returnMessage(params, 500, "Failed to remove widget");
+                    callback(false);
+                }
+                else {
+                    var logData = widgetResult.value;
+                    logData.dashboard = dashboard.name;
 
-dashboard.callWidgetRecheck = function(apiKey, matchOperator) {
-    return plugins.dispatch("/dashboard/clean-deleted-widgets", {
-        api_key: apiKey,
-        match: matchOperator
+                    plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
+                    plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
+                    common.returnMessage(params, 200, 'Success');
+                    callback(true);
+                }
+            });
+        }
+        else {
+            common.returnMessage(params, 500, "Failed to remove widget");
+            callback(false);
+        }
     });
 };
 
 plugins.register("/dashboard/clean-deleted-widgets", async function(ob) {
-    var response = await dashboard.removeDeletedRecordsFromWidgets(ob.api_key, ob.match);
+    var response = await dashboard.removeDeletedRecordsFromWidgets(ob.params, ob.match);
     return response;
 }, true);
 

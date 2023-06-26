@@ -1,37 +1,5 @@
 var plugins = require('../../../../plugins/pluginManager');
-const fetch = require('node-fetch');
-const https = require('https');
-
-// PLEASE ENTER BELOW INFORMATIONS BEFORE RUNNING THIS SCRIPT
-const API_KEY = "YOUR_API_KEY";
-const SERVER_URL = "http://localhost";
-
-
-async function sendRequest(params) {
-    try {
-        const url = new URL(params.Url || SERVER_URL);
-        const options = {
-            method: params.requestType,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            agent: new https.Agent({
-                rejectUnauthorized: false,
-            }),
-        };
-
-        const response = await fetch(url.href, options);
-        if (response.status === 200 || response.status === 201) {
-            return true;
-        }
-        else {
-            return { err: 'There was an error while sending a request.', code: response.status + " " + response.statusText };
-        }
-    }
-    catch (error) {
-        return { err: 'There was an error while sending a request.', code: error.code || 'Unknown' };
-    }
-}
+const dashboard = require('../../../../plugins/dashboards/api/parts/dashboards.js');
 
 async function recheckFunnelWidgets(countlyDb) {
     console.log("Detecting deleted data for funnels...");
@@ -63,13 +31,7 @@ async function recheckFunnelWidgets(countlyDb) {
         };
 
         try {
-            var response = await sendRequest({
-                requestType: 'GET',
-                Url: SERVER_URL + "/o/dashboards/recheck_widgets?apiKey=" + API_KEY + "&matchOperator=" + JSON.stringify(matchOperator),
-            });
-            if (!response.err) {
-                console.log("Deleted funnels removed from widgets successfully.");
-            }
+           return await dashboard.removeDeletedRecordsFromWidgets({member: {username: 'unknown'}}, matchOperator, countlyDb);
         }
         catch (error) {
             console.log('Error while sending a request: ', error);
@@ -113,13 +75,7 @@ async function recheckFormulasWidgets(countlyDb) {
         };
 
         try {
-            var response = await sendRequest({
-                requestType: 'GET',
-                Url: SERVER_URL + "/o/dashboards/recheck_widgets?apiKey=" + API_KEY + "&matchOperator=" + JSON.stringify(matchOperator),
-            });
-            if (!response.err) {
-                console.log("Deleted formulas removed from widgets successfully.");
-            }
+            return await dashboard.removeDeletedRecordsFromWidgets({member: {username: 'unknown'}}, matchOperator, countlyDb);
         }
         catch (error) {
             console.log('Error while sending a request: ', error);
@@ -130,7 +86,7 @@ async function recheckFormulasWidgets(countlyDb) {
     }
 }
 
-async function recheckDrillWidgets() {
+async function recheckDrillWidgets(countlyDb) {
     console.log("Detecting deleted data for drill...");
     const matchOperator = {
         "widget_type": "drill",
@@ -138,19 +94,12 @@ async function recheckDrillWidgets() {
     };
 
     try {
-        var response = await sendRequest({
-            requestType: 'GET',
-            Url: SERVER_URL + "/o/dashboards/recheck_widgets?apiKey=" + API_KEY + "&matchOperator=" + JSON.stringify(matchOperator),
-        });
-        if (!response.err) {
-            console.log("Deleted drills removed from widgets successfully.");
-        }
+        return await dashboard.removeDeletedRecordsFromWidgets({member: {username: 'unknown'}}, matchOperator, countlyDb);
     }
     catch (error) {
         console.log('Error while sending a request: ', error);
     }
 }
-
 
 plugins.dbConnection().then(async(countlyDb) => {
     try {
@@ -168,11 +117,12 @@ plugins.dbConnection().then(async(countlyDb) => {
     }
 
     try {
-        await recheckDrillWidgets();
+        await recheckDrillWidgets(countlyDb);
     }
     catch (error) {
         console.log('Error in recheckDrillWidgets:', error);
     }
-    countlyDb.close();
+    finally {
+        countlyDb.close();
+    }
 });
-
