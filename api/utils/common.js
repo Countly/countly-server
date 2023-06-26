@@ -1843,6 +1843,70 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 };
 
 /**
+* Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
+* Can be used by plugins to record data, similar to sessions and users, with optional segments
+* @param {params} params - {@link params} object
+* @param {string} collection - name of the collections where to store data
+* @param {string} id - id to prefix document ids, like app_id or segment id, etc
+* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {number=} value - value to increment all metrics for, default 1
+* @param {object} segments - object with segments to record data, key segment name and value segment value
+* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
+* @example
+* //recording attribution
+* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
+*/
+common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
+    value = value || 0;
+    params.defaultValue = 0;
+    var updateUsersZero = {},
+        updateUsersMonth = {},
+        tmpSet = {};
+
+    if (metrics) {
+        for (let i = 0; i < metrics.length; i++) {
+            recordMetric(params, metrics[i], {
+                segments: segments,
+                value: value,
+                unique: (uniques && uniques.indexOf(metrics[i]) !== -1) ? true : false,
+                lastTimestamp: lastTimestamp
+            },
+            tmpSet, updateUsersZero, updateUsersMonth);
+        }
+    }
+
+    var dbDateIds = common.getDateIds(params);
+
+    if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
+        updateUsersZero = updateUsersZero || {};
+        updateUsersZero.m = dbDateIds.zero;
+        updateUsersZero.a = params.app_id + "";
+
+        var update = {
+            $set: updateUsersZero
+        };
+
+        if (Object.keys(tmpSet).length) {
+            update.$addToSet = {};
+            for (let i in tmpSet) {
+                update.$addToSet[i] = {$each: tmpSet[i]};
+            }
+        }
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.zero, update);
+
+    }
+    if (Object.keys(updateUsersMonth).length) {
+        updateUsersMonth.m = dbDateIds.month;
+        updateUsersMonth.a = params.app_id + "";
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
+            $set: updateUsersMonth
+        });
+    }
+};
+
+
+/**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
 * @param {params} params - {@link params} object
