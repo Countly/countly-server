@@ -837,10 +837,6 @@ usersApi.saveNote = async function(params) {
         'category': {
             'required': false,
             'type': 'Boolean'
-        },
-        "indicator": {
-            'required': false,
-            'type': 'String'
         }
     };
     const args = params.qstring.args;
@@ -878,12 +874,24 @@ usersApi.saveNote = async function(params) {
             }
         }
         else {
-            note.indicator = args.indicator;
-            common.db.collection('notes').insert(note, (err) => {
+            common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
                 if (err) {
-                    common.returnMessage(params, 503, 'Insert Note failed.');
+                    common.returnMessage(params, 503, 'Could not fetch notes.');
                 }
-                common.returnMessage(params, 200, 'Success');
+                else {
+                    if (res && res.length) {
+                        note.indicator = countlyCommon.stringIncrement(res[0].indicator);
+                    }
+                    else {
+                        note.indicator = "A";
+                    }
+                    common.db.collection('notes').insert(note, (_err) => {
+                        if (_err) {
+                            common.returnMessage(params, 503, 'Insert Note failed.');
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    });
+                }
             });
         }
     }
