@@ -31,7 +31,7 @@ then
 
     #run upgrade scripts
     countly config "drill.big_list_limit" 1000
-    #nodejs "$SCRIPTS/scripts/push_drop_indexes.js"
+    nodejs "$SCRIPTS/scripts/script.js"
 
 
     if [ "$1" != "combined" ]; then
