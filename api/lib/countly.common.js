@@ -688,7 +688,7 @@ function getPeriodObject(prmPeriod) {
     let zeroIDs = new Set(),
         monthIDs = new Set();
 
-    for (let index in periodObject.currentPeriodArr) {
+    for (let index = 0; index < periodObject.currentPeriodArr.length; index++) {
         let [year, month] = periodObject.currentPeriodArr[index].split("."),
             [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
 
