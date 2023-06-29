@@ -527,9 +527,12 @@
             isLoading: function() {
                 return this.$store.getters['countlyCrashes/overview/isLoading'];
             },
+            loading: function() {
+                return this.$store.getters["countlyCrashes/overview/loading"];
+            }
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
                     if (this.crashgroupsFilter.query) {
@@ -538,7 +541,7 @@
 
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                        this.$store.dispatch("countlyCrashes/overview/refresh", force)
                     ]);
                 }
             },
@@ -614,9 +617,7 @@
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
             }
 
-            return Promise.all([
-                this.$store.dispatch("countlyCrashes/overview/refresh")
-            ]);
+            this.$store.dispatch("countlyCrashes/overview/refresh", true);
         }
     });
 
@@ -1151,7 +1152,7 @@
 
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
-                        countlyCrashSymbols.fetchSymbols(true)
+                        countlyCrashSymbols.fetchSymbols(false)
                             .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
