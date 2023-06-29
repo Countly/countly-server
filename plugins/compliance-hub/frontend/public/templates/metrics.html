@@ -1,4 +1,4 @@
-    <cly-main v-show="consentDpChartloaded">
+    <cly-main>
         <div class="bu-level bu-my-4">
             <div class="bu-level-left">
                 Consent Requests for
@@ -22,7 +22,7 @@
         </div>
         <cly-section>
             <cly-chart-time
-                :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend" category="compliance-hub"> </cly-chart-time>
+                v-loading="!consentDpChartloaded" :force-loading="!consentDpChartloaded" :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend" category="compliance-hub"> </cly-chart-time>
 
         </cly-section>
             <div class="bu-is-flex">
@@ -41,7 +41,7 @@
                             </div>
                         </div>
                     </div>
-                    <cly-chart-time :height="277" :showDownload=false :showToggle=false :showZoom=false :legend={show:false} :option.sync="exportDpChart" category="compliance-hub">
+                    <cly-chart-time v-loading="!exportDpChartloaded" :force-loading="!exportDpChartloaded" :height="277" :showDownload=false :showToggle=false :showZoom=false :legend={show:false} :option.sync="exportDpChart" category="compliance-hub">
                     </cly-chart-time>
                 </div>
                 <div class="white-bg cly-vue-compliance__user_chart bu-px-5 bu-is-flex bu-is-flex-direction-column">
@@ -59,7 +59,7 @@
                                 </div>
                             </div>
                         </div>
-                    <cly-chart-time :showDownload="false" :showToggle="false" :showZoom="false" :legend={show:false} :height="277" :option.sync="purgeDpChart" category="compliance-hub">
+                    <cly-chart-time v-loading="!purgeDpChartloaded" :force-loading="!purgeDpChartloaded" :showDownload="false" :showToggle="false" :showZoom="false" :legend={show:false} :height="277" :option.sync="purgeDpChart" category="compliance-hub">
                     </cly-chart-time>
                 </div>
             </div>
