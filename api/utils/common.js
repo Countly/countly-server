@@ -1859,7 +1859,6 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 */
 common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
     value = value || 0;
-    params.defaultValue = 0;
     var updateUsersZero = {},
         updateUsersMonth = {},
         tmpSet = {};
