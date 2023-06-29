@@ -48,25 +48,16 @@
         };
 
         var countlyCitiesActions = {
-            fetchData: function(context) {
-                context.dispatch('onFetchInit');
+            fetchData: function(context, force) {
+                context.commit('setFetchInit', force);
                 countlyCities.service.fetchData().then(function() {
                     var countries = countlyCities.service.calculateData(context.state);
                     countries.cities = countries.table;
                     context.commit('setData', countries);
-                    context.dispatch('onFetchSuccess');
+                    context.commit('setFetchSuccess');
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.commit('setFetchError', error);
                 });
-            },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
             },
             onSetSelectedProperty: function(context, value) {
                 context.commit('setSelectedProperty', value);
@@ -83,8 +74,10 @@
             setRegion: function(state, value) {
                 state.region = value;
             },
-            setFetchInit: function(state) {
-                state.isLoading = true;
+            setFetchInit: function(state, force) {
+                if (force) {
+                    state.isLoading = true;
+                }
                 state.hasError = false;
                 state.error = null;
             },

@@ -4,7 +4,7 @@
 		<cly-section class="geo-analytics-data">
 			<div class="bu-columns bu-is-gapless" style="height: 534px;">
 				<div style="width:256px;">
-					<cly-radio-block v-bind:items="chooseProperties" type="vertical" v-model="selectedProperty"></cly-radio-block>
+					<cly-radio-block v-bind:items="chooseProperties" type="vertical" v-model="selectedProperty" v-loading="isLoading"></cly-radio-block>
 				</div>
 				<div class="bu-column leaflet-noclick-map" style="position:relative">
 					<cly-worldmap

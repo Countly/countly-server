@@ -14,11 +14,11 @@ var CityView = countlyVue.views.create({
     },
     mounted: function() {
         this.$store.dispatch('countlyCities/onSetRegion', this.$route.params.region);
-        this.$store.dispatch('countlyCities/fetchData');
+        this.refresh(true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyCities/fetchData');
+        refresh: function(force) {
+            this.$store.dispatch('countlyCities/fetchData', force);
         }
     },
     computed: {
@@ -116,11 +116,11 @@ var CountryView = countlyVue.views.create({
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyCountry/fetchData');
+        this.refresh(true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyCountry/fetchData');
+        refresh: function(force) {
+            this.$store.dispatch('countlyCountry/fetchData', force);
         },
         swithToCityView: function() {
             windows.location.href = this.path;
@@ -262,6 +262,9 @@ var CountriesHomeWidget = countlyVue.views.create({
                 return CV.i18n('common.table.new-users');
             }
         },
+        isLoading: function() {
+            return this.$store.state.countlyCountry.isLoading;
+        }
     },
     data: function() {
         var buttonText = "";
@@ -297,15 +300,15 @@ var CountriesHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        this.$store.dispatch('countlyCountry/fetchData').then(function() {
+        this.$store.dispatch('countlyCountry/fetchData', true).then(function() {
             self.chooseProperties = self.calculateProperties();
             self.countriesData = self.calculateCountriesData();
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
-            this.$store.dispatch('countlyCountry/fetchData').then(function() {
+            this.$store.dispatch('countlyCountry/fetchData', force).then(function() {
                 self.chooseProperties = self.calculateProperties();
                 self.countriesData = self.calculateCountriesData();
             });
