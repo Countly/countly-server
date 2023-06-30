@@ -88,7 +88,7 @@ sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
+( cd "$DIR/..";  npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install numactl
 sudo yum install -y numactl
