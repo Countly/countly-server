@@ -10,7 +10,7 @@ pluginManager.dbConnection().then(async (countlyDb) => {
     // Get all members that belong to one or more group
     const membersToUpdate = await countlyDb.collection('members')
         .find({ group_id: { $exists: true, $type: 'array', $ne: [] } }) // find member that has 'group_id' property that is an array and not empty
-        .project({ _id: 1, group_id: 1 })
+        .project({ _id: 1, group_id: 1, global_admin: 1 })
         .toArray();
     let memberUpdates = [];
 
@@ -41,7 +41,7 @@ pluginManager.dbConnection().then(async (countlyDb) => {
             }
 
             return acc;
-        }, { permission: defaultPermission, restrict: [], global_admin: false });
+        }, { permission: defaultPermission, restrict: [], global_admin: membersToUpdate[idx].global_admin });
 
         // Collect the updates for each member in an array
         memberUpdates.push({

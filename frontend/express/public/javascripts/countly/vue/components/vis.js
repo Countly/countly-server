@@ -2089,7 +2089,7 @@
                                 >\
                                     <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="item.percentage">{{item.percentage}}</span>\
+                                    <span v-if="item.percentage && !isNaN(item.percentage)">{{item.percentage}}%</span>\
                                 </div>\
                             </div>\
                         </div>\

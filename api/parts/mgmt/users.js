@@ -503,6 +503,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.admin_of) {
         if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.a = updatedMember.admin_of;
             updatedMember.permission.c = updatedMember.permission.c || {};
             updatedMember.permission.r = updatedMember.permission.r || {};
             updatedMember.permission.u = updatedMember.permission.u || {};
@@ -520,6 +524,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.user_of) {
         if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.u = [updatedMember.user_of];
             updatedMember.permission.r = updatedMember.permission.r || {};
             for (let i = 0; i < updatedMember.user_of.length; i++) {
                 updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
@@ -837,10 +845,6 @@ usersApi.saveNote = async function(params) {
         'category': {
             'required': false,
             'type': 'Boolean'
-        },
-        "indicator": {
-            'required': false,
-            'type': 'String'
         }
     };
     const args = params.qstring.args;
@@ -878,12 +882,24 @@ usersApi.saveNote = async function(params) {
             }
         }
         else {
-            note.indicator = args.indicator;
-            common.db.collection('notes').insert(note, (err) => {
+            common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
                 if (err) {
-                    common.returnMessage(params, 503, 'Insert Note failed.');
+                    common.returnMessage(params, 503, 'Save note failed');
                 }
-                common.returnMessage(params, 200, 'Success');
+                else {
+                    if (res && res.length) {
+                        note.indicator = countlyCommon.stringIncrement(res[0].indicator);
+                    }
+                    else {
+                        note.indicator = "A";
+                    }
+                    common.db.collection('notes').insert(note, (_err) => {
+                        if (_err) {
+                            common.returnMessage(params, 503, 'Insert Note failed.');
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    });
+                }
             });
         }
     }
