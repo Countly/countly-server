@@ -172,7 +172,7 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
     else {
         emailVal = username;
     }
-    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": emailVal}]}]}, (err, member) => {
+    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": { $regex: new RegExp(username, "i") } }, {"email": emailVal}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
                 verifyArgon2Hash(member.password, password).then(match => {

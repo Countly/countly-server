@@ -33,7 +33,7 @@
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')"></el-input>
+                    <el-input v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')" oninput="this.value = this.value.toLowerCase();"></el-input>
                   </validation-provider>
                 </div>
               </div>
