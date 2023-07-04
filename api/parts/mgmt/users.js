@@ -541,6 +541,7 @@ usersApi.updateUser = async function(params) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
             if (errUpdatingUser) {
                 common.returnMessage(params, 500, 'Error updating user. Please check api logs.');
+                return false;
             }
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
