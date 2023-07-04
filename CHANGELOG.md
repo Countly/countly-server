@@ -1,3 +1,25 @@
+## Version 23.06.2
+Fixes:
+- [crashes] Update notification after sending symbolication request
+- [core] Display of detailed error messages in the UI while editing app settings
+- [core] Fix Users cannot login using username with uppercase
+- [core] Calculation of indicator key in graph notes moved to backend
+- [core] Updated geodata to newest version
+- [user-management] Handle partial permission object in depCheck
+- [populator] Fix URL length issue in data populator plugin's edit request
+- [installer] Fix CDN download PACKAGE_NAME variable
+
+Enterprise fixes:
+- [nps] Fix for survey flickering issue
+- [cohorts] Null checks for cohorts
+- [crash_symbolication] Fix for JS Symbolication Timeout
+- [crash_symbolication] Symbolication notification fixes
+- [groups] Prevent adding global admin to a group
+- [drill] Added tests and fixes for list cleanup
+- [drill] Fixes for recheck_list endpoint and function
+- [drill] Added script for calling list rechecking
+- [views] fixes for _idv
+
 ## Version 23.06.1
 Fixes:
 - [core]  Added missing % in Session Analytics
