@@ -162,7 +162,7 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
 fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    kill -2 "$(pgrep mongo)"
+    sudo kill -2 "$(pgrep mongo)"
 fi
 
 bash "$DIR/scripts/done.sh";
