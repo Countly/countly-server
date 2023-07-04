@@ -117,6 +117,7 @@ plugins.register("/permissions/features", function(ob) {
             });
         }
     });
+
     plugins.register("/metric/collection", function(ob) {
         if (ob.metric === "sdks") {
             ob.data = ["sdks", "sdks"];
@@ -125,6 +126,7 @@ plugins.register("/permissions/features", function(ob) {
             ob.data = ["sdks", "sdk_version"];
         }
     });
+
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
@@ -133,6 +135,63 @@ plugins.register("/permissions/features", function(ob) {
             return true;
         }
         return false;
+    });
+
+    //process session being
+    plugins.register("/sdk/log", function(ob) {
+        var params = ob.params;
+        var dbAppUser = params.app_user || {};
+
+        var reqType = [];
+        var accepts = [
+            "consent",
+            "begin_session",
+            "session_duration",
+            "end_session",
+            "old_device_id",
+            "campaign_id",
+            "user_details",
+            "apm",
+            "crash",
+            "events",
+            "token_session",
+        ];
+        for (var i in params.qstring) {
+            if (accepts.indexOf(i) !== -1) {
+                reqType.push(i);
+            }
+        }
+        if (params.qstring.method) {
+            reqType.push(params.qstring.method);
+        }
+
+        common.recordCustomMetric(params, "sdks", params.app_id, ["r"], 1, {type: reqType});
+        if (params.cancelRequest) {
+            var segments = {reason: params.cancelRequest};
+            if (params.cancelRequest.startsWith("Blocked by rule")) {
+                segments.reason = "Blocked by rule";
+            }
+            common.recordCustomMetric(params, "sdks", params.app_id, ["c"], 1, segments);
+        }
+        if (params.qstring.q) {
+            if (typeof dbAppUser.q === "undefined") {
+                common.setCustomMetric(params, "sdks", params.app_id, ["q"], params.qstring.q);
+            }
+            else {
+                common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.q, 10) - parseInt(dbAppUser.q, 10));
+            }
+        }
+        else if (typeof dbAppUser.q !== "undefined") {
+            common.recordCustomMetric(params, "sdks", params.app_id, ["q"], -1);
+        }
+    });
+
+    plugins.register("/sdk/user_properties", async function(ob) {
+        var params = ob.params;
+
+        if (params.qstring.q) {
+            ob.updates.push({$set: {q: parseInt(params.qstring.q, 10)}});
+        }
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {

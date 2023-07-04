@@ -508,4 +508,64 @@
         permission: FEATURE_NAME,
         vuex: []
     });
+
+    var SDKReqStatsView = countlyVue.views.create({
+        template: CV.T("/sdk/templates/request_stats.html"),
+        data: function() {
+            return {
+
+            };
+        },
+        mounted: function() {
+            this.$store.dispatch('countlySDK/fetchSDKStats');
+        },
+        methods: {
+            refresh: function() {
+                this.$store.dispatch('countlySDK/fetchSDKStats');
+            },
+        },
+        computed: {
+            chooseDisplay: function() {
+                return [{"value": "percentage", "name": "percentage"}, {"value": "value", "name": "values"}];
+            },
+            selectedDisplay: {
+                set: function(value) {
+                    this.$store.dispatch('countlySDK/onSetSelectedDisplay', value);
+                },
+                get: function() {
+                    return this.$store.state.countlySDK.stats.selectedDisplay;
+                }
+            },
+            graphColors: function() {
+                return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF"];
+            },
+            stats: function() {
+                return this.$store.state.countlySDK.stats;
+            },
+            lineOptionsRequests: function() {
+                return this.stats.requestChartData;
+            },
+            lineOptionsReceived: function() {
+                return this.stats.receivedChartData;
+            },
+            lineOptionsCanceled: function() {
+                return this.stats.canceledChartData;
+            },
+            totals: function() {
+                return this.stats.requestTotals;
+            },
+            isLoading: function() {
+                return this.$store.state.countlySDK.stats.isLoading;
+            }
+        }
+    });
+    countlyVue.container.registerTab("/manage/sdk", {
+        priority: 1,
+        route: "#/manage/sdk/request_stats",
+        component: SDKReqStatsView,
+        title: "Request Stats",
+        name: "request_stats",
+        permission: FEATURE_NAME,
+        vuex: []
+    });
 })();
