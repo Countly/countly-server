@@ -11,13 +11,33 @@
  */
 (function(CountlyHelpers) {
 
+    /**
+    * This function checks if a Countly plugin is enabled.
+    * @param {string|array} name - The name of the plugin(s) to check for. Can be either a string or an array of strings.
+    * @returns {boolean} - Returns true when atleast one plugin is enabled, false otherwise.
+    */
     CountlyHelpers.isPluginEnabled = function(name) {
-        if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull) && countlyGlobal.pluginsFull.indexOf(name) > -1) {
-            if (countlyGlobal.plugins && Array.isArray(countlyGlobal.plugins) && countlyGlobal.plugins.indexOf(name) !== -1) {
-                return true;
+        if (countlyGlobal && countlyGlobal.pluginsFull && Array.isArray(countlyGlobal.pluginsFull)) {
+            if (!Array.isArray(name)) {
+                name = [name];
+            }
+            var isPluginsFull = false;
+            for (var i = 0; i < name.length; i++) {
+                if (countlyGlobal.pluginsFull.indexOf(name[i]) > -1) {
+                    isPluginsFull = true;
+                    break;
+                }
+            }
+            if (isPluginsFull && countlyGlobal.plugins && Array.isArray(countlyGlobal.plugins)) {
+                for (var j = 0; j < name.length; j++) {
+                    if (countlyGlobal.plugins.indexOf(name[j]) > -1) {
+                        return true;
+                    }
+                }
+                return false;
             }
             else {
-                return false;
+                return true;
             }
         }
         else {
@@ -3838,36 +3858,6 @@
         return temp.toLowerCase();
     };
 
-    /**
-     * Function that increments strings alphabetically.
-     * @param {string} str - string that next character will be calculated
-     * @return {string} - calculated string
-     */
-    CountlyHelpers.stringIncrement = function(str) {
-        let carry = 1;
-        let res = '';
-
-        for (let i = str.length - 1; i >= 0; i--) {
-            let char = str.toUpperCase().charCodeAt(i);
-            char += carry;
-            if (char > 90) {
-                char = 65;
-                carry = 1;
-            }
-            else {
-                carry = 0;
-            }
-            res = String.fromCharCode(char) + res;
-            if (!carry) {
-                res = str.substring(0, i) + res;
-                break;
-            }
-        }
-        if (carry) {
-            res = 'A' + res;
-        }
-        return res;
-    };
 
     $(document).ready(function() {
         $("#overlay").click(function() {

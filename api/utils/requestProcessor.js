@@ -1186,6 +1186,33 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                /**
+                 * @api {get} /i/events/delete_events Delete event
+                 * @apiName Delete Event
+                 * @apiGroup Events Management
+                 *
+                 * @apiDescription Deletes one or multiple events. Params can be send as POST and also as GET.
+                 * @apiQuery {String} app_id Application id
+                 * @apiQuery {String} events JSON array of event keys to delete. For example: ["event1", "event2"]. Value must be passed as string. (Array must be stringified before passing to API)
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 *
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Missing parameter \"api_key\" or \"auth_token\""
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *   "result":"Could not find event"
+                 * }
+                 */
                 case 'delete_events':
                 {
                     validateDelete(params, 'events', function() {
@@ -1205,6 +1232,7 @@ const processRequest = (params) => {
                         var updateThese = {"$unset": {}};
                         if (idss.length > 0) {
                             for (let i = 0; i < idss.length; i++) {
+                                idss[i] = idss[i] + ""; //make sure it is string to do not fail.
                                 if (idss[i].indexOf('.') !== -1) {
                                     updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                     updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
@@ -1482,8 +1510,36 @@ const processRequest = (params) => {
                 case 'permissions':
                     validateRead(params, 'core', function() {
                         var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
-                        plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
-                            common.returnOutput(params, features);
+                        /*
+                            Example structure for featuresPermissionDependency Object
+                            {
+                                [FEATURE name which need other permissions]:{
+                                    [CRUD permission of FEATURE]: {
+                                        [DEPENDENT_FEATURE name]:[DEPENDENT_FEATURE required CRUD permissions array]
+                                    },
+                                    .... other CRUD permission if necessary
+                                }
+                            },
+                            {
+                                data_manager: Transformations:{
+                                    c:{
+                                        data_manager:['r','u']
+                                    },
+                                    r:{
+                                        data_manager:['r']
+                                    },
+                                    u:{
+                                        data_manager:['r','u']
+                                    },
+                                    d:{
+                                        data_manager:['r','u']
+                                    },
+                                }
+                            }
+                        */
+                        var featuresPermissionDependency = {};
+                        plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+                            common.returnOutput(params, {features, featuresPermissionDependency});
                         });
                     });
                     break;
@@ -1957,8 +2013,7 @@ const processRequest = (params) => {
                                     sort: params.qstring.sort,
                                     limit: params.qstring.limit,
                                     skip: params.qstring.skip,
-                                    type: params.qstring.type,
-                                    filename: params.qstring.filename
+                                    type: params.qstring.type
                                 });
                             }
                             else {
@@ -1982,6 +2037,32 @@ const processRequest = (params) => {
                                 params.qstring.data = {};
                             }
                         }
+
+                        if (params.qstring.projection) {
+                            try {
+                                params.qstring.projection = JSON.parse(params.qstring.projection);
+                            }
+                            catch (ex) {
+                                params.qstring.projection = {};
+                            }
+                        }
+
+                        if (params.qstring.columnNames) {
+                            try {
+                                params.qstring.columnNames = JSON.parse(params.qstring.columnNames);
+                            }
+                            catch (ex) {
+                                params.qstring.columnNames = {};
+                            }
+                        }
+                        if (params.qstring.mapper) {
+                            try {
+                                params.qstring.mapper = JSON.parse(params.qstring.mapper);
+                            }
+                            catch (ex) {
+                                params.qstring.mapper = {};
+                            }
+                        }
                         countlyApi.data.exports.fromRequest({
                             params: params,
                             path: params.qstring.path,
@@ -1989,7 +2070,10 @@ const processRequest = (params) => {
                             method: params.qstring.method,
                             prop: params.qstring.prop,
                             type: params.qstring.type,
-                            filename: params.qstring.filename
+                            filename: params.qstring.filename,
+                            projection: params.qstring.projection,
+                            columnNames: params.qstring.columnNames,
+                            mapper: params.qstring.mapper,
                         });
                     }, params);
                     break;

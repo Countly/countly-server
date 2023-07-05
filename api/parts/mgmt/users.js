@@ -143,7 +143,7 @@ usersApi.resetTimeBan = function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user created
 **/
-usersApi.createUser = function(params) {
+usersApi.createUser = async function(params) {
     var argProps = {
             'full_name': {
                 'required': true,
@@ -188,6 +188,7 @@ usersApi.createUser = function(params) {
         },
         newMember = {};
 
+    await depCheck(params);
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
         common.returnMessage(params, 400, createUserValidation.errors);
@@ -358,6 +359,53 @@ usersApi.updateHomeSettings = function(params) {
         });
     }
 };
+
+
+/**
+ * Checks the permission dependencies of features for each app based on the enabled features, enabling the required permission dependencies if necessary.
+ * @param {object} params - params object.
+*/
+async function depCheck(params) {
+    var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
+    var featuresPermissionDependency = {};
+    plugins.dispatch("/permissions/features", { params: params, features: features, featuresPermissionDependency: featuresPermissionDependency }, function() {
+        //read permission check, making sure that read is present in every dependency array if any other permission is given
+        for (var feature in featuresPermissionDependency) {
+            var perms = Object.keys(featuresPermissionDependency[feature]);
+            for (var perm of perms) {
+                var permFeatures = Object.keys(featuresPermissionDependency[feature][perm]);
+                for (var permFeature of permFeatures) {
+                    var targetAr = featuresPermissionDependency[feature][perm][permFeature];
+                    if (targetAr.length && targetAr.indexOf('r') === -1) {
+                        featuresPermissionDependency[feature][perm][permFeature].push('r');
+                    }
+                }
+            }
+        }
+        //check permission dependency for each app
+        const crudTypes = ["c", "r", "u", "d"];
+        crudTypes.forEach(function(crudType) {
+            let apps = params.qstring.args.permission[crudType] || {};
+            Object.keys(apps).forEach(function(app) {
+                let feats = apps[app].allowed;
+                Object.keys(feats).forEach(function(feat) {
+                    let featEnabled = feats[feat];
+                    //check if feature is enabled and if it has any dependency
+                    if (featEnabled && featuresPermissionDependency[feat] && featuresPermissionDependency[feat][crudType]) {
+                        let depFeats = featuresPermissionDependency[feat][crudType];
+                        Object.keys(depFeats).forEach(function(depFeat) {
+                            depFeats[depFeat].forEach(function(crudPerm) {
+                                //add dependency permissions
+                                params.qstring.args.permission[crudPerm][app].allowed[depFeat] = true;
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    });
+}
+
 /**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
@@ -425,6 +473,7 @@ usersApi.updateUser = async function(params) {
         updatedMember = {},
         passwordNoHash = "";
 
+    await depCheck(params);
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
         common.returnMessage(params, 400, updateUserValidation.errors);
@@ -454,6 +503,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.admin_of) {
         if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.a = updatedMember.admin_of;
             updatedMember.permission.c = updatedMember.permission.c || {};
             updatedMember.permission.r = updatedMember.permission.r || {};
             updatedMember.permission.u = updatedMember.permission.u || {};
@@ -471,6 +524,10 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.user_of) {
         if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
             updatedMember.permission = updatedMember.permission || {};
+            if (!updatedMember.permission._) {
+                updatedMember.permission._ = {};
+            }
+            updatedMember.permission._.u = [updatedMember.user_of];
             updatedMember.permission.r = updatedMember.permission.r || {};
             for (let i = 0; i < updatedMember.user_of.length; i++) {
                 updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
@@ -481,7 +538,11 @@ usersApi.updateUser = async function(params) {
 
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
-        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {
+        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
+            if (errUpdatingUser) {
+                common.returnMessage(params, 500, 'Error updating user. Please check api logs.');
+                return false;
+            }
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
                     updatedMember._id = params.qstring.args.user_id;
@@ -788,10 +849,6 @@ usersApi.saveNote = async function(params) {
         'category': {
             'required': false,
             'type': 'Boolean'
-        },
-        "indicator": {
-            'required': false,
-            'type': 'String'
         }
     };
     const args = params.qstring.args;
@@ -829,12 +886,24 @@ usersApi.saveNote = async function(params) {
             }
         }
         else {
-            note.indicator = args.indicator;
-            common.db.collection('notes').insert(note, (err) => {
+            common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
                 if (err) {
-                    common.returnMessage(params, 503, 'Insert Note failed.');
+                    common.returnMessage(params, 503, 'Save note failed');
                 }
-                common.returnMessage(params, 200, 'Success');
+                else {
+                    if (res && res.length) {
+                        note.indicator = countlyCommon.stringIncrement(res[0].indicator);
+                    }
+                    else {
+                        note.indicator = "A";
+                    }
+                    common.db.collection('notes').insert(note, (_err) => {
+                        if (_err) {
+                            common.returnMessage(params, 503, 'Insert Note failed.');
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    });
+                }
             });
         }
     }

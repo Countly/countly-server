@@ -244,10 +244,13 @@
                     $('#cf-submit-button').css({'color':response.trigger_font_color});
                 }
 
-                if (response.logo) {
+                if ((response.logo && !response.logoType) || (response.logo && response.logoType && response.logoType === "custom")) {
                     $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
                     $('#powered-by-countly').parent().attr('href', 'void(0)');
                     $('#powered-by-countly').css({'width':'100px'});
+                }
+                if(response.logoType && response.logoType === "none"){
+                    $('.modal-footer').find('img').remove();
                 }
                 if (response.comment_enable === "false") {
                     $('#comment-section').hide();

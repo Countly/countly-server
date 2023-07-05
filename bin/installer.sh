@@ -36,7 +36,7 @@ else
             tar zxfv countly.tar.gz -C countly --strip-components 1
         else
             echo "Downloading from CDN..."
-            PACKAGE_NAME=$(awk -F/ '{print $9}' <<< "$LATEST")
+            PACKAGE_NAME=$(awk -F/ '{print $8}' <<< "$LATEST")
             CDN_HOST=http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/
 
             wget -nv "$CDN_HOST$PACKAGE_NAME" -O ./countly.tar.gz

@@ -978,6 +978,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         parsed = args[arg];
                     }
                 }
+                else if (argProperties[arg].type === 'String[]') {
+                    if (typeof args[arg] === 'string') {
+                        try {
+                            args[arg] = JSON.parse(args[arg]);
+                        }
+                        catch (error) {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(args[arg])) {
+                        let allStrings = true;
+                        for (const item of args[arg]) {
+                            if (typeof item !== 'string') {
+                                allStrings = false;
+                                break;
+                            }
+                        }
+
+                        if (!allStrings) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid type for " + arg + ": all elements must be strings");
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
@@ -1101,7 +1131,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
 
-                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    let schema = argProperties[arg].discriminator ? argProperties[arg].discriminator(args[arg]) : argProperties[arg].type;
+
+                    let subret = common.validateArgs(args[arg], schema, returnErrors);
                     if (returnErrors && !subret.result) {
                         returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
                         returnObj.result = false;
@@ -1128,6 +1160,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (args[arg].length) {
                         let type,
+                            discriminator = argProperties[arg].discriminator,
                             scheme = {},
                             ret;
 
@@ -1139,7 +1172,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
+                            scheme[i] = { type: discriminator ? discriminator(v) : type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);
@@ -1713,7 +1746,9 @@ function stripPort(ip) {
 common.fillTimeObjectZero = function(params, object, property, increment, isUnique) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
-
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month) {
         return false;
     }
@@ -1772,6 +1807,9 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
 
+    if (typeof params.defaultValue !== "undefined") {
+        tmpIncrement = params.defaultValue;
+    }
     if (!timeObj || !timeObj.yearly || !timeObj.month || !timeObj.weekly || !timeObj.day || !timeObj.hour) {
         return false;
     }
@@ -1859,6 +1897,69 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
+        });
+    }
+};
+
+/**
+* Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
+* Can be used by plugins to record data, similar to sessions and users, with optional segments
+* @param {params} params - {@link params} object
+* @param {string} collection - name of the collections where to store data
+* @param {string} id - id to prefix document ids, like app_id or segment id, etc
+* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {number=} value - value to increment all metrics for, default 1
+* @param {object} segments - object with segments to record data, key segment name and value segment value
+* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
+* @example
+* //recording attribution
+* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
+*/
+common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
+    value = value || 0;
+    params.defaultValue = value || 0;
+    var updateUsersZero = {},
+        updateUsersMonth = {},
+        tmpSet = {};
+
+    if (metrics) {
+        for (let i = 0; i < metrics.length; i++) {
+            recordMetric(params, metrics[i], {
+                segments: segments,
+                value: value,
+                unique: (uniques && uniques.indexOf(metrics[i]) !== -1) ? true : false,
+                lastTimestamp: lastTimestamp
+            },
+            tmpSet, updateUsersZero, updateUsersMonth);
+        }
+    }
+
+    var dbDateIds = common.getDateIds(params);
+
+    if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
+        updateUsersZero = updateUsersZero || {};
+        updateUsersZero.m = dbDateIds.zero;
+        updateUsersZero.a = params.app_id + "";
+
+        var update = {
+            $set: updateUsersZero
+        };
+
+        if (Object.keys(tmpSet).length) {
+            update.$addToSet = {};
+            for (let i in tmpSet) {
+                update.$addToSet[i] = {$each: tmpSet[i]};
+            }
+        }
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.zero, update);
+
+    }
+    if (Object.keys(updateUsersMonth).length) {
+        updateUsersMonth.m = dbDateIds.month;
+        updateUsersMonth.a = params.app_id + "";
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
+            $set: updateUsersMonth
         });
     }
 };
@@ -3498,6 +3599,44 @@ common.formatNumber = function(x) {
     var parts = x.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return parts.join(".");
+};
+
+/**
+* Second formatter
+
+* @memberof countlyCommon
+* @param {number} number - number of seconds to format
+* @returns {string} formatted seconds
+*/
+common.formatSecond = function(number) {
+    if (number === 0) {
+        return '0';
+    }
+
+    const days = Math.floor(number / (24 * 60 * 60));
+    const hours = Math.floor((number % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((number % (60 * 60)) / 60);
+    const seconds = Math.floor((number % 60)); //floor to discard decimals;
+
+    let formattedDuration = '';
+
+    if (days > 0) {
+        formattedDuration += `${days}d `;
+    }
+
+    if (hours > 0) {
+        formattedDuration += `${hours}h `;
+    }
+
+    if (minutes > 0) {
+        formattedDuration += `${minutes}m `;
+    }
+
+    if (seconds > 0) {
+        formattedDuration += `${seconds}s`;
+    }
+
+    return formattedDuration.trim();
 };
 
 module.exports = common;

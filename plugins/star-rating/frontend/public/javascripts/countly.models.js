@@ -29,7 +29,8 @@
         "ratings_texts",
         "rating_symbol",
         "status",
-        "logo"
+        "logo",
+        "logoType"
     ];
 
     var widgetJSONProperties = [

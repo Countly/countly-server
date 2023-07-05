@@ -126,10 +126,10 @@ dashboard.mapWidget = function(widget) {
             if (widget.interval === "adaily") {
                 widget.period = "d" + (widget.selected_span || 7);
             }
-            else if (widget.inerval === "aweekly") {
+            else if (widget.interval === "aweekly") {
                 widget.period = "w" + (widget.selected_span || 12);
             }
-            else if (widget.inerval === "amonthly") {
+            else if (widget.interval === "amonthly") {
                 widget.period = "m" + (widget.selected_span || 6);
             }
         }
@@ -586,6 +586,7 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
     switch (visualization) {
     case 'bar-chart':
     case 'pie-chart':
+    case 'time-series':
     case 'table':
         if (!breakdowns || !breakdowns.length) {
             throw new Error("Breakdowns are required for bar chart and table");
@@ -616,6 +617,9 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
         break;
     case 'table':
         widgetData = model.getTableData(segment, 10);
+        break;
+    case 'time-series':
+        widgetData = model.getStackedBarData(segment, 10, widget.metrics[0] || "u", widget.displaytype || "percentage");
         break;
     default:
         break;

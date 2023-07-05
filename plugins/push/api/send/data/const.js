@@ -26,8 +26,6 @@ const MEDIA_MIME_ANDROID = [
     };
 
 const DEFAULTS = {
-    schedule_ahead: 5 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date
-    schedule_ahead_tz: 24 * 60 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date if we send in users' timezones
     queue_insert_batch: 100000,  // insert into "push" collection in batches of 100 000 records
     max_media_size: 1024 * 1024 // 1Mb is a very conservative limit for media attachments
 };
@@ -149,8 +147,33 @@ const TriggerKind = {
     Event:      'event',        // Automated on-event message
     Cohort:     'cohort',       // Automated on-cohort message
     API:        'api',          // API (Transactional) message
+    Recurring:  'rec',          // Recurring message,
+    Multi:      'multi',        // Multiple times,
 };
 
+/**
+ * Recurring message types
+ */
+const RecurringType = {
+    Daily: 'daily',
+    Weekly: 'weekly',
+    Monthly: 'monthly'
+};
+
+
+/**
+ * Time limits (0 ... 24h in milliseconds - 1)
+ */
+const Time = {
+    MIN: 0, // min time of day in ms
+    MAX: 24 * 60 * 60000 - 1, // max time of day in ms
+    DAY: 24 * 60 * 60000, // ms in a day
+    SEND_AHEAD: 5 * 60000, // send message max 5min early
+    TIME_TO_SEND: 2 * 60000, // generally 2min should be enough to send a notification
+    TOO_LATE_TO_SEND: 1 * 60 * 60000, // send message max 1hr late
+    EASTMOST_TIMEZONE: 14 * 60 * 60000, // the most eastern timezone possible
+    SCHEDULE_AHEAD: 10 * 60000, // schedule messages this much ahead (plus EASTMOST_TIMEZONE for timezoned messages) to ensure audience calculation runs on time
+};
 
 /* eslint-enable key-spacing, no-multi-spaces */
 
@@ -199,6 +222,8 @@ module.exports = {
     STATUSES: Object.values(Status),
 
     TriggerKind,
+    RecurringType,
+    Time,
 
     PersType,
     PERS_TYPES: Object.values(PersType),

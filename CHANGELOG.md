@@ -1,3 +1,117 @@
+## Version 23.06.2
+Fixes:
+- [crashes] Update notification after sending symbolication request
+- [core] Display of detailed error messages in the UI while editing app settings
+- [core] Fix Users cannot login using username with uppercase
+- [core] Calculation of indicator key in graph notes moved to backend
+- [core] Updated geodata to newest version
+- [user-management] Handle partial permission object in depCheck
+- [populator] Fix URL length issue in data populator plugin's edit request
+- [installer] Fix CDN download PACKAGE_NAME variable
+
+Enterprise fixes:
+- [nps] Fix for survey flickering issue
+- [cohorts] Null checks for cohorts
+- [crash_symbolication] Fix for JS Symbolication Timeout
+- [crash_symbolication] Symbolication notification fixes
+- [groups] Prevent adding global admin to a group
+- [drill] Added tests and fixes for list cleanup
+- [drill] Fixes for recheck_list endpoint and function
+- [drill] Added script for calling list rechecking
+- [views] fixes for _idv
+
+## Version 23.06.1
+Fixes:
+- [core]  Added missing % in Session Analytics
+- [core] Added script for report migration to bookmarks.
+- [core] Fixes for mongodb configuration on install.
+- [dashboards] Localization and styling fixes for empty dasboards
+- [dependency] xml2js fix
+- [members] Set permission._ when editing member.
+
+Enterprise fixes:
+- [cohorts] Fixes for dashboard widgets showing invalid % compared to previous period.
+- [core] Fix CE tag version update
+- [drill] Fix for 'Segmentation filters not showing up for cohorts'
+- [drill] Store visualization type in bookmark
+- [drill] default chart type is "bar" for byVal queries
+- [flows] Rights check for data requests.
+- [push] User Profiles querying by push tokens & messages
+- [users] Fix blank value formatting
+
+## Version 23.06
+
+New Features:
+- [app_versions] display time series data
+- [dashboards] new time series type for Technology section
+- [dashboards] SDK statistics widgets 
+- [events] added event comparison by average duration
+- [events] added search in available segments
+- [events] show omitted segments
+- [populator] create funnels
+- [push] new push notification structure and types
+- [sdk] SDK remote configuration
+- [sdk] SDK statistics
+- [user-management] clear failed logins for user
+- [user-management] search for feature permissions
+
+Enterprise new features:
+- [ab-testing] allow customer period running tests including indefinitely
+- [ab-testing] allow reseting experiments
+- [ab-testing] new APIs for fetching all varians and testing varians (enrolling/leaving variants)
+- [data-manager] division of data manager permissions
+- [drill] enhanced state url for drill
+- [drill] new drill meta structure
+- [events] add drill option to Events
+- [push] user profiles querying by push tokens & messages
+- [surveys] different logo types
+- [surveys] show always option
+- [users] download user debug information
+- [users] enable incoming data log for single user
+
+Fixes:
+- [crashes] clean big crash group documents
+- [db] reduce timeouts to display errors
+- [ratings] allow images with dot in the name
+
+Enterprise fixes:
+- [ab-testing] fix json-editor in ab-testing
+- [attribution] fix safari redirect issues for custom scheme
+- [cohorts] dealing with widgets for the cohort after cohort deletion
+- [crash_symbolication] add logs for symbolication server connection test
+- [drill] break down by date should break by dates and not seconds
+- [drill] heatmap chart shouldn't limit series to 10
+- [drill] hide no data text
+- [drill] standartizing ls/lac behavior
+- [performance-monitoring] splitting documents to be able to store more data
+- [retention] backward compatibility in retention widgets
+
+## Version 23.03.9
+Fixes:
+- [core] Fixes to periodObject function to deal with invalid date arrays.
+- [push] Fixing tz: false with sctz: 0 case
+- [user-activity] Do not export percentages in Loyalty section
+
+Enterprise fixes:
+- [drill] Fixed breakdown flter freezing issue.
+- [drill] Formatted column titles for drill export
+- [retention] Updated logic to do not use $facets in session retention calculation.
+- [users] Fixed user properties not getting beautified in users table
+
+## Version 23.03.8
+Fixes:
+- [data-manager] Fix issue with deleting event
+- [push] Adding debug logging on push action
+- [crashes] Get build uuid from other in crashes list if latest crash is not in crashes list
+
+Enterprise fixes:
+- [ab-testing] Allow starting experiment on experiment details page
+- [ab-testing] Fix validations and error handling on experiment creation
+- [data-manager] Fix description check when updating segment
+- [gateway] ignore deleted app in async pull
+- [funnels] Allow duplication on funnel editing
+- [users] Return also lsid for users events table
+
 ## Version 23.03.7
 Fixes:
 - [core] Fixed backend period object code to selet buckets in same way as in frontend.

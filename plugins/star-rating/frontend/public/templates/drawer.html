@@ -49,8 +49,8 @@
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
-                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
+                <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                <img v-if="drawerScope.editedObject.logoType === 'default'" src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'">
@@ -62,9 +62,9 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
-                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
-            </div>
+                <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                <img v-if="drawerScope.editedObject.logoType === 'default'" src="/star-rating/images/star-rating/powered-by-countly.svg">
+                </div>
             </div>
 					</div>
           <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
@@ -178,8 +178,20 @@
               </span>
               <cly-tooltip-icon icon="ion-help-circled" :tooltip="i18n('ratings.tooltip.drawer-logo')"></cly-tooltip-icon>
             </div>
+            <div class="bu-is-flex bu-is-align-items-center">
+              <el-radio 
+                class="is-autosized bu-pt-4"
+                v-model="drawerScope.editedObject.logoType" 
+                :label="item.value" 
+                :key="idx" 
+                v-for="(item, idx) in constants.logoOptions"
+                border>
+                {{item.label}}
+              </el-radio>
+            </div>
             <cly-dropzone
-              class="ratings-drawer-dropzone"
+            v-if="drawerScope.editedObject.logoType === 'custom'"
+              class="ratings-drawer-dropzone bu-mt-4"
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"

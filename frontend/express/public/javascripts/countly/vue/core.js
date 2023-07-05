@@ -82,21 +82,38 @@
         }
     };
 
+    /**
+    * This function returns an authentication mixin object for a given feature or array of features.
+    * @param {string|array} featureName - The name of the feature(s) to create the authentication mixin for
+    * @returns {object} - Returns an object containing computed properties for authentication.
+    */
     var authMixin = function(featureName) {
+        if (!Array.isArray(featureName)) {
+            featureName = [featureName];
+        }
+        var checkAuthArray = function(func) {
+            for (var i = 0; i < featureName.length; i++) {
+                if (func(featureName[i])) {
+                    return true;
+                }
+            }
+            return false;
+        };
         return {
             // uses computed mainly to prevent mutations of these values
+            // using helper function checkAuthArray to act as a 'or' returns true if atleast one feature is validated else false
             computed: {
                 canUserCreate: function() {
-                    return countlyAuth.validateCreate(featureName);
+                    return checkAuthArray(countlyAuth.validateCreate);
                 },
                 canUserRead: function() {
-                    return countlyAuth.validateRead(featureName);
+                    return checkAuthArray(countlyAuth.validateRead);
                 },
                 canUserUpdate: function() {
-                    return countlyAuth.validateUpdate(featureName);
+                    return checkAuthArray(countlyAuth.validateUpdate);
                 },
                 canUserDelete: function() {
-                    return countlyAuth.validateDelete(featureName);
+                    return checkAuthArray(countlyAuth.validateDelete);
                 },
                 isUserGlobalAdmin: function() {
                     return countlyAuth.validateGlobalAdmin();
@@ -254,6 +271,16 @@
                 }
                 else {
                     return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
+                }
+            },
+            calculateStackedBarTimeSeriesOptionsFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                widgetData.dashData.data = widgetData.dashData.data || {};
+                widgetData.metrics = widgetData.metrics || [];
+
+                for (var app in widgetData.dashData.data) {
+                    return widgetData.dashData.data[app];
                 }
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {

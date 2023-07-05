@@ -1,6 +1,7 @@
 const common = require('../../../api/utils/common'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    log = common.log('push:api:drill');
+    log = common.log('push:api:drill'),
+    { FIELDS_TITLES } = require('./send/platforms');
 
 module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
     return new Promise((res, rej) => {
@@ -113,7 +114,7 @@ const toIdsMappers = {
 };
 
 module.exports.drillPreprocessQuery = async function({query, params}) {
-    if (query && params) {
+    if (query && params && params.qstring && params.qstring.event === '[CLY]_push_action') {
         if (query.$or) {
             for (let i = 0; i < query.$or.length; i++) {
                 let q = query.$or[i];
@@ -161,6 +162,67 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
         //     }
         //     delete query.push;
         // }
+    }
+    else if (query && params) {
+        if (query.message) {
+            let q = messageQuery(query.message);
+
+            if (!q) {
+                return;
+            }
+
+            log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
+            delete query.message;
+
+            try {
+                let ids = await common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray();
+                ids = (ids || []).map(id => id._id);
+                query.uid = {$in: ids};
+                log.d(`filtered by message: uids out of ${ids.length}`);
+            }
+            catch (e) {
+                log.e(e);
+            }
+        }
+
+        if (query.push) {
+            let q;
+            if (query.push.$nin) {
+                q = {
+                    $and: query.push.$nin.map(tk => {
+                        return {[tk]: {$exists: false}};
+                    })
+                };
+            }
+            if (query.push.$in) {
+                q = {
+                    $or: query.push.$in.map(tk => {
+                        return {[tk]: {$exists: true}};
+                    })
+                };
+            }
+            if (query.push.$regex) {
+                q = Object.keys(FIELDS_TITLES).filter(k => query.push.$regex.test(FIELDS_TITLES[k])).map(tk => {
+                    return {[tk]: {$exists: true}};
+                });
+            }
+
+            delete query.push;
+
+            if (q) {
+                if (query.$or) {
+                    query.$and = [query.$or, q];
+                }
+                else if (query.$and) {
+                    query.$and = [query.$and, q];
+                }
+                else {
+                    for (let k in q) {
+                        query[k] = q[k];
+                    }
+                }
+            }
+        }
     }
 };
 
