@@ -651,14 +651,17 @@
                     context.dispatch('onFetchError', error);
                 });
             },
-            fetchDensity: function(context) {
+            fetchDensity: function(context, force) {
                 context.dispatch('onFetchInit', "density");
+                context.commit('setDensityLoading', force);
                 countlyDevicesAndTypes.service.fetchDensity().then(function() {
                     var densities = countlyDevicesAndTypes.service.calculateDensity();
                     context.commit('setAppDensity', densities);
                     context.dispatch('onFetchSuccess', "density");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setDensityLoading', false);
                 });
             },
             fetchDeviceTypes: function(context) {
@@ -837,6 +840,9 @@
                         state.densityLoading = false;
                     }
                 }
+            },
+            setDensityLoading: function(state, value) {
+                state.densityLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {
