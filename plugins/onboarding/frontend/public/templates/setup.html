@@ -1,0 +1,57 @@
+<div id="initial-setup">
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
+        <div class="bu-is-size-4">{{ i18n('initial-setup.add-first-application-title') }}</div>
+        <div class="setup-byline">{{ i18n('initial-setup.add-first-application-byline') }}</div>
+        <cly-form
+            :initial-edited-object="newApp"
+            class="setup-form"
+            @submit="save">
+            <template v-slot="formScope">
+                <cly-form-step :id="'create-app'">
+                    <cly-form-field :label="i18n('management-applications.application-name')">
+                        <el-input
+                            :placeholder="i18n('management-applications.application-name')"
+                            v-model="formScope.editedObject.name">
+                        </el-input>
+                    </cly-form-field>
+                    <cly-form-field :label="i18n('management-applications.type')">
+                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                            <el-radio
+                                v-for="type in types"
+                                :key="type"
+                                v-model="formScope.editedObject.type"
+                                :label="type"
+                                class="is-autosized"
+                                border>
+                                <div class="text-medium bu-is-capitalized">{{type}}</div>
+                                <div class="text-medium">{{i18n('initial-setup.application')}}</div>
+                            </el-radio>
+                        </div>
+                    </cly-form-field>
+                    <cly-form-field :label="i18n('management-applications.time-zone')">
+                        <cly-select-x
+                            :placeholder="i18n('management-applications.time-zone')"
+                            v-model="formScope.editedObject.timezone"
+                            class="cly-is-fullwidth"
+                            :options="timezones">
+                        </cly-select-x>
+                    </cly-form-field>
+                    <cly-form-field :label="i18n('management-applications.app-key')">
+                        <el-input
+                            :placeholder="i18n('management-applications.app-key')"
+                            v-model="formScope.editedObject.key">
+                        </el-input>
+                    </cly-form-field>
+                </cly-form-step>
+                <el-button
+                    :disabled="!formScope.isSubmissionAllowed"
+                    @click="formScope.submit()"
+                    class="bu-is-block bu-mt-2 bu-mx-auto"
+                    size="medium"
+                    type="success">
+                    {{i18n('common.create')}} Application
+                </el-button>
+            </template>
+        </cly-form>
+    </div>
+</div>

@@ -1,4 +1,93 @@
-/*globals $,store,countlyGlobal,_,countlyVersionHistoryManager,T*/
+/*globals $,app,CV,store,countlyGlobal,_,countlyVersionHistoryManager,T*/
+
+(function() {
+    var setupView = CV.views.create({
+        template: CV.T("/onboarding/templates/setup.html"),
+        data: function() {
+            var timezones = [];
+            for (var key in countlyGlobal.timezones) {
+                var country = countlyGlobal.timezones[key].n;
+                if (countlyGlobal.timezones[key].z) {
+                    for (var zone = 0; zone < countlyGlobal.timezones[key].z.length; zone++) {
+                        var k = Object.keys(countlyGlobal.timezones[key].z[zone])[0];
+                        var splat = k.split(' ');
+                        timezones.push({
+                            value: countlyGlobal.timezones[key].z[zone][k],
+                            label: splat[1] + ', ' + country + ' ' + splat[0],
+                        });
+                    }
+                }
+            }
+
+            return {
+                newApp: {},
+                timezones: timezones,
+                types: Object.keys(app.appTypes),
+            };
+        },
+        created: function() {
+            this.createNewApp();
+        },
+        methods: {
+            createNewApp: function() {
+                this.newApp = {};
+                if (Intl && Intl.DateTimeFormat) {
+                    this.newApp.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    var timezones = countlyGlobal.timezones;
+                    for (var countryCode in timezones) {
+                        for (var i = 0; i < timezones[countryCode].z.length;i++) {
+                            for (var countryTimezone in timezones[countryCode].z[i]) {
+                                if (timezones[countryCode].z[i][countryTimezone] === this.newApp.timezone) {
+                                    this.newApp.country = countryCode;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                this.newApp.key = this.generateAPIKey();
+            },
+            generateAPIKey: function() {
+                var length = 40;
+                var text = [];
+                var chars = "abcdef";
+                var numbers = "0123456789";
+                var all = chars + numbers;
+
+                //1 char
+                text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+                //1 number
+                text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+
+                var j, x, i;
+                //5 any chars
+                for (i = 0; i < Math.max(length - 2, 5); i++) {
+                    text.push(all.charAt(Math.floor(Math.random() * all.length)));
+                }
+
+                //randomize order
+                for (i = text.length; i; i--) {
+                    j = Math.floor(Math.random() * i);
+                    x = text[i - 1];
+                    text[i - 1] = text[j];
+                    text[j] = x;
+                }
+
+                return text.join("");
+
+            },
+            save: function() {
+            },
+        },
+    });
+
+    app.route('/initial-setup', 'initial-setup', function() {
+        this.renderWhenReady(new CV.views.BackboneWrapper({
+            component: setupView,
+        }));
+    });
+})();
+
 $(document).ready(function() {
     whatsNewPopup();
 });
