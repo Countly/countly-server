@@ -48,8 +48,9 @@
             </div>
             <div id="login-logo"></div>
         </div>
-        <h1 style="font-weight: 500; text-align: center; line-height: 48px;" id="header" data-localize="setup.title"></h1>
-		<div style="height: 40px; font-size: 14px; color: #333C48; text-align: center; width: 578px; margin: 0 auto 16px; line-height: 21px;" data-localize="setup.explanation"></div>
+        <img src="/images/pre-login/hi-five.svg" style="display: block; margin: 0 auto;"/>
+        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px" id="header" data-localize="setup.ready"></h1>
+		<div style="height: 40px; font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto; line-height: 21px;" data-localize="setup.byline"></div>
         <div id="forgot-form" style="width:304px; margin:auto;">
             <form id="account-form" method="POST" style="width:300px; margin:auto;">
                 <div>
@@ -69,15 +70,19 @@
                 </div>
                 <div>
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.password"></p>
-                    <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
-                    <div id="password-requirements">
+                    <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Enter your new password" data-localize="placeholder.new-password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                    <!-- <div id="password-requirements">
                         <ul>
                             <span class="dot"></span><li id="hint-password_min"  data-localize="management-users.password.length"></li>
                             <span class="dot"></span><li id="hint-password_char"  data-localize="management-users.password.has-char"></li>
                             <span class="dot"></span><li id="hint-password_number" data-localize="management-users.password.has-number"></li>
                             <span class="dot"></span><li id="hint-password_symbol"  data-localize="management-users.password.has-special"></li>
                         </ul>
-                    </div>
+                    </div> -->
+                </div>
+                <div>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.confirm-password"></p>
+                    <input name="confirm-password" id="confirm-password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Confirm your new password" data-localize="placeholder.again"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                 </div>
                 <% if (typeof inject_template.form != "undefined") { %>
                     <%- inject_template.form %>
@@ -85,9 +90,10 @@
                 <div>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
-                    <input id="login-button" value="Create account" type="submit" data-localize="setup.button" style="margin-top: 16px;"/>
+                    <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 32px;"/>
+                    <button id="alt-login-button" data-localize="setup.continue-own-app"></button>
                 </div>
-                <div style="height: 100px;"></div>
+                <div style="height: 160px;"></div>
             </form>
             <% if (typeof inject_template.html != "undefined") { %>
                 <%- inject_template.html %>
