@@ -1186,12 +1186,7 @@
         }
 
         app.route('/manage/plugins', 'plugins', function() {
-            if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
-                app.navigate("#/", true);
-            }
-            else {
-                this.renderWhenReady(getPluginView());
-            }
+            this.renderWhenReady(getPluginView());
         });
 
         app.route('/manage/configurations', 'configurations', function() {
@@ -1280,10 +1275,8 @@
     });
 
     if (countlyAuth.validateGlobalAdmin()) {
-        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-            if (!countlyGlobal.mycountly && countlyGlobal.plugins.indexOf('my-countly') === -1) {
-                app.addMenu("management", {code: "plugins", pluginName: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
-            }
+        if (!countlyGlobal.mycountly && countlyGlobal.plugins.indexOf('my-countly') === -1) {
+            app.addMenu("management", {code: "plugins", pluginName: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
         }
     }
     if (countlyAuth.validateGlobalAdmin()) {

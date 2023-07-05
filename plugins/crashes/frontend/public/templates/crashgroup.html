@@ -76,7 +76,7 @@
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
-            <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
+            <cly-section id="crash-tabs" v-if="!!(crashgroup && (crashgroup.error || crashgroupUnsymbolicatedStacktrace))">
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                         <crash-stacktrace :code="(!showSymbolicated && crashgroupUnsymbolicatedStacktrace) ? crashgroupUnsymbolicatedStacktrace : crashgroup.error">
@@ -404,4 +404,15 @@
         </div>
     </cly-main>
     <component v-for="item in externalDialogs" :is="item.component"></component>
+    <el-dialog
+        :visible.sync="symbolicationErrorDialog.show"
+        :title="i18n('crash_symbolication.symbolication-failed')"
+        width="400px">
+        <div class="bu-is-flex-direction-column">
+            <cly-notification
+                :closable="false"
+                color="light-destructive"
+                :text="symbolicationErrorDialog.msg" />
+        </div>
+    </el-dialog>
 </div>

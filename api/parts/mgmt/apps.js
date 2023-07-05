@@ -119,11 +119,26 @@ appsApi.getAppsDetails = function(params) {
                     full_name: 1,
                     username: 1
                 }).toArray(function(err3, global_admins) {
-                    common.db.collection('members').find({ admin_of: params.qstring.app_id }, {
+                    common.db.collection('members').find({
+                        '$or': [
+                            { admin_of: params.qstring.app_id },
+                            { 'permission._.a': params.qstring.app_id }
+                        ]
+                    }, {
                         full_name: 1,
                         username: 1
                     }).toArray(function(err4, admins) {
-                        common.db.collection('members').find({ user_of: params.qstring.app_id }, {
+                        common.db.collection('members').find({
+                            '$or': [
+                                { user_of: params.qstring.app_id },
+                                {
+                                    'permission._.u':
+                                    {
+                                        $elemMatch: { $elemMatch: { $eq: params.qstring.app_id } }
+                                    }
+                                }
+                            ]
+                        }, {
                             full_name: 1,
                             username: 1
                         }).toArray(function(err5, users) {
@@ -643,11 +658,42 @@ appsApi.deleteApp = function(params) {
     }
 
     /**
+    * Removes 'appId' from group permission
+    **/
+    async function updateGroupPermission() {
+        common.db.collection('groups').update({}, {
+            $pull: {
+                'permission._.a': appId,
+            },
+            $unset: {
+                [`permission.c.${appId}`]: '',
+                [`permission.r.${appId}`]: '',
+                [`permission.u.${appId}`]: '',
+                [`permission.d.${appId}`]: '',
+            }
+        }, {multi: true}, function() {});
+
+        // permission._.u is nested array so it has to be queried to remove 'appId' from it
+        await common.db.collection('groups').update({
+            'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+        }, {
+            $pull: { 'permission._.u.$': appId },
+        }, {multi: true});
+
+        // Cleanup empty permission._.u array
+        common.db.collection('groups').update({
+            'permission._.u': { $elemMatch: { $size: 0 } },
+        }, {
+            $pull: { 'permission._.u': { $size: 0 } },
+        }, {multi: true}, function() {});
+    }
+
+    /**
     * Removes the app after validation of params and calls deleteAppData
     * @param {object} app - app document
     **/
     function removeApp(app) {
-        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err) {
+        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, async function(err) {
             if (err) {
                 common.returnMessage(params, 500, 'Error deleting app');
                 return false;
@@ -660,10 +706,34 @@ appsApi.deleteApp = function(params) {
                 $pull: {
                     'apps': appId,
                     'admin_of': appId,
-                    'user_of': appId
+                    'user_of': appId,
+                    'permission._.a': appId,
+                },
+                $unset: {
+                    [`permission.c.${appId}`]: '',
+                    [`permission.r.${appId}`]: '',
+                    [`permission.u.${appId}`]: '',
+                    [`permission.d.${appId}`]: '',
                 }
             }, {multi: true}, function() {});
 
+            // permission._.u is nested array so it has to be queried to remove 'appId' from it
+            await common.db.collection('members').update({
+                'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+            }, {
+                $pull: { 'permission._.u.$': appId },
+            }, {multi: true});
+
+            // Cleanup empty permission._.u array
+            common.db.collection('members').update({
+                'permission._.u': { $elemMatch: { $size: 0 } },
+            }, {
+                $pull: { 'permission._.u': { $size: 0 } },
+            }, {multi: true}, function() {});
+
+            if (plugins.isPluginEnabled('groups')) {
+                updateGroupPermission();
+            }
             deleteAppData(appId, true, params, app);
             deleteTopEventsData();
             common.returnMessage(params, 200, 'Success');

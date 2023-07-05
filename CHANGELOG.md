@@ -1,3 +1,117 @@
+## Version 23.03.7
+Fixes:
+- [core] Fixed backend period object code to selet buckets in same way as in frontend.
+- [core] More debugging in pluginManager to see plugin install progress.
+- [crashes] Update latest crash id in crashgroup even if new crash app version is the same as the last
+- [views] Fixes for displaying total numbers for selected views
+
+Enterprise fixes:
+- [attribution] allowing to create campaigns with custom link
+- [cohorts] Improvement to be able to deal with situations when cohort segmentation definition is stored as object (not string in database)
+- [formulas] fixed average value for percent format
+
+## Version 23.03.6
+Fixes:
+- [core] Destroying cache stream on error
+- [core] More debugging in pluginManager to see plugin install progress.
+- [crashes] Display symbolication failed/success notification
+- [dbviewer] Fixed issue in aggregation view with not displaying results for drill database.
+- [groups] Rebuilding member permission script
+- [push] Fixes for preprocessUids parameter checking
+- [push] Fixing drill query params handling
+- [push] Fixing timezoned messages being filtered out for UTC- timezones when scheduled from UTC+
+Enterprise fixes:
+- [cohorts] On recalculate delete wrongly set hashes for user properties.
+- [cohorts] Simplified processing cohorts on incoming data to recheck All cohorts.
+- [crash_symbolication] Add new labels
+- [crash_symbolication] Added localization
+- [drill] Unescaping HTML for saved query name/description
+- [surveys] fixed visual issues in popup.
+
+## Version 23.03.5
+Fixes:
+- [user-management] Fix sorting for Role & Group in user management
+- [user-management] Fix for blank group values
+- [core] Prepare minification for all plugins
+- [core] Reset permission properly in user edit drawer
+- [core] Update app details response to check permission object when listing app admins and users
+- [core] Sum showing up in Events breakdown that has only Count
+- [push] Fixes regarding push delivery in users’ timezones
+- [push] Drill filter for push action event 
+
+Enterprise fixes:
+- [surveys] Fix nps/ias popups not working in firefox
+- [push] Drill filter for push action event
+- [groups] Fix member permission updates when a group is deleted or updated
+- [cohorts] Fixed issues with determining rules for numeric properties in realtime cohort processing.
+
+## Version 23.03.4
+Fixes:
+- [core] Allow user with admin rights to modify graph notes.
+- [core] Changes to remove last segment from omitted_segments in case where it is removed from data manager
+- [core] Enable updating apps by app admin
+- [core] Fixed api responses for app user export
+- [crashes] allow providing custom regexes for stacktrace processing
+- [hooks] Updated localization
+- [views] Bugfix for: Views duration is counted double sometimes in aggregated data when there are multiple views in same request.
+
+## Version 23.03.3
+Fixes:
+- [docker] Update default plugin list for docker install
+- [docker] more lean images
+- [docker] faster pod startup time
+- [core] Fix default main transport
+- [crashes] Enable filtering crashgroup by latest app version
+- [crashes] Fix issue with crash grouping not working for object hash
+
+Enterprise fixes:
+- [ab-testing] Fix issue with ab tests not getting data when using data populator
+- [cohorts] Set default times value for cohorts if not set
+- [retention] Fix a bug with bucket undefined for unbounded type in Retention
+- [funnels] Revert changes where funnels use drill as a single source of truth
+- [ad] Fix request method signature
+- [cohorts] Record realtime cohorts based on current timestamp not the one passed in request. (Helps with timing issues)
+- [cohorts] Added extended logging to help with debugging issues.
+- [cohorts] More fixes recording incorrect counting for users falling out of cohort.
+- [event-timeline] Modify API endpoint for events table to allow session _id
+- [surveys] Add questions data of json type in separate columns for surveys
+- [users] Change label for device ID in user profile
+- [users] Display total users as full number in users profile
+- [drill] Pass period range in app timezone for drill segmentation table
+- [data-manager] Fix events not loading on changing status
+
+## Version 23.03.2
+Fixes:
+- [core] Fixes for table export to have valid columns.
+- [core] Update user and group permission when an app is deleted
+- [crashes] Fix stacktrace section condition check
+- [dashboards] Fixes for ustom date selection on analytics widgets
+- [events] Sorting of numberic segmentation in events table
+
+Enterprise fixes:
+- [ab-testing] Fixes for real time cohort trigger on ab test.
+- [cohorts] Fixes for realtime cohort recording
+- [crash_symbolication] Reset symbol files when closing drawer
+- [data-manager] Changing the visibility of an unplanned event
+- [data-manager] Fixes for user properties drawers
+- [funnels] Fixed bugs with funnel not displaying from report result.
+- [surveys] Fixes to show single day  NPS graph
+- [users] Fixes for displaying object type properties in users table
+
+## Version 23.03.1
+Fixes:
+- [export] Fixes for app_user export to not prevent exporting if an export already exists
+- [export] Fix to include headers for exporting from data for xlsx
+- [events] Fix to show graph and total for negative sum values
+- [core] Fix for improving tab key navigation on login screen
+- [core] UI fixes for equal gaps between sections
+- [core] Fixed table column headers in several places to be more user friendly
+- [push] Fixing crash on no such message
+
+Enterprise fixes:
+- [nps] Fix issue for invalid graph for yearly period
+- [cohorts] Fix for editing a cohort where cohortId was empty when opening the drawer
+
 ## Version 23.03
 Improvements:
 - [crashes] auto-refresh toggle on the Crash Overview page

@@ -33,6 +33,11 @@ then
     #get web sdk
     countly update sdk-web
     
+    #use localhost instead of IPv4 local IP address to be IPv6 friendly
+    find /etc/nginx/ -type f -exec sed -i 's#http://127.0.0.1#http://localhost#g' {} +
+    nginx -t
+    nginx -s reload
+    
     if [ "$1" != "combined" ]; then
         countly upgrade;
     else
