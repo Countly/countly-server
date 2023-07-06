@@ -121,14 +121,14 @@ jobs:
           npm install
           npx grunt mochaTest
   notify:
-  runs-on: ubuntu-latest
-  needs: [ build, test ]
-  steps:
-    - name: Send slack notification
-      id: slack
-      if: always()
-      uses: slackapi/slack-github-action@v1.14.0
-      with:
-        payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    runs-on: ubuntu-latest
+    needs: [ build, test ]
+    steps:
+      - name: Send slack notification
+        id: slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.14.0
+        with:
+          payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
