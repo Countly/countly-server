@@ -1,6 +1,7 @@
 .setup-byline {
     color: #81868D;
     margin-top: 12px;
+    font-size: 14px;
 }
 
 .setup-form {
@@ -18,6 +19,10 @@
 
 .consent-question {
     font-size: 14px;
+}
+
+.initial-populator {
+    width: 800px;
 }
 
 #whatsnew #whatsnew-overlay {

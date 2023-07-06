@@ -96,6 +96,13 @@
         }
     });
 
+    var populatorView = CV.views.create({
+        template: CV.T("/onboarding/templates/populator.html"),
+        data: function() {
+            return {};
+        },
+    });
+
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: setupView,
@@ -105,6 +112,12 @@
     app.route('/initial-consent', 'initial-consent', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: consentView,
+        }));
+    });
+
+    app.route('/initial-populator', 'initial-populator', function() {
+        this.renderWhenReady(new CV.views.BackboneWrapper({
+            component: populatorView,
         }));
     });
 })();
