@@ -81,9 +81,30 @@
         },
     });
 
+    var consentView = CV.views.create({
+        template: CV.T("/onboarding/templates/consent.html"),
+        data: function() {
+            return {
+                newConsent: {
+                    analytics: false,
+                    newsletter: false,
+                },
+            };
+        },
+        methods: {
+            save: function() {},
+        }
+    });
+
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: setupView,
+        }));
+    });
+
+    app.route('/initial-consent', 'initial-consent', function() {
+        this.renderWhenReady(new CV.views.BackboneWrapper({
+            component: consentView,
         }));
     });
 })();

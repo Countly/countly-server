@@ -7,6 +7,19 @@
     width: 520px;
 }
 
+.consent-form {
+    width: 700px;
+}
+
+.consent-blurb {
+    color: #81868D;
+    font-size: 14px;
+}
+
+.consent-question {
+    font-size: 14px;
+}
+
 #whatsnew #whatsnew-overlay {
     position: fixed;
     width: 100%;

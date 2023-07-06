@@ -1,0 +1,63 @@
+<div id="consent">
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
+        <div class="bu-is-size-4 bu-mb-6">{{ i18n('initial-setup.consent-title') }}</div>
+        <cly-form
+            :initial-edited-object="newConsent"
+            class="consent-form"
+            @submit="save">
+            <template v-slot="formScope">
+                <cly-form-step :id="'consent'">
+                    <cly-form-field>
+                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-1') }}</div>
+                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-2') }}</div>
+                        <div class="consent-question bu-mb-5">{{ i18n('initial-setup.analytics-question') }}</div>
+                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                            <el-radio
+                                v-model="formScope.editedObject.analytics"
+                                :label="true"
+                                class="is-autosized"
+                                border>
+                                <div class="text-medium">{{i18n('initial-setup.analytics-yes')}}</div>
+                            </el-radio>
+                            <el-radio
+                                v-model="formScope.editedObject.analytics"
+                                :label="false"
+                                class="is-autosized"
+                                border>
+                                <div class="text-medium">{{i18n('initial-setup.analytics-no')}}</div>
+                            </el-radio>
+                        </div>
+                    </cly-form-field>
+                    <cly-form-field>
+                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.newsletter-blurb') }}</div>
+                        <div class="consent-question bu-mb-5">{{ i18n('initial-setup.newsletter-question') }}</div>
+                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                            <el-radio
+                                v-model="formScope.editedObject.newsletter"
+                                :label="true"
+                                class="is-autosized"
+                                border>
+                                <div class="text-medium">{{i18n('initial-setup.newsletter-yes')}}</div>
+                            </el-radio>
+                            <el-radio
+                                v-model="formScope.editedObject.newsletter"
+                                :label="false"
+                                class="is-autosized"
+                                border>
+                                <div class="text-medium">{{i18n('initial-setup.newsletter-no')}}</div>
+                            </el-radio>
+                        </div>
+                    </cly-form-field>
+                </cly-form-step>
+                <el-button
+                    :disabled="!formScope.isSubmissionAllowed"
+                    @click="formScope.submit()"
+                    class="bu-is-block bu-mt-5 bu-mx-auto"
+                    size="medium"
+                    type="success">
+                    {{i18n('common.continue')}}
+                </el-button>
+            </template>
+        </cly-form>
+    </div>
+</div>
