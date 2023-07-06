@@ -75,12 +75,60 @@ jobs:
       - name: Output Nginx Logs
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
+  test:
+    runs-on: ubuntu-latest
 
-      - name: Send slack notification
-        id: slack
-        if: always()
-        uses: slackapi/slack-github-action@v1.14.0
-        with:
-          payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh localhost/mongosh mongodb/' scripts/countly.prepare.tests.sh && sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+
+      - name: Copy plugins
+        shell: bash
+        run: cp -rf plugins/* /opt/countly/plugins
+
+      - name: Install plugins
+        shell: bash
+        run: node /opt/countly/bin/scripts/install_plugins.js
+
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          npm install
+          npx grunt mochaTest
+  notify:
+  runs-on: ubuntu-latest
+  needs: [ build, test ]
+  steps:
+    - name: Send slack notification
+      id: slack
+      if: always()
+      uses: slackapi/slack-github-action@v1.14.0
+      with:
+        payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
