@@ -1,4 +1,4 @@
-/*globals $,app,CV,store,countlyGlobal,_,countlyVersionHistoryManager,T*/
+/*globals $,app,CV,store,countlyGlobal,CountlyHelpers,_,countlyVersionHistoryManager,T*/
 
 (function() {
     var setupView = CV.views.create({
@@ -120,6 +120,41 @@
             component: populatorView,
         }));
     });
+
+    var content = '<div><div class="bu-has-text-weight-medium">Quick Start Guide</div>' +
+        '<div class="bu-mt-4 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./onboarding/images/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="" class="quickstart-link bu-is-block bu-has-text-weight-medium">Invite new users <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Invite users for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./onboarding/images/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="" class="quickstart-link bu-is-block bu-has-text-weight-medium">Create a new application <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Create a new application for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./onboarding/images/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="" class="quickstart-link bu-is-block bu-has-text-weight-medium">Explore Countly Guides <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Explore Countly Guides for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./onboarding/images/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="" class="quickstart-link bu-is-block bu-has-text-weight-medium">Find your Countly SDK <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Find your Countly SDK for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./onboarding/images/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="" class="quickstart-link bu-is-block bu-has-text-weight-medium">Join Countly Community on Discord <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Join Countly Community for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+
+    CountlyHelpers.showQuickstartPopover(content);
 })();
 
 $(document).ready(function() {

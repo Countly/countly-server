@@ -4985,3 +4985,17 @@ transform: rotate(45deg);
 x-vue-echarts > div:has(> .graph-tooltip-wrapper), x-vue-echarts > div:has(> .graph-notes-tooltip) {
     opacity: 0;
 }
+
+.quickstart-popover-wrapper {
+  position: absolute;
+  bottom: 380px;
+  left: 64px;
+}
+
+.quickstart-popover-close {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  color: #81868D;
+  cursor: pointer;
+}
