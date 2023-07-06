@@ -92,7 +92,7 @@ npm config set prefix "$DIR/../.local/"
 sudo bash "$DIR/scripts/mongodb.install.sh"
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    bash "$DIR/commands/docker/mongodb.sh" &
+    sudo bash "$DIR/commands/docker/mongodb.sh" &
 
     until mongosh --eval "db.stats()" | grep "collections"; do
         echo
@@ -162,7 +162,7 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
 fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    kill -2 "$(pgrep mongo)"
+    sudo kill -2 "$(pgrep mongo)"
 fi
 
 bash "$DIR/scripts/done.sh";
