@@ -103,7 +103,7 @@ jobs:
 
       - name: Node link
         shell: bash
-        run: ln -s "$(which node)" /usr/bin/nodejs
+        run: bash bin/scripts/nodejs.link.sh
         
       - name: Run tests
         shell: bash
