@@ -19,7 +19,7 @@ cd "$(dirname "$0")"
 function check_connectivity_mongosh() {
     local MONGO_OK;
 
-	if ! MONGO_OK=$(mongosh --host mongodb --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
+	if ! MONGO_OK=$(mongosh --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
 		echo "error: mongodb service check failed"
 		return 1
 	fi
@@ -56,10 +56,10 @@ check_connectivity mongosh
 # /usr/bin/mongoexport --db countly  --collection  members                                  --out members.json
 # /usr/bin/mongoexport --db countly  --collection  sessions_                                --out sessions_.json
 
-/usr/bin/mongoimport --host mongodb --db countly --collection app_crashgroups58bf06bd6cba850047ac9f19 --file app_crashgroups58bf06bd6cba850047ac9f19.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection app_users58bf06bd6cba850047ac9f19 --file app_users58bf06bd6cba850047ac9f19.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection app_viewdata58bf06bd6cba850047ac9f19 --file app_viewdata58bf06bd6cba850047ac9f19.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection apps --file apps.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection jobs --file jobs.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection members --file members.json --upsert
-/usr/bin/mongoimport --host mongodb --db countly --collection sessions_ --file sessions_.json --upsert
+/usr/bin/mongoimport --db countly --collection app_crashgroups58bf06bd6cba850047ac9f19 --file app_crashgroups58bf06bd6cba850047ac9f19.json --upsert
+/usr/bin/mongoimport --db countly --collection app_users58bf06bd6cba850047ac9f19 --file app_users58bf06bd6cba850047ac9f19.json --upsert
+/usr/bin/mongoimport --db countly --collection app_viewdata58bf06bd6cba850047ac9f19 --file app_viewdata58bf06bd6cba850047ac9f19.json --upsert
+/usr/bin/mongoimport --db countly --collection apps --file apps.json --upsert
+/usr/bin/mongoimport --db countly --collection jobs --file jobs.json --upsert
+/usr/bin/mongoimport --db countly --collection members --file members.json --upsert
+/usr/bin/mongoimport --db countly --collection sessions_ --file sessions_.json --upsert

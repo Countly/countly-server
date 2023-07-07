@@ -97,6 +97,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+
       - name: Prepare tests
         shell: bash
         run: bash bin/scripts/countly.prepare.ce.tests.sh
