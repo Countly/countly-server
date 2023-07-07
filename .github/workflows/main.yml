@@ -97,14 +97,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
+        
       - name: Configure API
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
 
-      - name: Node link
-        shell: bash
-        run: bash bin/scripts/nodejs.link.sh
-        
       - name: Run tests
         shell: bash
         working-directory: /opt/countly

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#prepopulate docker with predefined data
+bash /opt/countly/bin/backup/run.sh
+
+#link nodejs if needed
 set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
