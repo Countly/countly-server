@@ -41,7 +41,9 @@
                         <el-table-column fixed width="400" type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-campaign-name')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line" @click="onRowClick(scope.row)">{{scope.row.name}}</span>
+                                    <a v-bind:href="'#/messaging/details/' + scope.row._id" class="bu-is-flex bu-is-align-items-center">
+                                        <a class="has-ellipsis">{{(scope.row.name)}}</a>
+                                    </a>
                                     <span class="cly-vue-push-notification-table-column__second-line">
                                         <span> {{getPreviewPlatforms(scope.row.platforms)}} </span>
                                         <span class="blinker cly-vue-push-notification-table-column__separator-blinker"></span>

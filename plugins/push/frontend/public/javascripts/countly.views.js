@@ -1631,9 +1631,6 @@
                 }
                 }
             },
-            onRowClick: function(row) {
-                window.location.hash = "#/messaging/details/" + row._id;
-            },
             mapNotificationKinds(notificationKinds) {
                 const kindMapping = {
                     plain: "plain",

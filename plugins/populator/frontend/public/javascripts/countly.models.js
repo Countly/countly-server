@@ -2276,12 +2276,16 @@
         }
         else {
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
                 data: serializeTemplate(newTemplate),
                 success: callback || function() {},
-                error: function() {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-edit-template", templateId), type: "error"});
+                error: function(err) {
+                    CountlyHelpers.notify({
+                        title: $.i18n.prop('common.error'),
+                        message: $.i18n.prop("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
+                        type: "error"
+                    });
                 }
             });
         }

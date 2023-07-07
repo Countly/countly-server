@@ -1519,7 +1519,10 @@
                     drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
                     dashboard: this.mapDashboard(dto),
-                    campaignType: ""
+                    campaignType: "",
+                    isCohorts: typeof countlyCohorts !== 'undefined',
+                    isEe: typeof countlySegmentation !== 'undefined',
+                    isGeo: typeof countlyLocationTargetComponent !== 'undefined',
                 };
             },
             mapDtoToOneTimeModel: function(dto) {

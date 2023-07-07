@@ -1787,7 +1787,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                                 updateMultiViewParams[k] = results[p].segmentation[k];
                                             }
                                             if (Object.keys(updateMultiViewParams).length > 0 || results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _ivd: results[p].segmentation._idv});
+                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _idv: results[p].segmentation._idv});
                                             }
                                         }
                                         //geting all segment info
