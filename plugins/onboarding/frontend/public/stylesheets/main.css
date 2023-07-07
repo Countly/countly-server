@@ -8,6 +8,92 @@
     width: 520px;
 }
 
+.setup-radio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+.setup-radio .el-radio.is-checked {
+    background-color: #E1EFFF;
+}
+
+.setup-radio .el-radio {
+    margin-left: 0 !important;
+}
+
+.setup-radio .el-radio__input {
+    display: none;
+}
+
+.setup-radio .el-radio__label {
+    padding-left: 0;
+}
+
+.setup-radio-item {
+    display: flex;
+    align-items: center;
+}
+
+.setup-radio-icon-bg {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #E1EFFF;
+    border-radius: 100%;
+}
+
+.is-checked .setup-radio-icon-bg {
+    background-color: #0166D6;
+}
+
+.setup-radio-icon {
+    background-image: url('../images/box.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+.setup-radio-icon--app-type-mobile {
+    background-image: url('../images/app-type-mobile.svg');
+}
+
+.setup-radio-icon--app-type-web {
+    background-image: url('../images/app-type-web.svg');
+}
+
+.setup-radio-icon--app-type-desktop {
+    background-image: url('../images/app-type-desktop.svg');
+}
+
+.setup-radio-icon--app-template-banking {
+    background-image: url('../images/app-template-banking.svg');
+}
+
+.setup-radio-icon--app-template-ecommerce {
+    background-image: url('../images/app-template-ecommerce.svg');
+}
+
+.setup-radio-icon--app-template-education {
+    background-image: url('../images/app-template-education.svg');
+}
+
+.setup-radio-icon--app-template-healthcare {
+    background-image: url('../images/app-template-healthcare.svg');
+}
+
+.setup-radio-icon--app-template-gaming {
+    background-image: url('../images/app-template-gaming.svg');
+}
+
+.is-checked .setup-radio-icon {
+    filter: brightness(10);
+}
+
 .consent-form {
     width: 700px;
 }

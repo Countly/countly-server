@@ -1,4 +1,4 @@
-/*globals $,app,CV,store,countlyGlobal,CountlyHelpers,_,countlyVersionHistoryManager,T*/
+/*globals $,app,CV,store,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,_,countlyVersionHistoryManager,T*/
 
 (function() {
     var setupView = CV.views.create({
@@ -20,13 +20,35 @@
             }
 
             return {
+                isDemoApp: false,
+                isPopulating: false,
                 newApp: {},
                 timezones: timezones,
                 types: Object.keys(app.appTypes),
+                appTemplates: [],
+                populatorProgress: 0,
+                populatorMaxTime: 10,
+                isPopulatorFinished: false,
             };
         },
         created: function() {
-            this.createNewApp();
+            var self = this;
+
+            if (this.isDemoApp) {
+                countlyPopulator.getTemplates(function(appTemplates) {
+                    appTemplates.forEach(function(appTemplate) {
+                        self.appTemplates.push({
+                            id: appTemplate._id,
+                            name: appTemplate.name,
+                        });
+                    });
+
+                    self.createNewApp();
+                });
+            }
+            else {
+                this.createNewApp();
+            }
         },
         methods: {
             createNewApp: function() {
@@ -45,38 +67,70 @@
                         }
                     }
                 }
-                this.newApp.key = this.generateAPIKey();
-            },
-            generateAPIKey: function() {
-                var length = 40;
-                var text = [];
-                var chars = "abcdef";
-                var numbers = "0123456789";
-                var all = chars + numbers;
-
-                //1 char
-                text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
-                //1 number
-                text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
-
-                var j, x, i;
-                //5 any chars
-                for (i = 0; i < Math.max(length - 2, 5); i++) {
-                    text.push(all.charAt(Math.floor(Math.random() * all.length)));
+                if (this.isDemoApp) {
+                    this.newApp.name = 'Demo App';
+                    this.newApp.appTemplate = this.appTemplates[0].id;
                 }
 
-                //randomize order
-                for (i = text.length; i; i--) {
-                    j = Math.floor(Math.random() * i);
-                    x = text[i - 1];
-                    text[i - 1] = text[j];
-                    text[j] = x;
-                }
-
-                return text.join("");
-
+                this.newApp.type = Object.keys(app.appTypes)[0];
+                this.newApp.key = countlyOnboarding.generateAPIKey();
             },
-            save: function() {
+            populateApp: function() {
+                var self = this;
+                self.populatorProgress = 0;
+
+                countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
+                countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
+
+                countlyPopulator.setSelectedTemplate(self.newApp.appTemplate);
+                countlyPopulator.getTemplate(self.newApp.appTemplate, function(template) {
+                    countlyPopulator.generateUsers(self.populatorMaxTime * 4, template);
+                });
+                var startTime = Math.round(Date.now() / 1000);
+                var progressBar = setInterval(function() {
+                    if (parseInt(self.populatorProgress) < 100) {
+                        self.populatorProgress = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.populatorMaxTime) * 100;
+                        if (self.populatorProgress > 100) {
+                            self.populatorProgress = 100;
+                        }
+                    }
+                    else {
+                        self.populatorProgress = 100;
+                        countlyPopulator.stopGenerating(true);
+                        window.clearInterval(progressBar);
+                        self.isPopulatorFinished = true;
+                    }
+                }, 1000);
+            },
+            save: function(doc) {
+                var self = this;
+
+                delete doc.appTemplate;
+
+                this.$store.dispatch('countlyOnboarding/createApp', doc)
+                    .then(function(response) {
+                        response.locked = false;
+                        countlyGlobal.apps[response._id] = response;
+                        countlyGlobal.admin_apps[response._id] = response;
+                        self.$store.dispatch("countlyCommon/addToAllApps", response);
+                        countlyCommon.ACTIVE_APP_ID = response._id + "";
+                        countlyCommon.ACTIVE_APP_KEY = response.key + "";
+                        app.onAppManagementSwitch(response._id + "", response && response.type || "mobile");
+                        self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
+                        app.initSidebar();
+
+                        if (self.isDemoApp) {
+                            self.isPopulating = true;
+                            self.populateApp();
+                        }
+                    })
+                    .catch(function(errResp) {
+                        CountlyHelpers.notify({
+                            message: errResp.result || CV.i18n('configs.not-changed'),
+                            sticky: false,
+                            type: 'error'
+                        });
+                    });
             },
         },
     });
@@ -106,6 +160,7 @@
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: setupView,
+            vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
 
