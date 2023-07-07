@@ -19,7 +19,7 @@ cd "$(dirname "$0")"
 function check_connectivity_mongosh() {
     local MONGO_OK;
 
-	if ! MONGO_OK=$(mongosh --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
+	if ! MONGO_OK=$(mongosh --host mongodb --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
 		echo "error: mongodb service check failed"
 		return 1
 	fi
