@@ -15,5 +15,5 @@ elif [ ! -f "/usr/bin/node" ]; then
     ln -s "$(which nodejs)" /usr/bin/node
 fi
 
-cp -rf "$DIR/../../*" /opt/countly/
+#cp -Rf "$DIR/../../*" /opt/countly/
 #until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
