@@ -66,7 +66,6 @@ describe('Testing event settings', function() {
                 .get('/i/events/edit_map?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + "&event_order=" + JSON.stringify(event_order))
                 .expect(200)
                 .end(function(err, res) {
-                    console.log(err, res && res.text, APP_ID, API_KEY_ADMIN, event_order);
                     if (err) {
                         return done(err);
                     }
