@@ -1,9 +1,10 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 #prepopulate docker with predefined data
 #bash /opt/countly/bin/backup/run.sh
+
+# shellcheck disable=SC2016
+mongosh localhost/countly --eval 'db.plugins.update({_id: "plugins"}, {$set:{"api.batch_processing":false, "api.batch_read_processing": false, "drill.record_meta": true, "funnels.funnel_caching": false}}, {upsert:true})'
 
 #link nodejs if needed
 set +e
@@ -14,6 +15,3 @@ if [[ -z "$NODE_JS_CMD" ]]; then
 elif [ ! -f "/usr/bin/node" ]; then
     ln -s "$(which nodejs)" /usr/bin/node
 fi
-
-#cp -Rf "$DIR/../../*" /opt/countly/
-#until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
