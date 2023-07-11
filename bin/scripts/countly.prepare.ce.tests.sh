@@ -14,4 +14,4 @@ elif [ ! -f "/usr/bin/node" ]; then
 fi
 
 
-until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
+#until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
