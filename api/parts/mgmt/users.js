@@ -387,7 +387,7 @@ async function depCheck(params) {
         crudTypes.forEach(function(crudType) {
             let apps = params.qstring.args && params.qstring.args.permission && params.qstring.args.permission[crudType] || {};
             Object.keys(apps).forEach(function(app) {
-                let feats = apps[app].allowed;
+                let feats = apps[app].allowed || {};
                 Object.keys(feats).forEach(function(feat) {
                     let featEnabled = feats[feat];
                     //check if feature is enabled and if it has any dependency
