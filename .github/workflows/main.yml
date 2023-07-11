@@ -115,6 +115,7 @@ jobs:
         run: |
           /sbin/my_init &
           npm install
+          node bin/scripts/test.connection.js
           npx grunt mochaTest
   notify:
     runs-on: ubuntu-latest
