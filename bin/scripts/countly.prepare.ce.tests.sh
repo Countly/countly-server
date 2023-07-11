@@ -4,7 +4,7 @@
 #bash /opt/countly/bin/backup/run.sh
 
 # shellcheck disable=SC2016
-mongosh localhost/countly --eval 'db.plugins.update({_id: "plugins"}, {$set:{"api.batch_processing":false, "api.batch_read_processing": false, "drill.record_meta": true, "funnels.funnel_caching": false}}, {upsert:true})'
+mongosh mongodb/countly --eval 'db.plugins.update({_id: "plugins"}, {$set:{"api.batch_processing":false, "api.batch_read_processing": false, "drill.record_meta": true, "funnels.funnel_caching": false}}, {upsert:true})'
 
 #link nodejs if needed
 set +e
