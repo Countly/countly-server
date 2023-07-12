@@ -1,3 +1,14 @@
+## Version 23.06.3
+Fixes:
+- [core] Uggraded node version from 14 to 18 in docker images
+- [core] Update ubuntu for docker to focal-1.2.0
+- [star-rating] fixed issue with downloading table data.
+
+Enterprise fixes:
+- [cohorts] Correctly validate [ab-testing] rule on incoming data
+- [cohorts] Logic fix for realtime cohorts processing regarding user beeing in cohort + additional segmentation rule. (User could have been falling in only matching cohort rule)
+- [surveys] Added option "View current target users" for survey. Goes directly to filtered user list.
+
 ## Version 23.06.2
 Fixes:
 - [crashes] Update notification after sending symbolication request
