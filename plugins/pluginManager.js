@@ -1629,7 +1629,7 @@ var pluginManager = function pluginManager() {
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
-            connectTimeoutMS: 30000,
+            connectTimeoutMS: 999999999,
             socketTimeoutMS: 0,
             serverSelectionTimeoutMS: 30000,
             maxIdleTimeMS: 0,
