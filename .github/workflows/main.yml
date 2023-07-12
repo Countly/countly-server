@@ -91,7 +91,10 @@ jobs:
 
       - name: ShellCheck
         shell: bash
-        run: countly shellcheck
+        run: |
+         apt-get update -y
+         apt-get -y install shellcheck
+         countly shellcheck
 
       - name: ESLint
         shell: bash
