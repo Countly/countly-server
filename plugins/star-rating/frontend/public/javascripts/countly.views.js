@@ -170,7 +170,8 @@
     var CommentsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
-            comments: Array
+            comments: Array,
+            loadingState: Boolean
         },
         computed: {
             preparedRows: function() {
@@ -361,8 +362,8 @@
             };
         },
         methods: {
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             matchPlatformVersion: function(documentName) {
                 var regexString = '';
@@ -598,8 +599,8 @@
                     logoType: 'default'
                 });
             },
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             setWidget: function(row, status) {
                 starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
@@ -646,9 +647,11 @@
                     }
                 }
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
-                this.loading = true;
+                if (force) {
+                    this.loading = true;
+                }
                 $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                     .then(function() {
                     // set platform versions for filter
@@ -662,7 +665,7 @@
             }
         },
         created: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -931,8 +934,8 @@
                 }
                 return (new RegExp(regexString, 'i')).test(documentName);
             },
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             fetch: function(force) {
                 var self = this;
