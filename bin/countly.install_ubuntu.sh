@@ -140,18 +140,8 @@ nodejs "$DIR/scripts/loadCitiesInDb.js"
 #get web sdk
 sudo countly update sdk-web
 
-if [ "$INSIDE_DOCKER" != "1" ]; then
-    # close google services for China area
-    if ping -c 1 google.com >> /dev/null 2>&1; then
-        echo "Pinging Google successful. Enabling Google services."
-    else
-        echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
-        sudo countly config "frontend.use_google" false --force
-    fi
-fi
-
 #compile scripts for production
-sudo countly task dist-all
+#sudo countly task dist-all
 
 # after install call
 sudo countly check after install
