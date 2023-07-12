@@ -172,11 +172,21 @@
         props: {
             comments: Array
         },
+        methods: {
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                }
+                return str;
+            }
+        },
         computed: {
             preparedRows: function() {
+                var self = this;
                 return this.comments.map(function(comment) {
                     comment.cd = countlyCommon.formatTimeAgo(comment.cd);
                     comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
+                    comment.comment = self.decode(comment.comment);
                     return comment;
                 });
             }
