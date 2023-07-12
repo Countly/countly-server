@@ -107,6 +107,10 @@ jobs:
         working-directory: /opt/countly
         run: npm install
 
+      - name: Enabling plugins
+        shell: bash
+        run: cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+
       - name: DistFiles
         shell: bash
         working-directory: /opt/countly
