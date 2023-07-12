@@ -229,6 +229,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
+
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
