@@ -1,0 +1,68 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@9.5.1
+2 info using node@v18.16.1
+3 timing npm:load:whichnode Completed in 2ms
+4 timing config:load:defaults Completed in 2ms
+5 timing config:load:file:/usr/lib/node_modules/npm/npmrc Completed in 0ms
+6 timing config:load:builtin Completed in 0ms
+7 timing config:load:cli Completed in 2ms
+8 timing config:load:env Completed in 0ms
+9 timing config:load:file:/opt/countly/plugins/dbviewer/.npmrc Completed in 0ms
+10 timing config:load:project Completed in 3ms
+11 timing config:load:file:/opt/countly/.npmrc Completed in 0ms
+12 timing config:load:user Completed in 1ms
+13 timing config:load:file:/opt/countly/.local/etc/npmrc Completed in 0ms
+14 timing config:load:global Completed in 0ms
+15 timing config:load:setEnvs Completed in 1ms
+16 timing config:load Completed in 10ms
+17 timing npm:load:configload Completed in 10ms
+18 timing npm:load:mkdirpcache Completed in 0ms
+19 timing npm:load:mkdirplogs Completed in 1ms
+20 verbose title npm install
+21 verbose argv "install"
+22 timing npm:load:setTitle Completed in 1ms
+23 timing config:load:flatten Completed in 3ms
+24 timing npm:load:display Completed in 4ms
+25 verbose logfile logs-max:10 dir:/opt/countly/.npm/_logs/2023-07-13T15_57_30_972Z-
+26 verbose logfile /opt/countly/.npm/_logs/2023-07-13T15_57_30_972Z-debug-0.log
+27 timing npm:load:logFile Completed in 9ms
+28 timing npm:load:timers Completed in 0ms
+29 timing npm:load:configScope Completed in 0ms
+30 timing npm:load Completed in 28ms
+31 timing arborist:ctor Completed in 1ms
+32 silly logfile start cleaning logs, removing 1 files
+33 silly logfile done cleaning log files
+34 timing idealTree:init Completed in 15ms
+35 timing idealTree:userRequests Completed in 0ms
+36 silly idealTree buildDeps
+37 timing idealTree:#root Completed in 0ms
+38 timing idealTree:buildDeps Completed in 2ms
+39 timing idealTree:fixDepFlags Completed in 0ms
+40 timing idealTree Completed in 19ms
+41 timing arborist:ctor Completed in 1ms
+42 timing reify:loadTrees Completed in 26ms
+43 timing reify:diffTrees Completed in 2ms
+44 silly reify moves {}
+45 timing reify:retireShallow Completed in 1ms
+46 timing reify:createSparse Completed in 1ms
+47 timing reify:trashOmits Completed in 0ms
+48 timing reify:loadBundles Completed in 0ms
+49 silly audit bulk request { bson: [ '5.3.0' ] }
+50 timing reify:unpack Completed in 3ms
+51 timing reify:unretire Completed in 0ms
+52 timing build:queue Completed in 0ms
+53 timing build:deps Completed in 1ms
+54 timing build Completed in 1ms
+55 timing reify:build Completed in 1ms
+56 timing reify:trash Completed in 0ms
+57 timing reify:save Completed in 6ms
+58 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 385ms
+59 timing auditReport:getReport Completed in 387ms
+60 silly audit report {}
+61 timing auditReport:init Completed in 0ms
+62 timing reify:audit Completed in 389ms
+63 timing reify Completed in 426ms
+64 timing command:install Completed in 436ms
+65 verbose exit 0
+66 timing npm Completed in 479ms
+67 info ok

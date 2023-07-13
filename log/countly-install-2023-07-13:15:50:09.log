@@ -1,0 +1,765 @@
+
+   ______                  __  __
+  / ____/___  __  ______  / /_/ /_  __
+ / /   / __ \/ / / / __ \/ __/ / / / /
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
+\____/\____/\__,_/_/ /_/\__/_/\__, /
+          https://countly.com/____/
+
+Failed to open /dev/tty: No such device or address
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease [108 kB]
+Hit:4 http://nginx.org/packages/ubuntu jammy InRelease
+Get:5 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Ign:6 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:7 https://deb.nodesource.com/node_18.x jammy InRelease
+Hit:8 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:9 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Get:10 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [790 kB]
+Get:11 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/main Translation-en [199 kB]
+Get:12 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/main amd64 c-n-f Metadata [15.4 kB]
+Get:13 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [565 kB]
+Get:14 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/restricted Translation-en [87.7 kB]
+Get:15 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [942 kB]
+Get:17 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [565 kB]
+Fetched 3501 kB in 3s (1076 kB/s)
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+build-essential is already the newest version (12.9ubuntu3).
+bzip2 is already the newest version (1.0.8-5build1).
+lsb-release is already the newest version (11.1.0ubuntu4).
+wget is already the newest version (1.21.2-2ubuntu1).
+shellcheck is already the newest version (0.8.0-2).
+ca-certificates is already the newest version (20230311ubuntu0.22.04.1).
+curl is already the newest version (7.81.0-1ubuntu1.10).
+git is already the newest version (1:2.34.1-1ubuntu1.9).
+libkrb5-dev is already the newest version (1.19.2-2ubuntu0.2).
+sqlite3 is already the newest version (3.37.2-2ubuntu0.1).
+unzip is already the newest version (6.0-26ubuntu3.1).
+gnupg2 is already the newest version (2.2.27-3ubuntu2.1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+python2 is already the newest version (2.7.18-3).
+python2-dev is already the newest version (2.7.18-3).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+software-properties-common is already the newest version (0.99.22.7).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+g++ is already the newest version (4:11.2.0-1ubuntu1).
+gcc is already the newest version (4:11.2.0-1ubuntu1).
+make is already the newest version (4.3-4.1build1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+fonts-liberation is already the newest version (1:1.07.4-11).
+libasound2 is already the newest version (1.2.6.1-1ubuntu1).
+libatk1.0-0 is already the newest version (2.36.0-3build1).
+libcairo2 is already the newest version (1.16.0-5ubuntu2).
+libfontconfig1 is already the newest version (2.13.1-4.2ubuntu5).
+libnspr4 is already the newest version (2:4.32-3build1).
+libxcb1 is already the newest version (1.14-3ubuntu3).
+libxcomposite1 is already the newest version (1:0.4.5-1build2).
+libxcursor1 is already the newest version (1:1.2.0-2build4).
+libxdamage1 is already the newest version (1:1.1.5-2build2).
+libxext6 is already the newest version (2:1.3.4-1build1).
+libxfixes3 is already the newest version (1:6.0.0-1).
+libxi6 is already the newest version (2:1.8-1build1).
+libxrandr2 is already the newest version (2:1.5.2-1build1).
+libxrender1 is already the newest version (1:0.9.10-1build4).
+libxss1 is already the newest version (1:1.2.3-1build2).
+libxtst6 is already the newest version (2:1.2.3-1build4).
+lsb-release is already the newest version (11.1.0ubuntu4).
+gconf-service is already the newest version (3.2.6-7ubuntu2).
+libappindicator1 is already the newest version (12.10.1+20.10.20200706.1-0ubuntu1).
+libgconf-2-4 is already the newest version (3.2.6-7ubuntu2).
+libgdk-pixbuf2.0-0 is already the newest version (2.40.2-2build4).
+ca-certificates is already the newest version (20230311ubuntu0.22.04.1).
+libc6 is already the newest version (2.35-0ubuntu3.1).
+libcups2 is already the newest version (2.4.1op1-1ubuntu4.4).
+libdbus-1-3 is already the newest version (1.12.20-2ubuntu4.1).
+libexpat1 is already the newest version (2.4.7-1ubuntu0.2).
+libgbm-dev is already the newest version (22.2.5-0ubuntu0.1~22.04.3).
+libgbm1 is already the newest version (22.2.5-0ubuntu0.1~22.04.3).
+libgcc-s1 is already the newest version (12.1.0-2ubuntu1~22.04).
+libglib2.0-0 is already the newest version (2.72.4-0ubuntu2.2).
+libgtk-3-0 is already the newest version (3.24.33-1ubuntu2).
+libnss3 is already the newest version (2:3.68.2-0ubuntu1.2).
+libpango-1.0-0 is already the newest version (1.50.6+ds-2ubuntu1).
+libpangocairo-1.0-0 is already the newest version (1.50.6+ds-2ubuntu1).
+libstdc++6 is already the newest version (12.1.0-2ubuntu1~22.04).
+libx11-6 is already the newest version (2:1.7.5-1ubuntu0.2).
+libx11-xcb1 is already the newest version (2:1.7.5-1ubuntu0.2).
+xdg-utils is already the newest version (1.1.3-4.1ubuntu3~22.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+python3-software-properties is already the newest version (0.99.22.7).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+deb http://nginx.org/packages/ubuntu jammy nginx
+Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
+OK
+Failed to open /dev/tty: No such device or address
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:4 http://nginx.org/packages/ubuntu jammy InRelease
+Hit:5 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:6 https://deb.nodesource.com/node_18.x jammy InRelease
+Ign:7 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:8 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:9 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+nginx is already the newest version (1.24.0-1~jammy).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+
+## Installing the NodeSource Node.js 18.x repo...
+
+
+## Populating apt-get cache...
+
++ apt-get update
+Ign:1 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:2 http://nginx.org/packages/ubuntu jammy InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:4 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:5 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:6 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:7 https://deb.nodesource.com/node_18.x jammy InRelease
+Hit:8 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:9 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+
+## Confirming "jammy" is supported...
+
++ curl -sLf -o /dev/null 'https://deb.nodesource.com/node_18.x/dists/jammy/Release'
+
+## Adding the NodeSource signing key to your keyring...
+
++ curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | tee /usr/share/keyrings/nodesource.gpg >/dev/null
+
+## Creating apt sources list file for the NodeSource Node.js 18.x repo...
+
++ echo 'deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x jammy main' > /etc/apt/sources.list.d/nodesource.list
++ echo 'deb-src [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x jammy main' >> /etc/apt/sources.list.d/nodesource.list
+
+## Running `apt-get update` for you...
+
++ apt-get update
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Ign:4 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:5 http://nginx.org/packages/ubuntu jammy InRelease
+Hit:6 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:7 https://deb.nodesource.com/node_18.x jammy InRelease
+Hit:8 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:9 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+
+## Run `sudo apt-get install -y nodejs` to install Node.js 18.x and npm
+## You may also need development tools to build native addons:
+     sudo apt-get install gcc g++ make
+## To install the Yarn package manager, run:
+     curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null
+     echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+     sudo apt-get update && sudo apt-get install yarn
+
+
+Failed to open /dev/tty: No such device or address
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Ign:4 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:5 http://nginx.org/packages/ubuntu jammy InRelease
+Hit:6 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:7 https://deb.nodesource.com/node_18.x jammy InRelease
+Hit:8 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:9 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+nodejs is already the newest version (18.16.1-deb-1nodesource1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+supervisor is already the newest version (4.2.1-1ubuntu1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+numactl is already the newest version (2.0.14-3ubuntu2).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+sendmail is already the newest version (8.15.2-22ubuntu3).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+
+changed 15 packages in 6s
+
+3 packages are looking for funding
+  run `npm fund` for details
+
+up to date, audited 1108 packages in 4s
+
+104 packages are looking for funding
+  run `npm fund` for details
+
+14 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice 
+npm notice New minor version of npm available! 9.5.1 -> 9.8.0
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v9.8.0>
+npm notice Run `npm install -g npm@9.8.0` to update!
+npm notice 
+
+up to date, audited 1108 packages in 3s
+
+104 packages are looking for funding
+  run `npm fund` for details
+
+14 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+up to date, audited 1108 packages in 4s
+
+104 packages are looking for funding
+  run `npm fund` for details
+
+14 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
+OK
+deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse
+Failed to open /dev/tty: No such device or address
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:5 http://nginx.org/packages/ubuntu jammy InRelease
+Ign:6 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 InRelease
+Hit:7 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease
+Hit:8 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 Release
+Hit:9 https://deb.nodesource.com/node_18.x jammy InRelease
+Reading package lists...
+W: http://nginx.org/packages/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+W: http://repo.mongodb.org/apt/ubuntu/dists/jammy/mongodb-org/6.0/Release.gpg: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following packages will be upgraded:
+  mongodb-org
+1 upgraded, 0 newly installed, 0 to remove and 15 not upgraded.
+Need to get 2806 B of archives.
+After this operation, 0 B of additional disk space will be used.
+Get:1 http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0/multiverse amd64 mongodb-org amd64 6.0.8 [2806 B]
+Fetched 2806 B in 0s (13.4 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 103941 files and directories currently installed.)
+Preparing to unpack .../mongodb-org_6.0.8_amd64.deb ...
+Unpacking mongodb-org (6.0.8) over (6.0.7) ...
+Setting up mongodb-org (6.0.8) ...
+NEEDRESTART-VER: 3.5
+NEEDRESTART-KCUR: 5.19.0-1027-gcp
+NEEDRESTART-KEXP: 5.19.0-1027-gcp
+NEEDRESTART-KSTA: 1
+Failed to open /dev/tty: No such device or address
+[1m[[93m?[97m][0m Couldn't find any disk for MongoDB data
+[1m[[92m+[97m][0m Logrotate configured
+[1m[[92m+[97m][0m Swappiness set to 1
+[1m[[92m+[97m][0m Configured file handle kernel limits
+[1m[[92m+[97m][0m Configured security limits for MongoDB user
+[1m[[92m+[97m][0m Disabled transparent hugepages
+[1m[[92m+[97m][0m NTP is enabled
+
+Some of changes may need reboot!
+
+The file does not exist
+Restarting nginx (via systemctl): nginx.serviceFailed to open /dev/tty: No such device or address
+.
+[41m[37m[37m2023-07-13T15:51:31.442Z: ERROR	[plugins:dependencies]	Loaded plugins:[39m[49m
+[41m[37m[37m[39m[49m [
+  'mobile',         'web',
+  'desktop',        'plugins',
+  'density',        'locale',
+  'browser',        'sources',
+  'views',          'remote-config',
+  'logger',         'systemlogs',
+  'errorlogs',      'populator',
+  'reports',        'crashes',
+  'push',           'star-rating',
+  'alerts',         'slipping-away-users',
+  'compare',        'server-stats',
+  'dbviewer',       'times-of-day',
+  'compliance-hub', 'onboarding',
+  'consolidate',    'data-manager',
+  'hooks',          'sdk',
+  'dashboards'
+]
+[41m[37m[37m2023-07-13T15:51:31.452Z: ERROR	[plugins:dependencies]	Safe loader couldn't load following plugins:[39m[49m
+[41m[37m[37m[39m[49m {
+  license: { reason: 'not_found' },
+  drill: { reason: 'not_found' },
+  funnels: { reason: 'not_found' },
+  retention_segments: { reason: 'not_found' },
+  flows: { reason: 'not_found' },
+  cohorts: { reason: 'not_found' },
+  surveys: { reason: 'not_found' },
+  'ab-testing': { reason: 'not_found' },
+  formulas: { reason: 'not_found' },
+  'activity-map': { reason: 'not_found' },
+  concurrent_users: { reason: 'not_found' },
+  revenue: { reason: 'not_found' },
+  geo: { reason: 'not_found' },
+  block: { reason: 'not_found' },
+  users: { reason: 'not_found' },
+  crash_symbolication: { reason: 'not_found' },
+  groups: { reason: 'not_found' },
+  'white-labeling': { reason: 'not_found' },
+  active_users: { reason: 'not_found' },
+  'performance-monitoring': { reason: 'not_found' },
+  'config-transfer': { reason: 'not_found' },
+  heatmaps: { reason: 'not_found' }
+}
+[43m[30m[30m2023-07-13T15:51:31.454Z: WARN	[plugins:dependencies]	Plugin list has changed.[30m[39m[49m
+[43m[30m[30m2023-07-13T15:51:31.455Z: WARN	[plugins:dependencies]	Old Plugins >>>[30m[39m[49m [43m[30m[30m["mobile","web","desktop","plugins","density","locale","browser","sources","views","license","drill","funnels","retention_segments","flows","cohorts","surveys","remote-config","ab-testing","formulas","activity-map","concurrent_users","revenue","logger","systemlogs","errorlogs","populator","reports","crashes","push","geo","block","users","star-rating","slipping-away-users","compare","server-stats","dbviewer","crash_symbolication","groups","white-labeling","alerts","times-of-day","compliance-hub","onboarding","active_users","performance-monitoring","config-transfer","consolidate","data-manager","hooks","dashboards","heatmaps","sdk"][30m[39m[49m
+[43m[30m[30m2023-07-13T15:51:31.455Z: WARN	[plugins:dependencies]	New Plugins >>>[30m[39m[49m [43m[30m[30m["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"][30m[39m[49m
+[43m[30m[30m2023-07-13T15:51:31.455Z: WARN	[plugins:dependencies]	The old version will be overwritten.[30m[39m[49m
+Installing plugin "mobile"...
+
+up to date, audited 1 package in 124ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "mobile"
+Done installing plugin 0
+Installing plugin "web"...
+
+up to date, audited 2 packages in 374ms
+
+
+1 package is looking for funding
+
+  run `npm fund` for details
+
+
+found 0 vulnerabilities
+
+Done running npm install "web"
+Done installing plugin 0
+Installing plugin "desktop"...
+
+up to date, audited 1 package in 92ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "desktop"
+Done installing plugin 0
+Installing plugin "plugins"...
+
+up to date, audited 1 package in 80ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "plugins"
+Done installing plugin 0
+Installing plugin "density"...
+
+up to date, audited 1 package in 97ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "density"
+Done installing plugin 0
+Installing plugin "locale"...
+
+up to date, audited 1 package in 81ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "locale"
+Done installing plugin 0
+Installing plugin "browser"...
+
+up to date, audited 1 package in 98ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "browser"
+Done installing plugin 0
+Installing plugin "sources"...
+
+up to date, audited 9 packages in 1s
+
+
+found 0 vulnerabilities
+
+error: "npm WARN old lockfile \nnpm WARN old lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN old lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN old lockfile \nnpm WARN old lockfile This is a one-time fix-up, please be patient...\nnpm WARN old lockfile \n"
+Done running npm install "sources"
+Done installing plugin 0
+Installing plugin "views"...
+
+up to date, audited 1 package in 81ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "views"
+Installing views plugin
+
+Views plugin installation finished
+
+Done installing plugin 0
+Installing plugin "remote-config"...
+
+up to date, audited 1 package in 90ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "remote-config"
+Done installing plugin 0
+Installing plugin "logger"...
+
+up to date, audited 1 package in 82ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "logger"
+Installing logger plugin
+
+Logger plugin installation finished
+
+Done installing plugin 0
+Installing plugin "systemlogs"...
+
+up to date, audited 1 package in 83ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "systemlogs"
+Installing systemlogs plugin
+
+Adding systemlogs indexes
+
+Systemlogs plugin installation finished
+
+Done installing plugin 0
+Installing plugin "errorlogs"...
+
+up to date, audited 1 package in 108ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "errorlogs"
+Done installing plugin 0
+Installing plugin "populator"...
+
+up to date, audited 1 package in 98ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "populator"
+Done installing plugin 0
+Installing plugin "reports"...
+
+up to date, audited 1 package in 106ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "reports"
+Done installing plugin 0
+Installing plugin "crashes"...
+
+up to date, audited 1 package in 75ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "crashes"
+Installing crash plugin
+
+Crash plugin installation finished
+
+Done installing plugin 0
+Installing plugin "push"...
+
+changed 1 package, and audited 14 packages in 372ms
+
+
+1 package is looking for funding
+  run `npm fund` for details
+
+
+found 0 vulnerabilities
+
+Done running npm install "push"
+Done installing plugin 0
+Installing plugin "star-rating"...
+
+up to date, audited 1 package in 91ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "star-rating"
+Installing ratings plugin
+
+Ratings plugin installation finished
+
+Done installing plugin 0
+Installing plugin "alerts"...
+
+up to date, audited 1 package in 111ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "alerts"
+Installing alerts plugin
+
+Adding alerts patch
+
+Alerts plugin installation finished
+
+Done installing plugin 0
+Installing plugin "slipping-away-users"...
+
+up to date, audited 1 package in 92ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "slipping-away-users"
+Done installing plugin 0
+Installing plugin "compare"...
+
+up to date, audited 1 package in 93ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "compare"
+Done installing plugin 0
+Installing plugin "server-stats"...
+
+up to date, audited 1 package in 85ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "server-stats"
+Done installing plugin 0
+Installing plugin "dbviewer"...
+
+up to date, audited 2 packages in 427ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN old lockfile \nnpm WARN old lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN old lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN old lockfile \nnpm WARN old lockfile This is a one-time fix-up, please be patient...\nnpm WARN old lockfile \n"
+Done running npm install "dbviewer"
+Done installing plugin 0
+Installing plugin "times-of-day"...
+
+up to date, audited 1 package in 83ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "times-of-day"
+Done installing plugin 0
+Installing plugin "compliance-hub"...
+
+up to date, audited 1 package in 86ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "compliance-hub"
+Installing compliance-hub plugin
+
+Compliance hub plugin installation finished
+
+Done installing plugin 0
+Installing plugin "onboarding"...
+
+up to date, audited 1 package in 83ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "onboarding"
+Done installing plugin 0
+Installing plugin "consolidate"...
+
+up to date, audited 1 package in 86ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "consolidate"
+Installing Consolidate Plugin
+
+Installing Consolidate Plugin Finished
+
+Done installing plugin 0
+Installing plugin "data-manager"...
+
+up to date, audited 1 package in 79ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "data-manager"
+Installing data manager plugin
+
+Finished Installing data manager plugin
+
+Done installing plugin 0
+Installing plugin "hooks"...
+
+changed 1 package, and audited 4 packages in 468ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "hooks"
+Done installing plugin 0
+Installing plugin "sdk"...
+
+up to date, audited 1 package in 73ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "sdk"
+Done installing plugin 0
+Installing plugin "dashboards"...
+
+up to date, audited 1 package in 95ms
+
+
+found 0 vulnerabilities
+
+error: "npm WARN ancient lockfile \nnpm WARN ancient lockfile The package-lock.json file was created with an old version of npm,\nnpm WARN ancient lockfile so supplemental metadata must be fetched from the registry.\nnpm WARN ancient lockfile \nnpm WARN ancient lockfile This is a one-time fix-up, please be patient...\nnpm WARN ancient lockfile \n"
+Done running npm install "dashboards"
+Done installing plugin 0
+Processing plugin files for production mode
+Preparing production files
+Done preparing production files with null / "Running \"sass:dist\" (sass) task\n\nRunning \"concat:dom\" (concat) task\n\nRunning \"concat:utils\" (concat) task\n\nRunning \"concat:visualization\" (concat) task\n\nRunning \"concat:lib\" (concat) task\n\nRunning \"uglify:dist\" (uglify) task\n>> 4 files created 10.1 MB → 6.4 MB\n\nRunning \"cssmin:dist\" (cssmin) task\n>> 1 file created. 586 kB → 510 kB\n\nRunning \"plugins\" task\nPreparing production files for following plugins: [\"mobile\",\"web\",\"desktop\",\"plugins\",\"density\",\"locale\",\"browser\",\"sources\",\"views\",\"remote-config\",\"logger\",\"systemlogs\",\"errorlogs\",\"populator\",\"reports\",\"crashes\",\"push\",\"star-rating\",\"alerts\",\"slipping-away-users\",\"compare\",\"server-stats\",\"dbviewer\",\"times-of-day\",\"compliance-hub\",\"onboarding\",\"consolidate\",\"data-manager\",\"hooks\",\"sdk\",\"dashboards\"]\nDone preparing production files\n\nRunning \"concat:plugins\" (concat) task\n\nRunning \"uglify:plugins\" (uglify) task\n>> 1 file created 1.88 MB → 899 kB\n\nRunning \"copy:plugins\" (copy) task\nCopied 68 files\n\nRunning \"sass:dist\" (sass) task\n\nRunning \"cssmin:plugins\" (cssmin) task\n>> 1 file created. 124 kB → 115 kB\n\nRunning \"locales\" task\nPreparing locale files for core & plugins: [\"plugins\",\"mobile\",\"web\",\"desktop\",\"density\",\"locale\",\"browser\",\"sources\",\"views\",\"remote-config\",\"logger\",\"systemlogs\",\"errorlogs\",\"populator\",\"reports\",\"crashes\",\"push\",\"star-rating\",\"alerts\",\"slipping-away-users\",\"compare\",\"server-stats\",\"dbviewer\",\"times-of-day\",\"compliance-hub\",\"onboarding\",\"consolidate\",\"data-manager\",\"hooks\",\"sdk\",\"dashboards\"]\nDone preparing locale files\n\nRunning \"concat:locales_\" (concat) task\n\nRunning \"concat:locales_ar\" (concat) task\n\nRunning \"concat:locales_bg\" (concat) task\n\nRunning \"concat:locales_bs\" (concat) task\n\nRunning \"concat:locales_ca\" (concat) task\n\nRunning \"concat:locales_de\" (concat) task\n\nRunning \"concat:locales_DE\" (concat) task\n\nRunning \"concat:locales_el\" (concat) task\n\nRunning \"concat:locales_es\" (concat) task\n\nRunning \"concat:locales_et\" (concat) task\n\nRunning \"concat:locales_fa\" (concat) task\n\nRunning \"concat:locales_IR\" (concat) task\n\nRunning \"concat:locales_fr\" (concat) task\n\nRunning \"concat:locales_hi\" (concat) task\n\nRunning \"concat:locales_hu\" (concat) task\n\nRunning \"concat:locales_it\" (concat) task\n\nRunning \"concat:locales_ja\" (concat) task\n\nRunning \"concat:locales_ko\" (concat) task\n\nRunning \"concat:locales_KR\" (concat) task\n\nRunning \"concat:locales_lv\" (concat) task\n\nRunning \"concat:locales_LV\" (concat) task\n\nRunning \"concat:locales_my\" (concat) task\n\nRunning \"concat:locales_nb\" (concat) task\n\nRunning \"concat:locales_NO\" (concat) task\n\nRunning \"concat:locales_nl\" (concat) task\n\nRunning \"concat:locales_NL\" (concat) task\n\nRunning \"concat:locales_PL\" (concat) task\n\nRunning \"concat:locales_pt\" (concat) task\n\nRunning \"concat:locales_BR\" (concat) task\n\nRunning \"concat:locales_ro\" (concat) task\n\nRunning \"concat:locales_ru\" (concat) task\n\nRunning \"concat:locales_sl\" (concat) task\n\nRunning \"concat:locales_sv\" (concat) task\n\nRunning \"concat:locales_tr\" (concat) task\n\nRunning \"concat:locales_uk\" (concat) task\n\nRunning \"concat:locales_vi\" (concat) task\n\nRunning \"concat:locales_zh\" (concat) task\n\nRunning \"concat:locales_CN\" (concat) task\n\nRunning \"concat:locales_pl\" (concat) task\n\nDone.\n"
+Exiting
+Loading city coordinates into db
+Process might take few minutes
+Cities loded in db
+Failed to open /dev/tty: No such device or address
+
+
+
+Hello Data-Captain! You have successfully installed Countly version 23.06.3 to /opt/countly! Hurray!
+
+Installation and process logs are available here: /opt/countly/log
+
+If you will be using Countly and MongoDB on the same server:
+ 1. Please go to your server http://10.132.0.37/setup to create first Global Administrator account
+
+If you will be using MongoDB on another server:
+ 1. Setup MongoDB on another server using https://c.ly/install/mongodb
+ 2. Secure your MongoDB server: https://support.count.ly/hc/en-us/articles/360037445752-Securing-MongoDB
+ 3. Follow this instruction to point Countly to your MongoDB server: https://support.count.ly/hc/en-us/articles/360037814871-Configuring-Countly
+ 4. Then go to your server http://10.132.0.37/setup to create first Global Administrator account
+
+Additionally you can:
+ 1. Secure your server by configuring HTTPS with your certificate: https://support.count.ly/hc/en-us/articles/360037816431-Configuring-HTTPS-and-SSL
+ 2. Or use Let’s encrypt to generate certificate: https://support.count.ly/hc/en-us/articles/360037816491-Installing-Let-s-Encrypt-for-HTTPS
+ 3. Familiarize yourself with Countly command line: https://support.count.ly/hc/en-us/articles/360037444912-Countly-command-line
+ 4. Check out troubleshooting guide if you run into any problems: https://support.count.ly/hc/en-us/articles/360037816811-Troubleshooting
+
+Need more help?:
+ 1. Browse through our Knowledge Base: https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base
+ 2. Check out the Community Area: https://support.count.ly/hc/en-us/community/topics
+ 3. Speak to our team right away via Slack: http://slack.count.ly/
+
+Happy Countlying
+

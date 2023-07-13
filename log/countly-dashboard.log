@@ -1,0 +1,256 @@
+Starting Countly version 23.06.3 package 23.06.0
+Installing plugin "desktop"...
+
+up to date, audited 1 package in 233ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "desktop"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "density"...
+
+up to date, audited 1 package in 496ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "density"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "browser"...
+
+up to date, audited 1 package in 469ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "browser"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "views"...
+
+up to date, audited 1 package in 419ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "views"
+Installing views plugin
+
+Views plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "logger"...
+
+up to date, audited 1 package in 387ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "logger"
+Installing logger plugin
+
+Logger plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "errorlogs"...
+
+up to date, audited 1 package in 260ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "errorlogs"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "reports"...
+
+up to date, audited 1 package in 263ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "reports"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "push"...
+
+up to date, audited 14 packages in 1s
+
+1 package is looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+Done running npm install "push"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "star-rating"...
+
+up to date, audited 1 package in 314ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "star-rating"
+Installing ratings plugin
+
+Ratings plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "slipping-away-users"...
+
+up to date, audited 1 package in 323ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "slipping-away-users"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "compare"...
+
+up to date, audited 1 package in 526ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "compare"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "server-stats"...
+
+up to date, audited 1 package in 495ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "server-stats"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "dbviewer"...
+
+up to date, audited 2 packages in 921ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "dbviewer"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "times-of-day"...
+
+up to date, audited 1 package in 270ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "times-of-day"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "compliance-hub"...
+
+up to date, audited 1 package in 552ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "compliance-hub"
+Installing compliance-hub plugin
+
+Compliance hub plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "consolidate"...
+
+up to date, audited 1 package in 404ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "consolidate"
+Installing Consolidate Plugin
+
+Installing Consolidate Plugin Finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "data-manager"...
+
+up to date, audited 1 package in 459ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "data-manager"
+Installing data manager plugin
+
+Finished Installing data manager plugin
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "hooks"...
+
+up to date, audited 4 packages in 1s
+
+
+found 0 vulnerabilities
+
+Done running npm install "hooks"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "sdk"...
+
+up to date, audited 1 package in 457ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "sdk"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Starting Countly version 23.06.3 package 23.06.0

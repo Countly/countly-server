@@ -1,0 +1,834 @@
+2023-07-13T15:56:11.621Z: INFO	[jobs:manager]	Starting job manager in 176902
+Starting Countly version 23.06.3 package 23.06.0
+Installing plugin "mobile"...
+Installing plugin "web"...
+
+up to date, audited 1 package in 252ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "mobile"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "plugins"...
+
+up to date, audited 2 packages in 1s
+
+
+1 package is looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+Done running npm install "web"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "desktop"...
+
+up to date, audited 1 package in 820ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "plugins"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "locale"...
+
+up to date, audited 1 package in 243ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "desktop"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "plugins"...
+
+up to date, audited 1 package in 257ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "locale"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "sources"...
+
+up to date, audited 1 package in 246ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "plugins"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "density"...
+
+up to date, audited 9 packages in 1s
+
+
+found 0 vulnerabilities
+
+Done running npm install "sources"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "remote-config"...
+
+up to date, audited 1 package in 117ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "density"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "locale"...
+
+up to date, audited 1 package in 232ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "locale"
+
+up to date, audited 1 package in 489ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "remote-config"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "systemlogs"...
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "browser"...
+
+up to date, audited 1 package in 474ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "browser"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "sources"...
+
+up to date, audited 1 package in 989ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "systemlogs"
+Installing systemlogs plugin
+
+Adding systemlogs indexes
+
+Systemlogs plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "populator"...
+
+up to date, audited 9 packages in 1s
+
+
+found 0 vulnerabilities
+
+Done running npm install "sources"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "views"...
+
+up to date, audited 1 package in 269ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "populator"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "crashes"...
+
+up to date, audited 1 package in 434ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "views"
+
+up to date, audited 1 package in 318ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "crashes"
+Installing views plugin
+
+Views plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "remote-config"...
+Installing crash plugin
+
+Crash plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "push"...
+
+up to date, audited 1 package in 448ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "remote-config"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "logger"...
+
+up to date, audited 14 packages in 1s
+
+
+
+1 package is looking for funding
+
+  run `npm fund` for details
+
+
+found 0 vulnerabilities
+
+Done running npm install "push"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "alerts"...
+
+up to date, audited 1 package in 300ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "logger"
+Installing logger plugin
+
+Logger plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "systemlogs"...
+
+up to date, audited 1 package in 519ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "alerts"
+Installing alerts plugin
+
+Adding alerts patch
+
+Alerts plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "slipping-away-users"...
+
+up to date, audited 1 package in 404ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "systemlogs"
+Installing systemlogs plugin
+
+Adding systemlogs indexes
+
+Systemlogs plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "errorlogs"...
+
+up to date, audited 1 package in 522ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "slipping-away-users"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "compare"...
+
+up to date, audited 1 package in 490ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "errorlogs"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "populator"...
+
+up to date, audited 1 package in 910ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "compare"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "server-stats"...
+
+up to date, audited 1 package in 686ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "populator"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "reports"...
+
+up to date, audited 1 package in 440ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "server-stats"
+
+up to date, audited 1 package in 275ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "reports"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "dbviewer"...
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "crashes"...
+
+up to date, audited 1 package in 279ms
+
+
+found 0 vulnerabilities
+
+
+up to date, audited 2 packages in 779ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "crashes"
+Done running npm install "dbviewer"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "times-of-day"...
+Installing crash plugin
+
+Crash plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "push"...
+
+up to date, audited 1 package in 249ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "times-of-day"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "onboarding"...
+
+up to date, audited 14 packages in 826ms
+
+
+
+1 package is looking for funding
+
+  run `npm fund` for details
+
+
+found 0 vulnerabilities
+
+Done running npm install "push"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "star-rating"...
+
+up to date, audited 1 package in 504ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "onboarding"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "data-manager"...
+
+up to date, audited 1 package in 433ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "star-rating"
+
+up to date, audited 1 package in 283ms
+
+
+found 0 vulnerabilities
+
+Installing ratings plugin
+
+Done running npm install "data-manager"
+Ratings plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "alerts"...
+Installing data manager plugin
+
+Finished Installing data manager plugin
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "hooks"...
+
+up to date, audited 1 package in 544ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "alerts"
+
+up to date, audited 4 packages in 1s
+
+
+found 0 vulnerabilities
+
+Done running npm install "hooks"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "sdk"...
+Installing alerts plugin
+Adding alerts patch
+
+Alerts plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "slipping-away-users"...
+
+up to date, audited 1 package in 232ms
+
+
+found 0 vulnerabilities
+
+
+up to date, audited 1 package in 278ms
+
+found 0 vulnerabilities
+
+Done running npm install "sdk"
+Done running npm install "slipping-away-users"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+Installing plugin "dashboards"...
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "compare"...
+
+up to date, audited 1 package in 238ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "compare"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "server-stats"...
+
+up to date, audited 1 package in 321ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "dashboards"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":1}}
+2023-07-13T15:57:28.297Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+2023-07-13T15:57:29.296Z: INFO	[jobs:manager]	Found 17 job types, starting monitoring: ["api:appExpire","api:clear","api:clearAutoTasks","api:clearTokens","api:ipcTest","api:ping","api:task","api:test","api:topEvents","api:userMerge","reports:send","crashes:cleanup_custom_field","push:clear","push:schedule","alerts:monitor","server-stats:stats","hooks:schedule"]
+
+up to date, audited 1 package in 220ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "server-stats"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "dbviewer"...
+
+up to date, audited 2 packages in 474ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "dbviewer"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "times-of-day"...
+
+up to date, audited 1 package in 75ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "times-of-day"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "compliance-hub"...
+
+up to date, audited 1 package in 198ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "compliance-hub"
+Installing compliance-hub plugin
+
+Compliance hub plugin installation finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "onboarding"...
+
+up to date, audited 1 package in 80ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "onboarding"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "consolidate"...
+
+up to date, audited 1 package in 200ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "consolidate"
+Installing Consolidate Plugin
+
+Installing Consolidate Plugin Finished
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "data-manager"...
+
+up to date, audited 1 package in 74ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "data-manager"
+Installing data manager plugin
+
+Finished Installing data manager plugin
+
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "hooks"...
+
+up to date, audited 4 packages in 477ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "hooks"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "sdk"...
+
+up to date, audited 1 package in 72ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "sdk"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+Installing plugin "dashboards"...
+
+up to date, audited 1 package in 198ms
+
+
+found 0 vulnerabilities
+
+Done running npm install "dashboards"
+Done installing plugin 0
+Install is finished fine. Updating state in database
+plugins document updated
+{"acknowledged":true,"modifiedCount":0,"upsertedId":null,"upsertedCount":0,"matchedCount":1,"result":{"ok":true,"nModified":0}}
+2023-07-13T15:57:43.772Z: INFO	[jobs:ipc]	New worker 178423 is online
+2023-07-13T15:57:43.811Z: INFO	[jobs:ipc]	New worker 178424 is online
+2023-07-13T15:57:44.777Z: INFO	[jobs:handle]	Starting job handle in 178423
+2023-07-13T15:57:44.799Z: INFO	[jobs:handle]	Starting job handle in 178424
+2023-07-13T15:57:47.209Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+2023-07-13T15:57:47.234Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+Starting worker 178424 parent: 176902
+Starting worker 178423 parent: 176902
+2023-07-13T15:57:53.711Z: INFO	[jobs:job]	Replacing jobs reports:send ({"status":0,"name":"reports:send"})
+2023-07-13T15:57:53.715Z: INFO	[jobs:job]	Replacing jobs crashes:cleanup_custom_field ({"status":0,"name":"crashes:cleanup_custom_field"})
+2023-07-13T15:57:53.718Z: INFO	[jobs:job]	Replacing jobs server-stats:stats ({"status":0,"name":"server-stats:stats"})
+2023-07-13T15:57:53.721Z: INFO	[jobs:job]	Replacing jobs hooks:schedule ({"status":0,"name":"hooks:schedule","data":{"type":"ScheduledTrigger"}})
+2023-07-13T15:57:53.723Z: INFO	[jobs:job]	Replacing jobs api:topEvents ({"status":0,"name":"api:topEvents"})
+2023-07-13T15:57:53.724Z: INFO	[jobs:job]	Replacing jobs api:ping ({"status":0,"name":"api:ping"})
+2023-07-13T15:57:53.725Z: INFO	[jobs:job]	Replacing jobs api:clear ({"status":0,"name":"api:clear"})
+2023-07-13T15:57:53.726Z: INFO	[jobs:job]	Replacing jobs api:clearTokens ({"status":0,"name":"api:clearTokens"})
+2023-07-13T15:57:53.727Z: INFO	[jobs:job]	Replacing jobs api:clearAutoTasks ({"status":0,"name":"api:clearAutoTasks"})
+2023-07-13T15:57:53.728Z: INFO	[jobs:job]	Replacing jobs api:task ({"status":0,"name":"api:task"})
+2023-07-13T15:57:53.730Z: INFO	[jobs:job]	No job to replace, inserting {"name":"reports:send","created":1689263873706,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689263873710}
+2023-07-13T15:57:53.744Z: INFO	[jobs:job]	No job to replace, inserting {"name":"crashes:cleanup_custom_field","created":1689263873714,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour","next":1689263873715}
+2023-07-13T15:57:53.746Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:topEvents","created":1689263873722,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"at 00:01 am every 1 day","next":1689292860000}
+2023-07-13T15:57:53.747Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:ping","created":1689263873724,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873724}
+2023-07-13T15:57:53.750Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clearTokens","created":1689263873726,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873726}
+2023-07-13T15:57:53.751Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clearAutoTasks","created":1689263873727,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873727}
+2023-07-13T15:57:53.752Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:task","created":1689263873728,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 5 minutes","next":1689264000000}
+2023-07-13T15:57:53.753Z: INFO	[jobs:job]	No job to replace, inserting {"name":"server-stats:stats","created":1689263873717,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873718}
+2023-07-13T15:57:53.758Z: INFO	[jobs:job]	No job to replace, inserting {"name":"hooks:schedule","created":1689263873720,"status":0,"started":null,"finished":null,"duration":0,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689264060000}
+2023-07-13T15:57:53.764Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f57","name":"reports:send","created":1689263873706,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689263873710}
+2023-07-13T15:57:53.767Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clear","created":1689263873725,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873725}
+2023-07-13T15:57:53.769Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f58","name":"crashes:cleanup_custom_field","created":1689263873714,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour","next":1689263873715}
+2023-07-13T15:57:53.774Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5e","name":"server-stats:stats","created":1689263873717,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873718}
+2023-07-13T15:57:53.779Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5a","name":"api:ping","created":1689263873724,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873724}
+2023-07-13T15:57:53.784Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5b","name":"api:clearTokens","created":1689263873726,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873726}
+2023-07-13T15:57:53.790Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5c","name":"api:clearAutoTasks","created":1689263873727,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873727}
+(node:176902) DeprecationWarning: Got: "options.rejectUnauthorized" is now deprecated, please use "options.https.rejectUnauthorized"
+(Use `node --trace-deprecation ...` to show where the warning was created)
+2023-07-13T15:57:54.805Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f60","name":"api:clear","created":1689263873725,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689263873725}
+2023-07-13T16:00:00.131Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5d","name":"api:task","created":1689263873728,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 5 minutes","next":1689264000000}
+2023-07-13T16:00:00.134Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f58","name":"crashes:cleanup_custom_field","created":1689263873714,"status":0,"started":1689263873775,"finished":1689263873813,"duration":48,"data":{},"schedule":"every 1 hour","next":1689264000000,"modified":1689263873823,"error":null}
+2023-07-13T16:00:00.136Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f57","name":"reports:send","created":1689263873706,"status":0,"started":1689263873770,"finished":1689263873795,"duration":41,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689264000000,"modified":1689263873811,"error":null}
+2023-07-13T16:01:00.282Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5f","name":"hooks:schedule","created":1689263873720,"status":0,"started":null,"finished":null,"duration":0,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689264060000}
+2023-07-13T16:05:00.060Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5d","name":"api:task","created":1689263873728,"status":0,"started":1689264000135,"finished":1689264000145,"duration":16,"data":{},"schedule":"every 5 minutes","next":1689264300000,"modified":1689264000151,"error":null}
+2023-07-13T16:10:00.119Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b01f01a6113c8494516f5d","name":"api:task","created":1689263873728,"status":0,"started":1689264300071,"finished":1689264300077,"duration":16,"data":{},"schedule":"every 5 minutes","next":1689264600000,"modified":1689264300087,"error":null}
+Got signal: SIGTERM
+Successfully stored batch state
+Got signal: SIGTERM
+Successfully stored batch state
+Exiting due to master exited
+Got signal: SIGTERM
+Successfully stored batch state
+Exiting due to master exited
+2023-07-13T16:13:04.420Z: INFO	[jobs:manager]	Starting job manager in 631
+Starting Countly version 23.06.3 package 23.06.0
+2023-07-13T16:13:06.889Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+2023-07-13T16:13:07.463Z: INFO	[jobs:manager]	Found 17 job types, starting monitoring: ["api:appExpire","api:clear","api:clearAutoTasks","api:clearTokens","api:ipcTest","api:ping","api:task","api:test","api:topEvents","api:userMerge","reports:send","crashes:cleanup_custom_field","push:clear","push:schedule","alerts:monitor","server-stats:stats","hooks:schedule"]
+2023-07-13T16:13:08.297Z: INFO	[jobs:ipc]	Attached to cluster in Central 631
+2023-07-13T16:13:08.540Z: INFO	[jobs:manager]	Cancelling 0 jobs
+2023-07-13T16:13:08.798Z: INFO	[jobs:ipc]	New worker 939 is online
+2023-07-13T16:13:08.873Z: INFO	[jobs:ipc]	New worker 949 is online
+2023-07-13T16:13:09.921Z: INFO	[jobs:handle]	Starting job handle in 949
+2023-07-13T16:13:09.926Z: INFO	[jobs:handle]	Starting job handle in 939
+2023-07-13T16:13:11.577Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+2023-07-13T16:13:11.643Z: INFO	[jobs:scanner]	Checking plugins ["mobile","web","desktop","plugins","density","locale","browser","sources","views","remote-config","logger","systemlogs","errorlogs","populator","reports","crashes","push","star-rating","alerts","slipping-away-users","compare","server-stats","dbviewer","times-of-day","compliance-hub","onboarding","consolidate","data-manager","hooks","sdk","dashboards"]
+Starting worker 949 parent: 631
+Starting worker 939 parent: 631
+2023-07-13T16:13:18.482Z: INFO	[jobs:job]	Replacing jobs reports:send ({"status":0,"name":"reports:send"})
+2023-07-13T16:13:18.486Z: INFO	[jobs:job]	Replacing jobs crashes:cleanup_custom_field ({"status":0,"name":"crashes:cleanup_custom_field"})
+2023-07-13T16:13:18.490Z: INFO	[jobs:job]	Replacing jobs server-stats:stats ({"status":0,"name":"server-stats:stats"})
+2023-07-13T16:13:18.493Z: INFO	[jobs:job]	Replacing jobs hooks:schedule ({"status":0,"name":"hooks:schedule","data":{"type":"ScheduledTrigger"}})
+2023-07-13T16:13:18.496Z: INFO	[jobs:job]	Replacing jobs api:topEvents ({"status":0,"name":"api:topEvents"})
+2023-07-13T16:13:18.497Z: INFO	[jobs:job]	Replacing jobs api:ping ({"status":0,"name":"api:ping"})
+2023-07-13T16:13:18.498Z: INFO	[jobs:job]	Replacing jobs api:clear ({"status":0,"name":"api:clear"})
+2023-07-13T16:13:18.499Z: INFO	[jobs:job]	Replacing jobs api:clearTokens ({"status":0,"name":"api:clearTokens"})
+2023-07-13T16:13:18.500Z: INFO	[jobs:job]	Replacing jobs api:clearAutoTasks ({"status":0,"name":"api:clearAutoTasks"})
+2023-07-13T16:13:18.501Z: INFO	[jobs:job]	Replacing jobs api:task ({"status":0,"name":"api:task"})
+2023-07-13T16:13:18.503Z: INFO	[jobs:job]	Cancelled 1 previous jobs reports:send ({"status":0,"name":"reports:send"})
+2023-07-13T16:13:18.506Z: INFO	[jobs:job]	Cancelled 1 previous jobs crashes:cleanup_custom_field ({"status":0,"name":"crashes:cleanup_custom_field"})
+2023-07-13T16:13:18.510Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:topEvents ({"status":0,"name":"api:topEvents"})
+2023-07-13T16:13:18.512Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:ping ({"status":0,"name":"api:ping"})
+2023-07-13T16:13:18.516Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:clear ({"status":0,"name":"api:clear"})
+2023-07-13T16:13:18.517Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:clearTokens ({"status":0,"name":"api:clearTokens"})
+2023-07-13T16:13:18.525Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:clearAutoTasks ({"status":0,"name":"api:clearAutoTasks"})
+2023-07-13T16:13:18.527Z: INFO	[jobs:job]	Cancelled 1 previous jobs api:task ({"status":0,"name":"api:task"})
+2023-07-13T16:13:18.530Z: INFO	[jobs:job]	Cancelled 1 previous jobs server-stats:stats ({"status":0,"name":"server-stats:stats"})
+2023-07-13T16:13:18.531Z: INFO	[jobs:job]	Cancelled 1 previous jobs hooks:schedule ({"status":0,"name":"hooks:schedule","data":{"type":"ScheduledTrigger"}})
+2023-07-13T16:13:18.536Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:topEvents","created":1689264798495,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"at 00:01 am every 1 day","next":1689292860000}
+2023-07-13T16:13:18.540Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:ping","created":1689264798497,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798497}
+2023-07-13T16:13:18.542Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clear","created":1689264798498,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798498}
+2023-07-13T16:13:18.545Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clearTokens","created":1689264798499,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798499}
+2023-07-13T16:13:18.550Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:clearAutoTasks","created":1689264798500,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798500}
+2023-07-13T16:13:18.552Z: INFO	[jobs:job]	No job to replace, inserting {"name":"api:task","created":1689264798501,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 5 minutes","next":1689264900000}
+2023-07-13T16:13:18.554Z: INFO	[jobs:job]	No job to replace, inserting {"name":"server-stats:stats","created":1689264798489,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798489}
+2023-07-13T16:13:18.564Z: INFO	[jobs:job]	No job to replace, inserting {"name":"reports:send","created":1689264798477,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689264798481}
+2023-07-13T16:13:18.565Z: INFO	[jobs:job]	No job to replace, inserting {"name":"crashes:cleanup_custom_field","created":1689264798485,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour","next":1689264798486}
+2023-07-13T16:13:18.584Z: INFO	[jobs:job]	No job to replace, inserting {"name":"hooks:schedule","created":1689264798491,"status":0,"started":null,"finished":null,"duration":0,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689267660000}
+2023-07-13T16:13:18.656Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbe","name":"reports:send","created":1689264798477,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689264798481}
+2023-07-13T16:13:18.660Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbf","name":"crashes:cleanup_custom_field","created":1689264798485,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 hour","next":1689264798486}
+2023-07-13T16:13:18.663Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbd","name":"server-stats:stats","created":1689264798489,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798489}
+2023-07-13T16:13:18.666Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cb8","name":"api:ping","created":1689264798497,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798497}
+2023-07-13T16:13:18.669Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cb9","name":"api:clear","created":1689264798498,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798498}
+2023-07-13T16:13:18.675Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cba","name":"api:clearTokens","created":1689264798499,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798499}
+(node:631) DeprecationWarning: Got: "options.rejectUnauthorized" is now deprecated, please use "options.https.rejectUnauthorized"
+(Use `node --trace-deprecation ...` to show where the warning was created)
+2023-07-13T16:13:18.685Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbb","name":"api:clearAutoTasks","created":1689264798500,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 1 day","next":1689264798500}
+2023-07-13T16:15:00.981Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":null,"finished":null,"duration":0,"data":{},"schedule":"every 5 minutes","next":1689264900000}
+2023-07-13T16:20:00.717Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689264900984,"finished":1689264900993,"duration":11,"data":{},"schedule":"every 5 minutes","next":1689265200000,"modified":1689264900995,"error":null}
+2023-07-13T16:25:00.356Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689265200721,"finished":1689265200724,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689265500000,"modified":1689265200726,"error":null}
+2023-07-13T16:30:00.010Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689265500358,"finished":1689265500361,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689265800000,"modified":1689265500362,"error":null}
+2023-07-13T16:35:00.599Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689265800012,"finished":1689265800016,"duration":6,"data":{},"schedule":"every 5 minutes","next":1689266100000,"modified":1689265800018,"error":null}
+2023-07-13T16:40:00.206Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689266100601,"finished":1689266100604,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689266400000,"modified":1689266100605,"error":null}
+2023-07-13T16:45:00.834Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689266400208,"finished":1689266400211,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689266700000,"modified":1689266400213,"error":null}
+2023-07-13T16:50:00.466Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689266700836,"finished":1689266700839,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689267000000,"modified":1689266700840,"error":null}
+2023-07-13T16:55:00.155Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689267000467,"finished":1689267000470,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689267300000,"modified":1689267000471,"error":null}
+2023-07-13T17:00:00.731Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689267300158,"finished":1689267300162,"duration":6,"data":{},"schedule":"every 5 minutes","next":1689267600000,"modified":1689267300164,"error":null}
+2023-07-13T17:00:00.734Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbf","name":"crashes:cleanup_custom_field","created":1689264798485,"status":0,"started":1689264798663,"finished":1689264798690,"duration":40,"data":{},"schedule":"every 1 hour","next":1689267600000,"modified":1689264798703,"error":null}
+2023-07-13T17:00:00.737Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbe","name":"reports:send","created":1689264798477,"status":0,"started":1689264798661,"finished":1689264798677,"duration":28,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689267600000,"modified":1689264798689,"error":null}
+2023-07-13T17:01:00.862Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cc0","name":"hooks:schedule","created":1689264798491,"status":0,"started":null,"finished":null,"duration":0,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689267660000}
+2023-07-13T17:05:00.364Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689267600734,"finished":1689267600745,"duration":14,"data":{},"schedule":"every 5 minutes","next":1689267900000,"modified":1689267600748,"error":null}
+2023-07-13T17:10:00.029Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689267900366,"finished":1689267900369,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689268200000,"modified":1689267900370,"error":null}
+2023-07-13T17:15:00.667Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689268200030,"finished":1689268200033,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689268500000,"modified":1689268200034,"error":null}
+2023-07-13T17:20:00.236Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689268500668,"finished":1689268500672,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689268800000,"modified":1689268500673,"error":null}
+2023-07-13T17:25:00.859Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689268800237,"finished":1689268800240,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689269100000,"modified":1689268800241,"error":null}
+2023-07-13T17:30:00.497Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689269100861,"finished":1689269100864,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689269400000,"modified":1689269100865,"error":null}
+2023-07-13T17:35:00.037Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689269400499,"finished":1689269400502,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689269700000,"modified":1689269400503,"error":null}
+2023-07-13T17:40:00.672Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689269700038,"finished":1689269700042,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689270000000,"modified":1689269700043,"error":null}
+2023-07-13T17:45:00.333Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689270000674,"finished":1689270000677,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689270300000,"modified":1689270000678,"error":null}
+2023-07-13T17:50:00.917Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689270300335,"finished":1689270300337,"duration":3,"data":{},"schedule":"every 5 minutes","next":1689270600000,"modified":1689270300338,"error":null}
+2023-07-13T17:55:00.549Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689270600918,"finished":1689270600921,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689270900000,"modified":1689270600922,"error":null}
+2023-07-13T18:00:00.214Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689270900552,"finished":1689270900557,"duration":7,"data":{},"schedule":"every 5 minutes","next":1689271200000,"modified":1689270900559,"error":null}
+2023-07-13T18:00:00.218Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbf","name":"crashes:cleanup_custom_field","created":1689264798485,"status":0,"started":1689267600738,"finished":1689267600752,"duration":16,"data":{},"schedule":"every 1 hour","next":1689271200000,"modified":1689267600754,"error":null}
+2023-07-13T18:00:00.222Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbe","name":"reports:send","created":1689264798477,"status":0,"started":1689267600741,"finished":1689267600753,"duration":14,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689271200000,"modified":1689267600755,"error":null}
+2023-07-13T18:01:00.348Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cc0","name":"hooks:schedule","created":1689264798491,"status":0,"started":1689267660864,"finished":1689267660865,"duration":3,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689271260000,"modified":1689267660867,"error":null}
+2023-07-13T18:05:00.872Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689271200218,"finished":1689271200223,"duration":9,"data":{},"schedule":"every 5 minutes","next":1689271500000,"modified":1689271200227,"error":null}
+2023-07-13T18:10:00.431Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689271500874,"finished":1689271500877,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689271800000,"modified":1689271500878,"error":null}
+2023-07-13T18:15:00.050Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689271800433,"finished":1689271800436,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689272100000,"modified":1689271800438,"error":null}
+2023-07-13T18:20:00.553Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689272100051,"finished":1689272100054,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689272400000,"modified":1689272100055,"error":null}
+2023-07-13T18:25:00.104Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689272400555,"finished":1689272400558,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689272700000,"modified":1689272400559,"error":null}
+2023-07-13T18:30:00.795Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689272700106,"finished":1689272700109,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689273000000,"modified":1689272700110,"error":null}
+2023-07-13T18:35:00.313Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689273000796,"finished":1689273000800,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689273300000,"modified":1689273000801,"error":null}
+2023-07-13T18:40:00.923Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689273300315,"finished":1689273300318,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689273600000,"modified":1689273300319,"error":null}
+2023-07-13T18:45:00.559Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689273600926,"finished":1689273600931,"duration":6,"data":{},"schedule":"every 5 minutes","next":1689273900000,"modified":1689273600932,"error":null}
+2023-07-13T18:50:00.150Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689273900562,"finished":1689273900565,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689274200000,"modified":1689273900567,"error":null}
+2023-07-13T18:55:00.752Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689274200152,"finished":1689274200155,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689274500000,"modified":1689274200156,"error":null}
+2023-07-13T19:00:00.291Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689274500754,"finished":1689274500757,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689274800000,"modified":1689274500758,"error":null}
+2023-07-13T19:00:00.292Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbf","name":"crashes:cleanup_custom_field","created":1689264798485,"status":0,"started":1689271200222,"finished":1689271200242,"duration":23,"data":{},"schedule":"every 1 hour","next":1689274800000,"modified":1689271200245,"error":null}
+2023-07-13T19:00:00.294Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbe","name":"reports:send","created":1689264798477,"status":0,"started":1689271200229,"finished":1689271200233,"duration":6,"data":{},"schedule":"every 1 hour starting on the 0 min","next":1689274800000,"modified":1689271200235,"error":null}
+2023-07-13T19:01:00.413Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cc0","name":"hooks:schedule","created":1689264798491,"status":0,"started":1689271260352,"finished":1689271260353,"duration":3,"data":{"type":"ScheduledTrigger"},"schedule":"every 1 hour on the 1st min","next":1689274860000,"modified":1689271260355,"error":null}
+2023-07-13T19:05:00.924Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689274800293,"finished":1689274800300,"duration":9,"data":{},"schedule":"every 5 minutes","next":1689275100000,"modified":1689274800302,"error":null}
+2023-07-13T19:10:00.499Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689275100926,"finished":1689275100928,"duration":3,"data":{},"schedule":"every 5 minutes","next":1689275400000,"modified":1689275100929,"error":null}
+2023-07-13T19:15:00.043Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689275400501,"finished":1689275400504,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689275700000,"modified":1689275400505,"error":null}
+2023-07-13T19:20:00.703Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689275700045,"finished":1689275700048,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689276000000,"modified":1689275700049,"error":null}
+2023-07-13T19:25:00.327Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689276000705,"finished":1689276000708,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689276300000,"modified":1689276000709,"error":null}
+2023-07-13T19:30:00.939Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689276300329,"finished":1689276300333,"duration":5,"data":{},"schedule":"every 5 minutes","next":1689276600000,"modified":1689276300334,"error":null}
+2023-07-13T19:35:00.531Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689276600941,"finished":1689276600943,"duration":3,"data":{},"schedule":"every 5 minutes","next":1689276900000,"modified":1689276600944,"error":null}
+2023-07-13T19:40:00.122Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689276900532,"finished":1689276900535,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689277200000,"modified":1689276900536,"error":null}
+2023-07-13T19:45:00.707Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689277200123,"finished":1689277200126,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689277500000,"modified":1689277200127,"error":null}
+2023-07-13T19:50:00.250Z: INFO	[jobs:manager]	Trying to start job {"_id":"64b0229e82d4c102da106cbc","name":"api:task","created":1689264798501,"status":0,"started":1689277500710,"finished":1689277500713,"duration":4,"data":{},"schedule":"every 5 minutes","next":1689277800000,"modified":1689277500714,"error":null}
