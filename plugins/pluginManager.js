@@ -881,7 +881,7 @@ var pluginManager = function pluginManager() {
             if (methodPromiseCache[method].length > 0) {
                 for (let i = 0; i < methodPromiseCache[method].length; i++) {
                     try {
-                        let ret = methodPromiseCache[method][i][method](params);
+                        let ret = methodPromiseCache[method][i].plugin[method](params);
                         if (ret) {
                             promises.push(ret);
                         }
@@ -896,9 +896,9 @@ var pluginManager = function pluginManager() {
             methodPromiseCache[method] = [];
             for (let i = 0; i < plugs.length; i++) {
                 try {
-                    if (plugs[i][method]) {
+                    if (plugs[i].plugin && plugs[i].plugin[method]) {
                         methodPromiseCache[method].push(plugs[i]);
-                        let ret = plugs[i][method](params);
+                        let ret = plugs[i].plugin[method](params);
                         if (ret) {
                             promises.push(ret);
                         }
