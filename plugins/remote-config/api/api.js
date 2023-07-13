@@ -248,7 +248,11 @@ plugins.setConfigs("remote-config", {
         var problems = ob.problems;
         var types = insertData.t;
 
-        if (params.qstring.method !== "fetch_remote_config") {
+        if (params.qstring.method === "ab_enroll_variant" || params.qstring.method === "ab_opt_out") {
+            plugins.dispatch("/sdk/ab", {params: params});
+            return;
+        }
+        else if (params.qstring.method !== "fetch_remote_config") {
             return;
         }
 
