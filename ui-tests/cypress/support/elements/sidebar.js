@@ -1,0 +1,57 @@
+export default {
+	SIDEBAR: '[id=cly-vue-sidebar]',
+	SIDEBAR_MENU_OPTIONS: '.cly-vue-sidebar__menu-options',
+
+	SIDEBAR_MENU_OPTIONS: {
+		MAIN_MENU: '.cly-icon-btn.cly-icon-sidebar-analytics',
+		DASHBOARDS: '',
+		MANAGEMENT: '',
+		REPORT_MANAGER: '',
+		HELP_CENTER: '',
+		MY_PROFILE: '',
+		LANGUAGE: '',
+	},
+
+	SIDEBAR_MAIN_MENU_OPTIONS: {
+		HOME: '',
+		ANALYTICS: '.bu-px-3.bu-is-clickable.bu-mb-1',
+		ANALYTICS_LIST: {
+			VISITOR_ANALYTICS: '',
+			VISITOR_LOYALTY: 'a[href*="/analytics/loyalty"]',
+			SESSION_ANALYTICS: '',
+			PAGE_VIEWS: '',
+			HEATMAPS: '',
+			ACQUISITION: '',
+			TECHNOLOGY: '',
+			GEO: '',
+		},
+		RETENTION: '',
+		EVENTS: '',
+		EVENTS_LIST: {
+			OVERVIEW: '',
+			ALL_EVENTS: '',
+		},
+		REVENUE: '',
+		VISITOR_PROFILES: '',
+		COHORTS: '',
+		FUNNELS: '',
+		FLOWS: '',
+		DRILL: '',
+		FORMULAS: '',
+		FEEDBACK: '',
+		FEEDBACK_LIST: {
+			SURVEYS: '',
+			NPS: '',
+			RATINGS: '',
+		},
+		ERRORS: '',
+		ERRORS_LIST: {
+			OVERVIEW: '',
+			MANAGE_SYMBOLS: '',
+		},
+		PERFORMANCE: '',
+		REMOTE_CONFIG: '',
+		AB_TESTING: '',
+		UTILITIES: '',
+	},
+}

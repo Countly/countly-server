@@ -1,0 +1,21 @@
+{
+	"name": "countly-e2e",
+	"version": "1.0.0",
+	"description": "e2e testing",
+	"author": "Countly, Inc.",
+	"scripts": {
+		"cy:open": "cypress open",
+		"cy:run": "cypress run --spec **/*.cy.js --browser chrome",
+		"cy:run:login": "cypress run --spec **/login.cy.js --browser chrome",
+		"cy:run:electron": "cypress run --spec **/*.cy.js --browser electron",
+		"format:check": "prettier . --check ",
+		"format:fix": "prettier . --write"
+	},
+	"dependencies": {
+		"prettier": "^3.0.0"
+	},
+	"devDependencies": {
+		"cypress": "^12.17.0"
+	},
+	"license": "ISC"
+}
