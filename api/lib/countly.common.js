@@ -2661,88 +2661,20 @@ countlyCommon.stringIncrement = function(str) {
     return res;
 };
 /**
-* Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
-* @memberof countlyCommon
+* Format timestamp to ddd, D MMM YYYY HH:mm:ss
 * @param {number} timestamp - timestamp in seconds or miliseconds
-* @returns {string} formated time ago
+* @returns {string} formated time and date
 * @example
-* //outputs ago time without html tags
-* countlyCommon.formatTimeAgo(1484654066);
+* //outputs Thu, 23 Jun 2022 19:20:25
+* countlyCommon.formatTime(1658673625);
 */
-countlyCommon.formatTimeAgoText = function(timestamp) {
+countlyCommon.formatTime = function(timestamp) {
     if (Math.round(timestamp).toString().length === 10) {
         timestamp *= 1000;
     }
     var target = new Date(timestamp);
     var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
-    var text = tooltip;
-    var color = null;
-    var now = new Date();
-    var diff = Math.floor((now - target) / 1000);
-    if (diff <= -2592000) {
-        return tooltip;
-    }
-    else if (diff < -86400) {
-        text = jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400)));
-    }
-    else if (diff < -3600) {
-        text = jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600)));
-    }
-    else if (diff < -60) {
-        text = jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
-    }
-    else if (diff <= -1) {
-        color = "#50C354";
-        text = (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
-    }
-    else if (diff <= 1) {
-        color = "#50C354";
-        text = jQuery.i18n.map["common.ago.just-now"];
-    }
-    else if (diff < 20) {
-        color = "#50C354";
-        text = jQuery.i18n.prop("common.ago.seconds-ago", diff);
-    }
-    else if (diff < 40) {
-        color = "#50C354";
-        text = jQuery.i18n.map["common.ago.half-minute"];
-    }
-    else if (diff < 60) {
-        color = "#50C354";
-        text = jQuery.i18n.map["common.ago.less-minute"];
-    }
-    else if (diff <= 90) {
-        text = jQuery.i18n.map["common.ago.one-minute"];
-    }
-    else if (diff <= 3540) {
-        text = jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60));
-    }
-    else if (diff <= 5400) {
-        text = jQuery.i18n.map["common.ago.one-hour"];
-    }
-    else if (diff <= 86400) {
-        text = jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600));
-    }
-    else if (diff <= 129600) {
-        text = jQuery.i18n.map["common.ago.one-day"];
-    }
-    else if (diff < 604800) {
-        text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
-    }
-    else if (diff <= 777600) {
-        text = jQuery.i18n.map["common.ago.one-week"];
-    }
-    else if (diff <= 2592000) {
-        text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
-    }
-    else {
-        text = tooltip;
-    }
-    return {
-        text: text,
-        tooltip: tooltip,
-        color: color
-    };
+    return tooltip;
 };
 
 
