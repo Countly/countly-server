@@ -75,6 +75,45 @@
         {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
         {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
     var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+    var JsErrors = [
+        {
+            error: "Error: ReferenceError\n" +
+            "   VariableName is not defined\n" +
+                "   at bundle.js:1:15",
+            name: 'Error: ReferenceError',
+            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,QAAQC,MAAMC,aAAaC","sources":["webpack:///./app.js"],"sourcesContent":["console.trace(VariableName.name)"],"names":["console","trace","VariableName","name"],"sourceRoot":""}'
+        },
+        {
+            error: "Error: URIError\n" +
+            "URI malformed\n" +
+            "at decodeURIComponent (<anonymous>)\n" +
+            "at bundle.js:1:1",
+            name: 'Error: URIError',
+            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,mBAAmB","sources":["webpack:///./app.js"],"sourcesContent":["decodeURIComponent(\"%\");"],"names":["decodeURIComponent"],"sourceRoot":""}'
+
+        },
+        {
+            error: "Error: RangeError\n" +
+            "   Maximum call stack size exceeded\n" +
+            "   at n (bundle.js:1:12)",
+            name: 'Error: RangeError',
+            symbol: '{"version":3,"file":"bundle.js","mappings":"CAAA,SAASA,EAAKC,GACNA,GAAY,MAChBD,EAAKC,EAAW,EAClB,CACFD,CAAK","sources":["webpack:///./app.js"],"sourcesContent":["function loop(variable) {\n    if (variable >= 1000000000000) return;\n    loop(variable + 1);\n  }\nloop(0);"],"names":["loop","variable"],"sourceRoot":""}'
+        },
+        {
+            error: "Error: SyntaxError\n" +
+            "   Hello Countly (at bundle.js:1:13)\n" +
+            "   at bundle.js:1:13",
+            name: 'Error: SyntaxError',
+            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,QAAQC,IAAIC,YAAY","sources":["webpack:///./app.js"],"sourcesContent":["console.log(SyntaxError(\"Hello Countly\"))\n"],"names":["console","log","SyntaxError"],"sourceRoot":""}'
+        },
+        {
+            error: "Error: TypeError\n" +
+            '   "countly".reverse is not a function\n' +
+            "   at bundle.js:1:23",
+            name: 'Error: TypeError',
+            symbol: '{"version":3,"file":"bundle.js","mappings":"AACAA,QAAQC,IADA,UACMC","sources":["webpack:///./app.js"],"sourcesContent":["var a = \"countly\";\nconsole.log(a.reverse());"],"names":["console","log","reverse"],"sourceRoot":""}'
+        }
+    ];
     var defaultTemplates = [
         {
             "_id": "defaultBanking",
@@ -436,13 +475,11 @@
         };
 
         this.getError = function() {
-            var errors = [];
+            var errors = "";
             var error = "";
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-                var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
-                return err.stack + "";
+                return JsErrors[Math.floor(Math.random() * JsErrors.length)].error;
             }
             else if (this.platform === "Android") {
                 errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
@@ -1002,7 +1039,55 @@
             });
         };
     }
-
+    /**
+     * Generate list of app versions that appear on top of crashed user groups
+     * @param {Object} crash - crash object of single user
+     **/
+    function generateCrashSymbolUsersGroup(crash) {
+        if (!crashSymbolUsers[crash._name]) {
+            crashSymbolUsers[crash._name] = {};
+        }
+        if (!crashSymbolUsers[crash._name][crash._os]) {
+            crashSymbolUsers[crash._name][crash._os] = {
+                _fatal: {_app_version: ""},
+                _nonfatal: {_app_version: ""}
+            };
+        }
+        if (crash._nonfatal) {
+            if (crash._app_version > crashSymbolUsers[crash._name][crash._os]._nonfatal._app_version) {
+                crashSymbolUsers[crash._name][crash._os]._nonfatal._app_version = crash._app_version;
+            }
+        }
+        else {
+            if (crash._app_version > crashSymbolUsers[crash._name][crash._os]._fatal._app_version) {
+                crashSymbolUsers[crash._name][crash._os]._fatal._app_version = crash._app_version;
+            }
+        }
+    }
+    /**
+     * Generate list of app versions that appear on top of crashed user groups
+     * @returns {Array} list of app versions
+     **/
+    function generateUniqueAppVersionForjsSymbol() {
+        var uniqueVersison = [];
+        Object.keys(crashSymbolUsers).forEach(function(crashName) {
+            var versions = {};
+            Object.keys(crashSymbolUsers[crashName]).forEach(function(os) {
+                if (crashSymbolUsers[crashName][os]._fatal._app_version) {
+                    versions[crashSymbolUsers[crashName][os]._fatal._app_version] = true;
+                }
+                if (crashSymbolUsers[crashName][os]._nonfatal._app_version) {
+                    versions[crashSymbolUsers[crashName][os]._nonfatal._app_version] = true;
+                }
+            });
+            uniqueVersison.push({
+                name: crashName,
+                versions: Object.keys(versions)
+            });
+        });
+        return uniqueVersison;
+    }
+    var crashSymbolUsers = {};
     var bulk = [];
     var campaingClicks = [];
     var startTs = 1356998400;
@@ -1917,6 +2002,7 @@
                 setTimeout(processUsers, timeout);
             }
             else {
+
                 countlyPopulator.sync(true);
             }
         }
@@ -2015,6 +2101,10 @@
                     }
                     delete req[i].stats;
                 }
+
+                if (req[i].crash && Object.keys(req[i].crash).length) {
+                    generateCrashSymbolUsersGroup(req[i].crash);
+                }
             }
             $.ajax({
                 type: "POST",
@@ -2042,6 +2132,46 @@
     };
 
     countlyPopulator.ensureJobs = function() {
+        generateUniqueAppVersionForjsSymbol().forEach(function(crash) {
+            //console.log(crash);
+            //let formData = new FormData();
+            var err = JsErrors.find(function(cras) {
+                return cras.name === crash.name;
+            });
+            var blob = new Blob([err.symbol], { type: 'plain/text' });
+            var symbol = new File(
+                [blob],
+                "bundle.js.map",
+                { type: "text/plain" });
+            var form_data = new FormData();
+            form_data.append('build', crash.versions);
+            form_data.append('platform', 'javascript');
+            form_data.append('symbols', symbol);
+            form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
+
+            $.ajax({
+                url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
+                data:
+                // {
+                //     build: crash.versions,
+                //     platform: 'javascript',
+                //     symbols: symbol,
+                //     //app_id: countlyCommon.ACTIVE_APP_ID,
+                //     app_key: countlyCommon.ACTIVE_APP_KEY,
+                // },
+                form_data,
+                processData: false,
+                contentType: false,
+                type: "POST",
+                success: function() {
+                    console.log("success");
+                },
+                error: function() {
+                    console.log("fail");
+                }
+            });
+
+        });
         messages.forEach(function(m) {
             m.apps = [countlyCommon.ACTIVE_APP_ID];
         });
