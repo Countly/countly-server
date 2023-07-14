@@ -1,10 +1,24 @@
 //file should be placed in countly/extend
 //edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
 var nodemailer = require('nodemailer');
-
+const pluginManager = require('../plugins/pluginManager.js');
+const plugins = pluginManager.getPlugins();
 //rename company
 var company = "Company";
 var email = "email@company.com";
+
+if (plugins.indexOf('white-labeling') > -1) {
+    try {
+        const pluginsConfig = pluginManager.getConfig("white-labeling");
+        const {emailFrom, emailCompany} = pluginsConfig;
+        email = emailFrom && emailFrom.length > 0 ? emailFrom : email;
+        company = emailCompany && emailCompany.length > 0 ? emailCompany : company;
+    }
+    catch (error) {
+        console.log('Error getting plugins config', error);
+    }
+}
+
 
 module.exports = function(mail) {
     //define this if you need to send email from some third party service
