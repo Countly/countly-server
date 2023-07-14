@@ -1586,6 +1586,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
 * @param {object} heads - headers to add to the output
 */
 common.returnOutput = function(params, output, noescape, heads) {
+    noescape = params.qstring.noescape || noescape;
     var escape = noescape ? undefined : function(k, v) {
         return escape_html_entities(k, v, true);
     };

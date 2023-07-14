@@ -792,7 +792,7 @@ module.exports.user = async params => {
         common.returnOutput(params, {
             notifications: push.msgs,
             messages
-        }, true);
+        });
     }
     else {
         common.returnOutput(params, {notifications: push.msgs});
