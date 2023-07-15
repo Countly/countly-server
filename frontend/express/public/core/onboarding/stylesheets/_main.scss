@@ -1,3 +1,11 @@
+.centered-content {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -35px;
+}
+
 .setup-byline {
     color: #81868D;
     margin-top: 12px;

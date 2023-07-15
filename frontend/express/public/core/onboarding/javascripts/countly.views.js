@@ -1,8 +1,8 @@
 /*globals app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,*/
 
 (function() {
-    var setupView = CV.views.create({
-        template: CV.T('/core/onboarding/templates/setup.html'),
+    var appSetupView = CV.views.create({
+        template: CV.T('/core/onboarding/templates/app.html'),
         data: function() {
             var timezones = [];
             for (var key in countlyGlobal.timezones) {
@@ -102,7 +102,7 @@
                     }
                 }, 1000);
             },
-            save: function(doc) {
+            handleSubmit: function(doc) {
                 var self = this;
 
                 delete doc.appTemplate;
@@ -123,6 +123,9 @@
                             self.isPopulating = true;
                             self.populateApp();
                         }
+                        else {
+                            app.navigate('#/initial-consent', true);
+                        }
                     })
                     .catch(function(errResp) {
                         CountlyHelpers.notify({
@@ -131,6 +134,9 @@
                             type: 'error'
                         });
                     });
+            },
+            handleContinueClick: function() {
+                app.navigate('#/initial-consent', true);
             },
         },
     });
@@ -146,20 +152,18 @@
             };
         },
         methods: {
-            save: function() {},
-        }
-    });
+            handleSubmit: function() {
+                // do some requests
 
-    var populatorView = CV.views.create({
-        template: CV.T('/core/onboarding/templates/populator.html'),
-        data: function() {
-            return {};
-        },
+                // go home
+                app.navigate('#/', true);
+            },
+        }
     });
 
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
-            component: setupView,
+            component: appSetupView,
             vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
@@ -167,12 +171,6 @@
     app.route('/initial-consent', 'initial-consent', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: consentView,
-        }));
-    });
-
-    app.route('/initial-populator', 'initial-populator', function() {
-        this.renderWhenReady(new CV.views.BackboneWrapper({
-            component: populatorView,
         }));
     });
 
