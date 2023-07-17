@@ -73,7 +73,7 @@ function transformAndStoreData(params, data, callback) {
     if (!data || data.length === 0) {
         //Add meta entry
         common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
-            callback(null, []);
+            callback(null);
         });
     }
     else {
@@ -84,17 +84,17 @@ function transformAndStoreData(params, data, callback) {
         //Delete old entries
         common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}}, function(err) {
             if (err) {
-                callback(err, null);
+                callback(err);
             }
             //Insert new entries
             common.db.collection('cms_cache').insert(transformedData, {ordered: false}, function(err1, entries) {
                 if (err1) {
-                    callback(err1, null);
+                    callback(err1);
                 }
                 if (entries) {
                     //Add meta entry
                     common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
-                        callback(null, entries.ops);
+                        callback(null);
                     });
                 }
             });
@@ -113,15 +113,18 @@ function syncCMSDataToDB(params) {
             return false;
         }
         if (results) {
-            transformAndStoreData(params, results, function(err1, storedResults) {
+            transformAndStoreData(params, results, function(err1) {
                 if (err1) {
                     common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
                     return false;
                 }
-                if (storedResults) {
-                    common.returnOutput(params, storedResults);
-                    return true;
-                }
+                common.db.collection('cms_cache').find(params.qstring.query).toArray(function(err2, entries) {
+                    if (err2) {
+                        common.returnMessage(params, 500, 'An error occured while fetching entries from DB: ' + err);
+                        return false;
+                    }
+                    common.returnOutput(params, entries);
+                });
             });
         }
     });
@@ -139,12 +142,32 @@ cmsApi.getEntries = function(params) {
         return false;
     }
 
-    //WIP
-    var query = {'$or': [ {'_id': {'$regex': `^${params.qstring._id}`}}, {'_id': `${params.qstring._id}_meta`} ]};
+    var query = { '_id': { '$regex': `^${params.qstring._id}` } };
+
+    try {
+        params.qstring.query = JSON.parse(params.qstring.query);
+    }
+    catch (ex) {
+        params.qstring.query = null;
+    }
+
     if (params.qstring.query) {
-        for (var key in params.qstring.query) {
-            query[key] = params.qstring.query[key];
+        query = {
+            $and: [
+                { '_id': { '$regex': `^${params.qstring._id}` } },
+                {
+                    $or: [
+                        { '_id': `${params.qstring._id}_meta` },
+                    ]
+                }
+            ]
+        };
+        for (var cond in params.qstring.query) {
+            var condition = {};
+            condition[cond] = params.qstring.query[cond];
+            query.$and[1].$or.push(condition);
         }
+        params.qstring.query = query;
     }
 
     common.db.collection('cms_cache').find(query).toArray(function(err, entries) {
@@ -176,7 +199,7 @@ cmsApi.getEntries = function(params) {
                 syncCMSDataToDB(params);
             }
             else {
-                common.returnOutput(params, entries || []);
+                common.returnOutput(params, entries);
                 return true;
             }
         }
