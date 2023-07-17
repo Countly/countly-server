@@ -2630,4 +2630,35 @@ countlyCommon.calculatePeriodObject = function(period) {
     return getPeriodObject(period);
 };
 
+/**
+ * Function that increments strings alphabetically.
+ * @param {string} str - string that next character will be calculated
+ * @return {string} - calculated string
+ */
+countlyCommon.stringIncrement = function(str) {
+    let carry = 1;
+    let res = '';
+
+    for (let i = str.length - 1; i >= 0; i--) {
+        let char = str.toUpperCase().charCodeAt(i);
+        char += carry;
+        if (char > 90) {
+            char = 65;
+            carry = 1;
+        }
+        else {
+            carry = 0;
+        }
+        res = String.fromCharCode(char) + res;
+        if (!carry) {
+            res = str.substring(0, i) + res;
+            break;
+        }
+    }
+    if (carry) {
+        res = 'A' + res;
+    }
+    return res;
+};
+
 module.exports = countlyCommon;

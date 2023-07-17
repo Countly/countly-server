@@ -175,7 +175,7 @@
         computed: {
             preparedRows: function() {
                 return this.comments.map(function(comment) {
-                    comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    comment.cd = countlyCommon.formatTimeAgoText(comment.cd).tooltip;
                     comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     return comment;
                 });

@@ -1,3 +1,22 @@
+## Version 23.06.1
+Fixes:
+- [core]  Added missing % in Session Analytics
+- [core] Added script for report migration to bookmarks.
+- [core] Fixes for mongodb configuration on install.
+- [dashboards] Localization and styling fixes for empty dasboards
+- [dependency] xml2js fix
+- [members] Set permission._ when editing member.
+
+Enterprise fixes:
+- [cohorts] Fixes for dashboard widgets showing invalid % compared to previous period.
+- [core] Fix CE tag version update
+- [drill] Fix for 'Segmentation filters not showing up for cohorts'
+- [drill] Store visualization type in bookmark
+- [drill] default chart type is "bar" for byVal queries
+- [flows] Rights check for data requests.
+- [push] User Profiles querying by push tokens & messages
+- [users] Fix blank value formatting
+
 ## Version 23.06
 
 New Features:
@@ -22,6 +41,7 @@ Enterprise new features:
 - [drill] enhanced state url for drill
 - [drill] new drill meta structure
 - [events] add drill option to Events
+- [push] user profiles querying by push tokens & messages
 - [surveys] different logo types
 - [surveys] show always option
 - [users] download user debug information
@@ -42,6 +62,7 @@ Enterprise fixes:
 - [drill] hide no data text
 - [drill] standartizing ls/lac behavior
 - [performance-monitoring] splitting documents to be able to store more data
+- [retention] backward compatibility in retention widgets
 
 ## Version 23.03.9
 Fixes:
