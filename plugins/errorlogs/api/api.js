@@ -187,8 +187,7 @@ const readFromEnd = (file, size) => {
                         done(null, results);
                     }
                 }
-                else
-                if (!--pending) {
+                else if (!--pending) {
                     done(null, results);
                 }
             });
