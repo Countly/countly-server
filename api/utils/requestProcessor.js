@@ -2802,11 +2802,6 @@ const processRequest = (params) => {
 
                 validateAppForFetchAPI(params, () => { });
 
-                plugins.dispatch("/i/sdk/log", {
-                    params: params,
-                    app: params.app
-                }, () => { });
-
                 break;
             }
             case '/o/notes': {
