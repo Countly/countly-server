@@ -3,24 +3,27 @@
 var nodemailer = require('nodemailer');
 const pluginManager = require('../plugins/pluginManager.js');
 
-function getPluginConfig() {
-    //rename company
-    var company = "Company";
-    var email = "email@company.com";
+//rename company
+var company = "Company";
+var email = "email@company.com";
 
+function getPluginConfig() {
     const plugins = pluginManager.getPlugins(true);
+    let _email = email;
+    let _company = company;
+
     if (plugins.indexOf('white-labeling') > -1) {
         try {
             const pluginsConfig = pluginManager.getConfig("white-labeling");
             const {emailFrom, emailCompany} = pluginsConfig;
-            email = emailFrom && emailFrom.length > 0 ? emailFrom : email;
-            company = emailCompany && emailCompany.length > 0 ? emailCompany : company;
+            _email = emailFrom && emailFrom.length > 0 ? emailFrom : email;
+            _company = emailCompany && emailCompany.length > 0 ? emailCompany : company;
         }
         catch (error) {
             console.log('Error getting plugins config', error);
         }
     }
-    return { email, company };
+    return { email: _email, company: _company };
 }
 
 module.exports = function(mail) {
