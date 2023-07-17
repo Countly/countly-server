@@ -945,6 +945,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 message: req.flash("message"),
                 licenseNotification,
                 licenseError,
+                createDemoApp: !!req.query.create_demo_app,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
@@ -1362,8 +1363,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         var params = req.body || {};
         membersUtility.setup(req, function(err) {
+            const createDemoApp = !!params.createDemoApp;
+
             if (!err) {
-                res.redirect(countlyConfig.path + '/dashboard');
+                res.redirect(countlyConfig.path + '/dashboard' + (createDemoApp ? '?create_demo_app=1' : ''));
             }
             else if (err === "User exists") {
                 res.redirect(countlyConfig.path + '/login');

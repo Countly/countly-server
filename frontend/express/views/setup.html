@@ -90,6 +90,7 @@
                 <div>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
+                    <input type="hidden" value="true" name="createDemoApp" id="create-demo-app" />
                     <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 32px;"/>
                     <button id="alt-login-button" data-localize="setup.continue-own-app"></button>
                 </div>
@@ -275,6 +276,10 @@
                     }
                     return false;
                 }
+            });
+            $('#alt-login-button').click(function() {
+                $('#create-demo-app').val('');
+                $('#login-button').click();
             });
         });
 		$(document).ready(function() {
