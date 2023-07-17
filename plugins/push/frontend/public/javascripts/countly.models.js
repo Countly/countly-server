@@ -1504,7 +1504,7 @@
                     demo: this.mapDemo(dto),
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
-                    name: dto.info && dto.info.title,
+                    name: dto.info && countlyCommon.unescapeHtml(dto.info.title),
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
