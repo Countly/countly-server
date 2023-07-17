@@ -760,8 +760,6 @@ membersUtility.setup = function(req, callback) {
                     doc.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
                     membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
                         member = member.ops;
-                        //TODO:MAYBE HERE
-
                         setLoggedInVariables(req, member[0], membersUtility.db, function() {
                             req.session.install = true;
                             callback();

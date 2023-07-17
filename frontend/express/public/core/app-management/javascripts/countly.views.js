@@ -492,7 +492,7 @@
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
                         }
                     },
-                    error: function (e) {
+                    error: function(e) {
                         self.loadingDetails = false;
                         if (e && e.status !== 0) {
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
