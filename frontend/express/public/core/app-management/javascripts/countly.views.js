@@ -492,9 +492,11 @@
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
                         }
                     },
-                    error: function() {
+                    error: function (e) {
                         self.loadingDetails = false;
-                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                        if (e && e.status !== 0) {
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                        }
                     }
                 });
             },
