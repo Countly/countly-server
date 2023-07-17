@@ -197,7 +197,9 @@ cmsApi.clearCache = function(params) {
         if (err) {
             common.returnMessage(params, 500, 'An error occured while clearing CMS cache: ' + err);
         }
-        common.returnMessage(params, 200, "CMS cache cleared");
+        else {
+            common.returnMessage(params, 200, "CMS cache cleared");
+        }
     });
 };
 
