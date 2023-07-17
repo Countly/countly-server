@@ -855,8 +855,8 @@
                     this.$store.dispatch("countlyCrashes/crashgroup/symbolicate", crash)
                         .then(function() {
                             CountlyHelpers.notify({
-                                title: CV.i18n("crash_symbolication.symbolication-success"),
-                                message: CV.i18n("crash_symbolication.symbolication-success")
+                                title: CV.i18n("crash_symbolication.symbolication-processed"),
+                                message: CV.i18n("crash_symbolication.symbolication-processed")
                             });
                             self.refresh();
                         })

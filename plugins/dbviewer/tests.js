@@ -27,12 +27,9 @@ describe('Testing DBViewer', function() {
                     ob[0].should.have.property("name", "countly");
                     ob[0].should.have.property("collections");
                     ob[0].collections.should.have.property("apps");
-                    ob[0].collections.should.have.property("carriers");
-                    ob[0].collections.should.have.property("device_details");
-                    ob[0].collections.should.have.property("devices");
-                    ob[0].collections.should.have.property("events");
                     ob[0].collections.should.have.property("members");
-                    ob[0].collections.should.have.property("users");
+                    ob[0].collections.should.have.property("plugins");
+                    ob[0].collections.should.have.property("jobs");
                     done();
                 });
         });
