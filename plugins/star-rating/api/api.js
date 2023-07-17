@@ -1236,6 +1236,7 @@ function uploadFile(myfile, id, callback) {
                 }
                 else {
                     switch (params.qstring.period) {
+                    case "prevMonth":
                     case "month":
                     case "day":
                     case "yesterday":

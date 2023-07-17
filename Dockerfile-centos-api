@@ -34,7 +34,7 @@ RUN yum update -y
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
 	\
-	curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+	curl -sL https://rpm.nodesource.com/setup_18.x | bash - && \
 	yum install -y nodejs python3.8 python2 python38-libs python38-devel python38-pip nss libdrm libgbm cyrus-sasl* && \
 	ln -s /usr/bin/node /usr/bin/nodejs && \
 	unlink /usr/bin/python3 && \

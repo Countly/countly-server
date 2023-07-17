@@ -92,7 +92,7 @@ npm config set prefix "$DIR/../.local/"
 sudo bash "$DIR/scripts/mongodb.install.sh"
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    bash "$DIR/commands/docker/mongodb.sh" &
+    sudo bash "$DIR/commands/docker/mongodb.sh" &
 
     until mongosh --eval "db.stats()" | grep "collections"; do
         echo
@@ -140,18 +140,8 @@ nodejs "$DIR/scripts/loadCitiesInDb.js"
 #get web sdk
 sudo countly update sdk-web
 
-if [ "$INSIDE_DOCKER" != "1" ]; then
-    # close google services for China area
-    if ping -c 1 google.com >> /dev/null 2>&1; then
-        echo "Pinging Google successful. Enabling Google services."
-    else
-        echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
-        sudo countly config "frontend.use_google" false --force
-    fi
-fi
-
 #compile scripts for production
-sudo countly task dist-all
+#sudo countly task dist-all
 
 # after install call
 sudo countly check after install
@@ -162,7 +152,7 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
 fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
-    kill -2 "$(pgrep mongo)"
+    sudo kill -2 "$(pgrep mongo)"
 fi
 
 bash "$DIR/scripts/done.sh";
