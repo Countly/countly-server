@@ -823,7 +823,7 @@
                                 }
                                 CountlyHelpers.notify({
                                     title: jQuery.i18n.map["configs.not-saved"],
-                                    message: error || resp.result || jQuery.i18n.map['management-applications.plugins.error.server'],
+                                    message: resp.errors || error || resp.result || jQuery.i18n.map['management-applications.plugins.error.server'],
                                     type: "error"
                                 });
                             }

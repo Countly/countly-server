@@ -1,3 +1,36 @@
+## Version 23.06.3
+Fixes:
+- [core] Upgraded node version from 14 to 18 in docker images
+- [core] Update ubuntu for docker to focal-1.2.0
+- [star-rating] fixed the issue with downloading table data.
+
+Enterprise fixes:
+- [cohorts] Correctly validate [ab-testing] rule on incoming data
+- [cohorts] Logic fix for real-time cohorts processing regarding user being in cohort + additional segmentation rule. (User could have been falling in only matching cohort rule)
+- [surveys] Added option "View current target users" for the survey. Goes directly to filtered user list.
+
+## Version 23.06.2
+Fixes:
+- [crashes] Update notification after sending symbolication request
+- [core] Display of detailed error messages in the UI while editing app settings
+- [core] Fix Users cannot login using username with uppercase
+- [core] Calculation of indicator key in graph notes moved to backend
+- [core] Updated geodata to newest version
+- [user-management] Handle partial permission object in depCheck
+- [populator] Fix URL length issue in data populator plugin's edit request
+- [installer] Fix CDN download PACKAGE_NAME variable
+
+Enterprise fixes:
+- [nps] Fix for survey flickering issue
+- [cohorts] Null checks for cohorts
+- [crash_symbolication] Fix for JS Symbolication Timeout
+- [crash_symbolication] Symbolication notification fixes
+- [groups] Prevent adding global admin to a group
+- [drill] Added tests and fixes for list cleanup
+- [drill] Fixes for recheck_list endpoint and function
+- [drill] Added script for calling list rechecking
+- [views] fixes for _idv
+
 ## Version 23.06.1
 Fixes:
 - [core]  Added missing % in Session Analytics

@@ -2781,6 +2781,29 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/sdk': {
+                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+                params.user = {};
+
+                if (!params.qstring.app_key || !params.qstring.device_id) {
+                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                    return false;
+                }
+                else {
+                    params.qstring.device_id += "";
+                    params.app_user_id = common.crypto.createHash('sha1')
+                        .update(params.qstring.app_key + params.qstring.device_id + "")
+                        .digest('hex');
+                }
+
+                log.d('processing request %j', params.qstring);
+
+                params.promises = [];
+
+                validateAppForFetchAPI(params, () => { });
+
+                break;
+            }
             case '/o/notes': {
                 validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
