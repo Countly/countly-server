@@ -1,4 +1,4 @@
-/*globals app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,*/
+/*globals _,app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -20,7 +20,7 @@
             }
 
             return {
-                isDemoApp: false,
+                isDemoApp: countlyGlobal.createDemoApp,
                 isPopulating: false,
                 newApp: {},
                 timezones: timezones,
@@ -207,5 +207,7 @@
         '</div>' +
         '</div>';
 
-    CountlyHelpers.showQuickstartPopover(content);
+    if (!_.isEmpty(countlyGlobal.apps /*need to count user sessions too*/)) {
+        CountlyHelpers.showQuickstartPopover(content);
+    }
 })();
