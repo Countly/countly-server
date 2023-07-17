@@ -69,7 +69,7 @@ function fetchFromCMS(params, callback) {
 * @param {function} callback - callback function
 **/
 function transformAndStoreData(params, data, callback) {
-    let lu = Date.now();
+    const lu = Date.now();
     if (!data || data.length === 0) {
         //Add meta entry
         common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
@@ -78,25 +78,39 @@ function transformAndStoreData(params, data, callback) {
     }
     else {
         var transformedData = [];
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             transformedData.push(Object.assign({_id: `${params.qstring._id}_${data[i].id}`, lu}, data[i].attributes));
         }
-        //Delete old entries
-        common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}}, function(err) {
+
+        var bulk = common.db.collection("cms_cache").initializeUnorderedBulkOp();
+        for (let i = 0; i < transformedData.length; i++) {
+            bulk.find({
+                "_id": transformedData[i]._id
+            }).upsert().updateOne({
+                "$set": transformedData[i]
+            });
+        }
+
+        // Add meta entry
+        bulk.find({
+            "_id": `${params.qstring._id}_meta`
+        }).upsert().replaceOne({
+            "_id": `${params.qstring._id}_meta`,
+            "lu": lu
+        });
+
+        // Execute bulk operations to update/insert new entries
+        bulk.execute(function(err) {
             if (err) {
                 callback(err);
             }
-            //Insert new entries
-            common.db.collection('cms_cache').insert(transformedData, {ordered: false}, function(err1, entries) {
+
+            // Delete old entries
+            common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}, 'lu': {'$lt': lu}}, function(err1) {
                 if (err1) {
                     callback(err1);
                 }
-                if (entries) {
-                    //Add meta entry
-                    common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
-                        callback(null);
-                    });
-                }
+                callback(null);
             });
         });
     }
