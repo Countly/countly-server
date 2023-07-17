@@ -65,7 +65,7 @@
                             </div>\
                         </template> \
                         <div :class="[midLevelClasses]">\
-                            <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0;"> \
+                            <div class="bu-level-left bu-is-flex-shrink-1" data-test-id="header-title" style="min-width: 0;"> \
                                 <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
