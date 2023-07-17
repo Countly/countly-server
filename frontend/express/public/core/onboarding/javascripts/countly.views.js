@@ -1,4 +1,4 @@
-/*globals _,app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,*/
+/*globals _,app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -146,14 +146,21 @@
         data: function() {
             return {
                 newConsent: {
-                    analytics: false,
-                    newsletter: false,
+                    countly_server_tracking: false,
+                    countly_newsletter: false,
                 },
             };
         },
         methods: {
-            handleSubmit: function() {
+            handleSubmit: function(doc) {
+                // var countly_newsletter = doc.countly_newsletter;
+                delete doc.countly_newsletter;
                 // do some requests
+                var configs = {
+                    frontend: doc,
+                };
+
+                countlyPlugins.updateConfigs(configs);
 
                 // go home
                 app.navigate('#/', true);
