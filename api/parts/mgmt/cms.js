@@ -132,13 +132,6 @@ function syncCMSDataToDB(params) {
                     common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
                     return false;
                 }
-                common.db.collection('cms_cache').find(params.qstring.query).toArray(function(err2, entries) {
-                    if (err2) {
-                        common.returnMessage(params, 500, 'An error occured while fetching entries from DB: ' + err);
-                        return false;
-                    }
-                    common.returnOutput(params, entries);
-                });
             });
         }
     });
@@ -189,35 +182,25 @@ cmsApi.getEntries = function(params) {
             common.returnMessage(params, 500, 'An error occured while fetching CMS entries from DB: ' + err);
             return false;
         }
+        let results = {data: entries || []};
         if (!entries || entries.length === 0) {
             //No entries, fetch them
+            results.updating = true;
             syncCMSDataToDB(params);
         }
         else {
             const updateInterval = 24 * 60 * 60 * 1000;
             const timeDifference = Date.now() - entries[0].lu;
-
-            if (entries.length === 1 && entries[0]._id === `${params.qstring._id}_meta`) {
-                //Only meta entry, check if it's time to update
+            if ((entries.length === 1 && entries[0]._id === `${params.qstring._id}_meta`) || (entries.length > 1 && timeDifference >= updateInterval)) {
+                //Only meta entry or multiple entries, check if it's time to update
                 if (timeDifference >= updateInterval) {
+                    results.updating = true;
                     syncCMSDataToDB(params);
                 }
-                else {
-                    common.returnOutput(params, []);
-                    return true;
-                }
-            }
-
-            //Entries exist, check if it's time to update
-            if (entries.length > 1 && timeDifference >= updateInterval) {
-                syncCMSDataToDB(params);
-            }
-            else {
-                common.returnOutput(params, entries);
-                return true;
             }
         }
-
+        common.returnOutput(params, results);
+        return true;
     });
 };
 
