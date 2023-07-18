@@ -80,6 +80,41 @@ async function recheckFormulasWidgets(countlyDb) {
     }
 }
 
+async function recheckManuallyDeletedDrillBookmarks(countlyDb, countlyDrillDb) {
+    console.log("Detecting manually deleted saved queries for drill...");
+
+    const widgets = await countlyDb.collection('widgets').find({ widget_type: 'drill', drill_query: { $exists: true, $ne: [] } }).toArray();
+    if (!widgets || !widgets.length) {
+        console.log("No widgets found.");
+        return;
+    }
+    const drillQueryIds = widgets.reduce((acc, widget) => {
+        return acc.concat(widget.drill_query.map(query => countlyDb.ObjectID(query._id).toString()));
+    }, []);
+    const existingBookmarks = await countlyDrillDb.collection('drill_bookmarks').find({ _id: { $in: drillQueryIds.map(id => countlyDb.ObjectID(id)) } }, { _id: 1 }).toArray();
+    const existingBookmarkIds = existingBookmarks.map(drill => drill._id.toString());
+    const deletedBookmarkIds = drillQueryIds.filter(id => {
+        return !existingBookmarkIds.includes(id);
+    });
+
+    try {
+        for (let widget of widgets) {
+            for (let queryId of deletedBookmarkIds) {
+                let reports = await countlyDb.collection("long_tasks").find({ "linked_to._issuer": 'wqm:drill', "linked_to._id": queryId }, { _id: 1 }).toArray();
+                let reportIds = reports.map((x) => x._id);
+                await countlyDb.collection('widgets').updateOne(
+                    { _id: widget._id },
+                    { $pull: { drill_query: { _id: queryId }, drill_report: { $in: reportIds } } }
+                );
+            }
+        }
+    }
+    catch (error) {
+        console.log('Error while sending a request: ', error);
+    }
+}
+
+
 async function recheckDrillWidgets(countlyDb) {
     console.log("Detecting deleted data for drill...");
     const matchOperator = {
@@ -97,27 +132,35 @@ async function recheckDrillWidgets(countlyDb) {
 
 
 plugins.dbConnection().then(async(countlyDb) => {
-    try {
-        await recheckFunnelWidgets(countlyDb);
-    }
-    catch (error) {
-        console.log('Error in recheckFunnelWidgets:', error);
-    }
+    plugins.dbConnection("countly_drill").then(async (countlyDrill) => {
+        try {
+            await recheckFunnelWidgets(countlyDb);
+        }
+        catch (error) {
+            console.log('Error in recheckFunnelWidgets:', error);
+        }
 
-    try {
-        await recheckFormulasWidgets(countlyDb);
-    }
-    catch (error) {
-        console.log('Error in recheckFormulasWidgets:', error);
-    }
-
-    try {
-        await recheckDrillWidgets(countlyDb);
-    }
-    catch (error) {
-        console.log('Error in recheckDrillWidgets:', error);
-    }
-    finally {
-        countlyDb.close();
-    }
+        try {
+            await recheckFormulasWidgets(countlyDb);
+        }
+        catch (error) {
+            console.log('Error in recheckFormulasWidgets:', error);
+        }
+        try {
+            await recheckManuallyDeletedDrillBookmarks(countlyDb, countlyDrill);
+        }
+        catch (error) {
+            console.log('Error in recheckDrillWidgets:', error);
+        }
+        try {
+            await recheckDrillWidgets(countlyDb);
+        }
+        catch (error) {
+            console.log('Error in recheckDrillWidgets:', error);
+        }
+        finally {
+            countlyDb.close();
+            countlyDrill.close();
+        }
+    });
 });
