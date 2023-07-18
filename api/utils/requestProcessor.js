@@ -2808,6 +2808,30 @@ const processRequest = (params) => {
                 validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
             }
+            case '/o/cms': {
+                switch (paths[3]) {
+                case 'entries':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
+                    break;
+                case 'clear':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                    }
+                    break;
+                }
+
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
