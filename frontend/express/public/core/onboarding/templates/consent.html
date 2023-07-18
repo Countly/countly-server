@@ -7,7 +7,7 @@
             @submit="handleSubmit">
             <template v-slot="formScope">
                 <cly-form-step :id="'consent'">
-                    <cly-form-field>
+                    <cly-form-field v-if="!isCountlyHosted">
                         <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-1') }}</div>
                         <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-2') }}</div>
                         <div class="consent-question bu-mb-5">{{ i18n('initial-setup.analytics-question') }}</div>

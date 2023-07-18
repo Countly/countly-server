@@ -29,6 +29,7 @@
                 populatorProgress: 0,
                 populatorMaxTime: 10,
                 isPopulatorFinished: false,
+                isCountlyEE: countlyGlobal.plugins.includes('drill'),
             };
         },
         created: function() {
@@ -145,9 +146,10 @@
         template: CV.T('/core/onboarding/templates/consent.html'),
         data: function() {
             return {
+                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
                 newConsent: {
-                    countly_server_tracking: false,
-                    countly_newsletter: false,
+                    countly_server_tracking: true,
+                    countly_newsletter: true,
                 },
             };
         },

@@ -92,6 +92,7 @@
         </cly-form>
     </div>
     <div v-else class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
+        <!-- need to show video here -->
         <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" />
         <template v-if="!isPopulatorFinished">
             <cly-progress-bar :percentage="populatorProgress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
