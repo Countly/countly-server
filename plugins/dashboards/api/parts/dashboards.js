@@ -641,7 +641,6 @@ dashboard.deleteWidget = function(params, dashboardId, widgetId, callback) {
         if (!dashboardErr) {
             common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {}, {remove: true}, function(widgetErr, widgetResult) {
                 if (widgetErr || !widgetResult || !widgetResult.value) {
-                    common.returnMessage(params, 500, "Failed to remove widget");
                     callback(false);
                 }
                 else {
@@ -650,13 +649,11 @@ dashboard.deleteWidget = function(params, dashboardId, widgetId, callback) {
 
                     plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
                     plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
-                    common.returnMessage(params, 200, 'Success');
                     callback(true);
                 }
             });
         }
         else {
-            common.returnMessage(params, 500, "Failed to remove widget");
             callback(false);
         }
     });
