@@ -2663,7 +2663,7 @@ countlyCommon.stringIncrement = function(str) {
 /**
 * Format timestamp to ddd, D MMM YYYY HH:mm:ss if format is not provided
 * @param {number} timestamp - timestamp in seconds or miliseconds
-* @param {string} str - format to use
+* @param {string} format - format to use
 * @returns {string} formated time and date
 * @example
 * //outputs Thu, 23 Jun 2022 19:20:25
@@ -2673,9 +2673,9 @@ countlyCommon.formatTime = function(timestamp, format) {
     if (Math.round(timestamp).toString().length === 10) {
         timestamp *= 1000;
     }
-    var format = format || "ddd, D MMM YYYY HH:mm:ss";
+    var ft = format || "ddd, D MMM YYYY HH:mm:ss";
     var target = new Date(timestamp);
-    var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
+    var tooltip = moment(target).format(ft);
     return tooltip;
 };
 
