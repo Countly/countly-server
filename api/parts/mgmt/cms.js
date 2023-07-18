@@ -5,7 +5,8 @@
 
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
-    common = require('./../../utils/common.js');
+    common = require('./../../utils/common.js'),
+    current_processes = {};
 
 const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-video", "server-quick-start"],
     token = "17fa74a2b4b1524e57e8790250f89f44f364fe567f13f4dbef02ef583e70dcdb700f87a6122212bb01ca6a14a8d4b85dc314296f71681988993c013ed2f6305b57b251af723830ea2aa180fc689af1052dd74bc3f4b9b35e5674d4214a8c79695face42057424f0494631679922a3bdaeb780b522bb025dfaea8d7d56a857dba",
@@ -121,20 +122,26 @@ function transformAndStoreData(params, data, callback) {
 * @param {params} params - params object
 **/
 function syncCMSDataToDB(params) {
-    fetchFromCMS(params, function(err, results) {
-        if (err) {
-            common.returnMessage(params, 500, 'An error occured while fetching entries from CMS: ' + err);
-            return false;
-        }
-        if (results) {
-            transformAndStoreData(params, results, function(err1) {
-                if (err1) {
-                    common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
-                    return false;
-                }
-            });
-        }
-    });
+    // Check if there is a process running
+    if (!current_processes.id || (current_processes.id && current_processes.id >= new Date(Date.now() - 5 * 60 * 1000))) {
+        // Set current process
+        current_processes.id = Date.now();
+        fetchFromCMS(params, function(err, results) {
+            if (err) {
+                common.returnMessage(params, 500, 'An error occured while fetching entries from CMS: ' + err);
+                return false;
+            }
+            if (results) {
+                transformAndStoreData(params, results, function(err1) {
+                    delete current_processes.id;
+                    if (err1) {
+                        common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
+                        return false;
+                    }
+                });
+            }
+        });
+    }
 }
 
 /**
