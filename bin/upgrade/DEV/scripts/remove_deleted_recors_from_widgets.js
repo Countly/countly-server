@@ -11,10 +11,7 @@ async function recheckFunnelWidgets(countlyDb) {
     }
     const funnelIdsInWidgets = widgets.map(widget => widget.funnel_type[0].split('***')[1]);
     const existingFunnels = await countlyDb.collection('funnels').find({ _id: { $in: funnelIdsInWidgets } }, { _id: 1, app_id: 1 }).toArray();
-    if (!existingFunnels || !existingFunnels.length) {
-        console.log("No funnels found.");
-        return;
-    }
+    
     const formattedExistingFunnels = existingFunnels.map(funnel => funnel.app_id + "***" + funnel._id.toString());
     const missingFunnelIds = widgets.filter(function(result) {
         return !formattedExistingFunnels.includes(result.funnel_type[0]);
@@ -52,10 +49,7 @@ async function recheckFormulasWidgets(countlyDb) {
     }
     const ids = widgets.map(item => countlyDb.ObjectID(item.cmetric_refs[0]._id));
     const existingFormulas = await countlyDb.collection('calculated_metrics').find({ _id: { $in: ids } }, { _id: 1 }).toArray();
-    if (!existingFormulas || !existingFormulas.length) {
-        console.log("No formulas found.");
-        return;
-    }
+
     const missingFormulasIds = widgets.filter(widget => {
         return !existingFormulas.some(formula => String(formula._id) === widget.cmetric_refs[0]._id);
     }).map(function(result) {
@@ -100,6 +94,7 @@ async function recheckDrillWidgets(countlyDb) {
         console.log('Error while sending a request: ', error);
     }
 }
+
 
 plugins.dbConnection().then(async(countlyDb) => {
     try {
