@@ -57,17 +57,17 @@ class IncomingDataTrigger {
      * @param {object} ob - trggered out from pipeline
      */
     async process(ob) {
-        let rule = null;
+        let rules = [];
         if (ob.is_mock === true) {
             return ob;
         }
-        this._rules.forEach((r) => {
-            if (r.apps[0] === ob.params.app_id.toString()) {
-                rule = r;
-            }
+        rules = this._rules.filter((r) => {
+            return r.apps[0] === ob.params.app_id.toString();
         });
-        if (rule) {
-            await this.matchFilter(ob.params, rule);
+        if (rules.length) {
+            for (let i = 0; i < rules.length; i++) {
+                await this.matchFilter(ob.params, rules[i]);
+            }
         }
     }
 

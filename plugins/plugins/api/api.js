@@ -181,8 +181,7 @@ var plugin = {},
                             }
                         });
                     }
-                    else
-                    if (!--pending) {
+                    else if (!--pending) {
                         done(null, results);
                     }
                 });
