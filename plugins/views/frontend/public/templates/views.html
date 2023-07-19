@@ -86,7 +86,7 @@
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n v-else :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n v-else :force-loading="isTableLoading" :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
 					<el-select v-model="tableMode" class="bu-mr-2" >
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
