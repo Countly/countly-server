@@ -610,7 +610,8 @@
                     context.commit('setResolutionLoading', false);
                 });
             },
-            fetchAppVersion: function(context) {
+            fetchAppVersion: function(context, force) {
+                context.commit('setVersionLoading', force);
                 context.dispatch('onFetchInit', "version");
                 countlyDevicesAndTypes.service.fetchAppVersion().then(function() {
                     var versions = countlyDevicesAndTypes.service.getStackedSeriesData("app_versions", context.state.selectedProperty, context.state.selectedDisplay);
@@ -630,6 +631,8 @@
                     context.dispatch('onFetchSuccess', "version");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setVersionLoading', false);
                 });
             },
             fetchPlatform: function(context) {
@@ -849,6 +852,9 @@
             },
             setResolutionLoading: function(state, value) {
                 state.resolutionLoading = value;
+            },
+            setVersionLoading: function(state, value) {
+                state.versionLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {
