@@ -597,7 +597,8 @@
         };
 
         var devicesAndTypesActions = {
-            fetchResolution: function(context) {
+            fetchResolution: function(context, force) {
+                context.commit('setResolutionLoading', force);
                 context.dispatch('onFetchInit', "resolution");
                 countlyDevicesAndTypes.service.fetchResolution().then(function() {
                     var resolutions = countlyDevicesAndTypes.service.calculateData("resolutions", {"pie": true});
@@ -605,6 +606,8 @@
                     context.dispatch('onFetchSuccess', "resolution");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setResolutionLoading', false);
                 });
             },
             fetchAppVersion: function(context) {
@@ -843,6 +846,9 @@
             },
             setDensityLoading: function(state, value) {
                 state.densityLoading = value;
+            },
+            setResolutionLoading: function(state, value) {
+                state.resolutionLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {
