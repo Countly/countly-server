@@ -671,6 +671,7 @@
                 });
             },
             fetchDeviceTypes: function(context) {
+                context.commit('setTypeLoading', true);
                 context.dispatch('onFetchInit', "deviceType");
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
                     var deviceTypes = countlyDevicesAndTypes.service.calculateData("device_type", {"pie": true});
@@ -678,9 +679,12 @@
                     context.dispatch('onFetchSuccess', "deviceType");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setTypeLoading', false);
                 });
             },
-            fetchDevices: function(context) {
+            fetchDevices: function(context, force) {
+                context.commit('setDeviceTypesLoading', force);
                 context.dispatch('onFetchInit', "device");
                 countlyDevicesAndTypes.service.fetchDevices().then(function() {
                     var devices = countlyDevicesAndTypes.service.calculateDevices();
@@ -688,6 +692,8 @@
                     context.dispatch('onFetchSuccess', "device");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setDeviceTypesLoading', false);
                 });
             },
             fetchHomeDashboard: function(context) {
@@ -855,6 +861,12 @@
             },
             setVersionLoading: function(state, value) {
                 state.versionLoading = value;
+            },
+            setDeviceTypesLoading: function(state, value) {
+                state.deviceTypesLoading = value;
+            },
+            setTypeLoading: function(state, value) {
+                state.typeLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {
