@@ -148,7 +148,7 @@
             return {
                 isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
                 newConsent: {
-                    countly_server_tracking: true,
+                    countly_tracking: true,
                     countly_newsletter: true,
                 },
             };

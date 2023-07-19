@@ -118,7 +118,7 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_server_tracking: false,
+    countly_tracking: false,
 });
 
 plugins.setUserConfigs("frontend", {

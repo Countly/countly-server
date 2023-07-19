@@ -13,14 +13,14 @@
                         <div class="consent-question bu-mb-5">{{ i18n('initial-setup.analytics-question') }}</div>
                         <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
                             <el-radio
-                                v-model="formScope.editedObject.countly_server_tracking"
+                                v-model="formScope.editedObject.countly_tracking"
                                 :label="true"
                                 class="is-autosized"
                                 border>
                                 <div class="text-medium">{{i18n('initial-setup.analytics-yes')}}</div>
                             </el-radio>
                             <el-radio
-                                v-model="formScope.editedObject.countly_server_tracking"
+                                v-model="formScope.editedObject.countly_tracking"
                                 :label="false"
                                 class="is-autosized"
                                 border>
