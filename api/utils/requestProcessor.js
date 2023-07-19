@@ -38,7 +38,8 @@ const countlyApi = {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
         appUsers: require('../parts/mgmt/app_users.js'),
-        eventGroups: require('../parts/mgmt/event_groups.js')
+        eventGroups: require('../parts/mgmt/event_groups.js'),
+        cms: require('../parts/mgmt/cms.js'),
     }
 };
 

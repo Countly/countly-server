@@ -40,7 +40,7 @@ function fetchFromCMS(params, callback) {
             .then(response => response.json())
             .then(responseData => {
                 const {data, meta} = responseData;
-                if (data && data.length > 0) {
+                if (data && (data.length > 0 || data.id)) {
                     // Add data to results
                     results = results.concat(data);
                 }
@@ -206,6 +206,8 @@ cmsApi.getEntries = function(params) {
                 }
             }
         }
+
+        results.data = results.data.filter((item) => !item._id.endsWith('meta'));
         common.returnOutput(params, results);
         return true;
     });
