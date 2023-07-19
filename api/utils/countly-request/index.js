@@ -143,7 +143,7 @@ async function uploadFormFile(url, fileData, callback) {
 module.exports.post = function(uri, options, callback) {
     var params = initParams(uri, options, callback);
     if (params.options && (params.options.url || params.options.uri)) {
-        if (params.options.form) {
+        if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
             // If options include a form, use uploadFormFile
             const { url, form } = params.options;
             uploadFormFile(url || params.options.uri, form, params.callback);
