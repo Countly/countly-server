@@ -1,3 +1,18 @@
+## Version 23.06.4
+Fixes:
+- [ratings] Fix bug where selecting previous month returns an error
+- [core] Added option to return output without encoding
+- [core] Added /i/sdk path in request process
+- [core] use api config on api workers
+- [hooks] trigger hooks, if multiple hooks are listening to the same trigger
+- [whitelabeling] localization fixes
+
+Enterpise fixes: 
+- [drill] Fix empty Drill query with empty result produces none empty table
+- [drill] Fix save visualisations
+- [drill] Prevent error with trying set empty string for values upon recording meta biglist data
+- [ab-testing] Fix for sandboxing APIs and add new /o/sdk path support
+
 ## Version 23.06.3
 Fixes:
 - [core] Upgraded node version from 14 to 18 in docker images
@@ -1507,7 +1522,7 @@ Enterprise Improvements:
 * [surveys] allow text customizations
 * [symbolication] do not display very long error names in full
 * [views] correctly postprocess views in Drill
-* [whitelabelring] override logo in email template too
+* [whitelabeling] override logo in email template too
 
 **Development related**
 * [api] count all merges
