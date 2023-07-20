@@ -440,6 +440,15 @@
                 this.$refs.filterDropdown.doClose();
                 //this.handleReloadFilter();
             }
+        },
+        created: function() {
+            var filteredOrigins = {};
+            for (var key in this.availableOrigins) {
+                if (countlyGlobal.plugins.indexOf(key) > -1 || key === "all") {
+                    filteredOrigins[key] = this.availableOrigins[key];
+                }
+            }
+            this.availableOrigins = filteredOrigins;
         }
     }));
 
