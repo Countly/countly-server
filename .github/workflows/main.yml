@@ -252,15 +252,3 @@ jobs:
           /sbin/my_init &
           npm install
           node bin/scripts/test.connection.js
-  notify:
-    runs-on: ubuntu-latest
-    needs: [ install, lint, test-api-core, test-api-plugins ]
-    steps:
-      - name: Send slack notification
-        id: slack
-        if: always()
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
