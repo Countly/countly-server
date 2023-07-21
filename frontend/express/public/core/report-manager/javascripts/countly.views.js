@@ -444,7 +444,13 @@
         created: function() {
             var filteredOrigins = {};
             for (var key in this.availableOrigins) {
-                if (countlyGlobal.plugins.indexOf(key) > -1 || key === "all") {
+                var isValid = countlyGlobal.plugins.includes(key) || key === "all";
+
+                if (key === "retention" && countlyGlobal.plugins.includes("retention_segments")) {
+                    isValid = true;
+                }
+
+                if (isValid) {
                     filteredOrigins[key] = this.availableOrigins[key];
                 }
             }
