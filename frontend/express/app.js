@@ -900,8 +900,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
             licenseNotification, licenseError;
+        var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
-        app.loadThemeFiles(configs.theme, function(theme) {
+        app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
             }
@@ -914,6 +915,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (isMyCountly) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
             }
 
             if (req.session.licenseError) {
@@ -975,6 +983,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                 },
                 mycountly: isMyCountly,
+                isLocked: isLocked,
             };
 
             var toDashboard = {
