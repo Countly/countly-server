@@ -216,7 +216,9 @@
         '</div>' +
         '</div>';
 
-    if (!_.isEmpty(countlyGlobal.apps /*need to count user sessions too*/)) {
+    var loginCount = countlyGlobal.member.login_count || 0;
+
+    if (!_.isEmpty(countlyGlobal.apps) && loginCount <= 3 /*hardcoded for now, this number should be fetched from cms*/) {
         CountlyHelpers.showQuickstartPopover(content);
     }
 })();
