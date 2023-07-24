@@ -897,9 +897,9 @@ var pluginManager = function pluginManager() {
             methodPromiseCache[method] = [];
             for (let i = 0; i < plugs.length; i++) {
                 try {
-                    if (plugs[i][method]) {
-                        methodPromiseCache[method].push(plugs[i]);
-                        let ret = plugs[i][method](params);
+                    if (plugs[i].plugin && plugs[i].plugin[method]) {
+                        methodPromiseCache[method].push(plugs[i].plugin);
+                        let ret = plugs[i].plugin[method](params);
                         if (ret) {
                             promises.push(ret);
                         }
