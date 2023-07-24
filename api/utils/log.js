@@ -108,7 +108,31 @@ var log = function(level, prefix, enabled, outer, out, styler) {
             // args[0] = (new Date().toISOString() + ': ' + (prefix || '')).gray + args[0];
             // console.log('Logging %j', args);
             if (typeof out === 'function') {
-                out.apply(outer, args);
+                try {
+                    out.apply(outer, args);
+                }
+                catch (e) {
+                    let arr = Array.from(args),
+                        other = arr.filter(el => {
+                            try {
+                                (el || '').toString();
+                                return true;
+                            }
+                            catch (_ignore) {
+                                return false;
+                            }
+                        });
+
+                    let s;
+                    try {
+                        s = JSON.stringify(other);
+                    }
+                    catch (_er) {
+                        s = 'JSON.stringify(other) thrown too';
+                    }
+
+                    console.error('<<<LOGGING ERROR>>> Other values: %s, Error: %s', s, e);
+                }
             }
             else {
                 for (var k in out) {
