@@ -724,6 +724,14 @@ membersUtility.setup = function(req, callback) {
                 },
             };
             var memberCreateValidation = common.validateArgs(req.body, argProps, true);
+
+            //set no license
+            plugins.callPromisedAppMethod('checkMemberLogin', { }).then((licenseCheck) => {
+                common.licenseAssign(req, licenseCheck);
+            }).catch((e) => {
+                console.log(e);
+            });
+
             if (!(req.body = memberCreateValidation.obj)) {
                 callback({
                     message: memberCreateValidation.errors,

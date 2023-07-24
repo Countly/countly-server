@@ -1553,7 +1553,7 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
-            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length) {
+            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length && !_.isEmpty(countlyGlobal.apps)) {
                 for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
                     countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
                     CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);
