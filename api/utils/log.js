@@ -128,7 +128,30 @@ var log = function(level, prefix, enabled, outer, out, styler) {
                         s = JSON.stringify(other);
                     }
                     catch (_er) {
-                        s = 'JSON.stringify(other) thrown too';
+                        try {
+                            s = JSON.stringify(args[0]);
+                            try {
+                                s += '; 1: ' + JSON.stringify(args[1]);
+                            }
+                            catch (___er) {
+                                // ignored
+                            }
+                            try {
+                                s += '; 2: ' + JSON.stringify(args[2]);
+                            }
+                            catch (___er) {
+                                // ignored
+                            }
+                            try {
+                                s += '; 3: ' + JSON.stringify(args[3]);
+                            }
+                            catch (___er) {
+                                // ignored
+                            }
+                        }
+                        catch (__er) {
+                            s = 'everything throws';
+                        }
                     }
 
                     console.error('<<<LOGGING ERROR>>> Other values: %s, Error: %s', s, e);
