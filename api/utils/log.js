@@ -108,54 +108,7 @@ var log = function(level, prefix, enabled, outer, out, styler) {
             // args[0] = (new Date().toISOString() + ': ' + (prefix || '')).gray + args[0];
             // console.log('Logging %j', args);
             if (typeof out === 'function') {
-                try {
-                    out.apply(outer, args);
-                }
-                catch (e) {
-                    let arr = Array.from(args),
-                        other = arr.filter(el => {
-                            try {
-                                (el || '').toString();
-                                return true;
-                            }
-                            catch (_ignore) {
-                                return false;
-                            }
-                        });
-
-                    let s;
-                    try {
-                        s = JSON.stringify(other);
-                    }
-                    catch (_er) {
-                        try {
-                            s = JSON.stringify(args[0]);
-                            try {
-                                s += '; 1: ' + JSON.stringify(args[1]);
-                            }
-                            catch (___er) {
-                                // ignored
-                            }
-                            try {
-                                s += '; 2: ' + JSON.stringify(args[2]);
-                            }
-                            catch (___er) {
-                                // ignored
-                            }
-                            try {
-                                s += '; 3: ' + JSON.stringify(args[3]);
-                            }
-                            catch (___er) {
-                                // ignored
-                            }
-                        }
-                        catch (__er) {
-                            s = 'everything throws';
-                        }
-                    }
-
-                    console.error('<<<LOGGING ERROR>>> Other values: %s, Error: %s', s, e);
-                }
+                out.apply(outer, args);
             }
             else {
                 for (var k in out) {
