@@ -130,7 +130,9 @@
                         countlyCommon.ACTIVE_APP_KEY = response.key + "";
                         app.onAppManagementSwitch(response._id + "", response && response.type || "mobile");
                         self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
-                        app.initSidebar();
+                        if (Object.keys(countlyGlobal.apps).length && !CV.sideBarComponent) {
+                            app.initSidebar();
+                        }
 
                         if (self.isDemoApp) {
                             self.isPopulating = true;
