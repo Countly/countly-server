@@ -1,4 +1,4 @@
-/*globals _,app,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins*/
+/*globals _,app,Countly,CV,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -185,6 +185,17 @@
                 };
 
                 countlyPlugins.updateConfigs(configs);
+
+                CV.$.ajax({
+                    type: 'GET',
+                    url: Countly.url + '/i',
+                    data: {
+                        consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
+                        app_key: Countly.app_key,
+                        device_id: Countly.device_id,
+                    },
+                    dataType: 'json',
+                });
 
                 // go home
                 app.navigate('#/', true);
