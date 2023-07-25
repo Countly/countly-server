@@ -1,3 +1,15 @@
+## Version 23.06.5
+Fixes:
+- [core] Fixes for pluginManager callPromisedAppMethod
+- [core] Fixes for user merging
+- [crashes] Add crash group check
+- [report-manager] Fixes for plugin filter selector.
+- [security] Dependency updates
+
+Enterprise fixes: 
+- [cohorts] fix ui bug when adding User Behavior Segmentation, the items don't fit the box.
+- [flows] null check in flows job
+
 ## Version 23.06.4
 Fixes:
 - [ratings] Fix bug where selecting previous month returns an error
@@ -7,7 +19,7 @@ Fixes:
 - [hooks] trigger hooks, if multiple hooks are listening to the same trigger
 - [whitelabeling] localization fixes
 
-Enterpise fixes: 
+Enterprise fixes: 
 - [drill] Fix empty Drill query with empty result produces none empty table
 - [drill] Fix save visualisations
 - [drill] Prevent error with trying set empty string for values upon recording meta biglist data
