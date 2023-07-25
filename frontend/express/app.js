@@ -946,7 +946,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 message: req.flash("message"),
                 licenseNotification,
                 licenseError,
-                createDemoApp: !!req.query.create_demo_app,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
