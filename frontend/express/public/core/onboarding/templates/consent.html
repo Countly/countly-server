@@ -7,46 +7,27 @@
             @submit="handleSubmit">
             <template v-slot="formScope">
                 <cly-form-step :id="'consent'">
-                    <cly-form-field v-if="!isCountlyHosted">
-                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-1') }}</div>
-                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.analytics-blurb-2') }}</div>
-                        <div class="consent-question bu-mb-5">{{ i18n('initial-setup.analytics-question') }}</div>
-                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                            <el-radio
-                                v-model="formScope.editedObject.countly_tracking"
-                                :label="true"
-                                class="is-autosized"
-                                border>
-                                <div class="text-medium">{{i18n('initial-setup.analytics-yes')}}</div>
-                            </el-radio>
-                            <el-radio
-                                v-model="formScope.editedObject.countly_tracking"
-                                :label="false"
-                                class="is-autosized"
-                                border>
-                                <div class="text-medium">{{i18n('initial-setup.analytics-no')}}</div>
-                            </el-radio>
-                        </div>
-                    </cly-form-field>
-                    <cly-form-field>
-                        <div class="consent-blurb bu-mb-5">{{ i18n('initial-setup.newsletter-blurb') }}</div>
-                        <div class="consent-question bu-mb-5">{{ i18n('initial-setup.newsletter-question') }}</div>
-                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                            <el-radio
-                                v-model="formScope.editedObject.countly_newsletter"
-                                :label="true"
-                                class="is-autosized"
-                                border>
-                                <div class="text-medium">{{i18n('initial-setup.newsletter-yes')}}</div>
-                            </el-radio>
-                            <el-radio
-                                v-model="formScope.editedObject.countly_newsletter"
-                                :label="false"
-                                class="is-autosized"
-                                border>
-                                <div class="text-medium">{{i18n('initial-setup.newsletter-no')}}</div>
-                            </el-radio>
-                        </div>
+                    <cly-form-field v-for="item in consentItems">
+                        <template v-if="item.type !== tracking || !isCountlyHosted">
+                            <div class="consent-blurb bu-mb-5">{{ item.description }}</div>
+                            <div class="consent-question bu-mb-5">{{ item.question }}</div>
+                            <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                                <el-radio
+                                    v-model="formScope.editedObject['countly_' + item.type]"
+                                    :label="true"
+                                    class="is-autosized"
+                                    border>
+                                    <div class="text-medium">{{ item.optinText }}</div>
+                                </el-radio>
+                                <el-radio
+                                    v-model="formScope.editedObject['countly_' + item.type]"
+                                    :label="false"
+                                    class="is-autosized"
+                                    border>
+                                    <div class="text-medium">{{ item.optoutText }}</div>
+                                </el-radio>
+                            </div>
+                        </template>
                     </cly-form-field>
                 </cly-form-step>
                 <el-button

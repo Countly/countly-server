@@ -42,6 +42,7 @@
                     videoLinkForCE: '',
                     videoLinkForEE: '',
                 },
+                consentItems: [],
             };
         };
 
@@ -49,11 +50,17 @@
             introVideos: function(state) {
                 return state.introVideos;
             },
+            consentItems: function(state) {
+                return state.consentItems;
+            },
         };
 
         var mutations = {
             setIntroVideos: function(state, payload) {
                 state.introVideos = payload;
+            },
+            setConsentItems: function(state, payload) {
+                state.consentItems = payload;
             },
         };
 
@@ -91,6 +98,11 @@
                         videoLinkForCE: resp.data[0].videoLinkForCE,
                         videoLinkForEE: resp.data[0].videoLinkForEE,
                     });
+                });
+            },
+            fetchConsentItems: function(context) {
+                countlyCMS.fetchEntry('server-consents').then(function(resp) {
+                    context.commit('setConsentItems', resp.data);
                 });
             },
         };

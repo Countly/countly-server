@@ -167,6 +167,14 @@
                 },
             };
         },
+        created: function() {
+            this.$store.dispatch('countlyOnboarding/fetchConsentItems');
+        },
+        computed: {
+            consentItems: function() {
+                return this.$store.getters['countlyOnboarding/consentItems'];
+            },
+        },
         methods: {
             handleSubmit: function(doc) {
                 // var countly_newsletter = doc.countly_newsletter;
@@ -194,6 +202,7 @@
     app.route('/initial-consent', 'initial-consent', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: consentView,
+            vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
 
