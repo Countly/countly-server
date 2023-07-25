@@ -36,6 +36,27 @@
     };
 
     countlyOnboarding.getVuexModule = function() {
+        var getEmptyState = function() {
+            return {
+                introVideos: {
+                    videoLinkForCE: '',
+                    videoLinkForEE: '',
+                },
+            };
+        };
+
+        var getters = {
+            introVideos: function(state) {
+                return state.introVideos;
+            },
+        };
+
+        var mutations = {
+            setIntroVideos: function(state, payload) {
+                state.introVideos = payload;
+            },
+        };
+
         var actions = {
             createApp: function(context, payload) {
                 return new Promise(function(resolve, reject) {
@@ -64,14 +85,20 @@
                     });
                 });
             },
+            fetchIntroVideos: function(context) {
+                countlyCMS.fetchEntry('server-intro-video').then(function(resp) {
+                    context.commit('setIntroVideos', {
+                        videoLinkForCE: resp.data[0].videoLinkForCE,
+                        videoLinkForEE: resp.data[0].videoLinkForEE,
+                    });
+                });
+            },
         };
 
         return CV.vuex.Module("countlyOnboarding", {
-            state: function() {
-                return {};
-            },
-            getters: {},
-            mutations: {},
+            state: getEmptyState,
+            getters: getters,
+            mutations: mutations,
             actions: actions,
         });
     };

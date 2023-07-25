@@ -27,10 +27,21 @@
                 types: Object.keys(app.appTypes),
                 appTemplates: [],
                 populatorProgress: 0,
-                populatorMaxTime: 10,
+                populatorMaxTime: 60,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
             };
+        },
+        computed: {
+            videoLink: function() {
+                var introVideos = this.$store.getters['countlyOnboarding/introVideos'];
+
+                if (this.isCountlyEE) {
+                    return introVideos.videoLinkForEE;
+                }
+
+                return introVideos.videoLinkForCE;
+            },
         },
         created: function() {
             var self = this;
@@ -43,6 +54,7 @@
                             name: appTemplate.name,
                         });
                     });
+                    self.$store.dispatch('countlyOnboarding/fetchIntroVideos');
 
                     self.createNewApp();
                 });
