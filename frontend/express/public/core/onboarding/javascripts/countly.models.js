@@ -1,6 +1,11 @@
-/*global CV, countlyCommon */
+/*global CV, countlyCommon, countlyCMS */
 
 (function(countlyOnboarding) {
+
+    countlyCMS.fetchEntry('server-consents');
+    countlyCMS.fetchEntry('server-intro-video');
+    countlyCMS.fetchEntry('server-quick-start');
+
     countlyOnboarding.generateAPIKey = function() {
         var length = 40;
         var text = [];
