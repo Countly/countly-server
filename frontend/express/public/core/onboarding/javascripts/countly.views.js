@@ -179,9 +179,26 @@
         },
         methods: {
             handleSubmit: function(doc) {
-                // var countly_newsletter = doc.countly_newsletter;
+                var countly_newsletter = doc.countly_newsletter;
                 delete doc.countly_newsletter;
-                // do some requests
+
+                if (countly_newsletter) {
+                    var name = countlyGlobal.member.full_name.split(' ')[0];
+                    var email = countlyGlobal.member.email;
+                    var baseUrl = 'https://hooks.zapier.com/';
+                    var path = 'hooks/catch/';
+                    var subpath = '538557/3mg2ybc/';
+
+                    CV.$.ajax({
+                        type: 'GET',
+                        url: baseUrl + path + subpath,
+                        data: {
+                            name: name,
+                            email: email,
+                        },
+                    });
+                }
+
                 var configs = {
                     frontend: doc,
                 };
