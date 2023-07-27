@@ -732,7 +732,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2629">line 2629</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2639">line 2639</a>
     </li></ul></dd>
     
 
@@ -890,7 +890,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2528">line 2528</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2538">line 2538</a>
     </li></ul></dd>
     
 
@@ -1048,7 +1048,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2519">line 2519</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2529">line 2529</a>
     </li></ul></dd>
     
 
@@ -1190,7 +1190,7 @@
 
     
 
-    <h4 class="name" id=".extractBarData"><span class="type-signature type-signature-static">(static) </span>extractBarData<span class="signature">(db, rangeArray, clearFunction, fetchFunction, maxItems, metric<span class="signature-attributes">opt</span>, totalUserOverrideObj<span class="signature-attributes">opt</span>, fixBarSegmentData)</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id=".extractBarData"><span class="type-signature type-signature-static">(static) </span>extractBarData<span class="signature">(db, rangeArray, clearFunction, fetchFunction, maxItems, metric<span class="signature-attributes">opt</span>, totalUserOverrideObj<span class="signature-attributes">opt</span>, fixBarSegmentData, period)</span><span class="type-signature"> &rarr; {array}</span></h4>
 
     
 
@@ -1206,7 +1206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1632">line 1632</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1642">line 1642</a>
     </li></ul></dd>
     
 
@@ -1545,6 +1545,38 @@
             
 
             <td class="description last"><p>function to make any adjustments to the extracted data based on segment</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>period to extract data from</p></td>
         </tr>
 
     
@@ -1896,7 +1928,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1808">line 1808</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1818">line 1818</a>
     </li></ul></dd>
     
 
@@ -2174,7 +2206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1928">line 1928</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1938">line 1938</a>
     </li></ul></dd>
     
 
@@ -2730,7 +2762,7 @@
 
     
 
-    <h4 class="name" id=".extractTwoLevelData"><span class="type-signature type-signature-static">(static) </span>extractTwoLevelData<span class="signature">(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
+    <h4 class="name" id=".extractTwoLevelData"><span class="type-signature type-signature-static">(static) </span>extractTwoLevelData<span class="signature">(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj<span class="signature-attributes">opt</span>, period<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
 
     
 
@@ -2746,7 +2778,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1423">line 1423</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1424">line 1424</a>
     </li></ul></dd>
     
 
@@ -3003,6 +3035,40 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>period to override</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -3068,7 +3134,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2603">line 2603</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2613">line 2613</a>
     </li></ul></dd>
     
 
@@ -3250,7 +3316,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2176">line 2176</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2186">line 2186</a>
     </li></ul></dd>
     
 
@@ -3542,7 +3608,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1729">line 1729</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1739">line 1739</a>
     </li></ul></dd>
     
 
@@ -4030,7 +4096,7 @@ and params.appTimezone for timezone</p></li></ul></dd>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2540">line 2540</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2550">line 2550</a>
     </li></ul></dd>
     
 
@@ -4218,7 +4284,7 @@ and params.appTimezone for timezone</p></li></ul></dd>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1707">line 1707</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1717">line 1717</a>
     </li></ul></dd>
     
 
@@ -4637,7 +4703,7 @@ countlyCommon.getShortNumber(10000);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2370">line 2370</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2380">line 2380</a>
     </li></ul></dd>
     
 
@@ -4829,7 +4895,7 @@ countlyCommon.getShortNumber(10000);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2449">line 2449</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2459">line 2459</a>
     </li></ul></dd>
     
 
@@ -5302,7 +5368,7 @@ countlyCommon.getShortNumber(10000);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2638">line 2638</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2648">line 2648</a>
     </li></ul></dd>
     
 
@@ -5462,7 +5528,7 @@ countlyCommon.getShortNumber(10000);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2136">line 2136</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2146">line 2146</a>
     </li></ul></dd>
     
 
@@ -5626,7 +5692,7 @@ countlyCommon.timeString(1484654066);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2488">line 2488</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2498">line 2498</a>
     </li></ul></dd>
     
 
@@ -5814,7 +5880,7 @@ countlyCommon.union([1,2],[2,3]);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2577">line 2577</a>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2587">line 2587</a>
     </li></ul></dd>
     
 
@@ -5980,7 +6046,7 @@ countlyCommon.validateEmail("test@test");</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Tue Jul 25 2023 19:41:52 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Thu Jul 27 2023 19:08:42 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
