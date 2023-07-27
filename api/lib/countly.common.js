@@ -1401,6 +1401,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject, periodObject
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @param {string=} period - period to override
 * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
 * @example <caption>Extracting carriers data from carriers collection</caption>
 * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearObject, [
@@ -1420,9 +1421,16 @@ countlyCommon.getSparklineData = function(data, props, clearObject, periodObject
 *    {"carrier":"Verizon","t":66,"u":60,"n":30}
 * ]}
 */
-countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
+countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj, period) {
+    var periodObj = null;
 
-    countlyCommon.periodObj = getPeriodObject();
+    if (typeof period !== 'undefined' && period) {
+        periodObj = period;
+    }
+    else {
+        countlyCommon.periodObj = getPeriodObject();
+        periodObj = countlyCommon.periodObj;
+    }
 
     if (!rangeArray) {
         return {"chartData": tableData};
@@ -1435,20 +1443,20 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
 
-    if (!countlyCommon.periodObj.isSpecialPeriod) {
-        periodMin = countlyCommon.periodObj.periodMin;
-        periodMax = (countlyCommon.periodObj.periodMax + 1);
+    if (!periodObj.isSpecialPeriod) {
+        periodMin = periodObj.periodMin;
+        periodMax = (periodObj.periodMax + 1);
     }
     else {
         periodMin = 0;
-        periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+        periodMax = periodObj.currentPeriodArr.length;
     }
 
     var tableCounter = 0;
 
-    if (!countlyCommon.periodObj.isSpecialPeriod) {
+    if (!periodObj.isSpecialPeriod) {
         for (let j = 0; j < rangeArray.length; j++) {
-            dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
+            dataObj = countlyCommon.getDescendantProp(db, periodObj.activePeriod + "." + rangeArray[j]);
 
             if (!dataObj) {
                 continue;
@@ -1490,7 +1498,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
                 tmp_x = {};
 
             for (let i = periodMin; i < periodMax; i++) {
-                dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
+                dataObj = countlyCommon.getDescendantProp(db, periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
 
                 if (!dataObj) {
                     continue;
@@ -1534,8 +1542,8 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
                         tmpUniqValCheck = 0,
                         tmpCheckVal = 0;
 
-                    for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                    for (let l = 0; l < (periodObj.uniquePeriodArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
                         if (!tmp_x) {
                             continue;
                         }
@@ -1551,8 +1559,8 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
                         }
                     }
 
-                    for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                    for (let l = 0; l < (periodObj.uniquePeriodCheckArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
                         if (!tmp_x) {
                             continue;
                         }
@@ -1611,6 +1619,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
     return {"chartData": underscore.compact(tableData)};
 };
 
+
 /**
 * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
 * @param {object} db - countly standard metric data object
@@ -1621,6 +1630,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
 * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+* @param {string} period - period to extract data from
 * @returns {array} array with top 3 values
 * @example <caption>Return data</caption>
 * [
@@ -1629,7 +1639,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 *    {"name":"Windows Phone","percent":32}
 * ]
 */
-countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj, fixBarSegmentData) {
+countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj, fixBarSegmentData, period) {
     metric = metric || "t";
     maxItems = maxItems || 3;
     fetchFunction = fetchFunction || function(rangeArr) {
@@ -1650,7 +1660,7 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
     if (metric === "n") {
         dataProps.push({name: "u"});
     }
-    var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+    var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj, period);
 
     if (fixBarSegmentData) {
         rangeData = fixBarSegmentData(rangeData);
