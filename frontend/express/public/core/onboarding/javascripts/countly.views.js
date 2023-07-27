@@ -54,7 +54,6 @@
             },
         },
         created: function() {
-            countlyGlobal.isSettingUp = true;
             if (this.isDemoApp) {
                 this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
             }
@@ -128,9 +127,6 @@
                         countlyCommon.ACTIVE_APP_KEY = response.key + "";
                         app.onAppManagementSwitch(response._id + "", response.type || "mobile");
                         self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
-                        if (Object.keys(countlyGlobal.apps).length && !CV.sideBarComponent) {
-                            app.initSidebar();
-                        }
 
                         if (self.isDemoApp) {
                             self.isPopulating = true;
@@ -166,7 +162,6 @@
             };
         },
         created: function() {
-            countlyGlobal.isSettingUp = true;
             this.$store.dispatch('countlyOnboarding/fetchConsentItems');
         },
         computed: {
