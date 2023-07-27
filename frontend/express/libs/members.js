@@ -45,16 +45,16 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
  * @property {object} emptyPermission - empty crud permission
  */
 membersUtility.emptyPermission = {
-        "c": {},
-        "r": {},
-        "u": {},
-        "d": {},
-        "_": {
-            "a": [],
-            "u": [
-                []
-            ]
-        }
+    "c": {},
+    "r": {},
+    "u": {},
+    "d": {},
+    "_": {
+        "a": [],
+        "u": [
+            []
+        ]
+    }
 };
 
 /** Checks remote configuration and sets variables to configuration object
