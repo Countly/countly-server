@@ -909,7 +909,7 @@
             });
         };
 
-        if (Object.keys(countlyGlobal.apps).length) {
+        if (Object.keys(countlyGlobal.apps).length && !countlyGlobal.isSettingUp) {
             app.initSidebar();
         }
     });

@@ -54,6 +54,7 @@
             },
         },
         created: function() {
+            countlyGlobal.isSettingUp = true;
             if (this.isDemoApp) {
                 this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
             }
@@ -165,6 +166,7 @@
             };
         },
         created: function() {
+            countlyGlobal.isSettingUp = true;
             this.$store.dispatch('countlyOnboarding/fetchConsentItems');
         },
         computed: {
