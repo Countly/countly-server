@@ -235,8 +235,8 @@
     var loginCount = countlyGlobal.member.login_count || 0;
 
     countlyCMS.fetchEntry('server-quick-start').then(function(resp) {
-        var showForNSession = resp.data[0].showForNSession;
-        if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSession) {
+        var showForNSessions = resp.data[0].showForNSessions;
+        if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions) {
             CountlyHelpers.showQuickstartPopover(countlyOnboarding.quickstartContent);
         }
     });
