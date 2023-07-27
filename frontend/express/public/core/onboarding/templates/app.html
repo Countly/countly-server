@@ -92,7 +92,7 @@
         </cly-form>
     </div>
     <div v-else class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
-        <video controls class="bu-is-block bu-mx-auto setup-video-container">
+        <video controls class="bu-is-block bu-mx-auto setup-video-container" v-if="videoLink.length">
             <source :src="videoLink" />
         </video>
         <template v-if="!isPopulatorFinished">

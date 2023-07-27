@@ -54,10 +54,6 @@
             },
         },
         created: function() {
-            if (this.isDemoApp) {
-                this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
-            }
-
             this.createNewApp();
         },
         methods: {
@@ -114,6 +110,9 @@
             },
             handleSubmit: function(doc) {
                 var self = this;
+                if (this.isDemoApp) {
+                    this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
+                }
 
                 delete doc.appTemplate;
 
@@ -129,8 +128,11 @@
                         self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
 
                         if (self.isDemoApp) {
-                            self.isPopulating = true;
                             self.populateApp();
+                            self.$store.dispatch('countlyOnboarding/fetchIntroVideos')
+                                .finally(function() {
+                                    self.isPopulating = true;
+                                });
                         }
                         else {
                             app.navigate('#/initial-consent', true);
@@ -161,7 +163,7 @@
                 },
             };
         },
-        created: function() {
+        mounted: function() {
             this.$store.dispatch('countlyOnboarding/fetchConsentItems');
         },
         computed: {
@@ -232,9 +234,11 @@
     var loginCount = countlyGlobal.member.login_count || 0;
 
     countlyCMS.fetchEntry('server-quick-start').then(function(resp) {
-        var showForNSessions = resp.data[0].showForNSessions;
-        if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions) {
-            CountlyHelpers.showQuickstartPopover(countlyOnboarding.quickstartContent);
+        if (resp.data && resp.data.length) {
+            var showForNSessions = resp.data[0].showForNSessions;
+            if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions) {
+                CountlyHelpers.showQuickstartPopover(countlyOnboarding.quickstartContent);
+            }
         }
     });
 })();
