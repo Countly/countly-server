@@ -19,6 +19,14 @@
                 }
             }
 
+            var appTemplates = [];
+            countlyPopulator.defaultTemplates.forEach(function(appTemplate) {
+                appTemplates.push({
+                    id: appTemplate._id,
+                    name: appTemplate.name,
+                });
+            });
+
             var searchParams = new URLSearchParams(window.location.search);
 
             return {
@@ -27,7 +35,7 @@
                 newApp: {},
                 timezones: timezones,
                 types: Object.keys(app.appTypes),
-                appTemplates: [],
+                appTemplates: appTemplates,
                 populatorProgress: 0,
                 populatorMaxTime: 60,
                 isPopulatorFinished: false,
@@ -46,24 +54,11 @@
             },
         },
         created: function() {
-            var self = this;
-
             if (this.isDemoApp) {
-                countlyPopulator.getTemplates(function(appTemplates) {
-                    appTemplates.forEach(function(appTemplate) {
-                        self.appTemplates.push({
-                            id: appTemplate._id,
-                            name: appTemplate.name,
-                        });
-                    });
-                    self.$store.dispatch('countlyOnboarding/fetchIntroVideos');
+                this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
+            }
 
-                    self.createNewApp();
-                });
-            }
-            else {
-                this.createNewApp();
-            }
+            this.createNewApp();
         },
         methods: {
             createNewApp: function() {
@@ -103,7 +98,7 @@
                 });
                 var startTime = Math.round(Date.now() / 1000);
                 var progressBar = setInterval(function() {
-                    if (parseInt(self.populatorProgress) < 100) {
+                    if (parseInt(self.populatorProgress, 10) < 100) {
                         self.populatorProgress = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.populatorMaxTime) * 100;
                         if (self.populatorProgress > 100) {
                             self.populatorProgress = 100;
@@ -130,7 +125,7 @@
                         self.$store.dispatch("countlyCommon/addToAllApps", response);
                         countlyCommon.ACTIVE_APP_ID = response._id + "";
                         countlyCommon.ACTIVE_APP_KEY = response.key + "";
-                        app.onAppManagementSwitch(response._id + "", response && response.type || "mobile");
+                        app.onAppManagementSwitch(response._id + "", response.type || "mobile");
                         self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
                         if (Object.keys(countlyGlobal.apps).length && !CV.sideBarComponent) {
                             app.initSidebar();
@@ -217,7 +212,8 @@
                 });
 
                 // go home
-                app.navigate('#/', true);
+                window.location.href = '#/home';
+                window.location.reload();
             },
         }
     });
@@ -236,45 +232,12 @@
         }));
     });
 
-    var content = '<div><div class="bu-has-text-weight-medium">Quick Start Guide</div>' +
-        '<div class="bu-mt-4 quickstart-item">' +
-        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
-        '<div>' +
-        '<a href="#/manage/users" class="quickstart-link bu-is-block bu-has-text-weight-medium">Invite new users <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Invite users for your project to join you for collaboration</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="bu-mt-2 quickstart-item">' +
-        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
-        '<div>' +
-        '<a href="#/manage/apps" class="quickstart-link bu-is-block bu-has-text-weight-medium">Create a new application <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Create a new application for your project to join you for collaboration</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="bu-mt-2 quickstart-item">' +
-        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
-        '<div>' +
-        '<a href="https://support.count.ly/hc/en-us" class="quickstart-link bu-is-block bu-has-text-weight-medium">Explore Countly Guides <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Explore Countly Guides for your project to join you for collaboration</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="bu-mt-2 quickstart-item">' +
-        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
-        '<div>' +
-        '<a href="https://support.count.ly/hc/en-us/sections/360007310512-SDKs" class="quickstart-link bu-is-block bu-has-text-weight-medium">Find your Countly SDK <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Find your Countly SDK for your project to join you for collaboration</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="bu-mt-2 quickstart-item">' +
-        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
-        '<div>' +
-        '<a href="https://discord.gg/countly" class="quickstart-link bu-is-block bu-has-text-weight-medium">Join Countly Community on Discord <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Join Countly Community for your project to join you for collaboration</div>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
-
     var loginCount = countlyGlobal.member.login_count || 0;
 
     countlyCMS.fetchEntry('server-quick-start').then(function(resp) {
         var showForNSession = resp.data[0].showForNSession;
         if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSession) {
-            CountlyHelpers.showQuickstartPopover(content);
+            CountlyHelpers.showQuickstartPopover(countlyOnboarding.quickstartContent);
         }
     });
 })();

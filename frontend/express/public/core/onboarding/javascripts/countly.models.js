@@ -35,6 +35,39 @@
         return text.join('');
     };
 
+    countlyOnboarding.quickstartContent = '<div><div class="bu-has-text-weight-medium">Quick Start Guide</div>' +
+        '<div class="bu-mt-4 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="#/manage/users" class="quickstart-link bu-is-block bu-has-text-weight-medium">Invite new users <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Invite users for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="#/manage/apps" class="quickstart-link bu-is-block bu-has-text-weight-medium">Create a new application <i class="ion-arrow-right-c"></i></a><div class="quickstart-item-desc bu-is-size-7">Create a new application for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="https://support.count.ly/hc/en-us" class="quickstart-link bu-is-block bu-has-text-weight-medium">Explore Countly Guides <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Explore Countly Guides for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="https://support.count.ly/hc/en-us/sections/360007310512-SDKs" class="quickstart-link bu-is-block bu-has-text-weight-medium">Find your Countly SDK <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Find your Countly SDK for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="bu-mt-2 quickstart-item">' +
+        '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+        '<div>' +
+        '<a href="https://discord.gg/countly" class="quickstart-link bu-is-block bu-has-text-weight-medium">Join Countly Community on Discord <i class="ion-android-open"></i></a><div class="quickstart-item-desc bu-is-size-7">Join Countly Community for your project to join you for collaboration</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+
     countlyOnboarding.getVuexModule = function() {
         var getEmptyState = function() {
             return {
