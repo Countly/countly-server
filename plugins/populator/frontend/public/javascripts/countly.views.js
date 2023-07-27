@@ -343,7 +343,12 @@
                 return editedObject.events && editedObject.events.length && editedObject.events.slice(-1)[0].eventName === '';
             },
             isAddSegmentationDisabled: function(editedObject, index) {
-                return (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0);
+                if (editedObject.events[index].segments.length) {
+                    return editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0;
+                }
+                else {
+                    return false;
+                }
             },
             addUserProperty: function(editedObject) {
                 if (editedObject.up[0].key === '' && editedObject.up[0].value.length === 0) {
@@ -372,7 +377,10 @@
                 }
             },
             addSegmentationProperty: function(editedObject, index) {
-                if (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0) {
+                if (editedObject.events[index].segments.length === 0) {
+                    editedObject.events[index].segments.push({ key: "", value: []});
+                }
+                else if (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0) {
                     return;
                 }
                 else {
