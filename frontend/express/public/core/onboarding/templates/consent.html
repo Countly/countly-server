@@ -9,7 +9,7 @@
                 <cly-form-step :id="'consent'">
                     <cly-form-field v-for="item in consentItems" :key="item._id">
                         <template v-if="item.type !== 'tracking' || !isCountlyHosted">
-                            <div class="consent-blurb bu-mb-5">{{ item.description }}</div>
+                            <div class="consent-blurb bu-mb-5">{{ decodeHtmlEntities(item.description) }}</div>
                             <div class="consent-question bu-mb-5">{{ item.question }}</div>
                             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
                                 <el-radio

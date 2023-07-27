@@ -172,6 +172,15 @@
             },
         },
         methods: {
+            decodeHtmlEntities: function(inp) {
+                var el = document.createElement('p');
+                el.innerHTML = inp;
+
+                var result = el.textContent || el.innerText;
+                el = null;
+
+                return result;
+            },
             handleSubmit: function(doc) {
                 var countly_newsletter = doc.countly_newsletter;
                 delete doc.countly_newsletter;
@@ -232,12 +241,26 @@
     });
 
     var loginCount = countlyGlobal.member.login_count || 0;
+    var isGlobalAdmin = countlyGlobal.member.global_admin;
 
     countlyCMS.fetchEntry('server-quick-start').then(function(resp) {
         if (resp.data && resp.data.length) {
             var showForNSessions = resp.data[0].showForNSessions;
+
             if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions) {
-                CountlyHelpers.showQuickstartPopover(countlyOnboarding.quickstartContent);
+                var quickstartItems = resp.data[0].links.filter(function(item) {
+                    if (item.forUserType === 'all') {
+                        return true;
+                    }
+                    else if (item.forUserType === 'globalAdmin' && isGlobalAdmin) {
+                        return true;
+                    }
+
+                    return false;
+                });
+
+                var content = countlyOnboarding.generateQuickstartContent(quickstartItems);
+                CountlyHelpers.showQuickstartPopover(content);
             }
         }
     });

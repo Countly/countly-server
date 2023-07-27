@@ -782,8 +782,10 @@
 
     var QuickstartPopoverView = {
         template: '<div class="quickstart-popover-wrapper">\
+            <div class="quickstart-popover-positioner">\
             <el-popover\
                 v-for="content in quickstartContent"\
+                popper-class="quickstart-popover-popover"\
                 :value="!!content"\
                 :visible-arrow="false"\
                 trigger="manual"\
@@ -793,6 +795,7 @@
                 <i class="ion-close bu-is-size-7 quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
                 <div v-html="content.message"></div>\
             </el-popover>\
+            </div>\
         </div>',
         store: _vuex.getGlobalStore(),
         computed: {

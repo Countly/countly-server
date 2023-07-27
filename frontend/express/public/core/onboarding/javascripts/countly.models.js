@@ -68,6 +68,30 @@
         '</div>' +
         '</div>';
 
+    countlyOnboarding.generateQuickstartContent = function(quickstartItems) {
+        var heading = '<div class="bu-has-text-weight-medium">' + CV.i18n('initial-setup.quickstart-title') + '</div>';
+        var body = '';
+
+        quickstartItems.forEach(function(item) {
+            var linkUrl = item.link;
+            var description = (item.description && item.description !== '-') ? item.description : '';
+            var title = item.title;
+            var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c"></i>' : '<i class="ion-android-open"></i>';
+
+            body += '<div class="bu-mt-4 quickstart-item">' +
+            '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+            '<div>' +
+            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium">' +
+            title + ' ' + icon +
+            '</a>' +
+            '<div class="quickstart-item-desc bu-is-size-7">' + description + '</div>' +
+            '</div>' +
+            '</div>';
+        });
+
+        return '<div>' + heading + body + '</div>';
+    };
+
     countlyOnboarding.getVuexModule = function() {
         var getEmptyState = function() {
             return {

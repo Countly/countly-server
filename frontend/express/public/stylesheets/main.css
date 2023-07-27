@@ -4988,8 +4988,19 @@ x-vue-echarts > div:has(> .graph-tooltip-wrapper), x-vue-echarts > div:has(> .gr
 
 .quickstart-popover-wrapper {
   position: absolute;
-  bottom: 380px;
+  bottom: 0;
   left: 64px;
+  height: 12px;
+  z-index: 2001;
+}
+
+.quickstart-popover-positioner {
+  position: absolute;
+  transform: translate(0, -100%);
+}
+
+.quickstart-popover-popover {
+  position: relative;
 }
 
 .quickstart-popover-close {
