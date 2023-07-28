@@ -979,9 +979,6 @@ var AppRouter = Backbone.Router.extend({
             }
             return false;
         }
-        else if (countlyGlobal.member.login === 3 || moment().dayOfYear() % 90 === 0) {
-            this.navigate("/initial-consent", true);
-        }
         viewName.render();
         var self = this;
         this.refreshActiveView = setInterval(function() {

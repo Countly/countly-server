@@ -1,4 +1,4 @@
-/*globals _,app,Countly,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins*/
+/*globals _,app,Backbone,Countly,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins,moment,store*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -54,6 +54,7 @@
             },
         },
         created: function() {
+            delete countlyGlobal.licenseError;
             this.createNewApp();
         },
         methods: {
@@ -221,6 +222,60 @@
         }
     });
 
+    var newsletterView = CV.views.create({
+        template: CV.T('/core/onboarding/templates/consent.html'),
+        data: function() {
+            return {
+                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
+                newConsent: {
+                    countly_newsletter: true,
+                },
+            };
+        },
+        mounted: function() {
+            store.set('disable_newsletter_prompt', true);
+            this.$store.dispatch('countlyOnboarding/fetchConsentItems');
+        },
+        computed: {
+            consentItems: function() {
+                return this.$store.getters['countlyOnboarding/consentItems']
+                    .filter(function(item) {
+                        return item.type === 'newsletter';
+                    });
+            },
+        },
+        methods: {
+            decodeHtmlEntities: function(inp) {
+                var el = document.createElement('p');
+                el.innerHTML = inp;
+
+                var result = el.textContent || el.innerText;
+                el = null;
+
+                return result;
+            },
+            handleSubmit: function(doc) {
+                var countly_newsletter = doc.countly_newsletter;
+                delete doc.countly_newsletter;
+
+                this.$store.dispatch('countlyOnboarding/updateUserNewsletter', {
+                    user_id: countlyGlobal.member._id,
+                    subscribe_newsletter: countly_newsletter,
+                });
+
+                if (countly_newsletter) {
+                    this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
+                        name: countlyGlobal.member.full_name.split(' ')[0],
+                        email: countlyGlobal.member.email,
+                    });
+                }
+
+                // go home
+                app.navigate('#/', true);
+            },
+        }
+    });
+
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: appSetupView,
@@ -231,6 +286,13 @@
     app.route('/initial-consent', 'initial-consent', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: consentView,
+            vuex: [{ clyModel: countlyOnboarding }],
+        }));
+    });
+
+    app.route('/newsletter', 'newsletter', function() {
+        this.renderWhenReady(new CV.views.BackboneWrapper({
+            component: newsletterView,
             vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
@@ -259,4 +321,13 @@
             }
         }
     });
+
+    if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
+        if (Backbone.history.fragment !== '/newsletter') {
+            app.navigate("/newsletter", true);
+        }
+    }
+    else if (!countlyGlobal.member.subscribe_newsletter && (countlyGlobal.member.login_count !== 3 && moment().dayOfYear() % 90 !== 0)) {
+        store.set('disable_newsletter_prompt', false);
+    }
 })();
