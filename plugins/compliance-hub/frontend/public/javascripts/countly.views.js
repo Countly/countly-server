@@ -301,6 +301,8 @@
         data: function() {
             return {
                 consentDpChartloaded: false,
+                exportDpChartloaded: false,
+                purgeDpChartloaded: false,
                 chartLoading: false,
                 filter0: [
                     {
@@ -433,14 +435,19 @@
                 return legendData;
             },
             exportDpChart: function() {
+                this.exportDpChartloaded = false;
                 var exportDP = this.$store.getters["countlyConsentManager/_exportDP"];
                 var presentYAxisData = [];
                 var previousYAxisData = [];
                 for (var key in exportDP.chartData) {
                     presentYAxisData.push(exportDP.chartData[key].e);
                     previousYAxisData.push(exportDP.chartData[key].pe);
-
-
+                }
+                if (presentYAxisData.length > 0) {
+                    this.exportDpChartloaded = true;
+                }
+                else if (exportDP.chartData) {
+                    this.exportDpChartloaded = true;
                 }
                 return {
                     series: [
@@ -457,12 +464,19 @@
                 };
             },
             purgeDpChart: function() {
+                this.purgeDpChartloaded = false;
                 var purgeDp = this.$store.getters["countlyConsentManager/_purgeDP"];
                 var purgeDpPresent = [];
                 var purgeDpPrevious = [];
                 for (var key in purgeDp.chartData) {
                     purgeDpPresent.push(purgeDp.chartData[key].p);
                     purgeDpPrevious.push(purgeDp.chartData[key].pp);
+                }
+                if (purgeDpPresent.length > 0) {
+                    this.purgeDpChartloaded = true;
+                }
+                else if (purgeDp.chartData) {
+                    this.purgeDpChartloaded = true;
                 }
                 var data = {
                     series: [

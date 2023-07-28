@@ -72,7 +72,7 @@
                 </template>
             </cly-header>
                 <cly-main>
-                    <cly-datatable-n :rows="templates" class="populator-wrapper__table">
+                    <cly-datatable-n :force-loading="isLoading" :rows="templates" class="populator-wrapper__table">
                         <template v-slot="scope">
                             <el-table-column prop="name" :label="i18n('populator.template')" sortable></el-table-column>
                             <el-table-column prop="isDefault" :label="i18n('populator.template-type')" sortable></el-table-column>

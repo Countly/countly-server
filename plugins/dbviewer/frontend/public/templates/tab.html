@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
+                    <cly-datatable-n :force-loading="forceLoading" row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                         <template slot="header-left">
                             <el-button @click="toggleExpand()">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
                             <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
