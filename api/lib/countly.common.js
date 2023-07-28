@@ -2527,7 +2527,7 @@ countlyCommon.union = function(x, y) {
 * @returns {string} encoded string
 */
 countlyCommon.encode = function(str) {
-    return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+    return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;').replace(/\u0000/g,"&#9647");
 };
 
 /**
@@ -2536,7 +2536,7 @@ countlyCommon.encode = function(str) {
 * @returns {string} decoded string
 */
 countlyCommon.decode = function(str) {
-    return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+    return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.').replace(/&#9647/g, '\u0000');
 };
 
 /**
