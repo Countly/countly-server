@@ -185,20 +185,15 @@
                 var countly_newsletter = doc.countly_newsletter;
                 delete doc.countly_newsletter;
 
-                if (countly_newsletter) {
-                    var name = countlyGlobal.member.full_name.split(' ')[0];
-                    var email = countlyGlobal.member.email;
-                    var baseUrl = 'https://hooks.zapier.com/';
-                    var path = 'hooks/catch/';
-                    var subpath = '538557/3mg2ybc/';
+                this.$store.dispatch('countlyOnboarding/updateUserNewsletter', {
+                    user_id: countlyGlobal.member._id,
+                    subscribe_newsletter: countly_newsletter,
+                });
 
-                    CV.$.ajax({
-                        type: 'GET',
-                        url: baseUrl + path + subpath,
-                        data: {
-                            name: name,
-                            email: email,
-                        },
+                if (countly_newsletter) {
+                    this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
+                        name: countlyGlobal.member.full_name.split(' ')[0],
+                        email: countlyGlobal.member.email,
                     });
                 }
 

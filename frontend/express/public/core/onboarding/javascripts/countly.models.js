@@ -162,6 +162,39 @@
                     context.commit('setConsentItems', resp.data);
                 });
             },
+            sendNewsletterSubscription: function(_, payload) {
+                var baseUrl = 'https://hooks.zapier.com/';
+                var path = 'hooks/catch/';
+                var subpath = '538557/3mg2ybc/';
+
+                CV.$.ajax({
+                    type: 'GET',
+                    url: baseUrl + path + subpath,
+                    data: {
+                        name: payload.name,
+                        email: payload.email,
+                    },
+                });
+            },
+            updateUserNewsletter: function(_, payload) {
+                return new Promise(function(resolve, reject) {
+                    CV.$.ajax({
+                        type: "POST",
+                        url: countlyCommon.API_PARTS.data.w + '/users/update',
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            args: JSON.stringify(payload)
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            resolve(response);
+                        },
+                        error: function(xhr) {
+                            reject(xhr.responseJSON);
+                        }
+                    });
+                });
+            },
         };
 
         return CV.vuex.Module("countlyOnboarding", {
