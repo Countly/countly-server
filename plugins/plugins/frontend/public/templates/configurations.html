@@ -129,7 +129,8 @@
                                                     type="text" 
                                                     @click.stop="onChange(key, '')"
                                                     class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
-                                                    <img :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
+                                                    <img v-if="selectedConfig==='feedback'":src="'/feedback/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
+                                                    <img v-else :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
                                                 </div>
                                                 <div v-else class="bu-is-flex">
                                                     <el-button type="default" style="display:flex;margin:auto;">{{i18n('white-labeling.choose-file')}}</el-button>
