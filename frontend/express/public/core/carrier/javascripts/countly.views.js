@@ -76,7 +76,13 @@ var AppCarrierView = countlyVue.views.create({
             };
         },
         appCarrierRows: function() {
-            return this.appCarrier.table || [];
+            if (this.appCarrier && this.appCarrier.table) {
+                this.appCarrier.table.forEach(function(row) {
+                    row.carriers = countlyCommon.unescapeHtml(row.carriers);
+                });
+                return this.appCarrier.table;
+            }
+            return [];
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
