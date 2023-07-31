@@ -58,8 +58,8 @@ appsApi.getCurrentUserApps = function(params) {
     var adminOfAppIds = getAdminApps(params.member),
         userOfAppIds = getUserApps(params.member);
 
-    common.db.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err, admin_of) {
-        common.db.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err2, user_of) {
+    common.db.collection('apps').find({ _id: { '$in': adminOfAppIds.map(id => common.db.ObjectID(id)) } }).toArray(function(err, admin_of) {
+        common.db.collection('apps').find({ _id: { '$in': userOfAppIds.map(id => common.db.ObjectID(id)) } }).toArray(function(err2, user_of) {
             common.returnOutput(params, {
                 admin_of: packApps(admin_of),
                 user_of: packApps(user_of)
@@ -1021,7 +1021,8 @@ function packApps(apps) {
             'country': apps[i].country,
             'key': apps[i].key,
             'name': apps[i].name,
-            'timezone': apps[i].timezone
+            'timezone': apps[i].timezone,
+            'salt': apps[i].salt || apps[i].checksum_salt || "",
         };
     }
 
