@@ -5193,6 +5193,9 @@
          * @returns {String} Trimmed string
          */
         countlyCommon.trimWhitespaceStartEnd = function(str) {
+            if (typeof str !== 'string') {
+                return str;
+            }
             str = str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
             return str;
         };
