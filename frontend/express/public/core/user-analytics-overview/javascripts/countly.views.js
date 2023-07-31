@@ -269,6 +269,9 @@ var GridComponent = countlyVue.views.create({
                 };
             }
         },
+        stackedBarTimeSeriesOptions: function() {
+            return this.timelineGraph.lineOptions;
+        },
         stackedBarOptions: function() {
             var data = this.timelineGraph;
             for (var k = 0; k < data.lineOptions.series.length; k++) {
@@ -336,6 +339,8 @@ var GridComponent = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.refreshNotes();
+        },
+        valFormatter: function() {
         },
         onWidgetCommand: function(event) {
             if (event === 'add' || event === 'manage' || event === 'show') {
