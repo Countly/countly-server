@@ -638,6 +638,11 @@
                 return availableEvents;
             }
         },
+        created: function() {
+            if (this.adaptiveLength && this.width === 400 && this.availableEvents.length > 0) {
+                this.width = this.availableEvents * 80;
+            }
+        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
