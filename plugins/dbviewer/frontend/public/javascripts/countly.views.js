@@ -131,6 +131,11 @@
                 }
             },
             methods: {
+                onAppChange: function(val) {
+                    if (val !== "all") {
+                        this.appFilter = countlyGlobal.apps[val].label;
+                    }
+                },
                 toggleExpand: function() {
                     this.isExpanded = !this.isExpanded;
                     if (this.isExpanded) {
@@ -403,6 +408,22 @@
                             value: apps[appKeys[i]]._id
                         });
                     }
+
+                    formattedApps.sort(function(a, b) {
+                        if (a.label < b.label) {
+                            return -1;
+                        }
+                        if (a.label > b.label) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+
+                    formattedApps.unshift({
+                        label: 'All Apps',
+                        value: 'all'
+                    });
+
                     this.apps = formattedApps;
                 }
             },
