@@ -1,3 +1,17 @@
+## Version 23.06.6
+Fixes:
+- [crashes] Limit custom properties key length in crashgroup
+- [core] Fix issue with encoding and decoding for \u0000
+- [core] Decode carriers name in carriers table
+- [apps] display old salt property value too
+- [db-viewer] Add search to DB Viewer apps filter and do alphabetical order
+- [dashboard] Fix error in charts added in time-series type in User Analytics widgets
+- [dashboard] Fix dashboard widgets showing no data incorrectly
+
+Enterprise fixes:
+- [users][drill] Correctly Match events for user timeline in user profiles
+- [data-manager] Fix issue with incorrect period in regeneration of aggregate data
+
 ## Version 23.06.5
 Fixes:
 - [core] Fixes for pluginManager callPromisedAppMethod
