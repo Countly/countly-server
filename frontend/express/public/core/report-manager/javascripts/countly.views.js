@@ -259,7 +259,6 @@
                     "all": CV.i18n("report-manager.all-origins"),
                     "funnels": CV.i18n("sidebar.funnels") || "Funnels",
                     "drill": CV.i18n("drill.drill") || "Drill",
-                    "flows": CV.i18n("flows.flows") || "Flows",
                     "retention": CV.i18n("retention.retention") || "Retention",
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
@@ -441,6 +440,21 @@
                 this.$refs.filterDropdown.doClose();
                 //this.handleReloadFilter();
             }
+        },
+        created: function() {
+            var filteredOrigins = {};
+            for (var key in this.availableOrigins) {
+                var isValid = countlyGlobal.plugins.includes(key) || key === "all";
+
+                if (key === "retention" && countlyGlobal.plugins.includes("retention_segments")) {
+                    isValid = true;
+                }
+
+                if (isValid) {
+                    filteredOrigins[key] = this.availableOrigins[key];
+                }
+            }
+            this.availableOrigins = filteredOrigins;
         }
     }));
 

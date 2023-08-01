@@ -2198,6 +2198,9 @@
                             }
                         }
                     }
+                    data.forEach((item) => {
+                        item.name = countlyCommon.unescapeHtml(item.name);
+                    });
                     this.legendData = data;
                 }
             }

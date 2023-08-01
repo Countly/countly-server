@@ -30,9 +30,9 @@
 <body>
 	<div class="wrapper">
 		<div id="top-container">
-			<div class="top-button" id="select-lang">
-				<div id="active-lang">EN</div>
-				<div id="langs">
+			<div class="top-button" id="select-lang" data-test-id="login-select-lang">
+				<div id="active-lang" data-test-id="login-active-lang">EN</div>
+				<div id="langs" data-test-id="login-langs">
 					<div class="group">
 						<% for(var i=0, l=(languages.length/2); i<l; i++) {%>
 						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
@@ -45,14 +45,14 @@
 					</div>
 				</div>
 			</div>
-			<div id="login-logo"></div>
+			<div id="login-logo" data-test-id="login-logo"></div>
 		</div>
 		<% if (message){ %>
 			<div class="cly-vue-notification__alert-box" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
 				<div style="display: flex;justify-content: space-between; margin:8px; overflow: hidden;">
 					<div style="display: flex;">
-						<img id="notification-image" class="cly-vue-notification__alert-box-alert-image"/>
-						<span style="margin-block: auto; margin-left: 16px; white-space:nowrap" id ="message">
+						<img id="notification-image" data-test-id="login-notification-image" class="cly-vue-notification__alert-box-alert-image"/>
+						<span style="margin-block: auto; margin-left: 16px; white-space:nowrap" id ="message" data-test-id="login-message">
 						</span>
 					</div>
 				</div>
@@ -65,15 +65,15 @@
 				If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
 				-->
 				<form method="POST" id="formRegister" style="width:300px; margin:auto;">
-					<h1 style="font-weight: 500;" id="header" data-localize="login.form-header">Sign In</h1>
+					<h1 style="font-weight: 500;" id="header" data-test-id="login-sign-in" data-localize="login.form-header">Sign In</h1>
 					<div></div>
 					<div>
-						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress-or-username"></p>
-						<input tabindex="1" type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress-or-username" data-test-id="login-username-label"></p>
+						<input tabindex="1" type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-test-id="login-username" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 						</div>
 					<div>
-						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a tabindex="4" id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
-						<input tabindex="2" name="password" type="password" placeholder="Enter your password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password" data-test-id="login-password-label"></p><p style="margin-bottom: 8px;"><a tabindex="4" id="forgot-password" data-test-id="login-forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
+						<input tabindex="2" name="password" type="password" placeholder="Enter your password" data-test-id="login-password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 					</div>
 					<% if (typeof inject_template.form != "undefined") { %>
 						<%- inject_template.form %>
@@ -81,7 +81,7 @@
 					<div>
 						<input type="hidden" value="<%= csrf %>" name="_csrf" />
 						<input type="hidden" value="en" name="lang" id="form-lang" />
-						<input tabindex="3" id="login-button" value="Login" type="submit" data-localize="login.button"/>
+						<input tabindex="3" id="login-button" data-test-id="login-submit-button" value="Login" type="submit" data-localize="login.button"/>
 					</div>
 				</form>
 			</div>
@@ -90,15 +90,15 @@
 			<% } %>
 			<div style="height: 100px;"></div>
 		</div>
-		<div class="footer">
+		<div class="footer" data-test-id="login-footer">
 			<div>
-				<p style="margin: 0px;">© <%= new Date().getFullYear() %> <%- countlyTitle %></p>
+				<p style="margin: 0px;" data-test-id="login-footer-copyright">© <%= new Date().getFullYear() %> <%- countlyTitle %></p>
 				<div style="margin: 0px; color: #0166D6;">
-					<% if (countlyPage) { %> <a href="<%- countlyPage %>"> <%- countlyTitle %> </a> <% }%>
-                    <% if (featureRequestLink) { %> <a href="<%- featureRequestLink %>" data-localize="login.terms"></a> <% }%>
-                    <% if (feedbackLink) { %> <a href="<%- feedbackLink %>" data-localize="login.privacy"></a> <% }%>
-                    <% if (documentationLink) { %> <a href="<%- documentationLink %>" data-localize="login.documentation"></a> <% }%>
-                    <% if (helpCenterLink) { %> <a href="<%- helpCenterLink %>" data-localize="login.help-center"></a> <% }%>
+					<% if (countlyPage) { %> <a data-test-id="login-footer-countly" href="<%- countlyPage %>"> <%- countlyTitle %> </a> <% }%>
+                    <% if (featureRequestLink) { %> <a data-test-id="login-footer-terms" href="<%- featureRequestLink %>" data-localize="login.terms"></a> <% }%>
+                    <% if (feedbackLink) { %> <a data-test-id="login-footer-privacy" href="<%- feedbackLink %>" data-localize="login.privacy"></a> <% }%>
+                    <% if (documentationLink) { %> <a data-test-id="login-footer-documentation" href="<%- documentationLink %>" data-localize="login.documentation"></a> <% }%>
+                    <% if (helpCenterLink) { %> <a data-test-id="login-footer-help" href="<%- helpCenterLink %>" data-localize="login.help-center"></a> <% }%>
 				</div>
 			</div>
 		</div>
