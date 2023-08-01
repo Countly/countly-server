@@ -1,4 +1,4 @@
-/*global app, countlyVue, CV, Vue, countlyGlobal, countlyCommon, moment, CountlyHelpers, countlyTaskManager */
+/*global app, countlyVue, CV, Vue, countlyGlobal, countlyCommon, moment, CountlyHelpers, countlyTaskManager, countlyAuth */
 
 (function() {
 
@@ -395,8 +395,7 @@
                 }
             },
             getExportAPI: function() {
-                var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
-                    "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&iDisplayStart=0&iDisplayLength=10000',
+                var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key + '&iDisplayStart=0&iDisplayLength=10000',
                     self = this;
 
                 if (this.lastRequestPayload) {
@@ -565,8 +564,12 @@
             component: ReportManagerView,
         });
     };
-
     app.route("/manage/tasks", "manageJobs", function() {
-        this.renderWhenReady(getMainView());
+        if (countlyAuth.validateRead("reports")) {
+            this.renderWhenReady(getMainView());
+        }
+        else {
+            app.navigate("/", true);
+        }
     });
 })();
