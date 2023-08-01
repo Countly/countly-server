@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment, countlyCohorts*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -24,6 +24,7 @@
                 deleteLogo: false,
                 imageSrc: '',
                 logoType: 'default',
+                globalLogo: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -91,6 +92,9 @@
                 if (!submitted.logoType) {
                     submitted.logoType = 'default';
                 }
+                if (!submitted.globalLogo) {
+                    submitted.globalLogo = false;
+                }
 
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
@@ -130,7 +134,14 @@
                 var self = this;
                 var loadImage = new Image();
                 if (this.controls.initialEditedObject.logo) {
-                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+
+                    if (this.controls.initialEditedObject.logo.indexOf("feedback_logo")
+                    ) {
+                        loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
+                    }
+                    else {
+                        loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                    }
                 }
                 loadImage.onload = function() {
                     self.imageSource = loadImage.src;
@@ -575,6 +586,31 @@
             createWidget: function() {
             // TODO: move this to model
             // TODO: localizations
+                var trigger_bg_color = '#123456';
+                var trigger_font_color = '#fff';
+                var logoType = 'default';
+                var logo = null;
+                var globalLogo = false;
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) {
+                    var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp;
+                    trigger_bg_color = feedbackApp.main_color;
+                    trigger_font_color = feedbackApp.font_color;
+                    if (feedbackApp.feedback_logo) {
+                        logo = '/feedback/preview/' + feedbackApp.feedback_logo;
+                        logoType = 'custom';
+                        globalLogo = true;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback) {
+                        var feedback = countlyPlugins.getConfigsData().feedback;
+                        trigger_bg_color = feedback.main_color;
+                        trigger_font_color = feedback.font_color;
+                        if (feedback.logo) {
+                            logo = '/feedback/preview/' + feedbackApp.feedback_logo;
+                            logoType = 'custom';
+                            globalLogo = true;
+                        }
+                    }
+                }
                 this.openDrawer("widget", {
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
@@ -598,14 +634,15 @@
                         steps: null
                     },
                     trigger_button_text: 'Feedback',
-                    trigger_bg_color: '#123456',
-                    trigger_font_color: '#fff',
+                    trigger_bg_color: trigger_bg_color,
+                    trigger_font_color: trigger_font_color,
                     hide_sticker: false,
                     status: true,
-                    logo: null,
+                    logo: logo,
                     target_pages: ["/"],
                     target_page: false,
-                    logoType: 'default'
+                    logoType: logoType,
+                    globalLogo: globalLogo,
                 });
             },
             refresh: function() {
@@ -853,6 +890,7 @@
                 });
             },
             editWidget: function() {
+                this.widget.globalLogo = false;
                 if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                     this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
                 }
@@ -891,6 +929,9 @@
                 }
                 if (!this.widget.logoType) {
                     this.widget.logoType = 'default';
+                }
+                if (this.widget.logo && this.widget.logo.indexOf("feedback_logo")) {
+                    this.widget.globalLogo = true;
                 }
                 if (!this.widget.targeting) {
                     this.widget.targeting = {

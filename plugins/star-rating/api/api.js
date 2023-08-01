@@ -103,6 +103,10 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
+    globalLogo: {
+        required: false,
+        type: "Boolean"
+    },
     appearance: {
         required: false,
         type: "Object"
