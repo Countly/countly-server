@@ -261,7 +261,10 @@
                     if (this.$route && this.$route.params && this.$route.params.query) {
                         delete this.$route.params.query;
                     }
-                }
+                },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
@@ -340,6 +343,15 @@
                         this.collection = this.collections[this.db].list[0].value;
                         this.selectedCollection = this.collection;
                         window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
+                    }
+                }
+                for (var collectionKey in this.collections) {
+                    if (Object.prototype.hasOwnProperty.call(this.collections, collectionKey)) {
+                        var collection = this.collections[collectionKey];
+                        for (var i = 0; i < collection.list.length; i++) {
+                            var listItem = collection.list[i];
+                            listItem.label = countlyCommon.unescapeHtml(listItem.label);
+                        }
                     }
                 }
             }
