@@ -593,8 +593,18 @@
                 var globalLogo = false;
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) {
                     var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp;
-                    trigger_bg_color = feedbackApp.main_color;
-                    trigger_font_color = feedbackApp.font_color;
+                    if (feedbackApp.main_color) {
+                        trigger_bg_color = feedbackApp.main_color;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback) {
+                        trigger_bg_color = feedback.main_color;
+                    }
+                    if (feedbackApp.font_color) {
+                        trigger_font_color = feedbackApp.font_color;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback) {
+                        trigger_font_color = feedback.font_color;
+                    }
                     if (feedbackApp.feedback_logo) {
                         logo = '/feedback/preview/' + feedbackApp.feedback_logo;
                         logoType = 'custom';
@@ -602,8 +612,6 @@
                     }
                     else if (countlyPlugins.getConfigsData().feedback) {
                         var feedback = countlyPlugins.getConfigsData().feedback;
-                        trigger_bg_color = feedback.main_color;
-                        trigger_font_color = feedback.font_color;
                         if (feedback.logo) {
                             logo = '/feedback/preview/' + feedbackApp.feedback_logo;
                             logoType = 'custom';
@@ -1327,6 +1335,130 @@ app.addPageScript("/drill#", function() {
     }, 0);
 });
 */
+
+    if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback.main_color"]) {
+        app.configurationsView.registerLabel("feedback.main_color", "feedback.main_color-title");
+        app.configurationsView.registerLabel("feedback.font_color", "feedback.font_color-title");
+        app.configurationsView.registerLabel("feedback.feedback_logo", "feedback.logo-title");
+        app.configurationsView.registerInput("feedback.main_color", {input: "cly-colorpicker", helper: "feedback.main_color.description", attrs: {resetValue: '#2FA732'}});
+        app.configurationsView.registerInput("feedback.font_color", {input: "cly-colorpicker", helper: "feedback.font_color.description", attrs: {resetValue: '#2FA732'}});
+        app.configurationsView.registerInput("feedback.feedback_logo", {
+            input: "image",
+            helper: "feedback.logo.description",
+            image_size: "feedback_logo",
+            attrs: {
+                name: "feedback_logo",
+                action: countlyGlobal.path + "/i/feedback/upload",
+                data: {auth_token: countlyGlobal.auth_token}
+            },
+            errorMessage: "",
+            success: function() {
+                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+                if (this.$root && this.$root.$children) {
+                    for (var i = 0; i < this.$root.$children.length; i++) {
+                        if (this.$root.$children[i].configsData) {
+                            this.$root.$children[i].onChange("feedback_logo", "feedback_logo");
+                            break;
+                        }
+                    }
+                }
+            },
+            error: function(err) {
+                var message = jQuery.i18n.map["feedback.error"];
+                if (err && err.message) {
+                    try {
+                        var parts = JSON.parse(err.message);
+                        var m = parts.message || parts.error || parts.result;
+                        message = jQuery.i18n.map[m] || m;
+                    }
+                    catch (ex) {
+                        message = jQuery.i18n.map["feedback.error"];
+                    }
+                }
+                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = message;
+            },
+            data: function() {
+                return {
+                    id: countlyCommon.ACTIVE_APP_ID,
+                };
+            },
+            before: function(file) {
+                var type = file.type;
+                if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                    app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                    return false;
+                }
+                if (file.size > 1.5 * 1024 * 1024) {
+                    app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                    return false;
+                }
+                return true;
+            }
+        });
+    }
+
+    if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
+        var segments = window.location.href.split('/');
+        var manageIndex = segments.indexOf('apps');
+        var feedbackId = countlyCommon.ACTIVE_APP_ID;
+        if (manageIndex !== -1) {
+            feedbackId = segments[manageIndex + 1];
+        }
+        app.addAppManagementInput("feedbackApp", CV.i18n("feedback.title"),
+            {
+                "feedbackApp.main_color": {input: "cly-colorpicker", attrs: {resetValue: '#2FA732'}, defaultValue: ""},
+                "feedbackApp.font_color": {input: "cly-colorpicker", attrs: {resetValue: '#2FA732'}, defaultValue: ""},
+                "feedbackApp.feedback_logo": {
+                    input: "image",
+                    helper: "feedback.logo.description",
+                    image_size: "feedback_logo" + feedbackId,
+                    attrs: {
+                        action: countlyGlobal.path + "/i/feedback/upload",
+                    },
+                    errorMessage: "",
+                    success: function() {
+                        app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+                        if (this.$root && this.$root.$children) {
+                            for (var i = 0; i < this.$root.$children.length; i++) {
+                                if (this.$root.$children[i].appDetails) {
+                                    this.$root.$children[i].onChange("feedbackApp.feedback_logo", "feedback_logo" + feedbackId);
+                                    break;
+                                }
+                            }
+                        }
+                    },
+                    error: function(err) {
+                        var message = jQuery.i18n.map["feedback.error"];
+                        if (err && err.message) {
+                            try {
+                                var parts = JSON.parse(err.message);
+                                var m = parts.message || parts.error || parts.result;
+                                message = jQuery.i18n.map[m] || m;
+                            }
+                            catch (ex) {
+                                message = jQuery.i18n.map["feedback.error"];
+                            }
+                        }
+                        app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = message;
+                    },
+                    before: function(file) {
+                        segments = window.location.href.split('/');
+                        manageIndex = segments.indexOf('apps');
+                        feedbackId = segments[manageIndex + 1] || countlyCommon.ACTIVE_APP_ID;
+                        var type = file.type;
+                        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                            app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                            return false;
+                        }
+                        if (file.size > 1.5 * 1024 * 1024) {
+                            app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            });
+    }
 
     app.addMenu("reach", {code: "feedback", permission: FEATURE_NAME, text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
     app.addSubMenu("feedback", {
