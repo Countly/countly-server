@@ -261,6 +261,7 @@
                                         v-bind="conf.attrs">
                                     </el-color-picker>
                                     <cly-colorpicker 
+                                        class="feedback-settings__colorpicker"
                                         v-else-if="conf.input === 'cly-colorpicker'" 
                                         v-model="conf.value"
                                         @change="onChange(key, conf.value)"
@@ -269,6 +270,7 @@
                                         style="display:inline">
                                     </cly-colorpicker>
                                     <el-upload
+                                        class="feedback-settings__upload"
                                         v-else-if="conf.input === 'image'" 
                                         :show-file-list="false"
                                         :data="{'id':selectedApp, 'auth_token': authToken, 'name': 'feedback_logo'+selectedApp}"
@@ -282,7 +284,7 @@
                                                 size="small" 
                                                 type="text" 
                                                 @click.stop="onChange(key, '')"
-                                                class="bu-p-0">{{i18n('feedback.delete-logo')}}</el-button>
+                                                class="bu-p-0 feedback-settings__button">{{i18n('feedback.delete-logo')}}</el-button>
                                             <img :src="'/feedback/preview/' + conf.value + '?' + Date.now()">
                                         </div>
                                         <div v-else class="bu-is-flex">
