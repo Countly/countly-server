@@ -5,7 +5,7 @@
 var DB = 'countly';
 let auth_token = 'token_here';
 
-const jwt = require('./../../node_modules/jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const fs = require('fs/promises');
 const path = require('path');
 const http = require('http');
@@ -56,27 +56,22 @@ if (process.argv[2]) {
 
 pluginManager.dbConnection(DB).then(async(countlyDb) => {
     try {
-        let {body} = await httpRequest("https://stats.count.ly/o/license-generator/list?app_id=633b1796ff6957bdc9360aef&iDisplayStart=0&iDisplayLength=1000", { method: 'POST' }, {auth_token: auth_token});
+        let apiDomain = (await countlyDb.collection('plugins').findOne({ _id: 'plugins' }, { _id: 0, 'api.domain': 1 })).api.domain.split('//')[1];
+        apiDomain = apiDomain.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+        let { body } = await httpRequest(`https://stats.count.ly/o/license-generator/list?app_id=633b1796ff6957bdc9360aef&iDisplayStart=0&iDisplayLength=1&iSortCol_0=3&sSortDir_0=desc&query={"domain":"${apiDomain}"}`, { method: 'POST' }, { auth_token: auth_token });
         body = JSON.parse(body);
-        const map = {};
+        let licenseId = '';
         if (body?.aaData?.length) {
             body.aaData.forEach(lic=>{
                 if (lic.domain) {
-                    let domain = lic.domain.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
-                    map[domain] = lic._id;
-                }
-                else {
-                    // map[lic.name] = lic._id
+                    licenseId = lic._id;
                 }
             });
         }
 
-        const apiDomain = (await countlyDb.collection('plugins').findOne({ _id: 'plugins' }, { _id: 0, 'api.domain': 1 })).api.domain.split('//')[1];
-        const licenseId = map[apiDomain];
-
         if (apiDomain && apiDomain.length > 0 && licenseId.length > 0) {
             try {
-                const {body} = await httpRequest('https://stats.count.ly/o/license-generator/download/' + licenseId, { method: 'POST' }, {auth_token: auth_token});
+                const {body} = await httpRequest('https://stats.count.ly/o/license-generator/download/' + licenseId + "?app_id=633b1796ff6957bdc9360aef", { method: 'POST' }, {auth_token: auth_token});
                 var obj = {};
                 const license = body;
                 const cert = await fs.readFile(path.resolve(__dirname, './../../plugins/drill/files/public.pem'));
@@ -129,8 +124,11 @@ pluginManager.dbConnection(DB).then(async(countlyDb) => {
                 process.exit(0);
             }
         }
+        else {
+            console.warn('no license found for domain', apiDomain);
+        }
     }
     catch (e) {
-        return console.error('mapping failed:', e);
+        return console.error('getting license failed:', e);
     }
 });
