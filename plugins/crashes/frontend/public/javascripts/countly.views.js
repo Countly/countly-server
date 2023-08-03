@@ -302,42 +302,42 @@
                     filterProperties.push({
                         id: "app_version",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "opengl",
                         name: "OpenGL Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getFilterValues("opengl")
                     });
                     filterProperties.push({
                         id: "orientation",
                         name: "Orientation",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getFilterValues("orientation")
                     });
                     filterProperties.push({
                         id: "os",
                         name: "Platform",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getFilterValues("os")
                     });
                     filterProperties.push({
                         id: "cpu",
                         name: "CPU",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getFilterValues("cpu")
                     });
