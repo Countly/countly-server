@@ -58,7 +58,7 @@ pluginManager.dbConnection(DB).then(async(countlyDb) => {
     try {
         let apiDomain = (await countlyDb.collection('plugins').findOne({ _id: 'plugins' }, { _id: 0, 'api.domain': 1 })).api.domain.split('//')[1];
         apiDomain = apiDomain.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
-        let { body } = await httpRequest(`https://stats.count.ly/o/license-generator/list?app_id=633b1796ff6957bdc9360aef&iDisplayStart=0&iDisplayLength=1&iSortCol_0=3&sSortDir_0=desc&query={"domain":"${apiDomain}"}`, { method: 'POST' }, { auth_token: auth_token });
+        let { body } = await httpRequest(`https://stats.count.ly/o/license-generator/list?app_id=633b1796ff6957bdc9360aef&iDisplayStart=0&iDisplayLength=1&iSortCol_0=3&sSortDir_0=desc&query={"domain":{"$regex":"${apiDomain}"}}`, { method: 'POST' }, { auth_token: auth_token });
         body = JSON.parse(body);
         let licenseId = '';
         if (body?.aaData?.length) {
