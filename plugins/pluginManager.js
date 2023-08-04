@@ -1,41 +1,4 @@
-const Module = require('module'),
-    { join } = require('path');
-
-const defreq = Module.prototype.require,
-    corepath = join(__dirname, '..'),
-    rootpath = join(__dirname, '..', '..');
-/**
- * Override default require to be able to require ee from core and vice versa 
- * 
- * @param {string} p module path
- * @returns {any} module
- * @throws {Error} if module not found
- */
-Module.prototype.require = function(p) {
-    try {
-        return defreq.apply(this, [p]);
-    }
-    catch (e) {
-        if (p.startsWith(rootpath)) { // absolute path
-            if (p.startsWith(corepath)) { // absolute from core, check ee
-                let suf = p.substring(corepath.length);
-                return defreq(join(rootpath, suf));
-            }
-            else { // absolute from ee, check core
-                let suf = p.substring(rootpath.length);
-                return defreq(join(rootpath, 'core', suf));
-            }
-        }
-        else if (this.path.startsWith(corepath)) { // from core
-            let suf = this.path.substring(corepath.length);
-            return defreq.apply(this, [join(rootpath, suf, p)]);
-        }
-        else {
-            let suf = this.path.substring(rootpath.length); // from ee
-            return defreq(join(rootpath, 'core', suf, p));
-        }
-    }
-};
+require("./pluginLoader.js");
 
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
@@ -1281,7 +1244,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(cwd, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--require", path.join(__dirname, "pluginLoader.js"), scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1356,7 +1319,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(cwd, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--require", path.join(__dirname, "pluginLoader.js"), scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1387,7 +1350,7 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
+        var m = cp.spawn("nodejs", ["--require", path.join(__dirname, "pluginLoader.js"), scriptPath]);
 
         m.stdout.on('data', (data) => {
             console.log(data.toString());

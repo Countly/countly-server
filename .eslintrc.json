@@ -201,6 +201,7 @@
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
+                "plugins/pluginLoader.js",
                 "plugins/pluginDependencies.js",
                 "plugins/*/api/**/*.js",
                 "plugins/*/frontend/**/*.js",
