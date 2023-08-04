@@ -173,24 +173,27 @@ plugins.register("/permissions/features", function(ob) {
             }
             common.recordCustomMetric(params, "sdks", params.app_id, ["c"], 1, segments);
         }
-        if (params.qstring.q) {
-            if (typeof dbAppUser.q === "undefined") {
-                common.setCustomMetric(params, "sdks", params.app_id, ["q"], params.qstring.q);
+        if (params.qstring.rr) {
+            if (typeof dbAppUser.rr === "undefined") {
+                common.setCustomMetric(params, "sdks", params.app_id, ["q"], params.qstring.rr);
             }
             else {
-                common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.q, 10) - parseInt(dbAppUser.q, 10));
+                common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.rr, 10) - parseInt(dbAppUser.rr, 10));
             }
         }
-        else if (typeof dbAppUser.q !== "undefined") {
+        else if (typeof dbAppUser.rr !== "undefined") {
             common.recordCustomMetric(params, "sdks", params.app_id, ["q"], -1);
         }
+
+        //record request delay
+        common.recordCustomMeasurement(params, "sdks", params.app_id, ["d"], Math.round(Math.max(Date.now() - params.time.mstimestamp, 0) / 1000));
     });
 
     plugins.register("/sdk/user_properties", async function(ob) {
         var params = ob.params;
 
-        if (params.qstring.q) {
-            ob.updates.push({$set: {q: parseInt(params.qstring.q, 10)}});
+        if (params.qstring.rr) {
+            ob.updates.push({$set: {rr: parseInt(params.qstring.rr, 10)}});
         }
     });
 

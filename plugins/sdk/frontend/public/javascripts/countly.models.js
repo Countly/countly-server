@@ -15,9 +15,21 @@
             if (!obj.q) {
                 obj.q = 0;
             }
+            if (!obj.d_total) {
+                obj.d_total = 0;
+            }
+            if (!obj.d_count) {
+                obj.d_count = 0;
+            }
+            if (!obj.d_min) {
+                obj.d_min = 0;
+            }
+            if (!obj.d_max) {
+                obj.d_max = 0;
+            }
         }
         else {
-            obj = {"r": 0, "c": 0, "q": 0};
+            obj = {"r": 0, "c": 0, "q": 0, "d_total": 0, "d_count": 0, "d_min": 0, "d_max": 0};
         }
 
         return obj;
@@ -117,18 +129,12 @@
                     ],
                     label: namesData[i]
                 };
-            }
-
-            for (i = 0; i < namesData.length; i++) {
                 chartData3[i] = {
                     data: [
                         [0, canceledData[i]]
                     ],
                     label: namesData[i]
                 };
-            }
-
-            for (i = 0; i < namesData.length; i++) {
                 chartData4[i] = {
                     data: [
                         [0, queuedData[i]]
@@ -405,6 +411,172 @@
         return countlyCommon.getDashboardData(countlySDK.getDb(), ["r", "c", "q"], [], {}, countlySDK.clearRequestObject);
     };
 
+    countlySDK.getDelayTotals = function() {
+        var data = countlySDK.getDb(),
+            properties = ["d_total", "d_count", "d_min", "d_max"],
+            unique = [];
+        estOverrideMetric = {},
+        clearObject = countlySDK.clearRequestObject,
+        segment = "";
+        var _periodObj = countlyCommon.periodObj,
+            dataArr = {},
+            tmp_x,
+            tmp_y,
+            tmpUniqObj,
+            tmpPrevUniqObj,
+            current = {},
+            previous = {},
+            currentCheck = {},
+            previousCheck = {},
+            change = {},
+            isEstimate = false;
+
+        var i = 0;
+        var j = 0;
+
+        for (i = 0; i < properties.length; i++) {
+            current[properties[i]] = 0;
+            previous[properties[i]] = 0;
+            currentCheck[properties[i]] = 0;
+            previousCheck[properties[i]] = 0;
+        }
+        if (_periodObj.isSpecialPeriod) {
+            isEstimate = true;
+            for (j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j] + segment);
+                tmp_x = clearObject(tmp_x);
+                for (i = 0; i < properties.length; i++) {
+                    if (properties[i] === "d_min") {
+                        current[properties[i]] = Math.min(tmp_x[properties[i]], current[properties[i]]);
+                    }
+                    else if (properties[i] === "d_max") {
+                        current[properties[i]] = Math.max(tmp_x[properties[i]], current[properties[i]]);
+                    }
+                    else {
+                        current[properties[i]] += tmp_x[properties[i]];
+                    }
+                }
+            }
+
+            for (j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j] + segment);
+                tmp_y = clearObject(tmp_y);
+                for (i = 0; i < properties.length; i++) {
+                    if (properties[i] === "d_min") {
+                        previous[properties[i]] = Math.min(tmp_y[properties[i]], previous[properties[i]]);
+                    }
+                    else if (properties[i] === "d_max") {
+                        previous[properties[i]] = Math.max(tmp_y[properties[i]], previous[properties[i]]);
+                    }
+                    else {
+                        previous[properties[i]] += tmp_y[properties[i]];
+                    }
+                }
+            }
+
+            //deal with unique values separately
+            for (j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j] + segment);
+                tmp_x = clearObject(tmp_x);
+                for (i = 0; i < unique.length; i++) {
+                    current[unique[i]] += tmp_x[unique[i]];
+                }
+            }
+
+            for (j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
+                tmp_y = clearObject(tmp_y);
+                for (i = 0; i < unique.length; i++) {
+                    previous[unique[i]] += tmp_y[unique[i]];
+                }
+            }
+
+            //recheck unique values with larger buckets
+            for (j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
+                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j] + segment);
+                tmpUniqObj = clearObject(tmpUniqObj);
+                for (i = 0; i < unique.length; i++) {
+                    currentCheck[unique[i]] += tmpUniqObj[unique[i]];
+                }
+            }
+
+            for (j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
+                tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
+                for (i = 0; i < unique.length; i++) {
+                    previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
+                }
+            }
+
+            //check if we should overwrite uniques
+            for (i = 0; i < unique.length; i++) {
+                if (current[unique[i]] > currentCheck[unique[i]]) {
+                    current[unique[i]] = currentCheck[unique[i]];
+                }
+
+                if (previous[unique[i]] > previousCheck[unique[i]]) {
+                    previous[unique[i]] = previousCheck[unique[i]];
+                }
+            }
+
+        }
+        else {
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + segment);
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod + segment);
+            tmp_x = clearObject(tmp_x);
+            tmp_y = clearObject(tmp_y);
+
+            for (i = 0; i < properties.length; i++) {
+                current[properties[i]] = tmp_x[properties[i]];
+                previous[properties[i]] = tmp_y[properties[i]];
+            }
+        }
+
+        //check if we can correct data using total users correction
+        if (estOverrideMetric && countlyTotalUsers.isUsable()) {
+            for (i = 0; i < unique.length; i++) {
+                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
+                    current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                }
+                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users) {
+                    previous[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users;
+                }
+            }
+        }
+
+        for (i = 0; i < properties.length; i++) {
+            change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
+            dataArr[properties[i]] = {
+                "total": countlyCommon.formatSecond(current[properties[i]]),
+                "prev-total": countlyCommon.formatSecond(previous[properties[i]]),
+                "change": change[properties[i]].percent,
+                "trend": change[properties[i]].trend
+            };
+            if (unique.indexOf(properties[i]) !== -1) {
+                dataArr[properties[i]].isEstimate = isEstimate;
+            }
+        }
+
+        change.d = countlyCommon.getPercentChange(Math.round(previous.d_total / Math.max(previous.d_count, 1)), Math.round(current.d_total / Math.max(current.d_count, 1)));
+        dataArr.d = {
+            "total": countlyCommon.formatSecond(Math.round(current.d_total / Math.max(current.d_count, 1))),
+            "prev-total": countlyCommon.formatSecond(Math.round(previous.d_total / Math.max(previous.d_count, 1))),
+            "change": change.d.percent,
+            "trend": change.d.trend
+        };
+
+        //check if we can correct data using total users correction
+        if (estOverrideMetric && countlyTotalUsers.isUsable()) {
+            for (i = 0; i < unique.length; i++) {
+                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
+                    dataArr[unique[i]].isEstimate = false;
+                }
+            }
+        }
+
+        return dataArr;
+    };
+
     countlySDK.getRequestTimeData = function() {
         var cData = [
                 { data: [], label: "Received", color: countlyCommon.GRAPH_COLORS[0] },
@@ -426,42 +598,98 @@
         }
         var series = [];
         var yAxis = [];
-        var countObj = {
+        series.push({
             name: "Received requests",
             data: graphData[0],
             color: "#017AFF"
-        };
-        series.push(countObj);
-        var countYAxisObj = {
+        });
+        yAxis.push({
             type: 'value',
             alignTicks: true
-        };
-        yAxis.push(countYAxisObj);
-        var sumObj = {
+        });
+        series.push({
             name: "Canceled requests",
             data: graphData[1],
             color: "#F96300"
-        };
-        series.push(sumObj);
-        var sumYAxisObj = {
+        });
+        yAxis.push({
             type: 'value',
             alignTicks: true
-        };
-        yAxis.push(sumYAxisObj);
-        var durObj = {
+        });
+        series.push({
             name: "Queued requests",
             data: graphData[2],
             color: "#FF9382"
-        };
-        series.push(durObj);
-        var durYAxisObj = {
+        });
+        yAxis.push({
             type: 'value',
             alignTicks: true
-        };
-        yAxis.push(durYAxisObj);
+        });
         return {
             series: series,
             yAxis: yAxis,
+        };
+    };
+
+    countlySDK.getRequestDelayData = function() {
+        var cData = [
+                { data: [], label: "Minimum Delay", color: countlyCommon.GRAPH_COLORS[0] },
+                { data: [], label: "Average Delay", color: countlyCommon.GRAPH_COLORS[1] },
+                { data: [], label: "Maximum Delay", color: countlyCommon.GRAPH_COLORS[2] },
+            ],
+            dataProps = [
+                { name: "d_min" },
+                {
+                    name: "d",
+                    func: function(dataObj) {
+                        return dataObj.d_total / Math.max(dataObj.d_count, 1);
+                    }
+                },
+                { name: "d_max" }
+            ];
+        var data = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearRequestObject, cData, dataProps);
+        var chartData = data.chartData;
+        var graphData = [[], [], []];
+        for (var i = 0; i < chartData.length; i++) {
+            graphData[0].push(chartData[i].d_min ? chartData[i].d_min : 0);
+            graphData[1].push(chartData[i].d ? chartData[i].d : 0);
+            graphData[2].push(chartData[i].d_max ? chartData[i].d_max : 0);
+        }
+        var series = [];
+        var yAxis = [];
+        series.push({
+            name: "Minimum Delay",
+            data: graphData[0],
+            color: "#017AFF"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        series.push({
+            name: "Average Delay",
+            data: graphData[1],
+            color: "#F96300"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        series.push({
+            name: "Maximum Delay",
+            data: graphData[2],
+            color: "#FF9382"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        return {
+            series: series,
+            yAxis: yAxis,
+            valFormatter: function(val) {
+                return countlyCommon.formatSecond(val);
+            }
         };
     };
 
@@ -547,7 +775,9 @@
                         received: countlySDK.getRequestChartData("r", "type", context.state.stats.selectedDisplay),
                         canceled: countlySDK.getRequestChartData("c", "reason", context.state.stats.selectedDisplay),
                         timeseries: countlySDK.getRequestTimeData(),
-                        totals: countlySDK.getRequestTotals()
+                        timedelays: countlySDK.getRequestDelayData(),
+                        totals: countlySDK.getRequestTotals(),
+                        delays: countlySDK.getDelayTotals()
                     });
                     context.commit('stats/setSDKData', sdks);
                     context.dispatch('onFetchSuccess', "sdks");
@@ -579,7 +809,9 @@
                     received: countlySDK.getRequestChartData("r", "type", context.state.stats.selectedDisplay),
                     canceled: countlySDK.getRequestChartData("c", "reason", context.state.stats.selectedDisplay),
                     timeseries: countlySDK.getRequestTimeData(),
-                    totals: countlySDK.getRequestTotals()
+                    timedelays: countlySDK.getRequestDelayData(),
+                    totals: countlySDK.getRequestTotals(),
+                    delays: countlySDK.getDelayTotals()
                 });
             }
         };
@@ -630,6 +862,7 @@
                     receivedChartData: {},
                     canceledChartData: {},
                     requestChartData: {},
+                    delayChartData: {},
                     requestTotals: {
                         "r": {
                             change: "NA",
@@ -644,6 +877,26 @@
                             trend: "u"
                         },
                         "q": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                    },
+                    delayTotals: {
+                        "d": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                        "d_min": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                        "d_max": {
                             change: "NA",
                             "prev-total": 0,
                             total: 0,
@@ -705,7 +958,9 @@
                         valFormatter: value.canceled.valFormatter
                     };
                     state.requestChartData = value.timeseries;
+                    state.delayChartData = value.timedelays;
                     state.requestTotals = value.totals;
+                    state.delayTotals = value.delays;
                 },
                 setSelectedProperty: function(state, value) {
                     state.selectedProperty = value;

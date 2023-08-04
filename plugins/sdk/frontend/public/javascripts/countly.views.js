@@ -545,6 +545,9 @@
             lineOptionsRequests: function() {
                 return this.stats.requestChartData;
             },
+            lineOptionsDelays: function() {
+                return this.stats.delayChartData;
+            },
             lineOptionsReceived: function() {
                 return this.stats.receivedChartData;
             },
@@ -553,6 +556,9 @@
             },
             totals: function() {
                 return this.stats.requestTotals;
+            },
+            delays: function() {
+                return this.stats.delayTotals;
             },
             isLoading: function() {
                 return this.$store.state.countlySDK.stats.isLoading;
