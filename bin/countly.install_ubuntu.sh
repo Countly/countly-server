@@ -106,7 +106,12 @@ fi
 sudo bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
-countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+if [ -f /etc/nginx/sites-available/default ]; then
+    countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+elif [ -f /etc/nginx/conf.d/default.conf ]; then
+    countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+fi
+
 countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf

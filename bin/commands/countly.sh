@@ -374,6 +374,7 @@ countly_backupfiles (){
     (mkdir -p "$1" ;
     cd "$1" ;
     echo "Backing up Countly configurations and files...";
+    mkdir -p files/nginx;
     mkdir -p files/extend ;
     mkdir -p files/frontend/express/public/appimages ;
     mkdir -p files/frontend/express/public/userimages ;
@@ -381,6 +382,7 @@ countly_backupfiles (){
     mkdir -p files/frontend/express/certificates ;
     mkdir -p files/frontend/express/public/javascripts/countly ;
     mkdir -p files/api ;
+
     if [ -f "$DIR/../../frontend/express/config.js" ]; then
         cp "$DIR/../../frontend/express/config.js" files/frontend/express/config.js
     fi
@@ -421,6 +423,30 @@ countly_backupfiles (){
             cp -a "$d/crashsymbols/." "files/plugins/$PLUGIN/crashsymbols/" ;
         fi
     done
+
+    if [ -d "$DIR/../../../plugins" ]; then
+        for d in "$DIR"/../../plugins/*; do
+            PLUGIN="$(basename "$d")";
+            if [ -f "$d/config.js" ]; then
+                mkdir -p "files/plugins/$PLUGIN" ;
+                cp "$d/config.js" "files/plugins/$PLUGIN/config.js" ;
+            fi
+            if [ -d "$d/extend" ]; then
+                mkdir -p "files/plugins/$PLUGIN/extend" ;
+                cp -a "$d/extend/." "files/plugins/$PLUGIN/extend/" ;
+            fi
+            if [ -d "$d/crashsymbols" ]; then
+                mkdir -p "files/plugins/$PLUGIN/crashsymbols" ;
+                cp -a "$d/crashsymbols/." "files/plugins/$PLUGIN/crashsymbols/" ;
+            fi
+        done
+    fi
+    if [ -f /etc/nginx/sites-available/default ]; then
+        cp /etc/nginx/sites-available/default files/nginx
+    elif [ -f /etc/nginx/conf.d/default.conf ]; then
+        cp /etc/nginx/conf.d/default.conf files/nginx
+    fi
+    cp /etc/nginx/nginx.conf files/nginx
     )
 }
 
@@ -567,19 +593,40 @@ countly_restorefiles (){
 
         for d in files/plugins/*; do
             PLUGIN=$(basename "$d");
-            if [ -f "$d/config.js" ]; then
-                mkdir -p "$DIR/../../plugins/$PLUGIN" ;
-                cp "$d/config.js" "$DIR/../../plugins/$PLUGIN/config.js" ;
+            if [ -d "$DIR/../../plugins/$d" ]; then
+                if [ -f "$d/config.js" ]; then
+                    cp "$d/config.js" "$DIR/../../plugins/$PLUGIN/config.js" ;
+                fi
+                if [ -d "$d/extend" ]; then
+                    mkdir -p "$DIR/../../plugins/$PLUGIN/extend" ;
+                    cp -a "$d/extend/." "$DIR/../../plugins/$PLUGIN/extend/" ;
+                fi
+                if [ -d "$d/crashsymbols" ]; then
+                    mkdir -p "$DIR/../../plugins/$PLUGIN/crashsymbols" ;
+                    cp -a "$d/crashsymbols/." "$DIR/../../plugins/$PLUGIN/crashsymbols/" ;
+                fi
             fi
-            if [ -d "$d/extend" ]; then
-                mkdir -p "$DIR/../../plugins/$PLUGIN/extend" ;
-                cp -a "$d/extend/." "$DIR/../../plugins/$PLUGIN/extend/" ;
-            fi
-            if [ -d "$d/crashsymbols" ]; then
-                mkdir -p "$DIR/../../plugins/$PLUGIN/crashsymbols" ;
-                cp -a "$d/crashsymbols/." "$DIR/../../plugins/$PLUGIN/crashsymbols/" ;
+            if [ -d "$DIR/../../../plugins/$d" ]; then
+                if [ -f "$d/config.js" ]; then
+                    cp "$d/config.js" "$DIR/../../../plugins/$PLUGIN/config.js" ;
+                fi
+                if [ -d "$d/extend" ]; then
+                    mkdir -p "$DIR/../../../plugins/$PLUGIN/extend" ;
+                    cp -a "$d/extend/." "$DIR/../../../plugins/$PLUGIN/extend/" ;
+                fi
+                if [ -d "$d/crashsymbols" ]; then
+                    mkdir -p "$DIR/../../../plugins/$PLUGIN/crashsymbols" ;
+                    cp -a "$d/crashsymbols/." "$DIR/../../../plugins/$PLUGIN/crashsymbols/" ;
+                fi
             fi
         done
+
+        if [ -f /etc/nginx/sites-available/default ]; then
+            cp files/nginx/default /etc/nginx/sites-available/default
+        elif [ -f /etc/nginx/conf.d/default.conf ]; then
+            cp files/nginx/default.conf /etc/nginx/conf.d/default.conf
+        fi
+        cp files/nginx/nginx.conf /etc/nginx/nginx.conf
         )
     else
         echo "No files to restore from";
