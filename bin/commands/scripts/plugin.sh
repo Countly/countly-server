@@ -85,6 +85,35 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
     else
         usage ;
     fi
+elif [ -d "$DIR/../../../../plugins/$2" ]; then
+    if [ "$1" = "enable" ]; then
+        nodejs "$DIR/plugin.js" enable "$2" ;
+    elif [ "$1" = "disable" ]; then
+        nodejs "$DIR/plugin.js" disable "$2" ;
+    elif [ "$1" = "upgrade" ]; then
+        nodejs "$DIR/plugin.js" upgrade "$2" ;
+    elif [ "$1" = "status" ]; then
+        if grep -Fq "\"$2\"" "$DIR/../../../plugins/plugins.json"
+        then
+            echo "enabled"
+        else
+            echo "disabled"
+        fi
+    elif [ "$1" = "version" ]; then
+        grep -oP '"version":\s*"\K[0-9\.]*' "$DIR/../../../../plugins/$2/package.json" ;
+    elif [ "$1" = "test" ]; then
+        countly plugin lint "$2";
+        shift;
+        nodejs "$DIR/plugin.js" test "$@" ;
+    elif [ "$1" = "lint" ]; then
+        cd "$DIR/../../../../";
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../../plugins/$2/." ;
+    elif [ "$1" = "lintfix" ]; then
+        cd "$DIR/../../../../";
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../../plugins/$2/." --fix;
+    else
+        usage ;
+    fi
 else
     echo "Plugin $2 does not exist";
 fi

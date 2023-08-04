@@ -733,6 +733,20 @@ elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts
 elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$NAME.js" ]; then
     shift;
     nodejs "$DIR/../../plugins/$NAME/scripts/$NAME.js" "$@";
+elif [ -d "$DIR/../../../plugins/$NAME" ] && [ -f "$DIR/../../../plugins/$NAME/scripts/$SCRIPT.sh" ]; then
+    shift;
+    shift;
+    bash "$DIR/../../../plugins/$NAME/scripts/$SCRIPT.sh" "$@";
+elif [ -d "$DIR/../../../plugins/$NAME" ] && [ -f "$DIR/../../../plugins/$NAME/scripts/$SCRIPT.js" ]; then
+    shift;
+    shift;
+    nodejs "$DIR/../../../plugins/$NAME/scripts/$SCRIPT.js" "$@";
+elif [ -d "$DIR/../../../plugins/$NAME" ] && [ -f "$DIR/../../../plugins/$NAME/scripts/$NAME.sh" ]; then
+    shift;
+    bash "$DIR/../../../plugins/$NAME/scripts/$NAME.sh" "$@";
+elif [ -d "$DIR/../../../plugins/$NAME" ] && [ -f "$DIR/../../../plugins/$NAME/scripts/$NAME.js" ]; then
+    shift;
+    nodejs "$DIR/../../../plugins/$NAME/scripts/$NAME.js" "$@";
 else
     echo "";
     echo "countly usage:";

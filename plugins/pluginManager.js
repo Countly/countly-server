@@ -1348,7 +1348,11 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+        var cwd = path.join(__dirname, plugin);
+        if (!fs.existsSync(cwd)) {
+            cwd = path.join(__dirname, '..', '..', 'plugins', plugin);
+        }
+        var scriptPath = path.join(cwd, 'uninstall.js');
         var errors = false;
         var m = cp.spawn("nodejs", ["--require", path.join(__dirname, "pluginLoader.js"), scriptPath]);
 
