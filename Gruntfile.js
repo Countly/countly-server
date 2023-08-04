@@ -284,13 +284,15 @@ module.exports = function(grunt) {
                 files: [
                     { src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css' },
                     { src: 'frontend/express/public/stylesheets/styles/manifest.scss', dest: 'frontend/express/public/stylesheets/styles/manifest.css' },
-                    { expand: true, src: ['plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first' }
+                    { expand: true, src: ['plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first' },
+                    { expand: true, src: ['../plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first' }
                 ]
             }
         },
         watch: {
             scripts: {
                 files: ['plugins/*/frontend/public/stylesheets/**/*.scss',
+                    '../plugins/*/frontend/public/stylesheets/**/*.scss',
                     "frontend/express/public/core/*/stylesheets/**/*.scss",
                     "frontend/express/public/stylesheets/styles/**/*.scss"
                 ],
@@ -364,10 +366,15 @@ module.exports = function(grunt) {
 
 
         plugins.forEach(function(plugin) {
-            var files, pluginPath = path.join(__dirname, 'plugins', plugin),
+            var files,
+                pluginPath = path.join(__dirname, 'plugins', plugin),
+                pluginPathEE = path.join(__dirname, '../plugins', plugin),
                 javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
                 stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
-                images = path.join(pluginPath, 'frontend/public/images', plugin);
+                images = path.join(pluginPath, 'frontend/public/images', plugin),
+                javascriptsEE = path.join(pluginPathEE, 'frontend/public/javascripts'),
+                stylesheetsEE = path.join(pluginPathEE, 'frontend/public/stylesheets'),
+                imagesEE = path.join(pluginPathEE, 'frontend/public/images', plugin);
 
             if (fs.existsSync(javascripts) && fs.statSync(javascripts).isDirectory()) {
                 files = fs.readdirSync(javascripts);
@@ -394,6 +401,31 @@ module.exports = function(grunt) {
                 }
             }
 
+            if (fs.existsSync(javascriptsEE) && fs.statSync(javascriptsEE).isDirectory()) {
+                files = fs.readdirSync(javascriptsEE);
+                if (files.length) {
+                    // move models and views to the bottom
+                    if (files.indexOf('countly.models.js') !== -1) {
+                        files.splice(files.indexOf('countly.models.js'), 1);
+                        files.push('countly.models.js');
+                    }
+                    if (files.indexOf('countly.widgets.js') !== -1) {
+                        files.splice(files.indexOf('countly.widgets.js'), 1);
+                        files.push('countly.widgets.js');
+                    }
+                    if (files.indexOf('countly.views.js') !== -1) {
+                        files.splice(files.indexOf('countly.views.js'), 1);
+                        files.push('countly.views.js');
+                    }
+                    files.forEach(function(name) {
+                        var file = path.join(javascriptsEE, name);
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
+                            js.push('../plugins/' + plugin + '/frontend/public/javascripts/' + name);
+                        }
+                    });
+                }
+            }
+
             if (fs.existsSync(stylesheets) && fs.statSync(stylesheets).isDirectory()) {
                 files = fs.readdirSync(stylesheets);
                 files.forEach(function(name) {
@@ -404,9 +436,30 @@ module.exports = function(grunt) {
                 });
             }
 
+            if (fs.existsSync(stylesheetsEE) && fs.statSync(stylesheetsEE).isDirectory()) {
+                files = fs.readdirSync(stylesheetsEE);
+                files.forEach(function(name) {
+                    var file = path.join(stylesheetsEE, name);
+                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
+                        css.push('../plugins/' + plugin + '/frontend/public/stylesheets/' + name);
+                    }
+                });
+            }
+
             try {
                 if (fs.existsSync(images) && fs.statSync(images).isDirectory()) {
                     img.push({ expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/' });
+                }
+            }
+            catch (err) {
+                if (err.code !== 'ENOENT') {
+                    throw err;
+                }
+            }
+
+            try {
+                if (fs.existsSync(imagesEE) && fs.statSync(imagesEE).isDirectory()) {
+                    img.push({ expand: true, cwd: '../plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/' });
                 }
             }
             catch (err) {
@@ -469,6 +522,7 @@ module.exports = function(grunt) {
 
         plugins.forEach(function(plugin) {
             var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
+            var localizationEE = path.join(__dirname, '../plugins', plugin, 'frontend/public/localization');
 
             try {
                 if (fs.statSync(localization).isDirectory()) {
@@ -476,6 +530,22 @@ module.exports = function(grunt) {
                         var file = path.join(localization, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
                             pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);
+                        }
+                    });
+                }
+            }
+            catch (err) {
+                if (err.code !== 'ENOENT') {
+                    throw err;
+                }
+            }
+
+            try {
+                if (fs.statSync(localizationEE).isDirectory()) {
+                    fs.readdirSync(localizationEE).forEach(function(name) {
+                        var file = path.join(localizationEE, name);
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                            pushLocaleFile(name, '../plugins/' + plugin + '/frontend/public/localization/' + name);
                         }
                     });
                 }

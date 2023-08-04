@@ -214,7 +214,17 @@ var plugin = {},
                     if (err) {
                         console.error(err);
                     }
-                    common.returnOutput(params, results || {});
+                    if (fs.existsSync(path.join(__dirname, "../../../../plugins"))) {
+                        walk(path.resolve(__dirname, "../../../../plugins"), allPlugins, function(err2, resultsE) {
+                            if (err2) {
+                                console.error(err2);
+                            }
+                            common.returnOutput(params, (results || []).concat(resultsE || []));
+                        });
+                    }
+                    else {
+                        common.returnOutput(params, results || []);
+                    }
                 });
 
             });

@@ -1011,14 +1011,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                 }
                 catch (e) {
-                    console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    let contents = fs.readdirSync(__dirname + `/../../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                    //console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                 }
                 try {
                     let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
                     toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
                 }
                 catch (e) {
-                    console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    let contents = fs.readdirSync(__dirname + `/../../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    //console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                 }
             });
 
