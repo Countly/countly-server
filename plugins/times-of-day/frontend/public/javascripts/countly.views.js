@@ -58,6 +58,7 @@
         priority: 3,
         name: "times-of-day",
         permission: featureName,
+        pluginName: "times-of-day",
         title: CV.i18n('times-of-day.title'),
         route: "#/analytics/loyalty/times-of-day",
         component: TimesOfDayView,
@@ -122,6 +123,7 @@
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        pluginName: "times-of-day",
         primary: true,
         getter: function(widget) {
             return widget.widget_type === "times-of-day";
@@ -163,7 +165,7 @@
             dimensions: function() {
                 return {
                     minWidth: 4,
-                    minHeight: 3,
+                    minHeight: 4,
                     width: 4,
                     height: 4
                 };

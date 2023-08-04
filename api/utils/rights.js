@@ -573,11 +573,16 @@ exports.dbLoadEventsData = dbLoadEventsData;
 * Check user has access to collection
 * @param {object} params - {@link params} object
 * @param {string} collection - collection will be checked for access
+* @param {string} app_id - app_id to which to restrict access
 * @param {function} callback - callback method includes boolean variable as argument  
 * @returns {function} returns callback
 **/
-exports.dbUserHasAccessToCollection = function(params, collection, callback) {
-    if (params.member.global_admin) {
+exports.dbUserHasAccessToCollection = function(params, collection, app_id, callback) {
+    if (typeof app_id === "function") {
+        callback = app_id;
+        app_id = null;
+    }
+    if (params.member.global_admin && !app_id) {
         //global admin without app_id restriction just has access to everything
         return callback(true);
     }
@@ -588,11 +593,14 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     apps = userApps || [];
     // also check for app based restrictions
     if (params.member.app_restrict) {
-        for (var app_id in params.member.app_restrict) {
-            if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
-                apps.splice(apps.indexOf(app_id), 1);
+        for (var appid in params.member.app_restrict) {
+            if (params.member.app_restrict[appid].indexOf("#/manage/db") !== -1 && apps.indexOf(appid) !== -1) {
+                apps.splice(apps.indexOf(appid), 1);
             }
         }
+    }
+    if (app_id) {
+        apps = apps.filter(id => id + "" === app_id + "");
     }
     var appList = [];
     if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
@@ -977,15 +985,21 @@ exports.validateDelete = function(params, feature, callback, callbackParam) {
  * Is user has admin access on selected app?
  * @param {object} member - member object from params
  * @param {string} app_id - id value of related app
+ * @param {string} type - type of access (c, r, u, d)
  * @returns {boolean} isAdmin - is that user has admin access on that app?
  */
-exports.hasAdminAccess = function(member, app_id) {
+exports.hasAdminAccess = function(member, app_id, type) {
+    var hasPermissionObject = typeof member.permission !== "undefined";
+    if (hasPermissionObject && member.permission._ && member.permission._.a && member.permission._.a.includes(app_id)) {
+        return true;
+    }
+
     var isAdmin = true;
     // check users who has permission property
-    if (typeof member.permisson !== "undefined") {
-        var types = ["c", "r", "u", "d"];
+    if (hasPermissionObject) {
+        var types = type ? [type] : ["c", "r", "u", "d"];
         for (var i = 0; i < types.length; i++) {
-            if (!member.permission[types[i]][app_id].all) {
+            if (member.permission[types[i]] && member.permission[types[i]][app_id] && !member.permission[types[i]][app_id].all) {
                 isAdmin = false;
             }
         }
@@ -999,19 +1013,31 @@ exports.hasAdminAccess = function(member, app_id) {
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
-    return member.global_admin || member.permission.c[app_id].allowed[feature] || member.permission.c[app_id].all;
+    var hasAppSpecificRight = (member.permission && member.permission.c && member.permission.c[app_id] && member.permission.c[app_id].allowed && member.permission.c[app_id].allowed[feature]);
+    var hasGlobalAdminRight = member.global_admin;
+    var hasAppAdminRight = exports.hasAdminAccess(member, app_id, "c");
+    return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasReadRight = function(feature, app_id, member) {
-    return member.global_admin || member.permission.r[app_id].allowed[feature] || member.permission.r[app_id].all;
+    var hasAppSpecificRight = (member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed && member.permission.r[app_id].allowed[feature]);
+    var hasGlobalAdminRight = member.global_admin;
+    var hasAppAdminRight = exports.hasAdminAccess(member, app_id, "r");
+    return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasUpdateRight = function(feature, app_id, member) {
-    return member.global_admin || member.permission.u[app_id].allowed[feature] || member.permission.u[app_id].all;
+    var hasAppSpecificRight = (member.permission && member.permission.u && member.permission.u[app_id] && member.permission.u[app_id].allowed && member.permission.u[app_id].allowed[feature]);
+    var hasGlobalAdminRight = member.global_admin;
+    var hasAppAdminRight = exports.hasAdminAccess(member, app_id, "u");
+    return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.hasDeleteRight = function(feature, app_id, member) {
-    return member.global_admin || member.permission.d[app_id].allowed[feature] || member.permission.d[app_id].all;
+    var hasAppSpecificRight = (member.permission && member.permission.d && member.permission.d[app_id] && member.permission.d[app_id].allowed && member.permission.d[app_id].allowed[feature]);
+    var hasGlobalAdminRight = member.global_admin;
+    var hasAppAdminRight = exports.hasAdminAccess(member, app_id, "d");
+    return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
 };
 
 exports.getUserApps = function(member) {

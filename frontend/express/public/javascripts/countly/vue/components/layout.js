@@ -65,7 +65,7 @@
                             </div>\
                         </template> \
                         <div :class="[midLevelClasses]">\
-                            <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0;"> \
+                            <div class="bu-level-left bu-is-flex-shrink-1" data-test-id="header-title" style="min-width: 0;"> \
                                 <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
@@ -88,15 +88,39 @@
                 </div>'
     }));
 
+    var PersistentNotifications = {
+        template: '<div class="persistent-notifications" :class="additionalClasses">\
+            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :color="notification.color"></cly-notification>\
+        </div>',
+        computed: {
+            persistentNotifications: function() {
+                return this.$store.state.countlyCommon.persistentNotifications;
+            },
+            additionalClasses: function() {
+                var classes = {};
+                if (this.persistentNotifications.length > 0) {
+                    classes["bu-mb-5"] = true;
+                }
+
+                return classes;
+            }
+        },
+        store: countlyVue.vuex.getGlobalStore(),
+    };
+
     //Every view has a single cly-main component which encapsulates all other components/dom elements
     //This component is a single column full width component
     //A main component can have multiple sections
     Vue.component("cly-main", countlyBaseComponent.extend({
         template: '<div class="cly-vue-main bu-columns bu-is-gapless bu-is-centered">\
                         <div class="bu-column bu-is-full" style="max-width: 1920px">\
+                            <PersistentNotifications></PersistentNotifications>\
                             <slot></slot>\
                         </div>\
-                    </div>'
+                    </div>',
+        components: {
+            PersistentNotifications: PersistentNotifications
+        }
     }));
 
     //Each cly-section should mark a different component within the cly-main component

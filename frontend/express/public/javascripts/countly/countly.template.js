@@ -762,15 +762,23 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenu: function(category, node) {
-        if (category === "management" || category === "users") {
-            this.addMenuForType("default", category, node);
+        if (node && !node.pluginName && !node.permission) {
+            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
+        }
+        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
         }
         else {
-            for (var type in this.appTypes) {
-                this.addMenuForType(type, category, node);
+            if (category === "management" || category === "users") {
+                this.addMenuForType("default", category, node);
             }
-            //queue for future added app types
-            this._menuForAllTypes.push({category: category, node: node});
+            else {
+                for (var type in this.appTypes) {
+                    this.addMenuForType(type, category, node);
+                }
+                //queue for future added app types
+                this._menuForAllTypes.push({category: category, node: node});
+            }
         }
     },
     /**
@@ -789,11 +797,19 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenu: function(parent_code, node) {
-        for (var type in this.appTypes) {
-            this.addSubMenuForType(type, parent_code, node);
+        if (node && !node.pluginName && !node.permission) {
+            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
         }
-        //queue for future added app types
-        this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
+        }
+        else {
+            for (var type in this.appTypes) {
+                this.addSubMenuForType(type, parent_code, node);
+            }
+            //queue for future added app types
+            this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        }
     },
     main: function(/*forced*/) {
         var change = true,
@@ -908,7 +924,7 @@ var AppRouter = Backbone.Router.extend({
     },
     performRefresh: function(self) {
         //refresh only if we are on current period
-        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
+        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded && !countlyCommon.DISABLE_AUTO_REFRESH) {
             self.activeView.isLoaded = false;
             $.when(self.activeView.refresh()).always(function() {
                 self.activeView.isLoaded = true;
@@ -936,7 +952,15 @@ var AppRouter = Backbone.Router.extend({
         this.routesHit++;
 
         if (_.isEmpty(countlyGlobal.apps)) {
-            if (Backbone.history.fragment !== "/manage/apps") {
+            if (!countlyGlobal.member.global_admin) {
+                if (Backbone.history.fragment !== "/account-settings/no-access") {
+                    this.navigate("/account-settings/no-access", true);
+                }
+                else {
+                    viewName.render();
+                }
+            }
+            else if (Backbone.history.fragment !== "/manage/apps") {
                 this.navigate("/manage/apps", true);
             }
             else {
@@ -1113,9 +1137,9 @@ var AppRouter = Backbone.Router.extend({
         self.addMenuCategory("reach", {priority: 30});
         self.addMenuCategory("improve", {priority: 40});
         self.addMenuCategory("utilities", {priority: 50});
-        self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
-        self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
-        self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+        self.addMenu("understand", {code: "overview", permission: "core", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
+        self.addMenu("understand", {code: "analytics", permission: "core", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+        self.addMenu("understand", {code: "events", permission: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
         // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
         self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
         self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
@@ -1125,6 +1149,7 @@ var AppRouter = Backbone.Router.extend({
 
         self.addMenu("utilities", {
             code: "management",
+            permission: "core",
             text: "sidebar.utilities",
             icon: '<div class="logo management ion-wrench"></div>',
             priority: 10000000,
@@ -1142,13 +1167,13 @@ var AppRouter = Backbone.Router.extend({
 
         var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
         if (countlyAuth.validateAnyAppAdmin()) {
-            self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 30});
+            self.addMenu("management", {code: "applications", permission: "core", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
         }
         if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
+            self.addMenu("management", {code: "users", permission: "core", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
         }
         if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
+            self.addMenu("management", {code: "jobs", permission: "core", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
         }
 
         // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
@@ -1527,6 +1552,13 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
+
+            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length && !_.isEmpty(countlyGlobal.apps)) {
+                for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
+                    countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
+                    CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);
+                }
+            }
 
             $(document).on('DOMNodeInserted', '.cly-select', function() {
                 CountlyHelpers.makeSelectNative();
@@ -3160,6 +3192,7 @@ var AppRouter = Backbone.Router.extend({
     /**
     * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
     * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
+	* @param {string} name - Plugin name
     * @memberof app
     * @instance
     * @example
@@ -3167,8 +3200,9 @@ var AppRouter = Backbone.Router.extend({
     *    countlyCrashes.loadList(appId);
     * });
     */
-    addAppSwitchCallback: function(callback) {
-        this.appSwitchCallbacks.push(callback);
+    addAppSwitchCallback: function(callback, name) {
+        name = name || 'core';
+        this.appSwitchCallbacks.push({"name": name, "fn": callback});
     },
     /**
     * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
@@ -3211,7 +3245,9 @@ var AppRouter = Backbone.Router.extend({
      * @param {object} View - plugin view
      */
     addAppManagementView: function(plugin, title, View) {
-        this.appManagementViews[plugin] = {title: title, view: View};
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
+            this.appManagementViews[plugin] = {title: title, view: View};
+        }
     },
     /**
      * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
@@ -3221,7 +3257,9 @@ var AppRouter = Backbone.Router.extend({
      * @param {Array} inputs - plugin inputs
      */
     addAppManagementInput: function(plugin, title, inputs) {
-        this.appManagementViews[plugin] = {title: title, inputs: inputs};
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
+            this.appManagementViews[plugin] = {title: title, inputs: inputs};
+        }
     },
     /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
@@ -3331,6 +3369,7 @@ var AppRouter = Backbone.Router.extend({
     * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
     * @param {function} callback - function to be called when view loaded
+	* @param {string} name - Plugin name
     * @memberof app
     * @instance
     * @example <caption>Adding to single specific view with specific url</caption>
@@ -3356,11 +3395,13 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each view");
     * });
     */
-    addPageScript: function(view, callback) {
-        if (!this.pageScripts[view]) {
-            this.pageScripts[view] = [];
+    addPageScript: function(view, callback, name) {
+        if (!name || CountlyHelpers.isPluginEnabled(name)) {
+            if (!this.pageScripts[view]) {
+                this.pageScripts[view] = [];
+            }
+            this.pageScripts[view].push(callback);
         }
-        this.pageScripts[view].push(callback);
     },
     /**
     * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
@@ -3416,7 +3457,9 @@ var AppRouter = Backbone.Router.extend({
                 $("#sidebar-menu #default-type").show();
             }
             for (var i = 0; i < this.appSwitchCallbacks.length; i++) {
-                this.appSwitchCallbacks[i](appId);
+                if (CountlyHelpers.isPluginEnabled(this.appSwitchCallbacks[i].name)) {
+                    this.appSwitchCallbacks[i].fn(appId);
+                }
             }
             app.localize();
         }

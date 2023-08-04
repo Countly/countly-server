@@ -336,7 +336,7 @@ function getAppName(appId, appNames) {
         return appNames[appId];
     }
     else {
-        return "Deleted app (" + appId + ")";
+        return "App name not available (" + appId + ")";
     }
 }
 

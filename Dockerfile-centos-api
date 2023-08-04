@@ -1,9 +1,10 @@
-FROM centos:7.8.2003
+FROM centos:8
 
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager
 # Enterprise Edition:
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk
 
+ARG GEOIP=empty
 EXPOSE 3001
 HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:3001/o/ping || exit 1
 
@@ -15,23 +16,37 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_API_API_WORKERS="1" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+	NODE_OPTIONS="--max-old-space-size=2048" \
 	TINI_VERSION="0.18.0" \
 	PATH="/opt/rh/rh-nodejs10/root/usr/bin:${PATH}"
 
 WORKDIR /opt/countly
 COPY . .
 
+# fix 'appstream' repo for CentOS 8
+RUN cd /etc/yum.repos.d/
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+RUN dnf update -y libmodulemd
+
+RUN yum update -y
+
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
 	\
-	curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
-	yum -y install nodejs && \
+	curl -sL https://rpm.nodesource.com/setup_18.x | bash - && \
+	yum install -y nodejs python3.8 python2 python38-libs python38-devel python38-pip nss libdrm libgbm cyrus-sasl* && \
 	ln -s /usr/bin/node /usr/bin/nodejs && \
+	unlink /usr/bin/python3 && \
+	ln -s /usr/bin/python3.8 /usr/bin/python3 && \
+	ln -s /usr/bin/python2.7 /usr/bin/python && \
 	\
-	yum -y install centos-release-scl && \
-	yum -y install openssl-devel devtoolset-7-gcc-c++ make git wget unzip bzip2 make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools which && \
-	source /opt/rh/devtoolset-7/enable && \
-    \
+	yum install -y python3-policycoreutils && \
+	yum group install -y "Development Tools" && \
+	yum install -y epel-release && \
+	yum install -y pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
+	yum install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+	yum install -y wget openssl-devel make git libsqlite* sqlite unzip bzip2 && \
 	# modify standard distribution
 	./bin/docker/modify.sh && \
 	\
@@ -46,8 +61,8 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
-	yum remove -y git wget unzip gcc-c++ gcc centos-release-scl devtoolset-7-gcc-c++ devtoolset-7-gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
-	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
+	yum remove -y git wget unzip make && \
+	yum --setopt=groupremove_leaf_only=1 groupremove -y 'Development Tools' && \
 	yum clean all && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
 	chown -R 1001:0 /opt/countly && \

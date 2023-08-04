@@ -1,5 +1,5 @@
 .technology-analytics-wrapper .allPlatformVersions {
-    border-left:1px solid #ececec;
+    border-left: 1px solid #ececec;
     height: 264px;
     border-top: 1px solid #ececec;
     border-bottom: 1px solid #ececec;
@@ -25,6 +25,7 @@
     top: 50%;
     text-align: center;
     width: 100%;
+    margin-top: -10px;
 }
 
 .technology-analytics-wrapper .version-graph-title {
@@ -33,7 +34,11 @@
     font-weight: normal;
     font-size: 14px;
     line-height: 20px;
-    color:#333C48;
+    color: #333c48;
+    
+    .divider {
+        color: #a7aeb8;
+    }
 }
 
 .technology-analytics-wrapper .version-graph-title div:first-child {
@@ -82,6 +87,8 @@
     top: 50%;
     text-align: center;
 	width: 100%;
+    line-height: 20px;
+    margin-top: -10px;
 }
 
 .technology-analytics-wrapper .platformVersionsWrapper .emptyCard{
@@ -142,6 +149,8 @@
             top: 50%;
             text-align: center;
             width: 100%;
+            line-height: 20px;
+            margin-top: -10px;
         }
     }
 
@@ -160,6 +169,8 @@
             top: 50%;
             text-align: center;
             width: 100%;
+            line-height: 20px;
+            margin-top: -10px;
         }
     }
 }

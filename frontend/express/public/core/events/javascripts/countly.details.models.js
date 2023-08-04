@@ -7,7 +7,6 @@
             var graphData = [[], [], []];
             var labels = context.state.labels;
             var count = 0;
-            var sum = 0;
             var dur = 0;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
@@ -16,14 +15,25 @@
                 if (chartData[i].c) {
                     count += chartData[i].c;
                 }
-                if (chartData[i].s) {
-                    sum += chartData[i].s;
-                }
                 if (chartData[i].dur) {
                     dur += chartData[i].dur;
                 }
             }
+            var showSumGraph = graphData[1].some(function(item) {
+                return item !== 0;
+            });
             var series = [];
+            var yAxis = [];
+            var graphPointsLen = 0;
+            if (showSumGraph) {
+                graphPointsLen++;
+            }
+            if (count > 0) {
+                graphPointsLen++;
+            }
+            if (dur > 0) {
+                graphPointsLen++;
+            }
             if (count > 0) {
                 var countObj = {
                     name: labels.count,
@@ -31,14 +41,24 @@
                     color: "#017AFF"
                 };
                 series.push(countObj);
+                var countYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(countYAxisObj);
             }
-            if (sum > 0) {
+            if (showSumGraph) {
                 var sumObj = {
                     name: labels.sum,
                     data: graphData[1],
                     color: "#F96300"
                 };
                 series.push(sumObj);
+                var sumYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(sumYAxisObj);
             }
             if (dur > 0) {
                 var durObj = {
@@ -46,10 +66,24 @@
                     data: graphData[2],
                     color: "#FF9382"
                 };
+                if (graphPointsLen > 1) {
+                    durObj.yAxisIndex = graphPointsLen - 1;
+                }
                 series.push(durObj);
+                var durYAxisObj = {
+                    type: 'value',
+                    alignTicks: true,
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+                yAxis.push(durYAxisObj);
             }
             var obj = {
-                series: series
+                series: series,
+                yAxis: yAxis,
             };
             context.commit('setLineChartData', obj);
         },
@@ -92,6 +126,7 @@
             var xAxisData = [];
             var obj = {};
             var xAxis = {};
+            var yAxis = [];
             var legend = {};
             var series = [];
             var obCount = {};
@@ -99,48 +134,80 @@
             var obDuration = {};
             var labels = context.state.labels;
             var count = 0;
-            var sum = 0;
             var dur = 0;
             var maxLength = eventData.chartData.length > 15 ? 15 : eventData.chartData.length;
             for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
                 arrSum.push(eventData.chartData[i].s);
-
                 arrDuration.push(eventData.chartData[i].dur);
+
                 xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
                 if (eventData.chartData[i].c) {
                     count += eventData.chartData[i].c;
-                }
-                if (eventData.chartData[i].s) {
-                    sum += eventData.chartData[i].s;
                 }
                 if (eventData.chartData[i].dur) {
                     dur += eventData.chartData[i].dur;
                 }
             }
+            var showSumGraph = arrSum.some(function(item) {
+                if (item) { //null, undefined, 0
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
             xAxis.data = xAxisData;
+            var graphPointsLen = 0;
             if (count > 0) {
+                graphPointsLen++;
                 obCount.name = labels.count;
                 obCount.data = arrCount;
                 obCount.color = "#017AFF";
                 series.push(obCount);
+                var countYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(countYAxisObj);
             }
-            if (sum > 0) {
+            if (showSumGraph) {
+                graphPointsLen++;
                 obSum.name = labels.sum;
                 obSum.data = arrSum;
                 obSum.color = "#F96300";
                 series.push(obSum);
+                var sumYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(sumYAxisObj);
             }
             if (dur > 0) {
+                graphPointsLen++;
                 obDuration.name = labels.dur;
                 obDuration.data = arrDuration;
                 obDuration.color = "#FF9382";
+                if (graphPointsLen > 1) {
+                    obDuration.yAxisIndex = graphPointsLen - 1;
+                }
                 series.push(obDuration);
+                var durYAxisObj = {
+                    type: 'value',
+                    alignTicks: true,
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+                yAxis.push(durYAxisObj);
             }
             legend.show = false;
             obj.legend = legend;
             obj.series = series;
             obj.xAxis = xAxis;
+            obj.yAxis = yAxis;
             context.commit('setBarData', obj);
         },
         clearEventsObject: function(obj) {
@@ -162,10 +229,13 @@
             return obj;
         },
         decode: function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+            return str.replace(/&amp;/g, '&').replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+        },
+        encode: function(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
@@ -312,7 +382,6 @@
             var segments = [];
             if (res.meta && res.meta.segments.length > 0) {
                 segments = res.meta.segments.slice();
-                segments.push("segment");
                 context.commit('setHasSegments', true);
             }
             else {
@@ -325,6 +394,8 @@
             else {
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
+            segments.sort();
+            segments.unshift("segment");
             return segments;
         },
         getLegendData: function(context) {
@@ -344,7 +415,12 @@
                 legendData.push(count);
             }
             var sum = {};
-            if (eventsOverview.sum.total > 0) {
+            let sumGraphObj = eventsOverview.sum || {};
+            let sumGraphData = sumGraphObj.sparkline || [];
+            var showSumGraph = sumGraphData.some(function(item) {
+                return item !== 0;
+            });
+            if (showSumGraph) {
                 sum.name = labels.sum;
                 sum.value = countlyCommon.formatNumber(eventsOverview.sum.total);
                 sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
@@ -365,6 +441,10 @@
             return lineLegend;
         },
         getSelectedEventsOverview: function(context, res) {
+            if (typeof context.state.selectedEventName === "string") {
+                var event = res[countlyAllEvents.helpers.encode(context.state.selectedEventName)];
+                return event.data;
+            }
             return res[context.state.selectedEventName].data;
         },
         getAllEventsList: function(eventsList, groupList) {
@@ -373,8 +453,15 @@
             if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var label;
+                        if (map[item] && map[item].name && typeof map[item].name === 'string') {
+                            label = countlyAllEvents.helpers.decode(map[item].name);
+                        }
+                        if (item && typeof item === 'string') {
+                            item = countlyAllEvents.helpers.decode(item);
+                        }
                         var obj = {
-                            "label": map[item] && map[item].name ? map[item].name : item,
+                            "label": map[item] && map[item].name ? label : item,
                             "value": item,
                             "custom": {
                                 "value": undefined
@@ -627,7 +714,14 @@
                 legendData.push(count);
             }
             var sum = {};
-            if (currentSum > 0) {
+            let eventsOverview = context.state.selectedEventsOverview || {};
+            let sumGraphObj = eventsOverview.sum || {};
+            let sumGraphData = sumGraphObj.sparkline || [];
+            var showSumGraph = sumGraphData.some(function(item) {
+                return item !== 0;
+            });
+
+            if (showSumGraph) {
                 sum.name = labels.sum;
                 sum.value = countlyCommon.formatNumber(currentSum);
                 sum.trend = changeSum.trend === "u" ? "up" : "down";
@@ -646,6 +740,13 @@
             lineLegend.type = "primary";
             lineLegend.data = legendData;
             return lineLegend;
+        },
+        getOmittedSegments: function(selectedEventName, res) {
+            var omittedSegments = [];
+            if (res && res.omitted_segments) {
+                omittedSegments = res.omitted_segments[selectedEventName] || [];
+            }
+            return omittedSegments.sort();
         }
     };
 
@@ -754,6 +855,7 @@
                 currentActiveSegmentation: "segment",
                 hasSegments: false,
                 availableSegments: [],
+                omittedSegments: [],
                 allEventsProcessed: {},
                 barData: {},
                 lineChartData: {},
@@ -790,6 +892,7 @@
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
                             context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
+                            context.commit("setOmittedSegments", countlyAllEvents.helpers.getOmittedSegments(context.state.selectedEventName, res));
 
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
                                 .then(function(result) {
@@ -937,6 +1040,8 @@
                                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
+                            context.commit("setOmittedSegments", countlyAllEvents.helpers.getOmittedSegments(context.state.selectedEventName, res));
+
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
                                 .then(function(result) {
                                     if (result) {
@@ -998,6 +1103,9 @@
             },
             setAvailableSegments: function(state, value) {
                 state.availableSegments = value;
+            },
+            setOmittedSegments: function(state, value) {
+                state.omittedSegments = value;
             },
             setAllEventsProcessed: function(state, value) {
                 state.allEventsProcessed = value;
@@ -1069,6 +1177,9 @@
             },
             availableSegments: function(_state) {
                 return _state.availableSegments;
+            },
+            omittedSegments: function(_state) {
+                return _state.omittedSegments;
             },
             allEventsProcessed: function(_state) {
                 return _state.allEventsProcessed;

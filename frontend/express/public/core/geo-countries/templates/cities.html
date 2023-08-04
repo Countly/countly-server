@@ -15,7 +15,7 @@
 		<cly-section class="geo-analytics-data geo-countries-section">
 			<div class="bu-columns bu-is-gapless" style="height: 534px;">
 				<div class="radio-column">
-					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty"></cly-radio-block>
+					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty" v-loading="isLoading"></cly-radio-block>
 				</div>
 				<div class="bu-column" style="position:relative">
 					<cly-worldmap

@@ -4,7 +4,7 @@ const job = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('job:ping'),
     countlyConfig = require("../../frontend/express/config.js"),
     versionInfo = require('../../frontend/express/version.info'),
-    request = require('request'),
+    request = require('countly-request'),
     plugins = require('../../plugins/pluginManager.js');
 
 /** Class for the job of pinging servers **/

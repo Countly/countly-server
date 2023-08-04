@@ -1,0 +1,23 @@
+{
+  "name": "countly-request",
+  "version": "1.0.0",
+  "description": "Creates a wrapper for got with same signature with deprecated request in order to replace request package",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Countly/countly-server.git"
+  },
+  "scripts": {
+    "test": "mocha test/countly-request.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "got": "^11.8.5"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "should": "^13.2.3"
+  }
+}

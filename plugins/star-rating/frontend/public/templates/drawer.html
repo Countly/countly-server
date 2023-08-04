@@ -23,25 +23,34 @@
               <div class="ratings-drawer__rp-question-area">
                 {{ drawerScope.editedObject.popup_header_text }}
               </div>
-              <div class="ratings-drawer__rp-ratings-area">
-                <div v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+              <div v-if="drawerScope.editedObject.ratings_texts">
+                <div class="ratings-drawer__rp-ratings-area" v-if="drawerScope.editedObject.rating_symbol==='emojis'">
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__emoji1', ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji1']"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__emoji2', ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji2']"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__emoji3', ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji3']"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__emoji4', ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji4']"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__emoji5', ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji5']"></div>
+                </div>
+                <div class="ratings-drawer__rp-ratings-area" v-else>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                  <div v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                </div>
               </div>
               <div class="ratings-drawer__rp-optional-area">
-                <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ drawerScope.editedObject.popup_comment_callout }}</el-checkbox>
+                <el-checkbox v-model="drawerScope.editedObject.comment_enable">{{ drawerScope.editedObject.popup_comment_callout }}</el-checkbox>
               </div>
               <div class="ratings-drawer__rp-optional-area">
-                <el-checkbox v-model="drawerScope.editedObject.comment_enable">{{ drawerScope.editedObject.popup_email_callout }}</el-checkbox>
+                <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ drawerScope.editedObject.popup_email_callout }}</el-checkbox>
               </div>
               <div class="ratings-drawer__rp-action-area">
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
-                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
+                <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                <img v-if="drawerScope.editedObject.logoType === 'default'" src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'">
@@ -53,9 +62,9 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
-                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
-            </div>
+                <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                <img v-if="drawerScope.editedObject.logoType === 'default'" src="/star-rating/images/star-rating/powered-by-countly.svg">
+                </div>
             </div>
 					</div>
           <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
@@ -158,7 +167,7 @@
             </div>
             <validation-provider name="rating_symbol" rules="required" v-slot="v">
               <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
-                <el-option v-for="symbol in ratingSymbols" :label="i18n('feedback.' + symbol)" :value="symbol"></el-option>
+                <el-option v-for="symbol in ratingSymbols" :key="symbol" :label="i18n('feedback.' + symbol)" :value="symbol"></el-option>
               </el-select>
             </validation-provider>
           </div>
@@ -169,8 +178,20 @@
               </span>
               <cly-tooltip-icon icon="ion-help-circled" :tooltip="i18n('ratings.tooltip.drawer-logo')"></cly-tooltip-icon>
             </div>
+            <div class="bu-is-flex bu-is-align-items-center">
+              <el-radio 
+                class="is-autosized bu-pt-4"
+                v-model="drawerScope.editedObject.logoType" 
+                :label="item.value" 
+                :key="idx" 
+                v-for="(item, idx) in constants.logoOptions"
+                border>
+                {{item.label}}
+              </el-radio>
+            </div>
             <cly-dropzone
-              class="ratings-drawer-dropzone"
+            v-if="drawerScope.editedObject.logoType === 'custom'"
+              class="ratings-drawer-dropzone bu-mt-4"
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"

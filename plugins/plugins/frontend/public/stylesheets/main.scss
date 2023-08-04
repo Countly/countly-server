@@ -2,10 +2,10 @@
 @use "sass:map";
 .config-section {border-bottom: 1px solid #ECECEC;}
 .config-section:last-child { border-bottom: none; }
-.config-section-overwritten { color: #F56C6C; font-size: 12px; line-height: 1; }
+.config-section-overwritten { color: #F56C6C; font-size: 12px; line-height: 1; margin-top:12px; }
 .account-settings-avatar-box{border-left: 1px solid #ECECEC;}
 .account-settings-avatar{width: 100px; height: 100px; margin: auto; border-radius: 290486px; text-align: center; display: table;}
-.account-settings-avatar span{color: #fff; font-size: 60px; text-transform: uppercase; display: table-cell; vertical-align: middle;}
+.account-settings-avatar span{color: #fff; font-size: 40px; text-transform: uppercase; display: table-cell; vertical-align: middle;}
 .account-upload-instructions {font-size:12px; color: #81868D; text-align: center;}
 .account-settings-hint {font-size: 12px; line-height: 18px;}
 .account-settings-hint i.fa-check-circle {color: #67C23A;}
@@ -63,5 +63,12 @@
         height: 50px;
         margin-left:24px;
         cursor: default;
+    }
+
+    a {
+        color: #32659D;
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }

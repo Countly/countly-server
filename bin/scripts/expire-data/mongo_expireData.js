@@ -2,7 +2,7 @@
  *  Setup TTL indexes to delete older data on multiple collections. This script should be run periodically, to create TTL indexes on new collections too, like new apps and new events, etc. For authentication mongo shell must be authenticated, as well as specifically authenticated in the script too.
  *  Server: mongodb
  *  Path: any
- *  Command: mongo < mongo_expireData.js
+ *  Command: mongosh < mongo_expireData.js
  */
 
 var COUNTLY_DRILL = 'countly_drill',
@@ -35,7 +35,7 @@ authDB.auth('<username>', '<password>');
 var cly = conn.getDB(COUNTLY),
     drill = conn.getDB(COUNTLY_DRILL);
 
-var clyCollections = cly.getCollectionNames(), collections = clyCollections.concat(drill.getCollectionNames()), check = [];
+var clyCollections = cly.getCollectionNames(), collections = clyCollections.concat(drill.getCollectionNames()), check = [], update = [];
 
 collections.forEach(function(c) {
     var process = false;
@@ -59,8 +59,8 @@ collections.forEach(function(c) {
                 }
                 //has index but incorrect expire time, need to be reindexed
                 else {
-                    print("Dropping index for", c);
-                    db[c].dropIndex(INDEX_NAME);
+                    update.push(c);
+                    hasIndex = true;
                 }
                 break;
             }
@@ -78,3 +78,18 @@ check.forEach(function(c) {
     var db = clyCollections.indexOf(c) === -1 ? drill : cly;
     db.getCollection(c).createIndex({"cd": 1}, { expireAfterSeconds: EXPIRE_AFTER, background: true });
 });
+
+update.forEach(function(c) {
+    print("Updating  index for", c);
+    var db = clyCollections.indexOf(c) === -1 ? drill : cly;
+    db.runCommand({
+        "collMod": c,
+        "index": {
+            "keyPattern": {"cd": 1},
+            expireAfterSeconds: EXPIRE_AFTER
+        }
+    }, function(err) {
+        console.log(err);
+    });
+});
+

@@ -1,15 +1,34 @@
 //file should be placed in countly/extend
 //edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
 var nodemailer = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
+const pluginManager = require('../plugins/pluginManager.js');
 
 //rename company
 var company = "Company";
 var email = "email@company.com";
 
+function getPluginConfig() {
+    const plugins = pluginManager.getPlugins(true);
+    let _email = email;
+    let _company = company;
+
+    if (plugins.indexOf('white-labeling') > -1) {
+        try {
+            const pluginsConfig = pluginManager.getConfig("white-labeling");
+            const {emailFrom, emailCompany} = pluginsConfig;
+            _email = emailFrom && emailFrom.length > 0 ? emailFrom : email;
+            _company = emailCompany && emailCompany.length > 0 ? emailCompany : company;
+        }
+        catch (error) {
+            console.log('Error getting plugins config', error);
+        }
+    }
+    return { email: _email, company: _company };
+}
+
 module.exports = function(mail) {
     //define this if you need to send email from some third party service
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: "myhost",
         secureConnection: true,
         port: 2525,
@@ -17,9 +36,10 @@ module.exports = function(mail) {
             user: "username",
             pass: "password"
         }
-    }));
+    });
 
     mail.sendMail = function(message, callback) {
+        const { email, company } = getPluginConfig();
         message.from = company + " <" + email + ">";
         mail.smtpTransport.sendMail(message, function(error) {
             if (error) {
@@ -33,6 +53,7 @@ module.exports = function(mail) {
     };
 
     mail.sendMessage = function(to, subject, message, callback) {
+        const { email, company } = getPluginConfig();
         mail.sendMail({
             to: to,
             from: company + " <" + email + ">",
@@ -42,6 +63,7 @@ module.exports = function(mail) {
     };
 
     mail.sendToNewMember = function(member, memberPassword) {
+        const { company } = getPluginConfig();
         const password = mail.escapedHTMLString(memberPassword);
 
         mail.lookup(function(err, host) {
@@ -54,6 +76,7 @@ module.exports = function(mail) {
     };
 
     mail.sendToUpdatedMember = function(member, memberPassword) {
+        const { company } = getPluginConfig();
         const password = mail.escapedHTMLString(memberPassword);
 
         mail.lookup(function(err, host) {
@@ -65,6 +88,8 @@ module.exports = function(mail) {
     };
 
     mail.sendPasswordResetInfo = function(member, prid) {
+        const { company } = getPluginConfig();
+
         mail.lookup(function(err, host) {
             mail.sendMessage(member.email, "" + company + " Account - Password Reset", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\n" +
             "You can reset your " + company + " account password by following <a href='" + host + "/reset/" + prid + "'>this link</a>.<br/><br/>\n" +
@@ -74,6 +99,8 @@ module.exports = function(mail) {
     };
 
     mail.sendAutomatedMessageError = function(member, link) {
+        const { company } = getPluginConfig();
+
         mail.lookup(function(err, host) {
             link = host + '/' + link;
             mail.sendMessage(member.email, company + " Automated Push Problem", "Hi " + mail.getUserFirstName(member) + ",,<br/><br/>\n" +

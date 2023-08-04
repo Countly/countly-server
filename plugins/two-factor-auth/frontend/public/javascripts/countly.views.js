@@ -41,7 +41,9 @@ var TwoFAUser = countlyVue.views.create({
                         $.ajax({
                             type: "GET",
                             url: countlyGlobal.path + "/i/two-factor-auth",
-                            data: {method: "disable"},
+                            data: {
+                                method: "disable"
+                            },
                             success: function() {
                                 CountlyHelpers.notify({
                                     title: $.i18n.map["two-factor-auth.disable_title"],

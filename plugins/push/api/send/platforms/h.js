@@ -22,7 +22,8 @@ const key = 'h';
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && (qstring.token_provider === 'HMS' || qstring.token_provider === 'HPK')) {
-        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        const token = qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token;
+        return [key, FIELDS['0'], token, util.hashInt(token)];
     }
 }
 
@@ -47,7 +48,7 @@ class HPK extends Splitter {
      * @param {Credentials} creds HMS server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
      * @param {string} options.proxy.host proxy host
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
@@ -55,7 +56,6 @@ class HPK extends Splitter {
      * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`${threadId}-h`);
@@ -156,7 +156,7 @@ class HPK extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.message.token = pushes.map(p => p.t);
 
@@ -169,7 +169,7 @@ class HPK extends Splitter {
                 }
                 catch (error) {
                     this.log.e('Bad HW response format: %j', resp, error);
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
 
 
@@ -297,7 +297,7 @@ class HPK extends Splitter {
             }, ([code, error]) => {
                 this.log.w('Huawei error %d / %j', code, error);
                 if (code === 0) {
-                    throw PushError.deserialize(error);
+                    throw PushError.deserialize(error, SendError);
                 }
                 else if (code >= 500) {
                     throw new ConnectionError(`Huawei Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
@@ -512,7 +512,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkhp/tkht
  */
 const FIELDS_TITLES = {
-    '0': 'HMS Token',
+    '0': 'Android Huawei Token',
 };
 
 /**

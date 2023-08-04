@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull*/
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull, countlyCommon */
 
 (function() {
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -85,6 +85,11 @@
 
                 if (widgetSettings) {
                     var defaultEmpty = widgetSettings.drawer.getEmpty();
+                    if (this.widgetId) {
+                        // it is create
+                        defaultEmpty._id = this.widgetId;
+                        defaultEmpty.__action = "edit";
+                    }
                     this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
                 }
             },
@@ -202,7 +207,7 @@
                 case 'time-series':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 3,
+                        minHeight: 4,
                         width: 4,
                         height: 4
                     };
@@ -210,7 +215,7 @@
                 case 'bar-chart':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 3,
+                        minHeight: 4,
                         width: 4,
                         height: 4
                     };
@@ -259,10 +264,19 @@
                 else {
                     countlyDashboards.factory.log("No dimensions were found for the widget!");
                 }
-                // if (widget.size && widget.size.length === 2) {
-                //     dimensions.width = widget.size[0];
-                //     dimensions.height = widget.size[1];
-                // }
+                //maintaining backward compatibilty of previous minHeight,minWidth
+                if (widget.size && widget.size.length === 2) {
+                    var prevWidth = widget.size[0];
+                    var prevHeight = widget.size[1];
+                    if (prevHeight < dimensions.minHeight) {
+                        dimensions.height = prevHeight;
+                        dimensions.minHeight = prevHeight;
+                    }
+                    if (prevWidth < dimensions.minWidth) {
+                        dimensions.width = prevWidth;
+                        dimensions.minWidth = prevWidth;
+                    }
+                }
                 return dimensions;
             }
         }
@@ -362,7 +376,6 @@
                  * All widgets can be resized.
                  */
                 var disabled = this.isWidgetDisabled(widget);
-
                 if (disabled) {
                     return true;
                 }
@@ -935,6 +948,7 @@
         data: function() {
             return {
                 grid: null,
+                widgetId: null
             };
         },
         computed: {
@@ -971,6 +985,7 @@
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     var settings = Object.assign({}, empty, d);
+                    this.widgetId = settings._id;
                     this.openDrawer("widgets", settings);
                     break;
 
@@ -1366,6 +1381,8 @@
                     dashboard.creation.by = dashboard.owner.full_name;
                 }
 
+                dashboard.name = countlyCommon.unescapeHtml(dashboard.name);
+
                 return dashboard;
             },
             canUpdateGrid: function() {
@@ -1421,7 +1438,7 @@
             document.addEventListener('fullscreenchange', fullscreeToggle);
         },
         methods: {
-            refresh: function() {
+            refresh: function(forceRefresh) {
                 var isRefreshing = this.isRefreshing;
                 var isInitializing = this.isInitLoad;
                 var isDrawerOpen = this.isDrawerOpen;
@@ -1454,11 +1471,11 @@
                     return;
                 }
 
-                this.dateChanged(true);
+                this.dateChanged(forceRefresh);
             },
             dateChanged: function(isRefresh) {
                 var self = this;
-                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", isRefresh);
 
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
                     self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);
@@ -1715,6 +1732,7 @@
 
     countlyVue.container.registerData("/sidebar/menu/main", {
         name: "dashboards",
+        pluginName: "dashboards",
         icon: "cly-icon-sidebar-dashboards",
         tooltip: CV.i18n("sidebar.dashboard-tooltip"),
         component: DashboardsMenu
@@ -1722,6 +1740,7 @@
 
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "dashboards",
         beforeCreate: function() {
             var self = this;
             this.$store.dispatch("countlyDashboards/getAll").then(function(res) {

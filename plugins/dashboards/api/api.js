@@ -1078,7 +1078,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
@@ -1157,7 +1157,7 @@ plugins.setConfigs("dashboards", {
                 widget = params.qstring.widget || {};
 
             try {
-                widget = JSON.parse(widget);
+                widget = JSON.parse(common.sanitizeHTML(widget));
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
@@ -1184,9 +1184,12 @@ plugins.setConfigs("dashboards", {
                     ], function(error, results) {
                         var hasEditAccess = results[0];
                         var hasViewAccess = results[1];
-
+                        var unsetQuery = {};
+                        if (widget.feature === "core") {
+                            unsetQuery.$unset = {"isPluginWidget": ""};
+                        }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget}, {new: false}, function(er, result) {
+                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
                                 if (er || !result || !result.value) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
@@ -1338,7 +1341,7 @@ plugins.setConfigs("dashboards", {
                                 options.report = report;
                                 options.view = "/dashboard?ssr=true#" + "/custom/" + report.dashboards; //Set ssr=true (server side rendering)
                                 options.savePath = path.resolve(__dirname, savePath);
-                                options.dimensions = {width: 750, padding: 100};
+                                options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
                                 options.timeout = 120000;
@@ -2040,10 +2043,16 @@ plugins.setConfigs("dashboards", {
                 break;
             }
             case 'drill': {
-                let drillIds = widget.drill_report;
-                if (drillIds.length) {
-                    let longTasks = await params.fetchDependencies(app_id, drillIds, 'drill_reports', params);
-                    dependencies.push(...longTasks);
+                if (widget.drill_query && widget.drill_query.length) {
+                    let drillIds = widget.drill_query
+                        .map(q => {
+                            return q._id;
+                        })
+                        .filter(qId => !!qId);
+                    if (drillIds.length) {
+                        let drillQueries = await params.fetchDependencies(app_id, drillIds, 'drill_query', params);
+                        dependencies.push(...drillQueries);
+                    }
                 }
                 break;
             }
@@ -2056,10 +2065,16 @@ plugins.setConfigs("dashboards", {
                 break;
             }
             case 'formulas': {
-                let formulaIds = widget.cmetrics;
-                if (formulaIds.length) {
-                    let longTasks = await params.fetchDependencies(app_id, formulaIds, 'formula_reports', params);
-                    dependencies.push(...longTasks);
+                if (widget.cmetric_refs && widget.cmetric_refs.length) {
+                    let formulaIds = widget.cmetric_refs
+                        .map(metric => {
+                            return metric._id;
+                        })
+                        .filter(fId => !!fId);
+                    if (formulaIds.length) {
+                        let formulas = await params.fetchDependencies(app_id, formulaIds, 'formulas', params);
+                        dependencies.push(...formulas);
+                    }
                 }
                 break;
             }
@@ -2126,11 +2141,19 @@ plugins.setConfigs("dashboards", {
      */
     function importWidgets(params, importData) {
         return new Promise((resolve, reject)=>{
-            importData.data._id = common.db.ObjectID(importData.data._id);
+            if (importData.data?._id) {
+                importData.data._id = common.db.ObjectID(importData.data._id);
+            }
+            if (importData.data?.widget_type === 'formulas') {
+                delete importData.data.cmetrics;
+            }
+            if (importData.data?.widget_type === 'drill') {
+                delete importData.data.drill_report;
+            }
             common.db.collection("widgets").insert(importData.data, function(er, result) {
                 if (!er && result && result.insertedIds && result.insertedIds[0]) {
                     plugins.dispatch("/systemlogs", {params: params, action: "widget_added", data: importData.data});
-                    // TODO: dispatch widget_imported
+                    plugins.dispatch("/dashboard/widget/created", { params: params, widget: importData.data });
                     resolve();
                 }
                 else {

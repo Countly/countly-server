@@ -2092,7 +2092,7 @@
 			// added to the filter wrapper if needed (submit button for example)
 			nFilter._DT_Input = jqFilter[0];
 		
-			jqFilter.val( oPreviousSearch.sSearch.replace('"','&quot;') );
+			jqFilter.val( oPreviousSearch.sSearch.replace(/\"/g,'&quot;') );
 			jqFilter.bind( 'keyup.DT', function(e) {
 				/* Update all other filter input elements for the new display */
 				var n = oSettings.aanFeatures.f;

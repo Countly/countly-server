@@ -1,13 +1,14 @@
 const { Duplex } = require('stream'),
     Measurement = require('./measure'),
-    { XXHash64 } = require('xxhash-addon'),
+    { XXHash64, XXHash32 } = require('xxhash-addon'),
     // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
     { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
-const xx64 = new XXHash64();
+const xx64 = new XXHash64(),
+    xx32 = new XXHash32();
 
 /**
  * Waits for given time
@@ -34,13 +35,13 @@ class Base extends Duplex {
      * @param {Creds} creds authorization key: server key for FCM/HW, P8/P12 for APN
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.pool.concurrency,
+            writableHighWaterMark: options.pool.pushes,
         });
         this.type = type;
         this.creds = creds;
@@ -71,13 +72,16 @@ class Base extends Duplex {
      */
     message(data) {
         if (this.log) {
-            this.log.d('Received message %s', data._id);
+            this.log.d('Received message %j', data);
         }
         if (data instanceof Message) {
             this.messages[data.id] = data;
         }
         else {
             this.messages[data._id] = new Message(data);
+        }
+        if (this.log) {
+            this.log.d('Received message %s / %d', data.id, data.result.total);
         }
     }
 
@@ -115,17 +119,29 @@ class Base extends Duplex {
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
+        let i;
         chunks = chunks.map(c => c.chunk);
-        for (let i = 0; i < chunks.length; i++) {
-            let {frame, payload, length} = chunks[i];
-            this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
-            if (frame & FRAME.CMD) {
-                this.push(chunks[i]);
+        try {
+            for (i = 0; i < chunks.length; i++) {
+                let {frame, payload, length} = chunks[i];
+                this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
+                if (frame & FRAME.CMD) {
+                    this.push(chunks[i]);
+                }
+                else {
+                    await this.send(payload, length);
+                }
+                this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             }
-            else {
-                await this.send(payload, length);
+        }
+        catch (err) {
+            if (i < chunks.length - 1) {
+                for (let x = i + 1; x < chunks.length; x++) {
+                    if (chunks[x].frame & FRAME.CMD) {
+                        this.push(chunks[i]);
+                    }
+                }
             }
-            this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
         }
     }
 
@@ -236,24 +252,33 @@ class Base extends Duplex {
             catch (e) {
                 this.log.w('Retriable error %d of %d', attempt, max, e);
                 if (!(e instanceof PushError)) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isException) {
+                    this.sending -= bytes;
                     throw e;
                 }
                 else if (e.isCredentials) {
+                    this.sending -= bytes;
                     throw e;
                 }
-                else if (e.hasAffected || e.hasLeft) {
-                    if (e.hasAffected) {
-                        this.send_push_error(e.affectedError());
-                        e.affected = [];
-                        e.affectedBytes = 0;
-                    }
-                    data = e.left;
-                    bytes = e.leftBytes;
-                    error = e;
+                else if (this.cannotRetry) {
+                    this.sending -= bytes;
+                    throw e;
                 }
+                // else if (e.hasAffected || e.hasLeft) {
+                //     if (e.hasAffected) {
+                //         this.send_push_error(e.affectedError());
+                //         e.affected = [];
+                //         e.affectedBytes = 0;
+                //     }
+                //     if (e.hasLeft) {
+                //         data = e.left;
+                //         bytes = e.leftBytes;
+                //     }
+                //     error = e;
+                // }
                 else {
                     error = e;
                 }
@@ -261,7 +286,6 @@ class Base extends Duplex {
         }
         if (error) {
             this.sending -= bytes;
-            error.left = error.left ? error.left.map(l => l._id) : error.left;
             throw error;
         }
     }
@@ -330,6 +354,21 @@ function hash(data, seed) {
     // }
 }
 
+/**
+ * Simple 32-bit hashing
+ * 
+ * @param {string} string string to hash
+ * @returns {integer} 32 bit integer hash of the string, 0 if string is empty or no string is supplied
+ */
+function hashInt(string) {
+    if (typeof string === 'string' && string) {
+        xx32.reset();
+        xx32.update(Buffer.from(string, 'utf-8'));
+        return xx32.digest().readIntBE(0, 4);
+    }
+    return 0;
+}
+
 
 /** 
  * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
@@ -363,4 +402,4 @@ function flattenObject(ob) {
 }
 
 
-module.exports = { Base, util: {hash, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+module.exports = { Base, util: {hash, hashInt, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };

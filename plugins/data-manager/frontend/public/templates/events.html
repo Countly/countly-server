@@ -6,15 +6,15 @@
             <h2 v-else> {{i18n('data-manager.manage-events')}} </h2>
         </template>
         <template v-slot:header-tabs>
-            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary"></cly-dynamic-tabs>
+            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary" :hideSingleTab="false"></cly-dynamic-tabs>
       </template>
       <template v-slot:header-right>
           <div v-if="isDrill">
               <cly-report-manager-dialog class="bu-mr-2" origin="data-manager"></cly-report-manager-dialog>
           </div>
           <div v-if="isDrill && currentSecondaryTab !== 'validations'">
-            <cly-more-options v-if="canUserCreate || canUserUpdate" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
-                <el-dropdown-item v-if="canUserUpdate && (currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation') " command="create-transform">
+            <cly-more-options v-if="canUserCreate || canUserCreateTransform" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
+                <el-dropdown-item v-if="canUserCreateTransform && (currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation') " command="create-transform">
                     {{i18n('data-manager.create-transformation')}}
                 </el-dropdown-item>
                 <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'events' )" command="create-event">
@@ -23,22 +23,18 @@
                 <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " command="create-event-group">
                     {{i18n('data-manager.create-group')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="canUserUpdate && (currentSecondaryTab === 'transformations') " command="create-event-transform">
+                <el-dropdown-item v-if="canUserCreateTransform && (currentSecondaryTab === 'transformations') " command="create-event-transform">
                     {{i18n('data-manager.create-event-transformation')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="canUserUpdate && (currentSecondaryTab === 'transformations') " command="create-segment-transform">
+                <el-dropdown-item v-if="canUserCreateTransform && (currentSecondaryTab === 'transformations') " command="create-segment-transform">
                     {{i18n('data-manager.create-segment-transformation')}}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " command="create-event-group">
+                    {{i18n('data-manager.create-group')}}
                 </el-dropdown-item>
             </cly-more-options>
           </div>
-          <div v-else>
-              <cly-more-options v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
-                  <el-dropdown-item command="create-event-group">
-                    {{i18n('data-manager.create-group')}}
-                </el-dropdown-item>
-              </cly-more-options>
-          </div>
-        <div v-if="isDrill" class="bu-ml-2">
+        <div v-if="isDrill && (canUserUpdate || canUserCreate || isUserGlobalAdmin)" class="bu-ml-2">
             <cly-more-options size="small" @command="handleMetaCommands($event)">
                 <el-dropdown-item v-if="canUserUpdate" command="regnerate">{{i18n('data-manager.regenerate')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserCreate" command="export-schema">{{i18n('data-manager.export-schema')}}</el-dropdown-item>

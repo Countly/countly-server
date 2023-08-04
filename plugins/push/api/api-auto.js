@@ -175,6 +175,10 @@ module.exports.autoOnEvent = function(appId, uid, keys, events) {
 
     keys = keys.filter((k, i) => keys.indexOf(k) === i);
 
+    if (!keys.length) {
+        return;
+    }
+
     logEvents.d('Checking event keys %j', keys);
 
     plugins.getPluginsApis().push.cache.iterate((k, msg) => {

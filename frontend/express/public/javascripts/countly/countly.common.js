@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS, mergeWith*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -179,9 +179,27 @@
             return _period;
         };
 
+        countlyCommon.removePeriodOffset = function(period) {
+            var newPeriod = period;
+            if (Array.isArray(period)) {
+                newPeriod = [];
+                newPeriod[0] = period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]);
+                newPeriod[1] = period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
+            }
+            return newPeriod;
+        };
 
+        countlyCommon.getPeriodWithOffset = function(period) {
+            var newPeriod = period;
+            if (Array.isArray(period)) {
+                newPeriod = [];
+                newPeriod[0] = period[0] - countlyCommon.getOffsetCorrectionForTimestamp(period[0]);
+                newPeriod[1] = period[1] - countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
+            }
+            return newPeriod;
+        };
         countlyCommon.getPeriodForAjax = function() {
-            return CountlyHelpers.getPeriodUrlQueryParameter(_period);
+            return CountlyHelpers.getPeriodUrlQueryParameter(countlyCommon.getPeriodWithOffset(_period));
         };
 
         /**
@@ -216,6 +234,34 @@
                 var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch('countlyCommon/onAddNotificationToast', payload);
+                }
+            }
+        };
+
+        /**
+         * Adds a new notification to persistent notification list.
+         * @param {*} payload notification payload
+         * payload.color: color of the notification
+         * payload.text: text of the notification
+         */
+        countlyCommon.dispatchPersistentNotification = function(payload) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/onAddPersistentNotification", payload);
+                }
+            }
+        };
+
+        /**
+         * Removes a notification from persistent notification list based on id.
+         * @param {string} notificationId notification id
+         */
+        countlyCommon.removePersistentNotification = function(notificationId) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/onRemovePersistentNotification", notificationId);
                 }
             }
         };
@@ -289,6 +335,18 @@
             var div = document.createElement('div');
             div.innerText = html;
             return div.innerHTML;
+        };
+
+        countlyCommon.unescapeHtml = function(htmlStr) {
+            if (htmlStr) {
+                htmlStr = htmlStr.replace(/&lt;/g, "<");
+                htmlStr = htmlStr.replace(/&gt;/g, ">");
+                htmlStr = htmlStr.replace(/&quot;/g, "\"");
+                htmlStr = htmlStr.replace(/&#39;/g, "\'");
+                htmlStr = htmlStr.replace(/&amp;/g, "&");
+            }
+
+            return htmlStr;
         };
 
         /**
@@ -1559,6 +1617,7 @@
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {string}  metric  - metric to select
+        * @param {boolean} disableHours - disable hourly data for graphs
         * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
         * @example <caption>Extracting total users data from users collection</caption>
         * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
@@ -1606,7 +1665,7 @@
         *  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
         * }
         */
-        countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties, metric) {
+        countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties, metric, disableHours) {
             if (metric) {
                 metric = "." + metric;
             }
@@ -1624,18 +1683,32 @@
                 propertyFunctions = _.pluck(dataProperties, "func"),
                 currOrPrevious = _.pluck(dataProperties, "period"),
                 activeDate,
-                activeDateArr;
+                activeDateArr,
+                dateString = countlyCommon.periodObj.dateString;
             var previousDateArr = [];
+
+            if (countlyCommon.periodObj.daysInPeriod === 1 && disableHours) {
+                periodMax = 1;
+                dateString = "D MMM";
+            }
 
             for (var j = 0; j < propertyNames.length; j++) {
                 if (currOrPrevious[j] === "previous") {
-                    if (countlyCommon.periodObj.isSpecialPeriod) {
+                    if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                         periodMin = 0;
-                        periodMax = countlyCommon.periodObj.previousPeriodArr.length;
-                        activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                        periodMax = 24;
+                        activeDate = countlyCommon.periodObj.previousPeriodArr[0];
                     }
                     else {
-                        activeDate = countlyCommon.periodObj.previousPeriod;
+                        if (countlyCommon.periodObj.isSpecialPeriod) {
+                            periodMin = 0;
+                            periodMax = countlyCommon.periodObj.previousPeriodArr.length;
+                            activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                        }
+                        else {
+                            activeDate = countlyCommon.periodObj.previousPeriod;
+                            activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                        }
                     }
                 }
                 else if (currOrPrevious[j] === "previousThisMonth") {
@@ -1658,12 +1731,20 @@
                 }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
-                        periodMin = 0;
-                        periodMax = countlyCommon.periodObj.currentPeriodArr.length;
-                        activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                        if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
+                            periodMin = 0;
+                            periodMax = 24;
+                            activeDate = countlyCommon.periodObj.currentPeriodArr[0];
+                        }
+                        else {
+                            periodMin = 0;
+                            periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+                            activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                        }
                     }
                     else {
                         activeDate = countlyCommon.periodObj.activePeriod;
+                        activeDateArr = countlyCommon.periodObj.currentPeriodArr;
                     }
                 }
                 if (currOrPrevious[j] === "previousThisMonth") {
@@ -1676,7 +1757,7 @@
                             tableData[counter_] = {};
                         }
 
-                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, dateString);
                         var propertyValue_ = "";
                         if (propertyFunctions[j]) {
                             propertyValue_ = propertyFunctions[j](dataObj);
@@ -1691,7 +1772,7 @@
                 }
                 else {
                     for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
-                        if (!countlyCommon.periodObj.isSpecialPeriod) {
+                        if ((!countlyCommon.periodObj.isSpecialPeriod && !disableHours) || (!countlyCommon.periodObj.isSpecialPeriod && disableHours && countlyCommon.periodObj.daysInPeriod !== 1)) {
                             if (countlyCommon.periodObj.periodMin === 0) {
                                 formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                             }
@@ -1702,6 +1783,10 @@
                                 formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
                             }
 
+                            dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        }
+                        else if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
+                            formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                             dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
                         }
                         else {
@@ -1715,7 +1800,7 @@
                             tableData[counter] = {};
                         }
 
-                        tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        tableData[counter].date = countlyCommon.formatDate(formattedDate, dateString);
                         var propertyValue = "";
                         if (propertyFunctions[j]) {
                             propertyValue = propertyFunctions[j](dataObj);
@@ -2743,6 +2828,17 @@
                             start.add(1, 'days');
                         }
                     }
+                    else if (_period === "prevMonth") {
+                        start = moment().subtract(1, "month").startOf("month");
+                        //start.add(1,"days");
+                        let current = new Date();
+                        let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+                        for (i = 0; i < prevMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
                     else {
                         var startYear = start.year();
                         var endYear = moment().year();
@@ -2860,16 +2956,7 @@
         * @returns {Object} target after the merge
         */
         countlyCommon.deepObjectExtend = function(target, source) {
-            Object.keys(source).forEach(function(key) {
-                if ((key in target) && _.isObject(target[key])) {
-                    countlyCommon.deepObjectExtend(target[key], source[key]);
-                }
-                else {
-                    target[key] = source[key];
-                }
-            });
-
-            return target;
+            return mergeWith({}, target, source);
         };
 
         /**
@@ -3169,6 +3256,22 @@
         };
 
         /**
+        * Format timestamp to D MMM YYYY, HH:mm
+        * @memberof countlyCommon
+        * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @returns {string} formated time and date
+        * @example
+        * //outputs 16 Dec 2022, 12:16
+        * countlyCommon.formatTimeAndDateShort(1484654066);
+        */
+        countlyCommon.formatTimeAndDateShort = function(timestamp) {
+            if (Math.round(timestamp).toString().length === 10) {
+                timestamp *= 1000;
+            }
+            return moment(new Date(timestamp)).format("D MMM YYYY, HH:mm");
+        };
+
+        /**
         * Format duration to units of how much time have passed
         * @memberof countlyCommon
         * @param {number} timestamp - amount in seconds passed since some reference point
@@ -3274,17 +3377,22 @@
         * Get time from seconds timestamp
         * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @param {boolean} [showSeconds=false] - used to return seconds
         * @returns {string} formated time
         * @example
         * //outputs 13:54
         * countlyCommon.getTime(1484654066);
         */
-        countlyCommon.getTime = function(timestamp) {
+        countlyCommon.getTime = function(timestamp, showSeconds = false) {
             if (Math.round(timestamp).toString().length === 10) {
                 timestamp *= 1000;
             }
             var d = new Date(timestamp);
-            return leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            var formattedTime = leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+            if (showSeconds) {
+                formattedTime += ":" + leadingZero(d.getSeconds());
+            }
+            return formattedTime;
         };
 
         /**
@@ -3354,7 +3462,6 @@
                 currentCheck[properties[i]] = 0;
                 previousCheck[properties[i]] = 0;
             }
-
             if (_periodObj.isSpecialPeriod) {
                 isEstimate = true;
                 for (j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
@@ -3625,60 +3732,42 @@
             return calculatePeriodObject(period, currentTimeStamp);
         };
 
-        /**
-         * Returns array with unique ticks for period
-         * @param {moment} startTimestamp - start of period
-         * @param {moment} endTimestamp - end of period
-         * @returns {array} unique array ticks for period
-         **/
-        function getTicksBetween(startTimestamp, endTimestamp) {
-            var dayIt = startTimestamp.clone(),
-                ticks = [];
+        countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
+            var u = 0;
+            for (var year in uniqueMap) {
+                var yearVal = countlyCommon.getDescendantProp(dbObj, year) || {};
+                var calcYearVal = 0;
+                if (Object.keys(uniqueMap[year]).length > 0) {
+                    for (var month in uniqueMap[year]) {
+                        var ob = countlyCommon.getDescendantProp(dbObj, year + "." + month) || {};
+                        var monthVal = ob.u || 0;
+                        var calcMonthVal = 0;
+                        if (Object.keys(uniqueMap[year][month]).length > 0) {
+                            for (var week in uniqueMap[year][month]) {
+                                var ob2 = countlyCommon.getDescendantProp(dbObj, year + "." + week) || {};
+                                var weekVal = ob2.u || 0;
+                                var calcWeekVal = 0;
 
-            while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
-                if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
-                    ticks.push(dayIt.format("YYYY.M"));
-                    dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
-                }
-                else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
-                    ticks.push(dayIt.format("gggg.[w]w"));
-                    dayIt.add(8 - dayIt.day(), "days");
-                }
-                else {
-                    ticks.push(dayIt.format("YYYY.M.D"));
-                    dayIt.add(1, "day");
-                }
-            }
-
-            return ticks;
-        }
-
-        /**
-         * Returns array with more generalized unique ticks for period
-         * @param {moment} startTimestamp - start of period
-         * @param {moment} endTimestamp - end of period
-         * @returns {array} unique array ticks for period
-         **/
-        function getTicksCheckBetween(startTimestamp, endTimestamp) {
-            var dayIt = startTimestamp.clone(),
-                ticks = [];
-
-            while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
-                if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
-                    ticks.push(dayIt.format("YYYY.M"));
-                    dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+                                for (var day in uniqueMap[year][month][week]) {
+                                    var ob3 = countlyCommon.getDescendantProp(dbObj, year + "." + month + "." + day) || {};
+                                    calcWeekVal += ob3.u || 0;
+                                }
+                                calcMonthVal += Math.min(weekVal, calcWeekVal);
+                            }
+                        }
+                        else {
+                            calcMonthVal = monthVal;
+                        }
+                        calcYearVal += Math.min(monthVal, calcMonthVal);
+                    }
                 }
                 else {
-                    ticks.push(dayIt.format("gggg.[w]w"));
-                    dayIt.add(8 - dayIt.day(), "days");
+                    calcYearVal = yearVal;
                 }
+                u += Math.min((yearVal.u || 0), calcYearVal);
             }
-
-            return ticks;
-        }
-
+            return u;
+        };
         /**
         * Calculate period function
         * @param {object} period - given period
@@ -3710,7 +3799,6 @@
             };
 
             endTimestamp = currentTimestamp.clone().endOf("day");
-
             if (period && period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
@@ -3767,7 +3855,7 @@
                     });
                 }
                 else {
-                    cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+                    cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
                     Object.assign(periodObject, {
                         dateString: "D MMM",
                         isSpecialPeriod: true
@@ -3798,6 +3886,18 @@
                     previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
                 });
             }
+            else if (period === "prevMonth") {
+                startTimestamp = currentTimestamp.clone().subtract(1, "month").startOf("month");
+                endTimestamp = currentTimestamp.clone().subtract(1, "month").endOf("month");
+                cycleDuration = moment.duration(1, "month");
+                Object.assign(periodObject, {
+                    dateString: "D MMM",
+                    periodMax: currentTimestamp.clone().subtract(1, "month").endOf("month").date(),
+                    periodMin: 1,
+                    activePeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M"),
+                    previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
+                });
+            }
             else if (period === "hour") {
                 startTimestamp = currentTimestamp.clone().startOf("day");
                 cycleDuration = moment.duration(1, "day");
@@ -3823,11 +3923,8 @@
                     previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
                 });
             }
-            else if (/([0-9]+)days/.test(period)) {
-                nDays = parseInt(/([0-9]+)days/.exec(period)[1]);
-                if (nDays < 1) {
-                    nDays = 30; //if there is less than 1 day
-                }
+            else if (/([1-9][0-9]*)days/.test(period)) {
+                nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
                 startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
@@ -3835,25 +3932,28 @@
                     isSpecialPeriod: true
                 });
             }
-            else if (/([0-9]+)weeks/.test(period)) {
-                nDays = parseInt(/([0-9]+)weeks/.exec(period)[1]) * 7;
-                if (nDays < 1) {
-                    nDays = 30; //if there is less than 1 day
-                }
-                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
-                cycleDuration = moment.duration(nDays, "days");
+            else if (/([1-9][0-9]*)weeks/.test(period)) {
+                const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
+                startTimestamp = currentTimestamp.clone().startOf("week").subtract((nWeeks - 1), "weeks");
+                cycleDuration = moment.duration(currentTimestamp.clone().diff(startTimestamp)).asDays() + 1;
                 Object.assign(periodObject, {
                     dateString: "D MMM",
                     isSpecialPeriod: true
                 });
             }
-            else if (/([0-9]+)months/.test(period)) {
-                nDays = parseInt(/([0-9]+)months/.exec(period)[1]) * 30;
-                if (nDays < 1) {
-                    nDays = 30; //if there is less than 1 day
-                }
-                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
-                cycleDuration = moment.duration(nDays, "days");
+            else if (/([1-9][0-9]*)months/.test(period)) {
+                const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
+                startTimestamp = currentTimestamp.clone().startOf("month").subtract((nMonths - 1), "months");
+                cycleDuration = moment.duration(currentTimestamp.clone().diff(startTimestamp)).asDays() + 1;
+                Object.assign(periodObject, {
+                    dateString: "D MMM",
+                    isSpecialPeriod: true
+                });
+            }
+            else if (/([1-9][0-9]*)years/.test(period)) {
+                const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
+                startTimestamp = currentTimestamp.clone().startOf("year").subtract((nYears - 1), "years");
+                cycleDuration = moment.duration(currentTimestamp.clone().diff(startTimestamp)).asDays() + 1;
                 Object.assign(periodObject, {
                     dateString: "D MMM",
                     isSpecialPeriod: true
@@ -3874,8 +3974,8 @@
             Object.assign(periodObject, {
                 start: startTimestamp.valueOf(),
                 end: endTimestamp.valueOf(),
-                daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
-                numberOfDays: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+                daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), //due to daylight saving time we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+                numberOfDays: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
                 periodContainsToday: (startTimestamp <= currentTimestamp) && (currentTimestamp <= endTimestamp),
             });
 
@@ -3884,21 +3984,358 @@
                     dateString: (periodObject.dateString + ", YYYY")
                 });
             }
+            var uniqueMap = {};
+            var uniquePrevMap = {};
+
+            var date0 = startTimestamp.clone().format("YYYY.M.D");
+            date0 = date0.split(".");
+            var sY = date0[0];
+            var sM = date0[1];
+
+            var date1 = endTimestamp.clone().format("YYYY.M.D");
+            date1 = date1.split(".");
+            var eY = date1[0];
+            var eM = date1[1];
+
+            date0 = startTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+            date0 = date0.split(".");
+            var psY = date0[0];
+            var psM = date0[1];
+
+            date1 = endTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+            date1 = date1.split(".");
+            var peY = date1[0];
+            var peM = date1[1];
 
             for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+
+                var dateVal = dayIt.format("YYYY.M.D");
+                var week = Math.ceil(dayIt.format("DDD") / 7);
+                dateVal = dateVal.split(".");
+
+                uniqueMap[dateVal[0]] = uniqueMap[dateVal[0]] || {};//each year
+                if (dateVal[0] === sY || dateVal[0] === eY) {
+                    uniqueMap[dateVal[0]][dateVal[1]] = uniqueMap[dateVal[0]][dateVal[1]] || {}; //each month
+                    if ((dateVal[0] === sY && dateVal[1] === sM) || (dateVal[0] === eY && dateVal[1] === eM)) {
+                        uniqueMap[dateVal[0]][dateVal[1]]["w" + week] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                        uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+                    }
+                }
+
                 periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
                 periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+
+                dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
+                week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
+                dateVal = dateVal.split(".");
+
+                uniquePrevMap[dateVal[0]] = uniquePrevMap[dateVal[0]] || {};//each year
+                if (dateVal[0] === psY || dateVal[0] === peY) {
+                    uniquePrevMap[dateVal[0]][dateVal[1]] = uniquePrevMap[dateVal[0]][dateVal[1]] || {}; //each month
+                    if ((dateVal[0] === psY && dateVal[1] === psM) || (dateVal[0] === peY && dateVal[1] === peM)) {
+                        uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                        uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+                    }
+                }
             }
 
-            periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
-            periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
-            periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
-            periodObject.previousUniquePeriodCheckArr = getTicksCheckBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+            if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
+                periodObject.activePeriod = periodObject.currentPeriodArr[0];
+            }
+
+            var currentYear = 0,
+                currWeeksArr = [],
+                currWeekCounts = {},
+                currMonthsArr = [],
+                currMonthCounts = {},
+                currPeriodArr = [],
+                prevWeeksArr = [],
+                prevWeekCounts = {},
+                prevMonthsArr = [],
+                prevMonthCounts = {},
+                prevPeriodArr = [];
+            if (periodObject.daysInPeriod !== 0) {
+                for (var i = (periodObject.daysInPeriod - 1); i > -1; i--) {
+                    var currIndex = moment(endTimestamp).subtract(i, 'days'),
+                        currIndexYear = currIndex.year(),
+                        prevIndex = moment(endTimestamp).subtract((periodObject.daysInPeriod + i), 'days'),
+                        prevYear = prevIndex.year();
+
+                    currentYear = currIndexYear;
+
+                    // Current period variables
+
+                    var currWeek = currentYear + "." + "w" + Math.ceil(currIndex.format("DDD") / 7);
+                    currWeeksArr[currWeeksArr.length] = currWeek;
+                    currWeekCounts[currWeek] = (currWeekCounts[currWeek]) ? (currWeekCounts[currWeek] + 1) : 1;
+
+                    var currMonth = currIndex.format("YYYY.M");
+                    currMonthsArr[currMonthsArr.length] = currMonth;
+                    currMonthCounts[currMonth] = (currMonthCounts[currMonth]) ? (currMonthCounts[currMonth] + 1) : 1;
+
+                    currPeriodArr[currPeriodArr.length] = currIndex.format("YYYY.M.D");
+
+                    // Previous period variables
+
+                    var prevWeek = prevYear + "." + "w" + Math.ceil(prevIndex.format("DDD") / 7);
+                    prevWeeksArr[prevWeeksArr.length] = prevWeek;
+                    prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek]) ? (prevWeekCounts[prevWeek] + 1) : 1;
+
+                    var prevMonth = prevIndex.format("YYYY.M");
+                    prevMonthsArr[prevMonthsArr.length] = prevMonth;
+                    prevMonthCounts[prevMonth] = (prevMonthCounts[prevMonth]) ? (prevMonthCounts[prevMonth] + 1) : 1;
+
+                    prevPeriodArr[prevPeriodArr.length] = prevIndex.format("YYYY.M.D");
+                }
+            }
+
+            periodObject.uniquePeriodArr = getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr);
+            periodObject.uniquePeriodCheckArr = getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts);
+            periodObject.previousUniquePeriodArr = getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr);
+            periodObject.previousUniquePeriodCheckArr = getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts);
+            periodObject.uniqueMap = uniqueMap;
+            periodObject.uniquePrevMap = uniquePrevMap;
 
             return periodObject;
         }
 
         var getPeriodObj = countlyCommon.getPeriodObj;
+
+        /** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @param {array} periodArr_pd - period array
+        * @returns {array} periods
+        */
+        function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
+
+            if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+                return [];
+            }
+
+            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+                    return [];
+                }
+            }
+
+            var weeksArray = clone(weeksArray_pd),
+                weekCounts = clone(weekCounts_pd),
+                monthsArray = clone(monthsArray_pd),
+                monthCounts = clone(monthCounts_pd),
+                periodArr = clone(periodArr_pd);
+
+            var uniquePeriods = [],
+                tmpDaysInMonth = -1,
+                tmpPrevKey = -1,
+                rejectedWeeks = [],
+                rejectedWeekDayCounts = {};
+            var key = 0;
+            var i = 0;
+            for (key in weekCounts) {
+
+                // If this is the current week we can use it
+                if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+                    continue;
+                }
+
+                if (weekCounts[key] < 7) {
+                    for (i = 0; i < weeksArray.length; i++) {
+                        weeksArray[i] = weeksArray[i].replace(key, 0);
+                    }
+                }
+            }
+
+            for (key in monthCounts) {
+                if (tmpPrevKey !== key) {
+                    if (moment().format("YYYY.M") === key) {
+                        tmpDaysInMonth = moment().format("D");
+                    }
+                    else {
+                        tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+                    }
+
+                    tmpPrevKey = key;
+                }
+
+                if (monthCounts[key] < tmpDaysInMonth) {
+                    for (i = 0; i < monthsArray.length; i++) {
+                        monthsArray[i] = monthsArray[i].replace(key, 0);
+                    }
+                }
+            }
+
+            for (i = 0; i < monthsArray.length; i++) {
+                if (parseInt(monthsArray[i]) === 0) {
+                    if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
+                        uniquePeriods[i] = periodArr[i];
+                    }
+                    else {
+                        uniquePeriods[i] = weeksArray[i];
+                    }
+                }
+                else {
+                    rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
+                    uniquePeriods[i] = monthsArray[i];
+
+                    if (rejectedWeekDayCounts[weeksArray[i]]) {
+                        rejectedWeekDayCounts[weeksArray[i]].count++;
+                    }
+                    else {
+                        rejectedWeekDayCounts[weeksArray[i]] = {
+                            count: 1,
+                            index: i
+                        };
+                    }
+                }
+            }
+
+            var totalWeekCounts = _.countBy(weeksArray, function(per) {
+                return per;
+            });
+
+            for (var weekDayCount in rejectedWeekDayCounts) {
+
+                // If the whole week is rejected continue
+                if (rejectedWeekDayCounts[weekDayCount].count === 7) {
+                    continue;
+                }
+
+                // If its the current week continue
+                if (moment().format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
+                    continue;
+                }
+
+                // If only some part of the week is rejected we should add back daily buckets
+
+                var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
+                    limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
+
+                for (i = startIndex; i < limit; i++) {
+                    // If there isn't already a monthly bucket for that day
+                    if (parseInt(monthsArray[i]) === 0) {
+                        uniquePeriods[i] = periodArr[i];
+                    }
+                }
+            }
+
+            rejectedWeeks = _.uniq(rejectedWeeks);
+            uniquePeriods = _.uniq(_.difference(uniquePeriods, rejectedWeeks));
+
+            return uniquePeriods;
+        }
+        /** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @returns {array} periods
+        */
+        function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd) {
+
+            if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+                return [];
+            }
+
+            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+                    return [];
+                }
+            }
+
+            var weeksArray = clone(weeksArray_pd),
+                weekCounts = clone(weekCounts_pd),
+                monthsArray = clone(monthsArray_pd),
+                monthCounts = clone(monthCounts_pd);
+
+            var uniquePeriods = [],
+                tmpDaysInMonth = -1,
+                tmpPrevKey = -1;
+            var key = 0;
+            var i = 0;
+            for (key in weekCounts) {
+                if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+                    continue;
+                }
+
+                if (weekCounts[key] < 1) {
+                    for (i = 0; i < weeksArray.length; i++) {
+                        weeksArray[i] = weeksArray[i].replace(key, 0);
+                    }
+                }
+            }
+
+            for (key in monthCounts) {
+                if (tmpPrevKey !== key) {
+                    if (moment().format("YYYY.M") === key) {
+                        tmpDaysInMonth = moment().format("D");
+                    }
+                    else {
+                        tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+                    }
+
+                    tmpPrevKey = key;
+                }
+
+                if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
+                    for (i = 0; i < monthsArray.length; i++) {
+                        monthsArray[i] = monthsArray[i].replace(key, 0);
+                    }
+                }
+            }
+
+            for (i = 0; i < monthsArray.length; i++) {
+                if (parseInt(monthsArray[i]) === 0) {
+                    if (parseInt(weeksArray[i]) !== 0) {
+                        uniquePeriods[i] = weeksArray[i];
+                    }
+                }
+                else {
+                    uniquePeriods[i] = monthsArray[i];
+                }
+            }
+
+            uniquePeriods = _.uniq(uniquePeriods);
+
+            return uniquePeriods;
+        }
+
+        /** Function to clone object
+        * @param {object} obj - object to clone
+        * @returns {object} cloned object
+        */
+        function clone(obj) {
+            if (null === obj || "object" !== typeof obj) {
+                return obj;
+            }
+
+            var copy = "";
+            if (obj instanceof Date) {
+                copy = new Date();
+                copy.setTime(obj.getTime());
+                return copy;
+            }
+
+            if (obj instanceof Array) {
+                copy = [];
+                for (var i = 0, len = obj.length; i < len; ++i) {
+                    copy[i] = clone(obj[i]);
+                }
+                return copy;
+            }
+
+            if (obj instanceof Object) {
+                copy = {};
+                for (var attr in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+                        copy[attr] = clone(obj[attr]);
+                    }
+                }
+                return copy;
+            }
+        }
 
         /** Function to show the tooltip when any data point in the graph is hovered on.
         * @param {object} args - tooltip info
@@ -4069,9 +4506,11 @@
         * Parse second to standard time format
         * @memberof countlyCommon
         * @param {number} second  number
-        * @returns {string} return format "HH:MM:SS"
+        * @param {number} [trimTo=5]  number [1,5]
+        * @returns {string} return format "Xh Xm Xs", if trimTo is specified the length of the result is trimmed
+        * @example trimTo = 2, "Xh Xm Xs" result will be trimmed to "Xh Xm"
         */
-        countlyCommon.formatSecond = function(second) {
+        countlyCommon.formatSecond = function(second, trimTo = 5) {
             var timeLeft = parseInt(second);
             var dict = [
                 {k: 'year', v: 31536000},
@@ -4099,7 +4538,10 @@
                 return "0";
             }
             else {
-                return resultStrings.join(" ");
+                if (trimTo > 5 || trimTo < 1) {
+                    trimTo = 5;
+                }
+                return (resultStrings.slice(0, Math.min(trimTo, resultStrings.length))).join(' ');
             }
         };
 
@@ -4187,6 +4629,57 @@
         };
 
         /**
+        * Returns a string with a language-sensitive representation of this number.
+        * @memberof countlyCommon
+        * @param {string} value - expected value to be formatted
+        * @param {number} currencyVal - expected currency to be formatted
+        * @returns {string} formatted value
+        */
+        countlyCommon.numberToLocaleString = function(value, currencyVal) {
+            if (!value) {
+                return 0;
+            }
+            if (typeof value !== 'number') {
+                value = countlyCommon.localeStringToNumber(value);
+            }
+
+            return value.toLocaleString('en-US', { currency: currencyVal || "USD" });
+        };
+
+        /**
+        * Formats and returns local string to number
+        * @memberof countlyCommon
+        * @param {string} localeString - expected value to be formatted
+        * @returns {number} formatted value
+        */
+        countlyCommon.localeStringToNumber = function(localeString) {
+            var number = null, fractionFloat;
+            if (localeString && typeof localeString === "string") {
+                var isContainDot = localeString.includes('.');
+
+                if (isContainDot) {
+                    if (localeString.split('.')[1].length) {
+                        var fractionString = localeString.split('.')[1];
+                        var fractionNumber = parseInt(fractionString);
+                        var pow = fractionString.length;
+                        fractionFloat = fractionNumber / Math.pow(10, pow);
+                    }
+                    else {
+                        fractionFloat = 0.00;
+                    }
+
+                    number = parseFloat(localeString.split('.')[0].replaceAll(',', '')) + fractionFloat;
+                }
+                else {
+                    number = parseInt(localeString.replaceAll(',', ''));
+                }
+
+                return number;
+            }
+            return localeString;
+        };
+
+        /**
         * Get timestamp range in format as [startTime, endTime] with period and base time
         * @memberof countlyCommon
         * @param {object} period - period has two format: array or string
@@ -4219,6 +4712,10 @@
                 break;
             case 'day':
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
+                break;
+            case 'prevMonth':
+                start = moment(baseTimeStamp).subtract(1, "month").date(1).hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, "month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
                 break;
             case 'month':
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
@@ -4384,21 +4881,30 @@
             window.app.localize();
         };
 
-        countlyCommon.getGraphNotes = function(appIds, callBack) {
+        countlyCommon.getGraphNotes = function(appIds, filter, callBack) {
             if (!appIds) {
                 appIds = [];
+            }
+            var args = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "notes_apps": JSON.stringify(appIds),
+                "period": JSON.stringify([countlyCommon.periodObj.start, countlyCommon.periodObj.end]),
+                "method": "notes",
+                "dt": Date.now()
+            };
+            if (filter && filter.noteType) {
+                args.note_type = filter.noteType;
+            }
+            if (filter && filter.category) {
+                args.category = JSON.stringify(filter.category);
+            }
+            if (filter && filter.customPeriod) {
+                args.period = JSON.stringify(filter.customPeriod);
             }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "api_key": window.countlyGlobal.member.api_key,
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "category": "session",
-                    "notes_apps": JSON.stringify(appIds),
-                    "period": countlyCommon.getPeriod(),
-                    "method": "notes",
-                },
+                data: args,
                 success: function(json) {
                     var notes = json && json.aaData || [];
                     var noteSortByApp = {};
@@ -4491,6 +4997,12 @@
                     valueAsString: "day"
                 };
             }
+            if (obj.type === "prevMonth") {
+                return {
+                    name: moment().subtract(1, "month").format("MMMM, YYYY"),
+                    valueAsString: "prevMonth"
+                };
+            }
             if (obj.type === "month") {
                 return {
                     name: moment().year(),
@@ -4581,6 +5093,10 @@
                 inferredType = "day";
                 inferredValue = "day";
             }
+            else if (period === "prevMonth") {
+                inferredType = "prevMonth";
+                inferredValue = "prevMonth";
+            }
             else if (period === "month") {
                 inferredType = "month";
                 inferredValue = "month";
@@ -4591,6 +5107,9 @@
                 }
                 else if (Object.prototype.hasOwnProperty.call(period, "on")) {
                     inferredType = "on";
+                }
+                else if (Object.prototype.hasOwnProperty.call(period, "before")) {
+                    inferredType = "before";
                 }
             }
             else if (period.endsWith("days")) {
@@ -4628,7 +5147,6 @@
 
             obj.valueAsString = descriptions.valueAsString;
             obj.name = obj.longName = descriptions.name;
-
             return obj;
         };
 
@@ -4667,6 +5185,19 @@
                 return undefined;
             }
             return _.unescape(text || df).replace(/&#39;/g, "'");
+        };
+
+        /**
+         * Remove spaces, tabs, and newlines from the start and end of the string
+         * @param {String} str - Arbitrary string
+         * @returns {String} Trimmed string
+         */
+        countlyCommon.trimWhitespaceStartEnd = function(str) {
+            if (typeof str !== 'string') {
+                return str;
+            }
+            str = str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+            return str;
         };
     };
 

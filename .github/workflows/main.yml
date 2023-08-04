@@ -14,71 +14,252 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  install:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Github Actions Azure connection fix
+        run: |
+          # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
+          sudo sed -i 's/azure/us/g' /etc/apt/sources.list
 
       - name: Installing Countly
         shell: bash
         run: sudo bash ./bin/countly.install.sh
-        
+
       - name: NodeJS version
         shell: bash
-        run: nodejs --version
-        
+        run: node --version
+
       - name: NPM version
         shell: bash
         run: npm --version
-        
+
       - name: Mongo version
         shell: bash
-        run: mongo --version
-        
-      - name: Enable all plugins
-        shell: bash
-        run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh
-        
-      - name: Reinstall plugins
-        shell: bash
-        run: sudo bash ./bin/scripts/countly.install.plugins.sh
-        
-      - name: ShellCheck
-        shell: bash
-        run: countly shellcheck
-        
-      - name: ESLint
-        shell: bash
-        run: npx eslint .
-        
-      - name: DistFiles
-        shell: bash
-        run: sudo countly task dist-all
-
-      - name: Tests
-        shell: bash
-        run: sudo countly test
+        run: mongosh --version
 
       - name: Output API Logs
         if: ${{ always() }}
         run: cat log/countly-api.log
-        
+
       - name: Output Dashboard Logs
         if: ${{ always() }}
         run: cat log/countly-dashboard.log
-        
+
       - name: Output MongoDB Logs
         if: ${{ always() }}
         run: sudo cat /var/log/mongodb/mongod.log
+
+      - name: Output Nginx Logs
+        if: ${{ always() }}
+        run: sudo cat /var/log/nginx/error.log
+  lint:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Enable command line
+        shell: bash
+        run: sudo bash /opt/countly/bin/scripts/detect.init.sh
+
+      - name: ShellCheck
+        shell: bash
+        run: |
+         apt-get update -y
+         apt-get -y install shellcheck
+         countly shellcheck
+
+      - name: ESLint
+        shell: bash
+        run: |
+         npm install eslint
+         npx eslint .
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Enabling plugins
+        shell: bash
+        run: cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+
+      - name: DistFiles
+        shell: bash
+        working-directory: /opt/countly
+        run: sudo countly task dist-all
+  test-api-core:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Remove plugin tests
+        shell: bash
+        run: rm -rf /opt/countly/test/4.plugins
         
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          npm install
+          node bin/scripts/test.connection.js
+          npx grunt mochaTest
+  test-api-plugins:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.plugins.tests.sh
+        
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          npm install
+          node bin/scripts/test.connection.js
+          npx grunt mochaTest
+  test-e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+        
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          npm install
+          node bin/scripts/test.connection.js
+  notify:
+    runs-on: ubuntu-latest
+    needs: [ install, lint, test-api-core, test-api-plugins ]
+    steps:
       - name: Send slack notification
         id: slack
         if: always()
-        uses: slackapi/slack-github-action@v1.14.0
+        uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
         env:

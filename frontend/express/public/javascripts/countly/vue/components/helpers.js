@@ -1,10 +1,12 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    Vue.component("vue-json-pretty", VueJsonPretty.default);
+    Vue.use(ElementTiptapPlugin);
     Vue.component("cly-back-link", countlyBaseComponent.extend(
         // @vue/component
         {
@@ -42,18 +44,21 @@
     Vue.component("cly-in-page-notification", countlyBaseComponent.extend(
         {
             props: {
-                text: {type: String, required: false}
+                text: {type: String, required: false},
+                color: {type: String, required: false, default: "light-warning"},
             },
             computed: {
                 innerText: function() {
-                    if (this.text) {
-                        return this.text;
-                    }
-                    return "";
-                }
+                    return this.text || "";
+                },
+                dynamicClasses: function() {
+                    return ["cly-in-page-notification--" + this.color];
+                },
             },
-            template: '<div class="cly-in-page-notification color-cool-gray-100 bg-red-10 text-medium bu-p-2 center">\
-                            <slot><span v-html="innerText"></span></slot>\
+            template: '<div class="cly-in-page-notification text-medium bu-p-2" :class="dynamicClasses">\
+                            <slot name="innerText">\
+                                <span v-html="innerText"></span>\
+                            </slot>\
                         </div>'
         }
     ));
@@ -205,7 +210,7 @@
 
                 if (this.formatting === 'auto') {
                     if (this.isPercentage) {
-                        return this.number + " %";
+                        return this.number + "%";
                     }
                     else if (Math.abs(this.number) >= 10000) {
                         return this.getShortNumber(this.number);
@@ -503,6 +508,7 @@
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
                     placeholder="Select Event"\
+                    :disabled="disabled"\
                     :hide-default-tabs="true"\
                     :options="availableEvents"\
                     :hide-all-options-tab="true"\
@@ -529,11 +535,12 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object], default: 400},
+            width: { type: [Number, Object, String], default: 400},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
-            selectedApp: {type: String, required: false, default: ''}
+            selectedApp: {type: String, required: false, default: ''},
+            disabled: {type: Boolean, default: false},
         },
         data: function() {
             return {
@@ -559,43 +566,68 @@
                         "label": this.i18n('sidebar.events'),
                         "name": "event",
                         "options": []
-                    },
-                    {
+                    }
+                ];
+                if (countlyGlobal.plugins.indexOf('views') !== -1) {
+                    availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_view'),
                         "name": "[CLY]_view",
                         "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
-                    },
-                    {
+                    });
+                }
+
+                var feedbackOptions = [];
+                if (countlyGlobal.plugins.indexOf('star-rating') !== -1) {
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' });
+                }
+
+                if (countlyGlobal.plugins.indexOf('surveys') !== -1) {
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' });
+                    feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' });
+                }
+                if (feedbackOptions.length > 0) {
+                    availableEvents.push({
                         "label": this.i18n("sidebar.feedback"),
                         "name": "feedback",
-                        "options": [
-                            { label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' },
-                            { label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' },
-                            { label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' }
-                        ]
-                    },
-                    {
+                        "options": feedbackOptions
+                    });
+                }
+
+
+                if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
+                    availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
                         "name": "[CLY]_crash",
                         "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
-                    }
-                    // {
-                    //     "label": this.i18n('internal-events.[CLY]_push_action'),
-                    //     "name": "[CLY]_push_action",
-                    //     "noChild": true
-                    // }
-                ];
+                    });
+                }
+
+                if (countlyGlobal.plugins.indexOf('push') !== -1) {
+                    availableEvents.push({
+                        "label": 'Push',
+                        "name": "[CLY]_push_action",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
+                        ]
+                    });
+                }
+
+                // {
+                //     "label": this.i18n('internal-events.[CLY]_push_action'),
+                //     "name": "[CLY]_push_action",
+                //     "noChild": true
+                // }
 
                 if (this.selectedApp) {
                     countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
                         availableEvents[1].options = eData.map(function(e) {
-                            return {label: e.name, value: e.value};
+                            return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
                         });
                     });
                 }
                 else {
                     availableEvents[1].options = countlyEvent.getEvents().map(function(event) {
-                        return {label: event.name, value: event.key};
+                        return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
                     });
                 }
 
@@ -606,6 +638,11 @@
                 return availableEvents;
             }
         },
+        created: function() {
+            if (this.adaptiveLength && this.width === 400 && this.availableEvents.length > 0) {
+                this.width = this.availableEvents * 80;
+            }
+        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
@@ -1051,7 +1088,6 @@
                     </div>"
     }));
 
-
     Vue.component("cly-multiplex", {
         props: {
             children: {
@@ -1068,4 +1104,55 @@
                         </component>\
                     </div>'
     });
+
+    Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
+        template: "<div class='cly-vue-auto-refresh-toggle'>\
+                        <div v-if='autoRefresh' class='bu-level-item'>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled'>{{i18n('auto-refresh.is')}}</span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color'>{{i18n('auto-refresh.enabled')}}</span>\
+                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
+                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle'></i> {{i18n('auto-refresh.stop')}}\
+                            </el-button>\
+                        </div>\
+                        <div v-else-if='!autoRefresh' class='bu-level-item'>\
+                            <el-switch v-model='autoRefresh'>\
+                            </el-switch>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled'>{{i18n('auto-refresh.enable')}}</span>\
+                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
+                        </div>\
+                    </div>",
+        mixins: [countlyVue.mixins.i18n],
+        data: function() {
+            return {
+                autoRefresh: false
+            };
+        },
+        props: {
+            feature: { required: true, type: String },
+            defaultValue: { required: false, default: false, type: Boolean}
+        },
+        methods: {
+            getRefreshTooltip: function() {
+                return this.i18n('auto-refresh.help');
+            },
+            stopAutoRefresh: function() {
+                this.autoRefresh = false;
+            }
+        },
+        watch: {
+            autoRefresh: function(newValue) {
+                localStorage.setItem("auto_refresh_" + this.feature + "_" + countlyCommon.ACTIVE_APP_ID, newValue);
+            },
+        },
+        mounted: function() {
+            var autoRefreshState = localStorage.getItem("auto_refresh_" + this.feature + "_" + countlyCommon.ACTIVE_APP_ID);
+            if (autoRefreshState) {
+                this.autoRefresh = autoRefreshState === "true";
+            }
+            else {
+                localStorage.setItem("auto_refresh_" + this.feature + "_" + countlyCommon.ACTIVE_APP_ID, this.defaultValue);
+                this.autoRefresh = this.defaultValue;
+            }
+        }
+    }));
 }(window.countlyVue = window.countlyVue || {}));

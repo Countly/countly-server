@@ -1,4 +1,4 @@
-/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $, countlyGraphNotesCommon */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -57,7 +57,7 @@
                 },
                 dataMap: {},
                 sourcesDetailData: {},
-                isLoading: false
+                isLoading: true
             };
         },
         methods: {
@@ -144,17 +144,19 @@
             refresh: function(force) {
                 var self = this;
                 if (force) {
-                    $.when(countlySources.initialize(true))
-                        .then(function() {
-                            self.sourcesData = countlySources.getData();
-                            self.sourcesDetailDataMap();
-
-                            // calculate charts data for total session and new users charts
-                            var chartsData = self.chartsDataPrepare(self.sourcesData);
-                            self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                            self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                        });
+                    this.isLoading = true;
                 }
+                $.when(countlySources.initialize(true))
+                    .then(function() {
+                        self.sourcesData = countlySources.getData();
+                        self.sourcesDetailDataMap();
+
+                        // calculate charts data for total session and new users charts
+                        var chartsData = self.chartsDataPrepare(self.sourcesData);
+                        self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                        self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                        self.isLoading = false;
+                    });
             },
             handleTableRowClick: function(row) {
                 // Only expand row if text inside of it are not highlighted
@@ -183,20 +185,7 @@
             countlyVue.mixins.commonFormatters
         ],
         created: function() {
-            var self = this;
-            this.isLoading = true;
-            $.when(countlySources.initialize(true))
-                .then(function() {
-                    // get fetched sources datas
-                    self.isLoading = false;
-                    self.sourcesData = countlySources.getData();
-                    self.sourcesDetailDataMap();
-
-                    // calculate charts data for total session and new users charts
-                    var chartsData = self.chartsDataPrepare(self.sourcesData);
-                    self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                    self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                });
+            this.refresh(true);
         }
     });
 
@@ -316,7 +305,16 @@
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.customDashboards.widget,
+            countlyVue.mixins.customDashboards.apps,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 map: {
@@ -355,6 +353,11 @@
             },
             pieGraph: function() {
                 return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+            }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
             }
         }
     });
@@ -401,6 +404,7 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18nM("sources.title"),
+        permission: FEATURE_NAME,
         priority: 1,
         primary: false,
         getter: function(widget) {
@@ -568,7 +572,7 @@
                         "name": values[k].name,
                         "value": countlyCommon.getShortNumber(values[k].t || 0),
                         "percent": percent,
-                        "percentText": percent + " % " + CV.i18n('common.of-total'),
+                        "percentText": percent + "% " + CV.i18n('common.of-total'),
                         "info": "some description",
                         "color": "#CDAD7A",
                         "value_": values[k].t

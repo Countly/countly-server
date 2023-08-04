@@ -121,7 +121,7 @@ class Batcher extends DoFinish {
      * @param {function} callback callback
      */
     _transform(push, encoding, callback) {
-        this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id);
+        // this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id);
         if (push.frame & FRAME.CMD) {
             if (push.frame === FRAME.FLUSH) {
                 multicast(this.log, FRAME.FLUSH, push.payload, Object.keys(this.listeners), () => {
@@ -164,7 +164,7 @@ class Batcher extends DoFinish {
         }
 
         if (this.count >= this.size) {
-            this.log.d('flushing');
+            this.log.d('flushing %d', this.size);
             this.do_flush(callback);
         }
         else {

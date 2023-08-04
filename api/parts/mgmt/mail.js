@@ -13,29 +13,61 @@ var mail = {},
     config = require('../../config'),
     ip = require('./ip.js');
 
-if (config.mail && config.mail.transport) {
+if (config.mail && config.mail.transport && config.mail.transport !== "nodemailer-smtp-transport") {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
 }
+else if (config.mail && config.mail.config) {
+    mail.smtpTransport = nodemailer.createTransport(config.mail.config);
+}
 else {
-    mail.smtpTransport = nodemailer.createTransport(require('nodemailer-sendmail-transport')({path: "/usr/sbin/sendmail"}));
+    mail.smtpTransport = nodemailer.createTransport({
+        sendmail: true,
+        newline: 'unix',
+        path: '/usr/sbin/sendmail'
+    });
+}
+
+/**
+ * 
+ * @returns {string} email and company name
+ */
+function getPluginConfig() {
+    let email = null;
+    let company = null;
+    const pluginList = plugins.getPlugins(true);
+    if (pluginList.indexOf('white-labeling') > -1) {
+        try {
+            const pluginsConfig = plugins.getConfig("white-labeling");
+            const {emailFrom, emailCompany} = pluginsConfig;
+            email = emailFrom && emailFrom.length > 0 ? emailFrom : null;
+            company = emailCompany && emailCompany.length > 0 ? emailCompany : null;
+            if (email && email.length && company && company.length) {
+                return company + " <" + email + ">";
+            }
+        }
+        catch (error) {
+            console.log('Error getting plugins config', error);
+        }
+    }
+    return null;
 }
 
 /*
  Use the below transport to send mails through Gmail
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: 'localhost',
         port: 25,
         auth: {
             user: 'username',
             pass: 'password'
         }
-    }));
+    });
 */
 /*
  Use the below transport to send mails through your own SMTP server
 
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+    mail.smtpTransport = nodemailer.createTransport({
         host: "smtp.gmail.com", // hostname
         secureConnection: true, // use SSL
         port: 465, // port for secure SMTP
@@ -56,7 +88,8 @@ else {
 * @param {function} callback - function to call when its done
 **/
 mail.sendMail = function(message, callback) {
-    message.from = config.mail && config.mail.strings && config.mail.strings.from || message.from || "Countly";
+    const whiteLabelingConfig = getPluginConfig();
+    message.from = whiteLabelingConfig || config.mail && config.mail.strings && config.mail.strings.from || message.from || "Countly";
     mail.smtpTransport.sendMail(message, function(error) {
         if (error) {
             console.log('Error sending email');
@@ -76,9 +109,10 @@ mail.sendMail = function(message, callback) {
 * @param {function} callback - function to call when its done
 **/
 mail.sendMessage = function(to, subject, message, callback) {
+    const whiteLabelingConfig = getPluginConfig();
     mail.sendMail({
         to: to,
-        from: config.mail && config.mail.strings && config.mail.strings.from || "Countly",
+        from: whiteLabelingConfig || config.mail && config.mail.strings && config.mail.strings.from || "Countly",
         subject: subject || "",
         html: message || ""
     }, callback);
@@ -88,8 +122,8 @@ mail.sendMessage = function(to, subject, message, callback) {
 * Send localized email with params
 * @param {string} lang - locale to use in email (to get values from properties)
 * @param {string} to - where to send email
-* @param {string} subject - key from localization files to use as subject
-* @param {string} message - key from localization files to use as email message
+* @param {string|string[]} subject - key from localization files to use as subject; array of [key, var0, var1, ...] kind in case the property needs variable substitution
+* @param {string|string[]} message - key from localization files to use as email message; array of [key, var0, var1, ...] kind in case the property needs variable substitution
 * @param {function} callback - function to call when its done
 **/
 mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
@@ -100,7 +134,19 @@ mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
             }
         }
         else {
-            mail.sendMessage(to, properties[subject], properties[message], callback);
+            if (Array.isArray(subject)) {
+                subject = localize.format(properties[subject[0]] || subject[0], subject.slice(1));
+            }
+            else {
+                subject = properties[subject] || subject;
+            }
+            if (Array.isArray(message)) {
+                message = localize.format(properties[message[0]] || message[0], message.slice(1));
+            }
+            else {
+                message = properties[message] || message;
+            }
+            mail.sendMessage(to, subject, message, callback);
         }
     });
 };

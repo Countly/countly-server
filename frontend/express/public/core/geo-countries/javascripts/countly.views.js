@@ -14,11 +14,11 @@ var CityView = countlyVue.views.create({
     },
     mounted: function() {
         this.$store.dispatch('countlyCities/onSetRegion', this.$route.params.region);
-        this.$store.dispatch('countlyCities/fetchData');
+        this.refresh(true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyCities/fetchData');
+        refresh: function(force) {
+            this.$store.dispatch('countlyCities/fetchData', force);
         }
     },
     computed: {
@@ -116,11 +116,11 @@ var CountryView = countlyVue.views.create({
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyCountry/fetchData');
+        this.refresh(true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyCountry/fetchData');
+        refresh: function(force) {
+            this.$store.dispatch('countlyCountry/fetchData', force);
         },
         swithToCityView: function() {
             windows.location.href = this.path;
@@ -165,7 +165,7 @@ var CountryView = countlyVue.views.create({
                 title = CV.i18n('common.table.new-users');
             }
             for (var k = 0; k < table.length; k++) {
-                var cc = "<img src='" + countlyGlobal.path + "/images/flags/" + table[k].code + ".png'/><p class='number'>" + table[k][selectedProperty] + "</p><p>" + title + "</p>";
+                var cc = "<img src='" + countlyGlobal.path + "/images/flags/" + (table[k].code || "unknown") + ".png'/><p class='number'>" + table[k][selectedProperty] + "</p><p>" + title + "</p>";
                 geoChart.push([{"v": table[k].country, "f": table[k].countryTranslated}, table[k][selectedProperty], cc]);
             }
             return geoChart;
@@ -183,7 +183,7 @@ var CountryView = countlyVue.views.create({
 
             this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
-                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + this.data.table[z].code + ".svg";
+                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + (this.data.table[z].code || "unknown") + ".svg";
             }
             return this.data.table;
         },
@@ -262,6 +262,9 @@ var CountriesHomeWidget = countlyVue.views.create({
                 return CV.i18n('common.table.new-users');
             }
         },
+        isLoading: function() {
+            return this.$store.state.countlyCountry.isLoading;
+        }
     },
     data: function() {
         var buttonText = "";
@@ -297,15 +300,15 @@ var CountriesHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        this.$store.dispatch('countlyCountry/fetchData').then(function() {
+        this.$store.dispatch('countlyCountry/fetchData', true).then(function() {
             self.chooseProperties = self.calculateProperties();
             self.countriesData = self.calculateCountriesData();
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
-            this.$store.dispatch('countlyCountry/fetchData').then(function() {
+            this.$store.dispatch('countlyCountry/fetchData', force).then(function() {
                 self.chooseProperties = self.calculateProperties();
                 self.countriesData = self.calculateCountriesData();
             });
@@ -319,7 +322,8 @@ var CountriesHomeWidget = countlyVue.views.create({
             this.$refs.toCityViewLink.click();
         },
         calculateProperties: function() {
-            var totals = this.$store.state.countlyCountry.data || {};
+            var countlyCountry = this.$store.state.countlyCountry || {};
+            var totals = countlyCountry.data || {};
             totals = totals.totals || {};
             totals.t = totals.t || {};
             totals.u = totals.u || {};
@@ -332,7 +336,8 @@ var CountriesHomeWidget = countlyVue.views.create({
         },
         calculateCountriesData: function() {
             var geoChart = {};
-            var data = this.$store.state.countlyCountry.data || {};
+            var countlyCountry = this.$store.state.countlyCountry || {};
+            var data = countlyCountry.data || {};
             var table = data.table || [];
             var selectedProperty = this.selectedProperty || "t";
             for (var k = 0; k < table.length; k++) {
@@ -340,6 +345,11 @@ var CountriesHomeWidget = countlyVue.views.create({
             }
             return geoChart;
         },
+    },
+    watch: {
+        selectedProperty: function() {
+            this.refresh();
+        }
     }
 });
 

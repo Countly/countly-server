@@ -11,7 +11,7 @@ class Pools {
     constructor() {
         this.pools = {}; // {hash: connection}
         this.poolsBack = {}; // {appid: [hash, hash]}
-        this.poolsCount = 0;
+        this.connectionCounter = 0;
     }
 
     /**
@@ -79,7 +79,7 @@ class Pools {
                     log.i('Destroying pool on close %s / %s', platform + field, id);
                     clearTimeout(tm);
                     delete this.pools[id];
-                    this.poolsCount--;
+                    this.connectionCounter--;
                     this.poolsBack[app] = this.poolsBack[app].filter(i => i !== id);
                 }
             });
@@ -89,7 +89,7 @@ class Pools {
             await pool.grow();
             tm = setTimeout(timeout, 300000).unref();
             this.pools[id] = pool;
-            this.poolsCount++;
+            this.connectionCounter++;
             log.i('Added pool %s ', id);
         }
 
@@ -100,7 +100,7 @@ class Pools {
      * Check is we can't increase number of workers anymore
      */
     get isFull() {
-        return this.cfg && this.poolsCount >= this.cfg.pool.pools;
+        return this.cfg && this.connectionCounter >= this.cfg.pool.pools;
     }
 
     /**

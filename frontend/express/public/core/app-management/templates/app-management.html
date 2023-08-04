@@ -18,7 +18,7 @@
                     :searchable="true"
                     v-model="selectedSearchBar">
                         <template v-slot:option-prefix="option">
-                            <div class="cly-vue-sidebar__app-image bu-mt-2" :style="{backgroundImage: 'url(' + apps[option.value].image + ')'}"></div>
+                            <div class="cly-vue-sidebar__app-image bu-mt-1 bu-mr-1" :style="{backgroundImage: 'url(' + apps[option.value].image + ')'}"></div>
                         </template>
                     </cly-listbox>
             </div>
@@ -30,7 +30,7 @@
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div :class="{'bu-column':true, 'bu-is-6':firstApp, 'bu-is-9':!firstApp}">
                 <cly-more-options v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
-                    <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
+                    <el-dropdown-item :disabled="isDisabled()" :class="{'el-dropdown-menu__item--divided__fix-broken':item.divided, 'add-border':!item.value}" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>
@@ -40,7 +40,8 @@
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
                     @change="setAppLock"
                     class="bu-is-pulled-right bu-mr-4 bu-mt-1"
-                    v-tooltip.top-start="{content: 'App is Locked. Unlock it to allow changes.'}">
+                    v-tooltip.top-start="apps[selectedApp].locked ? {content: i18n('management-applications.application-tooltip-locked-text')} 
+                    : {content: i18n('management-applications.application-tooltip-unlocked-text')}">
                 </el-switch>
                 <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
                 <cly-section>
@@ -54,7 +55,7 @@
                                     <cly-form-step :id="formId" class="app-section">
                                         <div style="display: flex;justify-content: space-between; line-height: 30px;">
                                             APP INFORMATION
-                                            <el-button v-show="edited && isGlobalAdmin" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
+                                            <el-button v-show="edited && (isGlobalAdmin || isAppAdmin)" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
                                         </div>
                                         <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.application-name')">
@@ -136,7 +137,14 @@
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')">
                                                 {{formScope.editedObject.key}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
+                                            <cly-inline-form-field 
+                                                v-else 
+                                                prop="key" 
+                                                :rules="rules(formScope.editedObject)" 
+                                                :custom-messages="customMessages()"
+                                                :label="i18n('management-applications.app-key')" 
+                                                :help="i18n('management-applications.app-key.hint')"
+                                            >
                                                 <el-input
                                                     :readonly="isDisabled()"
                                                     onclick="select()"
@@ -166,7 +174,14 @@
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
                                         </el-button>
                                     </div>
-                                    <cly-diff-helper v-if="!edited" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
+                                    <cly-diff-helper 
+                                        v-if="!edited" 
+                                        :diff="compare(formScope.editedObject,apps[selectedApp])" 
+                                        @discard="discardForm()" 
+                                        @save="save(formScope.editedObject)"
+                                        :disabled="isSaveDisabled(formScope.editedObject)"
+                                    >
+                                    </cly-diff-helper>
                                 </template>
                             </cly-form>
                         </div>
@@ -178,11 +193,11 @@
                                 </div>
                                 <p>&nbsp;</p>
                                     <el-upload
-                                    v-if="!isDisabled() && isGlobalAdmin"
+                                    v-if="!isDisabled() && (isGlobalAdmin || isAppAdmin)"
                                     action="apps/icon"
                                     :on-success="handleUploadSuccess"
                                     :data="uploadData"
-                                    :show-file-list="true"
+                                    :show-file-list="showFileList"
                                     :limit="1"
                                     name="app_image"
                                     accept="image/png, image/jpeg, image/gif">
@@ -225,8 +240,8 @@
                         </el-collapse-item>
                     </el-collapse>
                 </cly-section>
-                <h3 class="bu-mb-2" v-if="!newApp && hasGlobalAdminRights">{{i18n('management-applications.plugins')}}</h3>
-                <cly-section v-if="!newApp && hasGlobalAdminRights" >
+                <h3 class="bu-mb-2" v-if="!newApp && hasAppAdminRights">{{i18n('management-applications.plugins')}}</h3>
+                <cly-section v-if="!newApp && hasAppAdminRights" >
                     <validation-observer ref="configObserver" v-slot="v">
                         <el-collapse class="app-management-details">
                             <el-collapse-item :title="value.title" :name="id" :key="id" v-for="(value, id) in appSettings">

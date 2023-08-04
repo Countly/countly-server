@@ -1,6 +1,7 @@
 const common = require('../../../api/utils/common'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    log = common.log('push:api:drill');
+    log = common.log('push:api:drill'),
+    { FIELDS_TITLES } = require('./send/platforms');
 
 module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
     return new Promise((res, rej) => {
@@ -94,23 +95,75 @@ function messageQuery(message) {
     }
 }
 
-module.exports.drillPreprocessQuery = ({query, params}) => {
-    if (query) {
-        if (query.push) {
-            if (query.push.$nin) {
-                query.$and = query.push.$nin.map(tk => {
-                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
-                });
-            }
-            if (query.push.$in) {
-                let q = query.push.$in.map(tk => {
-                    return {[tk]: true};
-                });
-                query.$or = q;
-            }
-            delete query.push;
-        }
+/**
+ * Find messages using particular query and return ids
+ * 
+ * @param {object} q message collection query
+ * @returns {String[]} array of message ids
+ */
+async function find(q) {
+    let ids = await common.db.collection('messages').find(q, {projection: {_id: 1}}).toArray();
+    ids = (ids || []).map(id => id._id.toString());
+    return ids.length ? ids : ['nope'];
+}
 
+const toIdsMappers = {
+    'message.name': (query, app_id) => find({app: common.db.ObjectID(app_id), 'message.info.name': query}),
+    'message.title': (query, app_id) => find({app: common.db.ObjectID(app_id), 'contents.title': query}),
+    'message.message': (query, app_id) => find({app: common.db.ObjectID(app_id), 'contents.message': query}),
+};
+
+module.exports.drillPreprocessQuery = async function({query, params}) {
+    if (query && params && params.qstring && params.qstring.event === '[CLY]_push_action') {
+        if (query.$or) {
+            for (let i = 0; i < query.$or.length; i++) {
+                let q = query.$or[i];
+                for (let k in q) {
+                    if (toIdsMappers[k]) {
+                        let ids = await toIdsMappers[k](q[k], params.app_id);
+                        log.d(`replaced query.$or[${i}] (%j) with %j`, query.$or[i], {'sg.i': {$in: ids}});
+                        query.$or[i] = {
+                            'sg.i': {$in: ids}
+                        };
+                    }
+                }
+            }
+        }
+        for (let k in query) {
+            if (toIdsMappers[k]) {
+                let ids = await toIdsMappers[k](query[k], params.app_id);
+                if (query['sg.i'] && query['sg.i'].$in) {
+                    query['sg.i'].$in = query['sg.i'].$in.filter(id => ids.includes(id));
+                }
+                else if (query['sg.i']) {
+                    query['sg.i'].$in = ids;
+                }
+                else {
+                    query['sg.i'] = {$in: ids};
+                }
+                log.d(`replaced query[${k}] (%j) with %j`, query[k], query['sg.i']);
+                delete query[k];
+            }
+        }
+        if (query['sg.i'] && query['sg.i'].$in && !query['sg.i'].$in.length) {
+            query['sg.i'].$in = ['nope'];
+        }
+        // if (query.push) {
+        //     if (query.push.$nin) {
+        //         query.$and = query.push.$nin.map(tk => {
+        //             return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+        //         });
+        //     }
+        //     if (query.push.$in) {
+        //         let q = query.push.$in.map(tk => {
+        //             return {[tk]: true};
+        //         });
+        //         query.$or = q;
+        //     }
+        //     delete query.push;
+        // }
+    }
+    else if (query && params) {
         if (query.message) {
             let q = messageQuery(query.message);
 
@@ -121,32 +174,111 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            return new Promise((res, rej) => {
-                try {
-                    common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-                        if (err) {
-                            rej(err);
-                        }
-                        else {
-                            ids = (ids || []).map(id => id._id);
-                            query.uid = {$in: ids};
-                            log.d(`filtered by message: uids out of ${ids.length}`);
-                            res();
-                        }
-                    });
+            try {
+                let ids = await common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray();
+                ids = (ids || []).map(id => id._id);
+                query.uid = {$in: ids};
+                log.d(`filtered by message: uids out of ${ids.length}`);
+            }
+            catch (e) {
+                log.e(e);
+            }
+        }
+
+        if (query.push) {
+            let q;
+            if (query.push.$nin) {
+                q = {
+                    $and: query.push.$nin.map(tk => {
+                        return {[tk]: {$exists: false}};
+                    })
+                };
+            }
+            if (query.push.$in) {
+                q = {
+                    $or: query.push.$in.map(tk => {
+                        return {[tk]: {$exists: true}};
+                    })
+                };
+            }
+            if (query.push.$regex) {
+                q = Object.keys(FIELDS_TITLES).filter(k => query.push.$regex.test(FIELDS_TITLES[k])).map(tk => {
+                    return {[tk]: {$exists: true}};
+                });
+            }
+
+            delete query.push;
+
+            if (q) {
+                if (query.$or) {
+                    query.$and = [query.$or, q];
                 }
-                catch (e) {
-                    log.e(e);
-                    rej(e);
+                else if (query.$and) {
+                    query.$and = [query.$and, q];
                 }
-            });
+                else {
+                    for (let k in q) {
+                        query[k] = q[k];
+                    }
+                }
+            }
         }
     }
 };
 
+// module.exports.drillPreprocessQuery = ({query, params}) => {
+//     if (query) {
+//         if (query.push) {
+//             if (query.push.$nin) {
+//                 query.$and = query.push.$nin.map(tk => {
+//                     return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+//                 });
+//             }
+//             if (query.push.$in) {
+//                 let q = query.push.$in.map(tk => {
+//                     return {[tk]: true};
+//                 });
+//                 query.$or = q;
+//             }
+//             delete query.push;
+//         }
+
+//         if (query.message) {
+//             let q = messageQuery(query.message);
+
+//             if (!q) {
+//                 return;
+//             }
+
+//             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
+//             delete query.message;
+
+//             return new Promise((res, rej) => {
+//                 try {
+//                     common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
+//                         if (err) {
+//                             rej(err);
+//                         }
+//                         else {
+//                             ids = (ids || []).map(id => id._id);
+//                             query.uid = {$in: ids};
+//                             log.d(`filtered by message: uids out of ${ids.length}`);
+//                             res();
+//                         }
+//                     });
+//                 }
+//                 catch (e) {
+//                     log.e(e);
+//                     rej(e);
+//                 }
+//             });
+//         }
+//     }
+// };
+
 module.exports.drillPostprocessUids = ({uids, params}) => new Promise((res, rej) => {
-    let message = params.initialQueryObject && params.initialQueryObject.message;
-    if (uids.length && message) {
+    let message = params && params.initialQueryObject && params.initialQueryObject.message;
+    if (uids && uids.length && message) {
         log.d(`filtering ${uids.length} uids by message`);
 
         let q = messageQuery(message);

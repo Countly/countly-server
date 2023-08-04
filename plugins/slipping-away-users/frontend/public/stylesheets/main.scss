@@ -4,13 +4,15 @@
 
 .slipping-away-users-table-data-item {
   min-width: 4em;
-  margin-right: 0.25em;
+  margin-right: 0 !important;
+  justify-content: flex-start;
 }
 .slipping-away-users-table {
 
   &__data-item {
     min-width: 4em;
-    margin-right: 0.25em;
+    margin-right: 0.25em !important;
+    justify-content: flex-start;
   }
 
   &__link {

@@ -82,21 +82,38 @@
         }
     };
 
+    /**
+    * This function returns an authentication mixin object for a given feature or array of features.
+    * @param {string|array} featureName - The name of the feature(s) to create the authentication mixin for
+    * @returns {object} - Returns an object containing computed properties for authentication.
+    */
     var authMixin = function(featureName) {
+        if (!Array.isArray(featureName)) {
+            featureName = [featureName];
+        }
+        var checkAuthArray = function(func) {
+            for (var i = 0; i < featureName.length; i++) {
+                if (func(featureName[i])) {
+                    return true;
+                }
+            }
+            return false;
+        };
         return {
             // uses computed mainly to prevent mutations of these values
+            // using helper function checkAuthArray to act as a 'or' returns true if atleast one feature is validated else false
             computed: {
                 canUserCreate: function() {
-                    return countlyAuth.validateCreate(featureName);
+                    return checkAuthArray(countlyAuth.validateCreate);
                 },
                 canUserRead: function() {
-                    return countlyAuth.validateRead(featureName);
+                    return checkAuthArray(countlyAuth.validateRead);
                 },
                 canUserUpdate: function() {
-                    return countlyAuth.validateUpdate(featureName);
+                    return checkAuthArray(countlyAuth.validateUpdate);
                 },
                 canUserDelete: function() {
-                    return countlyAuth.validateDelete(featureName);
+                    return checkAuthArray(countlyAuth.validateDelete);
                 },
                 isUserGlobalAdmin: function() {
                     return countlyAuth.validateGlobalAdmin();
@@ -120,7 +137,8 @@
             formatTimeAgo: countlyCommon.formatTimeAgo,
             formatNumber: countlyCommon.formatNumber,
             formatNumberSafe: countlyCommon.formatNumberSafe,
-            getShortNumber: countlyCommon.getShortNumber
+            getShortNumber: countlyCommon.getShortNumber,
+            unescapeHtml: countlyCommon.unescapeHtml
         }
     };
 
@@ -255,6 +273,16 @@
                     return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
                 }
             },
+            calculateStackedBarTimeSeriesOptionsFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                widgetData.dashData.data = widgetData.dashData.data || {};
+                widgetData.metrics = widgetData.metrics || [];
+
+                for (var app in widgetData.dashData.data) {
+                    return widgetData.dashData.data[app];
+                }
+            },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
                 widgetData = widgetData || {};
                 widgetData.metrics = widgetData.metrics || [];
@@ -343,14 +371,19 @@
             countlyCommon: {
                 namespaced: true,
                 state: {
+                    areNotesHidden: false,
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
                     activeApp: null,
                     allApps: countlyGlobal.apps,
                     notificationToasts: [],
+                    persistentNotifications: [],
                     dialogs: []
                 },
                 getters: {
+                    getAreNotesHidden(state) {
+                        return state.areNotesHidden;
+                    },
                     period: function(state) {
                         return state.period;
                     },
@@ -372,9 +405,17 @@
                         return state.dialogs.filter(function(item) {
                             return item.intent === "message";
                         });
-                    }
+                    },
+                    blockerDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "blocker";
+                        });
+                    },
                 },
                 mutations: {
+                    setAreNotesHidden: function(state, value) {
+                        state.areNotesHidden = value;
+                    },
                     setPeriod: function(state, period) {
                         state.period = period;
                     },
@@ -419,6 +460,17 @@
                             return item.id !== id;
                         });
                     },
+                    addPersistentNotification: function(state, payload) {
+                        if (!payload.id) {
+                            payload.id = countlyCommon.generateId();
+                        }
+                        state.persistentNotifications.unshift(payload);
+                    },
+                    removePersistentNotification: function(state, notificationId) {
+                        state.persistentNotifications = state.persistentNotifications.filter(function(item) {
+                            return item.id !== notificationId;
+                        });
+                    },
                     addDialog: function(state, payload) {
                         payload.id = countlyCommon.generateId();
                         state.dialogs.unshift(payload);
@@ -430,6 +482,9 @@
                     }
                 },
                 actions: {
+                    setAreNotesHidden: function(context, value) {
+                        context.commit('setAreNotesHidden', value);
+                    },
                     updatePeriod: function(context, obj) {
                         context.commit("setPeriod", obj.period);
                         context.commit("setPeriodLabel", obj.label);
@@ -462,6 +517,12 @@
                     },
                     onRemoveNotificationToast: function(context, payload) {
                         context.commit('removeNotificationToast', payload);
+                    },
+                    onAddPersistentNotification: function(context, payload) {
+                        context.commit('addPersistentNotification', payload);
+                    },
+                    onRemovePersistentNotification: function(context, notificationId) {
+                        context.commit('removePersistentNotification', notificationId);
                     },
                     onAddDialog: function(context, payload) {
                         context.commit('addDialog', payload);
@@ -668,6 +729,18 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-message-dialog>\
+                        <el-dialog\
+                            v-for="dialog in blockerDialogs"\
+                            visible\
+                            :center="dialog.center"\
+                            :width="dialog.width"\
+                            :close-on-click-modal="false"\
+                            :close-on-press-escape="false"\
+                            :show-close="false"\
+                            :key="dialog.id"\
+                            :title="dialog.title">\
+                            <div v-html="dialog.message"></div>\
+                        </el-dialog>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
@@ -676,6 +749,9 @@
             },
             confirmDialogs: function() {
                 return this.$store.getters['countlyCommon/confirmDialogs'];
+            },
+            blockerDialogs: function() {
+                return this.$store.getters['countlyCommon/blockerDialogs'];
             }
         },
         methods: {

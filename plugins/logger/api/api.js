@@ -2,6 +2,7 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     automaticStateManager = require('./helpers/automaticStateManager'),
+    log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'logger';
@@ -39,6 +40,18 @@ plugins.setConfigs("logger", {
         return plugins.getConfig("logger", params.app && params.app.plugins, true);
     };
 
+    var removeCookieAndTokenFromHeader = function(header) {
+        var cleanHeader = Object.assign({}, header);
+        if (cleanHeader["countly-token"]) {
+            cleanHeader["countly-token"] = "";
+        }
+        if (cleanHeader.cookie) {
+            cleanHeader.cookie = "";
+        }
+
+        return cleanHeader;
+    };
+
     var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC && automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
             plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.OFF}));
@@ -46,8 +59,11 @@ plugins.setConfigs("logger", {
     };
 
     var processSDKRequest = function(params) {
+        log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
-        if (params.logging_is_allowed && shouldLogRequest(requestLoggerConfiguration)) {
+        log.d("Logging config => ", requestLoggerConfiguration);
+        log.d("Should Log request? => ", shouldLogRequest(requestLoggerConfiguration));
+        if (params.logging_is_allowed && (shouldLogRequest(requestLoggerConfiguration) || (params && params.app_user && params.app_user.request_logs))) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
@@ -245,12 +261,14 @@ plugins.setConfigs("logger", {
                 t: types,
                 q: q,
                 s: sdk,
-                h: params.req.headers,
+                h: removeCookieAndTokenFromHeader(params.req.headers),
                 m: params.req.method,
                 b: params.bulk || false,
                 c: (params.cancelRequest) ? params.cancelRequest : false,
                 res: response
             };
+
+            log.d("problems found", problems);
 
             plugins.dispatch("/log", { params: params, insertData: insertData, problems: problems }, function() {
                 //Set problems after log event dispatched

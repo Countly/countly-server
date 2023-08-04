@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyGlobal, countlyTaskManager, $, jQuery, app*/
+/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -94,7 +94,9 @@
                     dbs: db,
                     collection: collection,
                     aggregation: aggregation,
-                    app_id: app_id
+                    app_id: app_id,
+                    type: "json",
+                    "preventRequestAbort": true
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {
@@ -104,11 +106,14 @@
                             "segmentation": { type: "dbviewer" }
                         });
                         countlyTaskManager.monitor(json.aaData.task_id);
-                        callback(false);
+                        callback(false, false);
                     }
                     else {
-                        callback(json);
+                        callback(false, json);
                     }
+                },
+                error: function(error) {
+                    callback(error, false);
                 }
             });
         }
@@ -140,12 +145,22 @@
     countlyDBviewer.getDocument = function() {
         return _document;
     };
+
+    countlyDBviewer.getName = function(db, collection) {
+        var currentDb = _data.find(function(dbObj) {
+            return dbObj.name === db;
+        }) || {};
+        var [key] = Object.entries(currentDb.collections || {}).find(function([, value]) {
+            return value === collection;
+        });
+        return key || collection;
+    };
+
     countlyDBviewer.getMongoTopData = function(callback) {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/mongotop',
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -165,7 +180,6 @@
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/mongostat',
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {

@@ -262,6 +262,10 @@ class Manager {
                     log.d('Cannot process job %s - no such class', job.name);
                     continue;
                 }
+                var splittedName = job.name.split(':');
+                if (!manager.isPluginOn(splittedName[0])) {
+                    continue; //skipping this job as plugin is disabled
+                }
 
                 if (!this.canRun(job)) {
                     jobs = jobs.filter(j => j.name !== job.name);

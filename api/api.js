@@ -10,13 +10,14 @@ const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 const log = common.log('core:api');
+const versionInfo = require('../frontend/express/version.info.js');
 const {jobs, plugins} = common;
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
 if (cluster.isMaster) {
-    console.log("Starting master", "version", pack.version);
+    console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
     if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
@@ -36,6 +37,9 @@ plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+    if (common.drillDb) {
+        common.drillReadBatcher = new ReadBatcher(common.drillDb);
+    }
 
     let workers = [];
 
@@ -50,11 +54,13 @@ plugins.connectToAllDatabases().then(function() {
     plugins.setConfigs("api", {
         domain: "",
         safe: false,
-        session_duration_limit: 120,
+        session_duration_limit: 86400,
+        country_data: true,
         city_data: true,
         event_limit: 500,
         event_segmentation_limit: 100,
         event_segmentation_value_limit: 1000,
+        array_list_limit: 10,
         metric_limit: 1000,
         sync_plugins: false,
         session_cooldown: 15,
@@ -335,6 +341,18 @@ plugins.connectToAllDatabases().then(function() {
                 });
 
                 form.parse(req, (err, fields, files) => {
+                    //handle bakcwards compatability with formiddble v1
+                    for (let i in files) {
+                        if (files[i].filepath) {
+                            files[i].path = files[i].filepath;
+                        }
+                        if (files[i].mimetype) {
+                            files[i].type = files[i].mimetype;
+                        }
+                        if (files[i].originalFilename) {
+                            files[i].name = files[i].originalFilename;
+                        }
+                    }
                     params.files = files;
                     for (const i in fields) {
                         params.qstring[i] = fields[i];

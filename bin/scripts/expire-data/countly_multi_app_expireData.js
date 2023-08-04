@@ -1,7 +1,7 @@
 /**
  *  Setup TTL indexes to delete older data for one specific app. This script should be run periodically, to create TTL indexes on new collections too, like new events, etc for specific app
  *  Server: countly
- *  Path: countly dir
+ *  Path: countly dir/bin/scripts/expire-data
  *  Command: node countly_multi_app_expireData.js
  */
 
@@ -16,12 +16,15 @@ var async = require('async'),
 //var db_drill = plugins.dbConnection("countly_drill");
 
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
-    db.collections(function(err, collections) {
+    db_drill.collections(function(err, collections) {
         collections = collections || [];
         function eventIterator(coll, done) {
             var collection = coll.collectionName;
             console.log("processing", collection);
             db_drill.collection(collection).indexes(function(err, indexes) {
+                if (err) {
+                    console.log(err);
+                }
                 if (!err && indexes) {
                     var hasIndex = false;
                     var dropIndex = false;
@@ -39,13 +42,20 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                         }
                     }
                     if (dropIndex) {
-                        console.log("dropping index", collection);
-                        db_drill.collection(collection).dropIndex(INDEX_NAME, function() {
-                            console.log("creating index", collection);
-                            db_drill.collection(collection).createIndex({"cd": 1}, {expireAfterSeconds: EXPIRE_AFTER, "background": true}, function() {
-                                done();
-                            });
+                        console.log("modifying index", collection);
+                        db_drill.command({
+                            "collMod": collection,
+                            "index": {
+                                "keyPattern": {"cd": 1},
+                                expireAfterSeconds: EXPIRE_AFTER
+                            }
+                        }, function(err) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            done();
                         });
+
                     }
                     else if (!hasIndex) {
                         console.log("creating index", collection);

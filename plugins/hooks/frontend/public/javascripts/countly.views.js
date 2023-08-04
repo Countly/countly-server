@@ -109,6 +109,23 @@
             onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
             },
+            formatExportFunction: function() {
+                var tableData = this.tableRows;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('hooks.hook-name').toUpperCase()] = tableData[i].name;
+                    item[CV.i18n('hooks.description').toUpperCase()] = tableData[i].description;
+                    item[CV.i18n('hooks.trigger-and-actions').toUpperCase()] = hooksPlugin.generateTriggerActionsTreeForExport(tableData[i]);
+                    item[CV.i18n('hooks.trigger-count').toUpperCase()] = tableData[i].triggerCount;
+                    item[CV.i18n('hooks.trigger-last-time').toUpperCase()] = tableData[i].lastTriggerTimestampString === "-" ? "" : tableData[i].lastTriggerTimestampString;
+                    item[CV.i18n('hooks.create-by').toUpperCase()] = tableData[i].createdByUser;
+
+                    table.push(item);
+                }
+                return table;
+
+            },
         }
     });
 
@@ -794,6 +811,9 @@
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
                 hookDetail.lastTriggerTimestampString = hookDetail.lastTriggerTimestamp && moment(hookDetail.lastTriggerTimestamp).fromNow() || "-";
                 return hookDetail;
+            },
+            detailLogsInitialized: function() {
+                return this.$store.getters["countlyHooks/getDetailLogsInitialized"];
             }
         },
         methods: {

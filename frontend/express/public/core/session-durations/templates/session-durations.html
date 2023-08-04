@@ -20,11 +20,11 @@
                             {{formatNumber(scope.row.numberOfSessions)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.percent')">
+                    <el-table-column sortable="custom" prop="numberOfSessions" column-key="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
                                 <div class="bu-level-item slipping-away-users-table-data-item">
-                                    <span>{{scope.row.percentage}} %</span>
+                                    <span>{{scope.row.percentage}}%</span>
                                 </div>
                                 <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
                             </div>

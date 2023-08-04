@@ -138,11 +138,11 @@
             };
         },
         mounted: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDensity', true);
         },
         methods: {
-            refresh: function() {
-                this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+            refresh: function(force) {
+                this.$store.dispatch('countlyDevicesAndTypes/fetchDensity', force);
             },
             handleCardsScroll: function() {
                 if (this.$refs && this.$refs.bottomSlider) {
@@ -194,7 +194,7 @@
                         "name": data[k].density,
                         "value": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
-                        "percentText": percent + " % " + CV.i18n('common.of-total'),
+                        "percentText": percent + "% " + CV.i18n('common.of-total'),
                         "info": CV.i18n('common.info'),
                         "color": k > 3 ? this.graphColors[k % 4] : this.graphColors[k]
                     });

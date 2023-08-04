@@ -126,10 +126,10 @@ dashboard.mapWidget = function(widget) {
             if (widget.interval === "adaily") {
                 widget.period = "d" + (widget.selected_span || 7);
             }
-            else if (widget.inerval === "aweekly") {
+            else if (widget.interval === "aweekly") {
                 widget.period = "w" + (widget.selected_span || 12);
             }
-            else if (widget.inerval === "amonthly") {
+            else if (widget.interval === "amonthly") {
                 widget.period = "m" + (widget.selected_span || 6);
             }
         }
@@ -165,6 +165,59 @@ dashboard.mapWidget = function(widget) {
          */
         widget.client_fetch = true;
 
+        break;
+    case "note":
+        if (!widget.contenthtml && widget.content) {
+            var linkStyling = "",
+                textStyling = "",
+                text = "",
+                fontSize = 15,
+                colors = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb762", "#ede262", "#62edb0", "#62beed", "#6279ed", "#c162ed", "#ed62c7", "#9A1B2F", "#E2E4E8"];
+
+            if (widget.font_size && !Number.isNaN(parseFloat(widget.font_size))) {
+                fontSize = parseFloat(widget.font_size);
+            }
+
+            textStyling += 'font-size: ' + fontSize + 'px;';
+
+            if (widget.text_align) {
+                textStyling += "text-align: " + widget.text_align + ";";
+            }
+
+            if (widget.bar_color) {
+                textStyling += 'color: ' + colors[widget.bar_color - 1] + ';';
+            }
+
+            if (widget.text_decoration) {
+                for (var i = 0 ; i < widget.text_decoration.length; i++) {
+                    if (widget.text_decoration[i] === "b") {
+                        textStyling += 'font-weight: bold;';
+                    }
+
+                    if (widget.text_decoration[i] === "i") {
+                        textStyling += 'font-style: italic;';
+                    }
+
+                    if (widget.text_decoration[i] === "u") {
+                        textStyling += 'text-decoration: underline;';
+                    }
+                }
+            }
+
+            text = `<p class="bu-pl-2 bu-pr-2" style="${textStyling}">${widget.content}</p>`;
+
+            if (widget.add_link) {
+                if (widget.text_align) {
+                    linkStyling += 'text-align: ' + widget.text_align + '; ';
+                }
+                linkStyling += 'white-space: normal !important;';
+                text += `<p style="${linkStyling}" class="bu-p-2">
+                            <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
+                        </p>`;
+            }
+
+            widget.contenthtml = text;
+        }
         break;
     default:
         break;
@@ -376,12 +429,14 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
                 for (var k = 0;k < widget.metrics.length; k++) {
                     metrics.push(widget.metrics[k]);
                 }
-                widget.metrics = ['u', 'n'];
+
+                widget.metrics = ['u', 'n']; //calculate all by those
+
                 for (let i = 0; i < widgetApps.length; i++) {
                     var appId3 = widgetApps[i];
                     widgetData[appId3] = await getAnalyticsSessionDataForApp(params, apps, appId3, widget);
                 }
-                widget.metrics = metrics;
+                widget.metrics = metrics; //put back original
                 dashData.isValid = true;
                 dashData.data = widgetData;
 
@@ -507,6 +562,108 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
+/**
+ * Remove deleted records from widgets
+ * @param {object} params params object
+ * @param {object} matchOperator match operator for aggregation
+ * @param {object} db database object - if coming from script
+ * @returns {boolean} true if success
+ */
+dashboard.removeDeletedRecordsFromWidgets = async function(params, matchOperator, db) {
+    try {
+        if (!params || !matchOperator) {
+            log.e('missing parameters for removeDeletedRecordsFromWidgets', params, matchOperator);
+            return false;
+        }
+
+        if (typeof matchOperator === 'string') {
+            matchOperator = JSON.parse(matchOperator);
+        }
+
+        if (typeof db !== 'undefined') {
+            common.db = db;
+        }
+
+        var pipeline = [
+            {
+                $match: matchOperator
+            },
+            {
+                $lookup: {
+                    from: "dashboards",
+                    localField: "_id",
+                    foreignField: "widgets",
+                    as: "dashboard"
+                }
+            },
+            {
+                $unwind: "$dashboard"
+            },
+            {
+                $project: {
+                    _id: 0,
+                    widget_id: "$_id",
+                    dashboard_id: "$dashboard._id",
+                }
+            }
+        ];
+        var widgets = await common.db.collection('widgets').aggregate(pipeline, {allowDiskUse: true}).toArray();
+
+        for (const widget of widgets) {
+            var dashboardId = widget.dashboard_id;
+            var widgetId = widget.widget_id;
+            if (!dashboardId || !widgetId) {
+                log.e('dashbordId or widgetId could not found in remove widget');
+                continue;
+            }
+
+            await new Promise((resolve, reject) => {
+                dashboard.deleteWidget(params, dashboardId, widgetId, function(success) {
+                    if (success) {
+                        resolve();
+                    }
+                    else {
+                        reject();
+                    }
+                });
+            });
+        }
+        return true;
+    }
+    catch (error) {
+        log.e('Invalid request for remove widget', error);
+        return false;
+    }
+};
+
+dashboard.deleteWidget = function(params, dashboardId, widgetId, callback) {
+    common.db.collection("dashboards").update({_id: common.db.ObjectID(dashboardId)}, { $pull: {widgets: common.db.ObjectID(widgetId)}}, function(dashboardErr) {
+        if (!dashboardErr) {
+            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {}, {remove: true}, function(widgetErr, widgetResult) {
+                if (widgetErr || !widgetResult || !widgetResult.value) {
+                    callback(false);
+                }
+                else {
+                    var logData = widgetResult.value;
+                    logData.dashboard = dashboard.name;
+
+                    plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
+                    plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
+                    callback(true);
+                }
+            });
+        }
+        else {
+            callback(false);
+        }
+    });
+};
+
+plugins.register("/dashboard/clean-deleted-widgets", async function(ob) {
+    var response = await dashboard.removeDeletedRecordsFromWidgets(ob.params, ob.match);
+    return response;
+}, true);
+
 
 /**
  * Function to fetch technology analytics data for app
@@ -531,6 +688,7 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
     switch (visualization) {
     case 'bar-chart':
     case 'pie-chart':
+    case 'time-series':
     case 'table':
         if (!breakdowns || !breakdowns.length) {
             throw new Error("Breakdowns are required for bar chart and table");
@@ -561,6 +719,9 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
         break;
     case 'table':
         widgetData = model.getTableData(segment, 10);
+        break;
+    case 'time-series':
+        widgetData = model.getStackedBarData(segment, 10, widget.metrics[0] || "u", widget.displaytype || "percentage");
         break;
     default:
         break;
@@ -619,7 +780,16 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
 
         break;
     case 'number':
-        widgetData = model.getNumber();
+        if (widget.data_type === "user-analytics") {
+            widgetData = {};
+            widgetData.u = model.getNumber();
+            widget.metrics = ['n'];
+            model = await getSessionModel(params, apps, appId, collection, segment, widget);
+            widgetData.n = model.getNumber();
+        }
+        else {
+            widgetData = model.getNumber();
+        }
 
         break;
     case 'bar-chart':
@@ -882,11 +1052,15 @@ async function getCrashDataForApp(params, apps, appId, widget) {
  */
 function getSessionModel(params, apps, appId, collection, segment, widget) {
     return new Promise((resolve) => {
+        var period = widget.custom_period || params.qstring.period;
+        if (period.since) {
+            period = [period.since, Date.now()];
+        }
         var paramsObj = {
             app_id: appId,
             appTimezone: apps[appId] && apps[appId].timezone,
             qstring: {
-                period: widget.custom_period || params.qstring.period
+                period: period
             },
             time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
         };
@@ -895,10 +1069,9 @@ function getSessionModel(params, apps, appId, collection, segment, widget) {
             fetch.getTotalUsersObj(segment, paramsObj, function(dbTotalUsersObj) {
                 var formattedUserObj = fetch.formatTotalUsersObj(dbTotalUsersObj);
 
-                countlyCommon.setPeriod(paramsObj.qstring.period);
-
                 var model = countlyModel.load(toModel(segment));
 
+                model.setPeriod(paramsObj.qstring.period);
                 model.setDb(data);
 
                 if (formattedUserObj) {
@@ -974,7 +1147,7 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
-
+            model.setPeriod(paramsObj.qstring.period);
             model.setDb(data);
 
             /**
@@ -1019,6 +1192,7 @@ function getPushModel(params, apps, appId, collection, segment, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 
@@ -1051,6 +1225,7 @@ function getCrashModel(params, apps, appId, collection, widget) {
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = model = countlyModel.load(toModel("data"));
+            model.setPeriod(paramsObj.qstring.period);
 
             model.setDb(data);
 

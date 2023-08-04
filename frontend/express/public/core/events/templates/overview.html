@@ -20,20 +20,20 @@
 			  <cly-metric-card formatting="long" :number=eventsOverview[0].value :tooltip="i18n('events.overview.total.event.count')" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 					<span class="has-ellipsis" v-tooltip="eventsOverview[0].name">{{eventsOverview[0].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
-				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[0].change}}</span>
+				<span v-if="eventsOverview[0].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[0].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[0].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :number=eventsOverview[1].value color="#097EFF" :tooltip="i18n('events.overview.event.per.user')" numberClasses="bu-is-flex bu-is-align-items-center">
 				<span class="has-ellipsis" v-tooltip="eventsOverview[1].name">{{eventsOverview[1].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
 				<div slot="number">{{eventsOverview[1].value}}</div>
-				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[1].change}}</span>
+				<span v-if="eventsOverview[1].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[1].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[1].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :number=eventsOverview[2].value color="#097EFF" :tooltip="i18n('events.overview.event.per.session')" numberClasses="bu-is-flex bu-is-align-items-center">
 				<span class="has-ellipsis" v-tooltip="eventsOverview[2].name">{{eventsOverview[2].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
-				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[2].change}}</span>
+				<span v-if="eventsOverview[2].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[2].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[2].change}}</span>
 			  </cly-metric-card>
 			</cly-metric-cards>
@@ -46,7 +46,7 @@
 			  :key="idx"
 			  v-for="(item, idx) in topEvents">
 			  <div class="bu-is-align-items-center bu-is-flex"  slot="title">
-				  <span @click="onMetricClick(item)" v-tooltip="item.name" class="text-medium has-ellipsis bu-is-clickable">{{item.name}}</span>
+				  <span @click="onMetricClick(item)" v-tooltip="item.tooltip" class="text-medium has-ellipsis bu-is-clickable">{{item.name}}</span>
 			  </div>
 			  <div slot="countValue" class="cly-events-breakdown-horizontal-tile__value">{{item.value}}</div>
 			  <div class="bu-level-right" slot="totalPercentage">
@@ -106,12 +106,12 @@
 				  :key="idx"
 				  v-for="(item, idx) in monitorEventsData">
 				  <div class="bu-is-align-items-center bu-is-flex cly-monitor-events-breakdown-horizontal-tile__width-50" slot="title">
-				  	<span v-tooltip="item.name" class="text-medium has-ellipsis cly-monitor-events-breakdown-horizontal-tile__overview-name">{{item.name}}</span>
+				  	<span v-tooltip="item.name" class="text-medium has-ellipsis cly-monitor-events-breakdown-horizontal-tile__overview-name">{{decode(item.name)}}</span>
 				  </div>
 				  <div slot="countValue" class="cly-monitor-events-breakdown-horizontal-tile__overviewvalue">{{item.total}}</div>
 				  <div slot="propertyName" class="cly-monitor-events-breakdown-horizontal-tile__eventproperty">{{item.eventProperty}}</div>
 				  <div slot="barGraph">
-					<cly-chart-bar xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=150 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
+					<cly-chart-bar :valFormatter="durCheck(item) ? valFormatter : undefined" xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=130 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
 					</cly-chart-bar>
 				  </div>
 				</monitor-events-breakdown-horizontal-tile>
@@ -152,7 +152,7 @@
 			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
-				  {{rowScope.row.duration>0?formatNumber(rowScope.row.duration):"-"}}
+				  {{rowScope.row.duration>0?formatDurNumber(rowScope.row.duration):"-"}}
 				</div>
 			  </template>
 			</el-table-column>

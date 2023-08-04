@@ -88,24 +88,51 @@ const FEATURE_NAME = 'server-stats';
     * @param {object} periodObj - period obj 
 	* @param {array} periodsToFetch - list to collect month abbr strings
     * @param {object} dateObj  - object to collect info about date ranges
+	* @param {object} dateObjPrev  - object to collect info about date ranges
 	* @param {string} period {string}  - period string
     **/
-    function createDateObject(periodObj, periodsToFetch, dateObj, period) {
-        var utcMoment;
+    function createDateObject(periodObj, periodsToFetch, dateObj, dateObjPrev, period) {
         var mm;
+        var yy;
+
+        periodObj.currentPeriodArr = periodObj.currentPeriodArr || [];
+        periodObj.currentPeriodArr[0] = periodObj.currentPeriodArr[0] || "";
         if (period === "month") {
-            utcMoment = common.moment.utc(periodObj.start);
-            var yy = utcMoment.format("YYYY");
+
+            yy = periodObj.currentPeriodArr[0].split(".");
+            try {
+                yy = parseInt(yy[0], 10);
+            }
+            catch (e) {
+                log.e(e);
+            }
             for (var k = 1; k <= 12; k++) {
                 periodsToFetch.push(yy + ":" + k);
                 dateObj[yy + ":" + k] = {"full": true};
+                if (dateObjPrev) {
+                    periodsToFetch.push((yy - 1) + ":" + k);
+                    dateObjPrev[(yy - 1) + ":" + k] = {"full": true};
+                }
             }
         }
         else if (period === "day") {
-            utcMoment = common.moment.utc(periodObj.start);
-            mm = utcMoment.format("YYYY:M");
-            dateObj[mm] = {"full": true};
-            periodsToFetch.push(mm);
+            yy = periodObj.currentPeriodArr[0].split(".");
+            try {
+                mm = parseInt(yy[1], 10);
+                yy = parseInt(yy[0], 10);
+            }
+            catch (e) {
+                log.e(e);
+                mm = "";
+                yy = "";
+            }
+
+            dateObj[yy + ":" + mm] = {"full": true};
+            periodsToFetch.push(yy + ":" + mm);
+            if (dateObjPrev) {
+                periodsToFetch.push((yy - 1) + ":" + mm);
+                dateObjPrev[(yy - 1) + ":" + mm] = {"full": true};
+            }
 
         }
         else {
@@ -118,6 +145,25 @@ const FEATURE_NAME = 'server-stats';
             }
             for (var dd in dateObj) {
                 periodsToFetch.push(dd);
+            }
+
+            if (dateObjPrev) {
+                countlyCommon.setPeriod([periodObj.start - (periodObj.end - periodObj.start), periodObj.start - 1]);
+                periodObj = countlyCommon.periodObj;
+
+                periodObj.currentPeriodArr = periodObj.currentPeriodArr || [];
+                periodObj.currentPeriodArr[0] = periodObj.currentPeriodArr[0] || "";
+
+                for (var z1 = 0; z1 < periodObj.currentPeriodArr.length; z1++) {
+                    mm = periodObj.currentPeriodArr[z1].split(".");
+                    if (!dateObjPrev[mm[0] + ":" + mm[1]]) {
+                        dateObjPrev[mm[0] + ":" + mm[1]] = {};
+                    }
+                    dateObjPrev[mm[0] + ":" + mm[1]][mm[2]] = {"full": true};
+                }
+                for (var dd1 in dateObjPrev) {
+                    periodsToFetch.push(dd1);
+                }
             }
         }
     }
@@ -177,13 +223,10 @@ const FEATURE_NAME = 'server-stats';
         countlyCommon.setPeriod(params.qstring.period);
         var periodObj = countlyCommon.periodObj;
         var dateObj = {};
-        createDateObject(periodObj, periodsToFetch, dateObj, params.qstring.period);
         var dateObjPrev = {};
-        var singleApp = false;
+        createDateObject(periodObj, periodsToFetch, dateObj, dateObjPrev, params.qstring.period);
 
-        countlyCommon.setPeriod([periodObj.start - (periodObj.end - periodObj.start), periodObj.start - 1]);
-        periodObj = countlyCommon.periodObj;
-        createDateObject(periodObj, periodsToFetch, dateObjPrev, params.qstring.period);
+        var singleApp = false;
 
         var filter = {
             _id: {$in: []}
@@ -343,7 +386,8 @@ const FEATURE_NAME = 'server-stats';
             countlyCommon.setPeriod(params.qstring.period);
             var periodObj = countlyCommon.periodObj;
             var dateObj = {};
-            createDateObject(periodObj, periodsToFetch, dateObj, params.qstring.period);
+
+            createDateObject(periodObj, periodsToFetch, dateObj, null, params.qstring.period);
 
             try {
                 let filter = {"m": {$in: periodsToFetch} };

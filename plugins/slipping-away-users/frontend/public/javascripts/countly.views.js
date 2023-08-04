@@ -1,4 +1,4 @@
-/*global app,countlySlippingAwayUsers,countlyVue,CV,countlyCommon,CountlyHelpers,countlyAuth*/
+/*global app,countlyGlobal, countlySlippingAwayUsers,countlyVue,CV,countlyCommon,CountlyHelpers,countlyAuth*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -8,10 +8,14 @@
         mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
-                progressBarColor: "#F96300",
+                progressBarColor: "#F96300"
             };
         },
         computed: {
+            showViewUsers: function() {
+                return countlyGlobal.plugins.indexOf('users') > -1;
+            },
+
             showDrillFilter: function() {
                 if (countlyAuth.validateRead('drill')) {
                     return true;
@@ -96,6 +100,7 @@
         priority: 2,
         name: "slipping-away-users",
         permission: FEATURE_NAME,
+        pluginName: "slipping-away-users",
         title: CV.i18n('slipping-away-users.title'),
         route: "#/analytics/loyalty/slipping-away-users",
         component: SlippingAwayUsersView,

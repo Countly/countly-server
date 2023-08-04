@@ -108,6 +108,7 @@ class Note {
             total: data.result && data.result.total || 0,
             processed: data.result && data.result.processed || 0,
             sent: data.result && data.result.sent || 0,
+            actioned: data.result && data.result.actioned || 0,
             errors: data.result && data.result.errors || 0,
             error: data.result && data.result.error || null,
             errorCodes: data.result && data.result.errorCodes || {},

@@ -150,10 +150,9 @@
 
 .cly-monitor-events-breakdown-horizontal-tile {
     &__wrapper {
-        border-right: 1px solid #ECECEC; 
-        border-top: 1px solid #ECECEC; 
+        border-right: 1px solid #ECECEC;
         border-bottom: 1px solid #ECECEC;
-        padding: 24px 24px 0px 24px;
+        padding: 24px 24px 0 24px;
     }
     &__title {
         font-size: 12px;
@@ -174,7 +173,13 @@
     }
     &:nth-of-type(2n) {
         .cly-monitor-events-breakdown-horizontal-tile__wrapper {
-            border-right: 0;
+            border-right: none;
+        }
+    }
+    &:nth-child(1),
+    &:nth-child(2) {
+        .cly-monitor-events-breakdown-horizontal-tile__wrapper {
+            border-top: 1px solid #ECECEC;
         }
     }
     &__values-list {
@@ -306,5 +311,30 @@
     }
     &--font {
         font-family: t.$font-family;
+    }
+}
+
+.cly-vue-listbox.is-expandable {
+    z-index: 2001;
+}
+
+.cly-vue-events-omitted-segments {
+    &__item {
+        color: #81868D;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 16px;
+        padding: 8px;
+        margin: 8px;
+    }
+    &__title {
+        color: #A7AEB8;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        line-height: 16px;
+        padding: 8px;
+        margin: 8px;
     }
 }

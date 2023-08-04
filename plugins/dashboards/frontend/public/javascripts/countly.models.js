@@ -20,7 +20,7 @@
         },
         events: {
             getEventLongName: function(eventKey, eventMap) {
-                var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+                var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
                 if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                     return eventMap[mapKey].name;
                 }
@@ -317,7 +317,7 @@
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
-                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
                         if (Array.isArray(widget.settings.custom_period)) {
                             if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
                                 widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
@@ -326,6 +326,7 @@
                                 widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
                             }
                         }
+                        widget.settings.custom_period = countlyCommon.getPeriodWithOffset(widget.settings.custom_period);
                     }
                     return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
                         return id;
@@ -343,7 +344,7 @@
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
                     var settings = widget.settings;
-                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
                         if (Array.isArray(widget.settings.custom_period)) {
                             if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
                                 widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
@@ -352,6 +353,7 @@
                                 widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
                             }
                         }
+                        widget.settings.custom_period = countlyCommon.getPeriodWithOffset(widget.settings.custom_period);
                     }
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
@@ -614,7 +616,11 @@
                         if (dashbaord) {
                             context.commit("addOrUpdateDashboard", dashbaord);
                         }
-
+                        for (var z = 0; z < widgets.length; z++) {
+                            if (widgets[z].custom_period) { //modify period for displying
+                                widgets[z].custom_period = countlyCommon.removePeriodOffset(widgets[z].custom_period);
+                            }
+                        }
                         context.dispatch("widgets/setAll", widgets);
                         context.commit("setApps", apps);
 

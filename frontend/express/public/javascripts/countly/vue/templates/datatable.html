@@ -15,10 +15,12 @@
                         title="Edit columns"
                         mode="multi-check-sortable"
                         placement="bottom-end"
+                        :persistColumnOrderKey="persistKey"
                         :width="300"
                         :auto-commit="false"
                         :hide-default-tabs="true"
                         :hide-all-options-tab="true"
+                        :show-search="true"
                         :options="availableDynamicCols"
                         v-model="controlParams.selectedDynamicCols">
                         <template v-slot:trigger>
@@ -96,6 +98,7 @@
             </div>
         </div>
         <el-table
+            :preventDefaultSort="preventDefaultSort"
             :border="border"
             :row-key="keyFn"
             :data="mutatedRows"
@@ -107,11 +110,8 @@
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
-                <template slot="empty" v-if="!isLoading">
+                <template slot="empty">
                     <cly-empty-datatable></cly-empty-datatable>
-                </template>
-                <template slot="empty" v-if="isLoading">
-                    <div class="cly-vue-eldatatable__empty-slot"></div>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>

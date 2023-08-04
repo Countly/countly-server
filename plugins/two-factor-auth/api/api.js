@@ -4,7 +4,7 @@ var plugin = {},
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js'),
-    { validateUpdate } = require('../../../api/utils/rights.js');
+    { validateUser } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'two_factor_auth';
 
@@ -21,7 +21,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
 
     switch (ob.params.qstring.method) {
     case "enable":
-        validateUpdate(ob.params, FEATURE_NAME, function() {
+        validateUser(ob.params, function() {
             var member = ob.params.member,
                 secretToken = ob.params.qstring.secret_token,
                 authCode = ob.params.qstring.auth_code;
@@ -65,7 +65,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
         });
         break;
     case "disable":
-        validateUpdate(ob.params, FEATURE_NAME, function() {
+        validateUser(ob.params, function() {
             var member = ob.params.member;
 
             if (!config.globally_enabled) {

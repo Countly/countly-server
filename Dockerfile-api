@@ -1,8 +1,10 @@
-FROM node:14.15.0-buster
+FROM node:hydrogen-bullseye-slim
 
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager
 # Enterprise Edition:
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk
+
+ARG GEOIP=empty
 EXPOSE 3001
 HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:3001/o/ping || exit 1
 
@@ -14,10 +16,29 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_API_API_WORKERS="1" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+	NODE_OPTIONS="--max-old-space-size=2048" \
 	TINI_VERSION="0.18.0"
 
 WORKDIR /opt/countly
 COPY . .
+
+# install required dependencies which slim image doesn't have
+RUN apt-get update && \
+	apt-get install -y apt-transport-https curl wget git python2 make gcc g++ unzip && \
+	ln -s /usr/bin/python2.7 /usr/bin/python
+
+RUN apt-get update && \
+	apt-get upgrade -y && \
+	cd /usr/src && \
+	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
+	tar -xf Python-3.8.12.tar.xz && \
+	apt-get install -y build-essential sudo zlib1g-dev libssl1.1 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
+	cd Python-3.8.12 && \
+	./configure --enable-optimizations --enable-shared && \
+	make && \
+	make altinstall && \
+	ldconfig /usr/src/Python-3.8.12 && \
+	ln -s /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
@@ -37,7 +58,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest && \
 	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
-	apt-get -y install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
+	apt-get install -y libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
 	\

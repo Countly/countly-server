@@ -2,9 +2,9 @@
   <div class="text-big font-weight-bold bu-my-4 bu-pt-4">
     {{i18n('crashes.unresolved-crashes')}}
   </div>
-  <cly-datatable-n :rows="userCrashesData">
+  <cly-datatable-n :force-loading="isLoading" :rows="userCrashesData" :exportFormat="formatExportFunction">
     <template v-slot="scope">
-      <el-table-column prop="name" :label="i18n('crashes.error')" min-width="360">
+      <el-table-column prop="name" column-key="group" :label="i18n('crashes.error')" min-width="360">
         <template v-slot="rowScope">
           <div style="color: #32659D; text-decoration: none;" class="crash-link">
             <a :href="rowScope.row.link">{{rowScope.row.group}}</a>
@@ -18,7 +18,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="time" :label="i18n('crashes.last_time')" min-width="210">
+      <el-table-column prop="time" column-key="last" :label="i18n('crashes.last_time')" min-width="210">
         <template v-slot="rowScope">
           <div>
             {{getDateAndTime(rowScope.row.last)}}

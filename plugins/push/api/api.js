@@ -3,7 +3,7 @@ const plugins = require('../../pluginManager'),
     log = common.log('push:api'),
     { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
+    { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
@@ -56,7 +56,14 @@ plugins.setConfigs(FEATURE_NAME, {
     rate: {
         rate: '',
         period: ''
-    }
+    },
+    sendahead: 60000, // send pushes scheduled up to 60 sec in the future
+    connection_retries: 3, // retry this many times on recoverable errors
+    connection_factor: 1000, // exponential backoff factor
+    pool_pushes: 400, // object mode streams high water mark
+    pool_bytes: 10000, // bytes mode streams high water mark
+    pool_concurrency: 5, // max number of same type connections
+    pool_pools: 10 // max number of connections in total
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
@@ -90,6 +97,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
+                log.e('Sender crached', e);
                 sender = undefined;
             }
         }
@@ -150,6 +158,9 @@ plugins.register('/i', async ob => {
                     if (!msg || count !== 1) {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
+                    }
+                    else {
+                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
                     }
 
                     let p = event.segmentation.p,
@@ -297,6 +308,9 @@ plugins.register('/drill/add_push_events', drillAddPushEvents);
 plugins.register('/drill/preprocess_query', drillPreprocessQuery);
 plugins.register('/drill/postprocess_uids', drillPostprocessUids);
 
+// Hook to move data to new uid on user merge
+plugins.register('/i/device_id', onMerge);
+
 // Permissions
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 
@@ -304,10 +318,12 @@ plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
-plugins.register('/i/app_users/delete', ({app_id, uids}) => removeUsers(app_id, uids));
+plugins.register('/i/app_users/delete', async({app_id, uids}) => {
+    await removeUsers(app_id, uids, 'purge');
+});
 plugins.register('/consent/change', ({params, changes}) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
-        return removeUsers(params.app_id, [params.app_user.uid]);
+        return removeUsers(params.app_id, [params.app_user.uid], 'consent');
     }
 });
 plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {

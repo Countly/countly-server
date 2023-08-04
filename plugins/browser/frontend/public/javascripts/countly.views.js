@@ -192,7 +192,7 @@
                         "name": data[k].browser,
                         "value": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
-                        "percentText": percent + " % " + CV.i18n('common.of-total'),
+                        "percentText": percent + "% " + CV.i18n('common.of-total'),
                         "info": CV.i18n('common.info'),
                         "color": this.graphColors[k]
                     });

@@ -1,16 +1,16 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading">
+    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading" :exportFormat="formatExportTable">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
-        <el-table-column v-if="selectedSegment !== 'segment'" sortable="true" prop="curr_segment" :label="i18n('events.table.segmentation')">
+        <el-table-column v-if="selectedSegment !== 'segment'" sortable :sort-method="customSortSegments" prop="curr_segment" :label="i18n('events.table.segmentation')">
           <template v-slot="rowScope">
             <div class="has-ellipsis">
               {{rowScope.row.curr_segment}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-else sortable="true" prop="dateVal" :label="i18n('common.date')">
+        <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :sort-method="customSortSegments" :label="i18n('common.date')">
           <template
           date v-slot="rowScope">
             <div>
@@ -35,7 +35,7 @@
         <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="dur" :label="labels.dur">
           <template v-slot="rowScope">
             <div>
-              {{formatNumber(rowScope.row.dur)}}
+              {{formatDurNumber(rowScope.row.dur)}}
             </div>
           </template>
         </el-table-column>
@@ -49,7 +49,7 @@
         <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
           <template v-slot="rowScope">
             <div>
-              {{formatNumber(rowScope.row.avgDur)}}
+              {{formatDurNumber(rowScope.row.avgDur)}}
             </div>
           </template>
         </el-table-column>

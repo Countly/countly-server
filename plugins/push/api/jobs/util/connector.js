@@ -1,6 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send'),
-    { FRAME_NAME } = require('../../send/proto');
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -16,11 +15,11 @@ class Connector extends DoFinish {
      * @param {State} state state shared across the streams
      */
     constructor(log, db, state) {
-        super({objectMode: true, writableHighWaterMark: 3});
+        super({objectMode: true, writableHighWaterMark: state.cfg.pool.pushes * 10});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
-        this.limit = state.cfg.pool.pushes;
+        this.limit = state.cfg.pool.pushes * 10;
         this.connects = [];
         this.resetErrors();
     }
@@ -46,7 +45,7 @@ class Connector extends DoFinish {
      * @param {function} callback callback
      */
     _transform(push, encoding, callback) {
-        this.log.d('in connector transform', FRAME_NAME[push.frame]);
+        // this.log.d('in connector transform', FRAME_NAME[push.frame]);
         this.do_transform(push, encoding, callback);
     }
 
@@ -123,11 +122,11 @@ class Connector extends DoFinish {
             query._id = push.m;
             this.db.collection('messages').findOne(query).then(msg => {
                 if (msg) {
-                    this.log.d('sending message', push.m);
+                    this.log.d('sending message %s, %j', push.m, msg);
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
                 }
                 else {
-                    this.log.e('message not found', push.m);
+                    this.log.e('message not found', push.m, query);
                     this.state.discardMessage(push.m);
                 }
                 this.do_transform(push, encoding, callback);
@@ -179,7 +178,7 @@ class Connector extends DoFinish {
                 let creds = app.creds[push.p],
                     pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
-                    this.log.d('push goes to connection', push._id);
+                    // this.log.d('pgc', push._id); // Push Goes to Connection
                     callback(null, push);
                 }
                 else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time
@@ -220,7 +219,7 @@ class Connector extends DoFinish {
      */
     do_flush(callback, ifNeeded) {
         let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noProxyConnection.affectedBytes + this.expiredCreds.affectedBytes + this.tooLateToSend.affectedBytes;
-        this.log.d('in connector do_flush, total', total);
+        // this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
             if (callback) {
@@ -241,32 +240,32 @@ class Connector extends DoFinish {
                     if (inc.processed) {
                         inc.processed++;
                         inc.errored++;
-                        inc['errors.Rejected']++;
+                        inc['result.errors.Rejected']++;
                     }
                     else {
                         inc.processed = 1;
                         inc.errored = 1;
-                        inc['errors.Rejected'] = 1;
+                        inc['result.errors.Rejected'] = 1;
                     }
-                    if (inc[`subs.${push.p}.processed`]) {
-                        inc[`subs.${push.p}.processed`]++;
-                        inc[`subs.${push.p}.errored`]++;
-                        inc[`subs.${push.p}.errors.Rejected`]++;
-                    }
-                    else {
-                        inc[`subs.${push.p}.processed`] = 1;
-                        inc[`subs.${push.p}.errored`] = 1;
-                        inc[`subs.${push.p}.errors.Rejected`] = 1;
-                    }
-                    if (inc[`subs.${push.p}.subs.${la}.processed`]) {
-                        inc[`subs.${push.p}.subs.${la}.processed`]++;
-                        inc[`subs.${push.p}.subs.${la}.errored`]++;
-                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    if (inc[`result.subs.${push.p}.processed`]) {
+                        inc[`result.subs.${push.p}.processed`]++;
+                        inc[`result.subs.${push.p}.errored`]++;
+                        inc[`result.subs.${push.p}.errors.Rejected`]++;
                     }
                     else {
-                        inc[`subs.${push.p}.subs.${la}.processed`] = 1;
-                        inc[`subs.${push.p}.subs.${la}.errored`] = 1;
-                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
+                        inc[`result.subs.${push.p}.processed`] = 1;
+                        inc[`result.subs.${push.p}.errored`] = 1;
+                        inc[`result.subs.${push.p}.errors.Rejected`] = 1;
+                    }
+                    if (inc[`result.subs.${push.p}.subs.${la}.processed`]) {
+                        inc[`result.subs.${push.p}.subs.${la}.processed`]++;
+                        inc[`result.subs.${push.p}.subs.${la}.errored`]++;
+                        inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`result.subs.${push.p}.subs.${la}.processed`] = 1;
+                        inc[`result.subs.${push.p}.subs.${la}.errored`] = 1;
+                        inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
                     }
                 });
                 this.log.w('Message %s doesn\'t exist or is in inactive state, ignoring %d pushes', mid, pushes.length);

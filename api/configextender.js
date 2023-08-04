@@ -36,7 +36,9 @@ const OVERRIDES = {
 
     WEB: {
         USE_INTERCOM: 'use_intercom',
-        SECURE_COOKIES: 'secure_cookies'
+        SECURE_COOKIES: 'secure_cookies',
+        SESSION_SECRET: 'session_secret',
+        SESSION_NAME: 'session_name'
     },
 
     IGNOREPROXIES: 'ignoreProxies',
@@ -139,7 +141,12 @@ module.exports = function(mode, config, opts, over) {
 
     config = JSON.parse(JSON.stringify(config));
 
-    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0 || n.indexOf(`COUNTLY_CONFIG__`) === 0).forEach(n => {
+    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG__`) === 0).forEach(n => {
+        let comps = n.split('_').slice(3);
+        dig(config, Object.assign(JSON.parse(JSON.stringify(OVERRIDES)), over || {}), comps.join('_'), parser(opts[n]));
+    });
+
+    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0).forEach(n => {
         let comps = n.split('_').slice(3);
         dig(config, Object.assign(JSON.parse(JSON.stringify(OVERRIDES)), over || {}), comps.join('_'), parser(opts[n]));
     });

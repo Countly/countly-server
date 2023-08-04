@@ -1,6 +1,5 @@
 var pluginOb = {},
     crypto = require('crypto'),
-    request = require('request'),
     Promise = require("bluebird"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
@@ -12,7 +11,7 @@ var pluginOb = {},
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -21,7 +20,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.setConfigs("views", {
         view_limit: 50000,
-        view_name_limit: 100,
+        view_name_limit: 128,
         segment_value_limit: 10,
         segment_limit: 100
     });
@@ -219,11 +218,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
     });
 
-    plugins.register("/i/app_users/delete", function(ob) {
+    plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
-            common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}}, function(/*err*/) {});
+            // By using await and no callback, error in db operation will be thrown
+            // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+            await common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}});
         }
     });
 
@@ -238,6 +239,36 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
     });
 
+    /* Function for future use to use ugroups instead of usual method. Needs to be rechecked for agregation pipeline speed
+    function getUvalueSelectFromMap(map, segmentVal) {
+        var groups = {};
+        for (var year in map) {
+            let yy = year + ":0";
+            groups[yy] = [];
+            groups[yy].push({"k": yy, "v": "$d." + year + "." + segmentVal + "u"});
+            if (Object.keys(map[year]).length > 0) { //we need also monthly doc for those
+                for (var month in map[year]) {
+                    let mm = year + ":" + month;
+                    groups[mm] = [];
+                    groups[mm].push({"k": mm, "v": "$d." + mm + "." + segmentVal + "u"});
+                    if (Object.keys(map[year][month]).length > 0) { //we need also weekly doc for those
+                        for (var week in map[year][month]) {
+                            let ww = year + ":" + week;
+                            groups[yy].push({"k": ww, "v": "$d." + week + "." + segmentVal + "u"});
+
+                            for (var day in map[year][month][week]) {
+                                let dd = year + ":" + month + ":" + day;
+                                groups[mm].push(mm + "." + dd + "." + segmentVal + "u");
+                                groups[mm].push({"k": dd, "v": "$d." + month + "." + day + "." + segmentVal + "u"});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return groups;
+    }
+    */
     /** function returns aggregation pipeline
      * @param {object} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
@@ -250,7 +281,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
-
+        if (params.qstring.period && params.qstring.period.indexOf('since') !== -1) {
+            params.qstring.period = JSON.parse(params.qstring.period);
+        }
         var dates = [];
         var calcUvalue = [];
         var calcUvalue2 = [];
@@ -307,6 +340,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
+        var parsedPeriod = period;
+        var periodsToBeConverted = ["months", "weeks", "days"];
+
+        if (typeof period === 'string') {
+            try {
+                parsedPeriod = JSON.parse(period);
+            }
+            catch (error) {
+                parsedPeriod = period;
+            }
+        }
+        if ((typeof parsedPeriod === 'object' && Object.prototype.hasOwnProperty.call(parsedPeriod, 'since')) || periodsToBeConverted.some(x=>period.includes(x))) {
+            try {
+                period = JSON.stringify([periodObj.start, periodObj.end]);
+            }
+            catch (error) {
+                //
+            }
+        }
 
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
@@ -333,7 +385,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 "_id": "$vw"
             };
 
-            if (u0) {
+            var u0keys = Object.keys(u0);
+            if (u0keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches0 = [];
                 for (let i in u0) {
@@ -342,7 +395,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector.uvalue0 = {$sum: {$switch: {branches: branches0, default: 0}}};
             }
 
-            if (u1) {
+            var u1keys = Object.keys(u1);
+            if (u1keys.length > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches1 = [];
                 for (let i in u1) {
@@ -382,11 +436,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 for (let f = 1; f <= 12; f++) {
                     summed.push("$d." + f + "." + segment + settings.levels.monthly[i]);
                 }
-                if (settings.levels.daily[i] !== 'u') {
-                    groupBy1[settings.levels.daily[i]] = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, {$sum: summed}, 0]}};
+                if (settings.levels.monthly[i] !== 'u') {
+                    groupBy1[settings.levels.monthly[i]] = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, {$sum: summed}, 0]}};
                 }
                 else {
                     groupBy1.uvalue = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
+                    groupBy1.u = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
                 }
             }
             pipeline.push({$group: groupBy1});
@@ -407,6 +462,28 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.u = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                }
+            }
+            pipeline.push({$group: groupBy0});
+        }
+        else if (period === "prevMonth") { //previous month
+            var prevmonth = now.format('YYYY:M'); //because now is set as end of last month
+            var monthNumber2 = prevmonth.split(':');
+            thisYear = now.format('YYYY');
+            pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
+
+            groupBy0 = {_id: "$vw"};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                if (settings.levels.daily[i] !== 'u') {
+                    groupBy0[settings.levels.daily[i]] = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
+                }
+                else {
+                    groupBy0.uvalue = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.u = {$sum: '$d.' + monthNumber2[1] + '.' + segment + settings.levels.daily[i]};
                 }
             }
             pipeline.push({$group: groupBy0});
@@ -434,6 +511,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var lastMonth = now.format('YYYY:M');
             var u00 = createUvalues(periodObj.uniquePeriodArr, segment);
             var u10 = createUvalues(periodObj.uniquePeriodCheckArr, segment);
+
+            //var ugroups = getUvalueSelectFromMap(periodObj.uniqueMap,segment);
 
             month_array = [];
             last_pushed = "";
@@ -472,7 +551,15 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
 
             projector = {_id: "$vw"};
-            if (u00) {
+            /* Code for using ugroups in period object
+            if(ugroups){
+                var branches00 = [];
+                for(let i in ugroups){
+                    branches00.push({ case: { $eq: [ "$m", i ] }, then: {$push: u00[i]}});
+                }
+            }*/
+            var u00keys = Object.keys(u00);
+            if (u00keys.length > 0) {
                 calcUvalue.push('$uvalue0');
                 var branches00 = [];
                 for (let i in u00) {
@@ -480,8 +567,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 projector.uvalue0 = {$sum: {$switch: {branches: branches00, default: 0}}};
             }
-
-            if (u10) {
+            var u10keys = Object.keys(u10);
+            if (u10keys.length > 0) {
                 calcUvalue2.push('$uvalue1');
                 var branches01 = [];
                 for (let i in u10) {
@@ -514,6 +601,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
             pipeline.push({$group: projector});
+            pipeline.push({"$addFields": {"uvalue": {"$min": ["$u", {"$max": ["$t", "$n"]}]}}});
 
         }
 
@@ -561,7 +649,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
-
         var facetLine = [];
 
         if (settings.sortcol !== 'name') {
@@ -1044,7 +1131,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                 }
                 else if (params.qstring.action === "getTotals") {
-                    var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "s", "uvc"]}};
+                    var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "uvc"] }};
                     var pipe = createAggregatePipeline(params, settings);
                     pipe.push({"$group": {"_id": null, "s": {"$sum": "$s"}, "t": {"$sum": "$t"}, "b": {"$sum": "$b"}, "uvc": {"$sum": "$uvc"}}});
                     var collectionName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
@@ -1176,30 +1263,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             return true;
         }
         return false;
-    });
-
-    plugins.register("/o/urltest", function(ob) {
-        var params = ob.params;
-        if (params.qstring.url) {
-            var options = {
-                url: params.qstring.url,
-                headers: {
-                    'User-Agent': 'CountlySiteBot'
-                }
-            };
-            request(options, function(error, response) {
-                if (!error && response.statusCode >= 200 && response.statusCode < 400) {
-                    common.returnOutput(params, {result: true});
-                }
-                else {
-                    common.returnOutput(params, {result: false});
-                }
-            });
-        }
-        else {
-            common.returnOutput(params, {result: false});
-        }
-        return true;
     });
 
     /**
@@ -1483,6 +1546,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 options.upsert = false;
                             }
                             common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                                if (err2) {
+                                    log.e(err);
+                                }
                                 if (view2 && view2.value) {
                                     callback(err, view2.value);
                                     common.readBatcher.invalidate(collection, query, {}, false);
@@ -1506,6 +1572,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         options.upsert = false;
                     }
                     common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
+                        if (err) {
+                            log.e(err);
+                        }
                         if (view && view.value) {
                             callback(err, view.value);
                         }
@@ -1522,7 +1591,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         }
     }
-    plugins.register("/session/post", function(ob) {
+    plugins.register("/session/post", async function(ob) {
         var params = ob.params;
         var user = params.app_user;
         if (user && user.vc) {
@@ -1565,42 +1634,46 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             if (user.lv) {
                 var segmentation = {name: user.lv, exit: 1};
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                    if (err) {
-                        log.e(err);
-                    }
-                    if (view) {
-                        if (parseInt(user.vc) === 1) {
-                            segmentation.bounce = 1;
+                await new Promise(function(resolve) {
+                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
+                        if (err) {
+                            log.e(err);
                         }
-                        params.viewsNamingMap = params.viewsNamingMap || {};
-                        params.viewsNamingMap[segmentation.name] = view._id;
-                        recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                        if (view) {
+                            if (parseInt(user.vc) === 1) {
+                                segmentation.bounce = 1;
+                            }
+                            params.viewsNamingMap = params.viewsNamingMap || {};
+                            params.viewsNamingMap[segmentation.name] = view._id;
+                            recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
 
-                        if (segmentation.exit || segmentation.bounce) {
-                            plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            if (segmentation.exit || segmentation.bounce) {
+                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                            }
                         }
-                    }
+                        resolve();
+                    });
                 });
             }
             checkViewQuery(ob.updates, 0, 0);
             //update unique view vount for session
-            common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
-                if (err) {
-                    log.e(err);
-                }
-                data = data || [];
-                data = data[0] || {};
+            await new Promise(function(resolve) {
+                common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
+                    if (err) {
+                        log.e(err);
+                    }
+                    data = data || [];
+                    data = data[0] || {};
 
-                for (var key in data) {
-                    if (key !== "_id") {
-                        if (data[key].ts >= user.ls) {
-                            recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                    for (var key in data) {
+                        if (key !== "_id") {
+                            if (data[key].ts >= user.ls) {
+                                recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                            }
                         }
                     }
-                }
-
-
+                    resolve();
+                });
             });
         }
     });
@@ -1698,7 +1771,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         //Matches correct view naming
                         Promise.all(promises).then(function(results) {
                             var runDrill = [];
-                            var haveVisit = false;
+                            var haveVisit = {};
                             var lastView = {};
                             var projection = {};
                             for (let p = 0; p < results.length; p++) {
@@ -1714,12 +1787,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                                 updateMultiViewParams[k] = results[p].segmentation[k];
                                             }
                                             if (Object.keys(updateMultiViewParams).length > 0 || results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias});
+                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _idv: results[p].segmentation._idv});
                                             }
                                         }
                                         //geting all segment info
                                         if (results[p].segmentation.visit) {
-                                            haveVisit = true;
+                                            haveVisit[p] = true;
                                             lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
                                             projection[results[p].viewAlias] = 1;
                                         }
@@ -1733,20 +1806,24 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
                             }
 
-                            if (haveVisit) {
+                            if (Object.keys(haveVisit).length > 0) {
                                 common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
-                                    for (let p = 0; p < results.length; p++) {
-                                        var currEvent = results[p];
-                                        recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                    for (let p in haveVisit) {
+                                        if (results[p] && results[p] !== false) {
+                                            var currEvent = results[p];
+                                            recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                        }
                                     }
                                 });
                             }
-
-
                             if (runDrill.length > 0) {
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
                             }
 
+                        }, function(onfail) {
+                            log.e(JSON.stringify(onfail || ""));
+                        }).catch(function(rejection) {
+                            log.e(rejection);
                         });
                         resolve();
                     });
@@ -1824,6 +1901,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         currEvent.viewAlias = escapedMetricVal;
                         resolve(currEvent);
                     }
+                    else {
+                        resolve(false);
+                    }
                 });
             }
             else if (currEvent.segmentation.view) {
@@ -1832,6 +1912,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (view) {
                         currEvent.viewAlias = common.db.encode(view._id + "");
                         resolve(currEvent);
+                    }
+                    else {
+                        resolve(false);
                     }
                 });
             }
@@ -1889,23 +1972,28 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
-                    currEvent.segmentation[segKey] = tmpSegVal;
 
-                    if (viewInfo.segments[segKey]) {
-                        if (viewInfo.segments[segKey][tmpSegVal]) {
-                            segmentList.push(segKey);
-                        }
-                        else {
-                            if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                delete currEvent.segmentation[segKey];
+                    if (tmpSegVal) {
+                        currEvent.segmentation[segKey] = tmpSegVal;
+                        if (viewInfo.segments[segKey]) {
+                            if (viewInfo.segments[segKey][tmpSegVal]) {
+                                segmentList.push(segKey);
                             }
                             else {
-                                viewInfo.segments[segKey][segKey] = true;
-                                segmentList.push(segKey);
-                                addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                save_structure = true;
+                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
+                                    delete currEvent.segmentation[segKey];
+                                }
+                                else {
+                                    viewInfo.segments[segKey][segKey] = true;
+                                    segmentList.push(segKey);
+                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
+                                    save_structure = true;
+                                }
                             }
                         }
+                    }
+                    else {
+                        delete currEvent.segmentation[segKey];
                     }
                 }
             }
@@ -2198,7 +2286,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var params = ob.params;
             var data = ob.widget;
             var allApps = data.apps;
-
+            var customPeriod = data.custom_period;
+            if (typeof customPeriod === 'object') {
+                customPeriod = JSON.stringify(data.custom_period);
+            }
             if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
                 var paramsObj = {
@@ -2206,7 +2297,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: data.custom_period || params.qstring.period
+                        period: customPeriod || params.qstring.period
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member

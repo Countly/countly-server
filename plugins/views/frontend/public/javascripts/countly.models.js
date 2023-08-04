@@ -100,7 +100,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -142,7 +142,7 @@
 
             return {
                 type: "GET",
-                url: countlyCommon.API_URL + countlyCommon.API_PARTS.data.r,
+                url: countlyCommon.API_PARTS.data.r,
                 data: data
             };
         },
@@ -166,7 +166,7 @@
                     rows[k].u = Math.min(rows[k].uvalue, rows[k].u);
                 }
                 if (rows[k].t > 0) {
-                    rows[k].dCalc = countlyCommon.timeString((rows[k].d / rows[k].t) / 60);
+                    rows[k].dCalc = countlyCommon.formatSecond(rows[k].d / rows[k].t);
                     var vv = parseFloat(rows[k].scr) / parseFloat(rows[k].t);
                     if (vv > 100) {
                         vv = 100;
@@ -179,7 +179,7 @@
                     rows[k].scrCalc = 0;
                 }
 
-                rows[k].br = rows[k].br + " %";
+                rows[k].br = rows[k].br + "%";
                 //FOR ACTION MAPS
                 rows[k].actionLink = "unknown";
                 rows[k].useDropdown = true;
@@ -287,8 +287,30 @@
                 }
             }
 
+            if (!countlyCommon.periodObj.isSpecialPeriod && countlyCommon.periodObj.activePeriod) {
+                var ob1 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.activePeriod) || {};
+                totals.u = ob1.u || 0;
+            }
+            else {
+            //fix value for u
+                var uvalue1 = 0;
+                var uvalue2 = 0;
+                var l = 0;
+
+                for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                    var ob = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodArr[l]) || {};
+                    uvalue1 += ob.u || 0;
+                }
+
+                for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                    var ob2 = countlyCommon.getDescendantProp(dbObj, countlyCommon.periodObj.uniquePeriodCheckArr[l]) || {};
+                    uvalue2 += ob2.u || 0;
+
+                }
+                totals.u = Math.max(totals.n, Math.min(totals.u, totals.t, uvalue1, uvalue2));
+            }
             if (totals.t > 0) {
-                totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
+                totals.dCalc = countlyCommon.formatSecond(totals.d / totals.t);
                 var vv = parseFloat(totals.scr) / parseFloat(totals.t);
                 if (vv > 100) {
                     vv = 100;
@@ -354,6 +376,35 @@
                 chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: name, color: '#333933' });
             }
+            if (metric === "d") {
+                dataProps = [];
+                dataProps.push(
+                    {
+                        "name": "pd",
+                        func: function(dataObj2) {
+                            return dataObj2.s;
+                        },
+                        period: "previous"
+                    },
+                    {
+                        "name": "d"
+                    },
+                    {
+                        "name": "pt",
+                        func: function(dataObj2) {
+                            return dataObj2.b;
+                        },
+                        period: "previous"
+                    },
+                    {
+                        "name": "t"
+                    }
+                );
+                chartData.push(
+                    { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
+                    { data: [], label: name, color: '#333933' }
+                );
+            }
 
             var calculated = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
 
@@ -362,8 +413,18 @@
             if (metric === "br") {
                 takefrom = calculated.chartDP[3].data;
                 for (var k = 0; k < takefrom.length; k++) {
-
-                    data.push(Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1)));
+                    var bounceRate = Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1));
+                    //there may be cases where bounces are higher than landing. Cap br to 100 for these cases
+                    if (bounceRate > 100) {
+                        bounceRate = 100;
+                    }
+                    data.push(bounceRate);
+                }
+            }
+            if (metric === "d") {
+                for (k = 0; k < takefrom.length; k++) {
+                    var avgDuration = Math.floor(takefrom[k][1] / (calculated.chartDP[3].data[k][1] || 1));
+                    data.push(avgDuration);
                 }
             }
             else {
@@ -613,6 +674,9 @@
                                 json.segments[i] = countlyCommon.decode(json.segments[i]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -670,7 +734,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 
@@ -773,6 +837,9 @@
                                 json.segments[z] = countlyCommon.decode(json.segments[z]);
                             }
                             _segments = json.segments;
+                            for (let segment in _segments) {
+                                _segments[segment].sort(Intl.Collator().compare);
+                            }
                             _domains = json.domains;
                         }
                     }
@@ -886,6 +953,9 @@
                             json.segments[i] = countlyCommon.decode(json.segments[i]);
                         }
                         _segments = json.segments;
+                        for (let segment in _segments) {
+                            _segments[segment].sort(Intl.Collator().compare);
+                        }
                     }
                 }
             }),
@@ -905,22 +975,6 @@
             })
         ).then(function() {
             return true;
-        });
-    };
-
-    countlyViews.testUrl = function(url, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + "/urltest",
-            data: {
-                "url": url
-            },
-            dataType: "json",
-            success: function(json) {
-                if (callback) {
-                    callback(json.result);
-                }
-            }
         });
     };
 

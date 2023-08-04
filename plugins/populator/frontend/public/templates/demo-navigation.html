@@ -5,73 +5,68 @@
         <link rel="stylesheet" href="/populator/stylesheets/demo/navigation.css">
     </head>
     <body>
-      <div class="container demo-navigation">
-        <div class="row top-bar">
-          <div class="col-sm-2">
-            Countly Maps
-          </div>
-          <div class="col-sm-2">
-            Partners
-          </div>
-          <div class="col-sm-2 offset-4 text-center">
-            Live Map
-          </div>
-          <div class="col-sm-2 text-center">
-            Log in
-          </div>
+        <div class="container demo-navigation">
+            <div class="row top-bar">
+                <div class="col-sm-2">
+                    <a href="demo-navigation.html">
+                        Countly Maps
+                    </a>
+                </div>
+                <div class="col-sm-2">
+                    <a href="demo-navigation-1.html">
+                        Partners
+                    </a>
+                </div>
+                <div class="col-sm-2 offset-4 text-center">
+                    <a href="demo-navigation-2.html">
+                        Live Map
+                    </a>
+                </div>
+                <div class="col-sm-2 text-center">
+                    Log in
+                </div>
+            </div>
+            <div class="row content">
+                <% if (pageIndex === '0') { %>
+                    <div class="col-sm-4 download-section offset-1 text-center">
+                        <h1>
+                            Get the best route in real time with help from fellow drivers
+                        </h1>
+                        <hr>
+                        <img class="download-your-phone-icon" src="/populator/images/ios.png">
+                        <img class="download-your-phone-icon" src="/populator/images/android.png">
+                    </div>
+                    <div class="col-sm-4 offset-1 text-center">
+                        <img src="/populator/images/navigation.svg" style="width:100%">
+                    </div>
+                <% } else if (pageIndex === '1') { %>
+                    <div class="col-sm-12">
+                        <h1>Partner</h1>
+                        <%- include(includes.content3Cols); %>
+                    </div>
+                <% } else if (pageIndex === '2') { %>
+                    <div class="col-sm-12">
+                        <h1>Live Map</h1>
+                        <%- include(includes.content2Cols); %>
+                    </div>
+                <% } %>
+            </div>
+            <div class="container row footer">
+                <div class="col-sm">
+                    <a href="demo-navigation-1.html">
+                        Partners
+                    </a>
+                </div>
+                <div class="col-sm">
+                    <a href="demo-navigation-2.html">
+                        Live Map
+                    </a>
+                </div>
+                <div class="col-sm">
+                    Interest-Based Ads
+                </div>
+            </div>
         </div>
-        <div class="row content">
-          <div class="col-sm-4 download-section offset-1 text-center">
-            <h1>
-              Get the best route in real time with help from fellow drivers
-            </h1>
-            <hr>
-            <img class="download-your-phone-icon" src="/populator/images/ios.png">
-            <img class="download-your-phone-icon" src="/populator/images/android.png">
-          </div>
-          <div class="col-sm-4 offset-1 text-center">
-            <img src="/populator/images/navigation.svg" style="width:100%">
-          </div>
-        </div>
-        <div class="row footer">
-          <div class="col-sm">
-            Conditions of Use
-          </div>
-          <div class="col-sm">
-            Privacy Notice
-          </div>
-          <div class="col-sm">
-            Interest-Based Ads
-          </div>
-        </div>
-      </div>
-      <script type='text/javascript'>
-          // Some default pre init
-          var Countly = Countly || {};
-          Countly.q = Countly.q || [];
-      
-          // Provide your app key that you retrieved from Countly dashboard
-          var parts = document.location.href.split("/");
-          Countly.app_key = parts[parts.length - 2];
-      
-          // Provide your server IP or name. Use try.count.ly for EE trial server.
-          // If you use your own server, make sure you have https enabled if you use
-          // https below.
-          Countly.url = window.location.origin;
-          Countly.q.push(['enable_feedback',{'popups':['5eb02d1ecb41b52f5eb57476']}]);
-          
-          // Load countly script asynchronously
-          (function() {
-            var cly = document.createElement('script'); cly.type = 'text/javascript'; 
-            cly.async = true;
-            // Enter url of script here (see below for other option)
-            cly.src = '/sdk/web/countly.js';
-            cly.onload = function(){Countly.init()};
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(cly, s);
-          })();
-        </script>
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <%- include(includes.scripts); %>
     </body>
 </html>

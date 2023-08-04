@@ -29,14 +29,22 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appRows" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
+			<cly-datatable-n  :rows="appRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
 						<template slot-scope="scope">
-                            <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
-                                    <span>{{formatNumber(scope.row.t)}} | {{scope.row.tPerc}} %</span>
+                            <div class="bu-level">
+                                <div class="bu-is-flex user-activity-table__data-item-container">
+                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                        <span>{{formatNumber(scope.row.t)}}</span>
+                                    </div>
+                                    <div class="bu-level user-activity-table__divider">
+                                        <span>|</span>
+                                    </div>
+                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                        <span>{{scope.row.tPerc}}%</span>
+                                    </div>
                                 </div>
                                 <cly-progress-bar  :percentage="parseInt(scope.row.tPerc)" :height=8 > </cly-progress-bar>
                             </div>
@@ -44,9 +52,17 @@
 					</el-table-column>
 					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
 						<template slot-scope="scope">
-                            <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
-                                    <span>{{formatNumber(scope.row.u)}} | {{scope.row.uPerc}} %</span>
+                            <div class="bu-level">
+                                <div class="bu-is-flex user-activity-table__data-item-container">
+                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                        <span>{{formatNumber(scope.row.u)}}</span>
+                                    </div>
+                                    <div class="bu-level user-activity-table__divider">
+                                        <span>|</span>
+                                    </div>
+                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                        <span>{{scope.row.uPerc}}%</span>
+                                    </div>
                                 </div>
                                 <cly-progress-bar  :percentage="parseInt(scope.row.uPerc)" :height=8 > </cly-progress-bar>
                             </div>
@@ -54,9 +70,17 @@
 					</el-table-column>
 					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')">
 						<template slot-scope="scope">
-                            <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
-                                    <span>{{formatNumber(scope.row.n)}} | {{scope.row.nPerc}} %</span>
+                            <div class="bu-level">
+                                <div class="bu-is-flex user-activity-table__data-item-container">
+                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                        <span>{{formatNumber(scope.row.n)}}</span>
+                                    </div>
+                                    <div class="bu-level user-activity-table__divider">
+                                        <span>|</span>
+                                    </div>
+                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                        <span>{{scope.row.nPerc}}%</span>
+                                    </div>
                                 </div>
                                 <cly-progress-bar  :percentage="parseInt(scope.row.nPerc)" :height=8 > </cly-progress-bar>
                             </div>

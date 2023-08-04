@@ -29,7 +29,14 @@
         <el-table-column sortable="true" prop="dur" :label="i18n('compare.events.duration')">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.dur}}
+              {{formatDuration(rowScope.row.dur)}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="avgDur" :label="i18n('compare.events.avg-duration')">
+          <template v-slot="rowScope">
+            <div>
+              {{formatDuration(rowScope.row.avgDur)}}
             </div>
           </template>
         </el-table-column>

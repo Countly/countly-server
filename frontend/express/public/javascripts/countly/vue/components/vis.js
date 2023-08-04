@@ -1,6 +1,5 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
-
-// _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+// _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
 
@@ -41,7 +40,7 @@
         },
         computed: {
             legendOptions: function() {
-                var options = _merge({}, this.calculatedLegend, this.legend || {});
+                var options = _mergeWith({}, this.calculatedLegend, this.legend || {});
 
                 delete options.data;
 
@@ -81,7 +80,6 @@
                         currLegend.displayColor = legend.color;
                     }
                 }
-
                 return options;
             }
         },
@@ -213,7 +211,6 @@
                         }
                     }
                 }
-
                 return chartOpt;
             }
         }
@@ -299,6 +296,7 @@
         }
     };
 
+
     var UpdateOptionsMixin = {
         data: function() {
             return {
@@ -309,7 +307,12 @@
         },
         computed: {
             echartUpdateOptions: function() {
-                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+                setTimeout(() => {
+                    if (this.seriesType === 'line') {
+                        this.getGraphNotes(); // when chart updated (date change etc.)
+                    }
+                }, 0);
+                return _mergeWith({}, this.internalUpdateOptions, this.updateOptions || {});
             }
         }
     };
@@ -319,11 +322,32 @@
             onSeriesChange: function(v) {
                 this.seriesOptions.type = v;
                 this.$emit("series-toggle", v);
+                if (v === "bar") {
+                    this.seriesOptions.markPoint.data = [];
+                }
+                if (v === "line") {
+                    this.getGraphNotes();
+                }
             }
         }
     };
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
+
+    /**
+     * Merging default object into array of objects
+     * @param {Object|Array} objValue The destination object
+     * @param {Object|Array} srcValue The source object
+     * @returns {Object|Array} merged object/array
+    */
+    function mergeWithCustomizer(objValue, srcValue) {
+        if (Array.isArray(srcValue) && typeof objValue === 'object') {
+            srcValue.forEach(function(value, index) {
+                srcValue[index] = _mergeWith({}, objValue, value);
+            });
+            return srcValue;
+        }
+    }
 
     /**
      * Calculating width of text
@@ -365,7 +389,7 @@
                     h: this.chartHeight
                 });
                 if (xAxisOverflowPatch) {
-                    opt = _merge(opt, xAxisOverflowPatch);
+                    opt = _mergeWith(opt, xAxisOverflowPatch);
                 }
                 return opt;
             },
@@ -378,7 +402,6 @@
                 if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
                     return null;
                 }
-
                 var xAxis = options.xAxis;
                 var labelW = Math.floor((size.w - 100) / (xAxis.data.length + 1));
                 var maxLen = 0;
@@ -428,7 +451,6 @@
                         }
                     };
                 }
-
                 return returnObj;
             }
         }
@@ -550,6 +572,7 @@
                     },
                     toolbox: {
                         id: "toolbox",
+                        showTitle: false,
                         feature: {
                             saveAsImage: {
                                 show: false
@@ -562,16 +585,16 @@
                             },
                             dataZoom: {
                                 show: true,
-                                yAxisIndex: false
+                                yAxisIndex: false,
                             },
                             magicType: {
                                 show: false,
                                 type: ['line', 'bar']
                             }
                         },
-                        right: 15,
-                        top: 5,
-                        itemSize: 0
+                        itemSize: 0,
+                        top: 100,
+                        left: 100,
                     },
                     tooltip: {
                         appendToBody: false,
@@ -591,13 +614,14 @@
                         },
                         formatter: function(params) {
                             var template = "";
+                            let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
+                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -619,13 +643,19 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
+                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                        formatter = countlyCommon.formatSecond;
+                                    }
+                                    else {
+                                        formatter = self.valFormatter;
+                                    }
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small">' + params[i].seriesName + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -771,7 +801,7 @@
                     return false;
                 }
                 var isEmpty = true;
-                var options = _merge({}, this.option);
+                var options = _mergeWith({}, this.option);
 
                 if (options.series) {
                     for (var i = 0; i < options.series.length; i++) {
@@ -847,29 +877,66 @@
     */
 
     var BaseLineChart = BaseChart.extend({
+        mixins: [
+            countlyVue.mixins.autoRefresh
+        ],
         props: {
             showToggle: {
                 type: Boolean,
                 default: true
             },
+            category: {
+                type: String,
+                required: false,
+                default: ''
+            },
+            subCategory: {
+                type: Array,
+                required: false,
+                default: function() {
+                    return [];
+                }
+            },
+            notationSelectedBucket: {
+                type: String,
+                required: false,
+                default: "weekly"
+            }
         },
         data: function() {
             return {
                 mixinOptions: {},
+                notes: [],
                 seriesOptions: {
-                    type: 'line'
-                }
+                    type: 'line',
+                    markPoint: {
+                        data: [],
+                        label: {
+                            normal: {
+                                show: true,
+                                color: "rgba(255, 251, 251, 1)",
+                                fontWeight: "500",
+                                align: "center",
+                                padding: [1, 1, 1, 2],
+                            },
+                        },
+                        emphasis: {
+                            itemStyle: {
+                            }
+                        },
+                        animation: false
+                    },
+                },
+                mergedNotes: [],
             };
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option, mergeWithCustomizer);
                 var series = opt.series || [];
-
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
-
                 this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
@@ -878,8 +945,423 @@
                     opt.grid.right = 0;
                 }
 
+                if (typeof window.hideGraphTooltip !== "undefined") {
+                    window.hideGraphTooltip();
+                }
+
                 return opt;
+            },
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
             }
+        },
+        methods: {
+            dateChanged: function() {
+                if (!this.areNotesHidden) {
+                    this.seriesOptions.markPoint.data = [];
+                    var self = this;
+                    setTimeout(() => {
+                        self.getGraphNotes();
+                    }, 500);
+                }
+            },
+            getDateFormat: function(date) {
+                var dateFormats = {
+                    "yyyy-mm-d-hh-mm": "YYYY-MM-D HH:00",
+                    "yyyy-mm-d-h-mm": "YYYY-MM-D H:00",
+                    "d-mmm": "D MMM",
+                    "dd-mmm": "DD MMM",
+                    "d-mmm-yyyy": "D MMM YYYY",
+                    "yyyy-mm-d": "YYYY-MM-D",
+                    "yyyy-m-d": "YYYY-M-D",
+                    "yyyy-mm-dd": "YYYY-MM-DD",
+                    "yyyy-mm": "YYYY-MM",
+                    "yyyy-m": "YYYY-M",
+                    "mmm-yyyy": "MMM YYYY",
+                    "h-00": "H:00",
+                    "hh-00": "HH:00",
+                    "dd/mm/yyyy": "DD/MM/YY",
+                    "mmm": "MMM"
+                    //define other well known formats
+                };
+
+                for (var prop in dateFormats) {
+                    if (moment(date, dateFormats[prop], true).isValid()) {
+                        return dateFormats[prop];
+                    }
+                }
+                return null;
+            },
+            graphNotesTimeConverter: function(ts) {
+                var graphNoteDate = new Date(ts);
+                if (this.seriesType === "bar") {
+                    return null;
+                }
+                else if (this.category === "drill" || this.category === "formulas") {
+                    if (this.notationSelectedBucket === "hourly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
+                    }
+                    else if (this.notationSelectedBucket === "daily") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY") || 0;
+                    }
+                    else if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek() + " " + moment(graphNoteDate).isoWeekYear();
+                    }
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
+                    }
+                }
+                else if (this.category === "push-notification") {
+                    if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek();
+                    }
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "YYYY MMM");
+                    }
+                }
+                else {
+                    var xAxisLabel = null;
+                    if (this.$refs.echarts && this.$refs.echarts.option && this.$refs.echarts.option.xAxis.data) {
+                        xAxisLabel = this.$refs.echarts.option.xAxis.data[0];
+                    }
+                    else {
+                        return null;
+                    }
+                    var formatType = this.getDateFormat(xAxisLabel);
+                    return countlyCommon.formatDate(moment(ts), formatType) || 0;
+                }
+            },
+            mergeGraphNotesByDate: function(notes, mergeByWeek) {
+                var self = this;
+                const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+                var multiplierCount = 2;
+                if (this.$refs.echarts && (this.$refs.echarts.getWidth() < 500 && this.$refs.echarts.getWidth() !== 100)) {
+                    multiplierCount = 8;
+                }
+                notes.forEach(function(orderedItem) {
+                    orderedItem.dateStr = self.graphNotesTimeConverter(orderedItem.ts);
+                    orderedItem.weekCount = moment(orderedItem.ts).year() - moment(orderedItem.ts).week();
+                });
+
+                if (mergeByWeek) {
+                    for (var k = 1; k < notes.length; k++) {
+                        for (var m = 0; m < k; m++) {
+                            if (notes[k].weekCount === notes[m].weekCount) {
+                                notes[k].dateStr = notes[m].dateStr;
+                            }
+                        }
+                    }
+                }
+
+                notes.map(function(item) {
+                    item.times = notes.filter(obj => obj.dateStr === item.dateStr).length;
+                });
+
+                notes = notes.sort(function(a, b) {
+                    return new Date(b.ts) - new Date(a.ts);
+                });
+                for (var i = 0; i < notes.length - 1; i++) {
+                    if ((i !== notes.length - 1) && (Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) > 0 && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) < multiplierCount)) {
+                        notes[i].hasCloseDate = true;
+                    }
+                }
+                return notes;
+            },
+            graphNotesTooltipFormatter: function(arr, params) {
+                var filteredNotes = arr.filter(x=>x.dateStr === params.data.note.dateStr && x.times > 1);
+                var minimizeTooltip = false;
+                var template = "";
+                var conditionalClassName = "graph-notes-tooltip";
+
+                if ((this.$refs && this.$refs.echarts) && (this.$refs.echarts.getHeight() < 200 || this.$refs.echarts.getWidth() < 500)) {
+                    minimizeTooltip = true;
+                }
+
+
+                if (minimizeTooltip) {
+                    conditionalClassName = 'graph-notes-tooltip minimize';
+                }
+                else if (!minimizeTooltip && filteredNotes.length > 0) {
+                    conditionalClassName = 'graph-notes-tooltip bu-mb-4 bu-mx-2';
+                }
+
+                if (filteredNotes.length > 0) {
+                    for (var i = 0; i < filteredNotes.length; i++) {
+                        if (i === 0) {
+                            template = '<div class="graph-tooltip-wrapper bu-is-flex bu-is-justify-content-end">\
+                                            <span onClick="window.hideGraphTooltip()">\
+                                                <i class="el-icon-close"></i>\
+                                            </span>\
+                                        </div>\
+                                        <div class="graph-tooltip-wrapper__container">';
+                        }
+                        template += '<div class="' + conditionalClassName + '">\
+                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
+                                        <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
+                                            <div class="bu-is-flex bu-is-flex-direction-column">\
+                                                <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
+                                                <div class="text-small color-cool-gray-50 note-date">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                            </div>\
+                                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
+                                            </div>\
+                                        </div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
+                                    </div>';
+                        if (i === filteredNotes.length) {
+                            template = "</div>";
+                        }
+                    }
+                }
+                else {
+                    template += '<div class="' + conditionalClassName + '">\
+                                    <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
+                                        <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
+                                            <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
+                                            <div class="text-small color-cool-gray-50 note-date">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                        </div>\
+                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
+                                            <span onClick="window.hideGraphTooltip()">\
+                                                <i class="el-icon-close"></i>\
+                                            </span>\
+                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
+                                        </div>\
+                                    </div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                </div>';
+                }
+                return template;
+            },
+            weekCountToDate: function(year, week, day) {
+                const firstDayOfYear = new Date(year, 0, 1);
+                const days = 2 + day + (week - 1) * 7 - firstDayOfYear.getDay();
+                return new Date(year, 0, days);
+            },
+            graphNotesFilterChecks: function() {
+                var returnedObj = {};
+                var filter = {};
+                var appIds = [countlyCommon.ACTIVE_APP_ID];
+                if (this.$parent && this.$parent.data) {
+                    if (this.$parent.data.apps) {
+                        appIds = this.$parent.data.apps;
+                    }
+                    if (this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
+                        if (typeof this.$parent.data.custom_period === "string") {
+                            var convertedTimeObj = countlyCommon.getPeriodObj(this.$parent.data.custom_period);
+                            filter.customPeriod = [convertedTimeObj.start, convertedTimeObj.end];
+                        }
+                        else if (Array.isArray(this.$parent.data.custom_period)) {
+                            filter.customPeriod = [this.$parent.data.custom_period[0], this.$parent.data.custom_period[1]];
+                        }
+                    }
+                }
+
+                if ((this.category === "formulas" || this.category === "drill") && (this.$parent && this.$parent.data)) {
+                    var xAxisLabels = this.option.xAxis.data;
+                    var customPeriodStartDate;
+                    var customPeriodEndDate;
+                    if (this.$parent.data.bucket === "daily") {
+                        customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).setHours(23, 59);
+                        filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
+                    }
+                    else if (this.$parent.data.bucket === "weekly") {
+                        customPeriodStartDate = this.weekCountToDate(xAxisLabels[0].split(' ')[1], xAxisLabels[0].split(' ')[0].split('W')[1], 7);
+                        customPeriodEndDate = this.weekCountToDate(xAxisLabels[xAxisLabels.length - 1].split(' ')[1], xAxisLabels[xAxisLabels.length - 1].split(' ')[0].split('W')[1], 7);
+                        filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
+                    }
+                    else if (this.$parent.data.bucket === "monthly") {
+                        customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        customPeriodEndDate = moment(customPeriodEndDate).endOf('month')._d.valueOf();
+                        filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
+                    }
+                }
+                returnedObj.appIds = appIds;
+                returnedObj.customPeriod = filter;
+                return returnedObj;
+            },
+            getGraphNotes: function() {
+                if (!this.hideNotation && !this.areNotesHidden) {
+                    var self = this;
+                    var chartHeight = 300;
+                    var yAxisHeight = '';
+                    var filter = {};
+                    var mergeByDate = false;
+                    // sub category parser
+                    var categories = [];
+                    if (this.subCategory.length) {
+                        this.subCategory.forEach(function(item) {
+                            categories.push("events " + item.split("***")[1]);
+                        });
+                    }
+
+                    filter = this.graphNotesFilterChecks();
+                    countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod /*{category: categories.length ? categories : [this.category]}*/).then(function(data) {
+                        self.notes = data.aaData;
+                    }).then(function() {
+                        self.seriesOptions.markPoint.data = [];
+                        if (self.notes && self.notes.length) {
+                            if (self.$refs.echarts) {
+                                chartHeight = self.$refs.echarts.getHeight();
+                            }
+                            // if custom range date is bigger than 30days, then group notes by week
+                            if ((Array.isArray(countlyCommon.periodObj._period) && countlyCommon.periodObj.currentPeriodArr.length > 30)) {
+                                mergeByDate = true;
+                            }
+                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes, mergeByDate);
+                            self.mergedNotes.forEach(function(note, index) {
+                                if (note.dateStr) {
+                                    if (chartHeight < 250 && chartHeight !== 100) {
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '65%';
+                                        }
+                                        else {
+                                            yAxisHeight = '60%';
+                                        }
+                                    }
+                                    else {
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '80%';
+                                        }
+                                        else {
+                                            yAxisHeight = '75%';
+                                        }
+                                    }
+                                }
+
+                                self.seriesOptions.markPoint.data.push({
+                                    note: note,
+                                    value: note.times > 1 ? ' ' : note.indicator,
+                                    xAxis: note.dateStr,
+                                    y: yAxisHeight,
+                                    symbolRotate: -20,
+                                    symbolSize: note.indicator.length === 1 ? 30 : 40,
+                                });
+
+                                self.seriesOptions.markPoint.data[index].itemStyle = {
+                                    color: note.times > 1 ? countlyGraphNotesCommon.COLOR_TAGS[0].label : countlyGraphNotesCommon.COLOR_TAGS.find(x=>x.value === note.color).label
+                                };
+                                self.seriesOptions.markPoint.emphasis.itemStyle = {
+                                    borderColor: "#c5c5c5",
+                                    borderWidth: 4
+                                };
+                            });
+
+                            self.seriesOptions.markPoint.tooltip = {
+                                transitionDuration: 1,
+                                show: true,
+                                trigger: "item",
+                                confine: true,
+                                extraCssText: 'z-index: 1000',
+                                alwaysShowContent: true,
+                                formatter: function(params) {
+                                    return self.graphNotesTooltipFormatter(self.mergedNotes, params);
+                                }
+                            };
+                        }
+                    });
+                }
+                else {
+                    this.seriesOptions.markPoint.data = [];
+                }
+            },
+            onClick: function() {
+                if (!document.querySelectorAll(".graph-overlay").length) {
+                    var overlay = document.createElement("div");
+                    overlay.setAttribute("class", "graph-overlay");
+                    overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
+                    var echarts = document.querySelectorAll('.echarts');
+                    for (var i = 0; i < echarts.length; i++) {
+                        if (typeof echarts[i] !== 'undefined') {
+                            echarts[i].appendChild(overlay.cloneNode(true));
+                        }
+                    }
+                }
+                if (document.querySelectorAll(".graph-overlay")) {
+                    for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
+                        document.querySelectorAll(".graph-overlay")[j].style.display = "block";
+                    }
+                }
+                if (document.querySelectorAll(".graph-notes-tooltip")) {
+                    for (var z = 0; z < document.querySelectorAll(".graph-notes-tooltip").length; z++) {
+                        document.querySelectorAll(".graph-notes-tooltip")[z].parentNode.style.opacity = 1;
+                    }
+                }
+
+                if (document.querySelectorAll(".graph-tooltip-wrapper")) {
+                    for (var k = 0; k < document.querySelectorAll(".graph-tooltip-wrapper").length; k++) {
+                        document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 1;
+                    }
+                }
+
+
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
+                    localStorage.setItem('showTooltipFlag', true);
+                    document.querySelector('x-vue-echarts div .graph-notes-tooltip').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
+                }
+
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
+                    localStorage.setItem('showTooltipFlag', true);
+                    document.querySelector('x-vue-echarts div .graph-tooltip-wrapper').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
+                }
+                countlyCommon.DISABLE_AUTO_REFRESH = true;
+            }
+        },
+        watch: {
+            notationSelectedBucket: function() {
+                this.seriesOptions.markPoint.data = [];
+                var self = this;
+                setTimeout(() => {
+                    self.getGraphNotes();
+                }, 0);
+            },
+            category: function() {
+                this.getGraphNotes();
+            },
+            areNotesHidden: function() {
+                this.getGraphNotes();
+            }
+        },
+        created: function() {
+            this.getGraphNotes();
+        },
+        mounted: function() {
+            window.hideGraphTooltip = function() {
+                if (typeof document.querySelectorAll(".graph-overlay") !== 'undefined') {
+                    for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
+                        document.querySelectorAll(".graph-overlay")[j].style.display = "none";
+                    }
+                }
+                if (typeof document.querySelectorAll(".graph-notes-tooltip") !== 'undefined') {
+                    for (var z = 0; z < document.querySelectorAll(".graph-notes-tooltip").length; z++) {
+                        document.querySelectorAll(".graph-notes-tooltip")[z].parentNode.style.opacity = 0;
+                    }
+                }
+
+                if (typeof document.querySelectorAll(".graph-tooltip-wrapper") !== 'undefined') {
+                    for (var k = 0; k < document.querySelectorAll(".graph-tooltip-wrapper").length; k++) {
+                        document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 0;
+                    }
+                }
+
+
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
+                    localStorage.removeItem('showTooltipFlag');
+                }
+
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
+                    localStorage.removeItem('showTooltipFlag');
+                }
+                countlyCommon.DISABLE_AUTO_REFRESH = false;
+            };
+
+            window.hideTooltip = function(event) {
+                if (localStorage.getItem('showTooltipFlag')) {
+                    event.stopImmediatePropagation();
+                }
+                return;
+            };
         }
     });
 
@@ -906,11 +1388,11 @@
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
                 this.setCalculatedLegendData(opt, series);
@@ -1003,7 +1485,7 @@
                 return true;
             },
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -1013,7 +1495,7 @@
                     seriesArr = [];
                     sumOfOthers = 0;
 
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    series[i] = _mergeWith({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
 
                     series[i].data = series[i].data.filter(function(el) {
                         return el.value > 0;
@@ -1155,6 +1637,10 @@
             zoomInfo: {
                 type: Boolean,
                 default: true
+            },
+            isZoom: {
+                type: Boolean,
+                default: false
             }
         },
         mixins: [
@@ -1164,6 +1650,13 @@
             return {
                 zoomStatus: "reset"
             };
+        },
+        watch: {
+            isZoom: function(newVal) {
+                if (newVal) {
+                    this.onZoomTrigger();
+                }
+            }
         },
         methods: {
             onZoomTrigger: function(e) {
@@ -1231,10 +1724,6 @@
                         <div v-if="zoomInfo && zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
                             {{i18nM(\'common.zoom-info\')}}\
                         </div>\
-                        <el-button class="chart-zoom-button" @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
-                            size="small"\
-                            icon="cly-icon-btn cly-icon-zoom">\
-                        </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             {{i18nM(\'common.cancel-zoom\')}}\
                         </el-button>\
@@ -1249,7 +1738,7 @@
             chartType: {
                 type: String,
                 default: 'line'
-            }
+            },
         },
         mixins: [
             countlyVue.mixins.i18n
@@ -1278,6 +1767,99 @@
                         </el-select>\
                     </div>'
     });
+    var AnnotationHandleCommand = {
+        data: function() {
+            return {
+                drawerSettingsForWidgets: {
+                    createTitle: CV.i18n('notes.add-new-note'),
+                    editTitle: CV.i18n('notes.edit-note'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: false
+                },
+            };
+        },
+        computed: {
+            areNotesHidden: function() {
+                return this.$store.getters['countlyCommon/getAreNotesHidden'];
+            }
+        },
+        methods: {
+            refreshNotes: function() {
+                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions.type === "line") {
+                    this.$refs.echartRef.getGraphNotes();
+                }
+            },
+            graphNotesHandleCommand: function(event) {
+                if (event === "add") {
+                    this.openDrawer("annotation", {
+                        noteType: "private",
+                        ts: Date.now(),
+                        color: {value: 1, label: '#39C0C8'},
+                        emails: [],
+                        category: this.category,
+                        appIds: this.data ? this.data.apps : null
+                    });
+                }
+                else if (event === "manage") {
+                    window.location.href = '#/analytics/graph-notes';
+                }
+                else if (event === "show") {
+                    this.notesVisibility();
+                }
+            },
+            notesVisibility: function() {
+                this.$store.dispatch('countlyCommon/setAreNotesHidden', !this.areNotesHidden);
+            },
+        }
+    };
+
+    countlyVue.mixins.graphNotesCommand = AnnotationHandleCommand;
+
+    var AnnotationManagement = countlyBaseComponent.extend({
+        props: {
+            category: {
+                type: String,
+                default: '',
+                required: false
+            }
+        },
+        mixins: [countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.i18n, countlyVue.mixins.graphNotesCommand],
+        data: function() {
+            return {
+                selectedItem: '',
+                drawerSettings: {
+                    createTitle: CV.i18n('notes.add-new-note'),
+                    editTitle: CV.i18n('notes.edit-note'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: false
+                },
+            };
+        },
+        methods: {
+            refresh: function() {
+                this.$emit('refresh');
+            }
+        },
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
+        template:
+            '<div class="chart-type-annotation-wrapper">\
+                <el-dropdown trigger="click" @command="graphNotesHandleCommand($event)">\
+                    <el-button size="small">\
+                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                    </el-button>\
+                    <el-dropdown-menu slot="dropdown">\
+                        <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                    </el-dropdown-menu>\
+                </el-dropdown>\
+                <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
+            </div>'
+    });
 
     var ChartHeader = countlyBaseComponent.extend({
         mixins: [EchartRefMixin],
@@ -1297,16 +1879,28 @@
             chartType: {
                 type: String,
                 default: 'line'
-            }
+            },
+            category: {
+                type: String,
+                default: '',
+                required: false
+            },
+            hideNotation: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
         },
         data: function() {
             return {
-                isZoom: false
+                isZoom: false,
+                selectedChartType: ''
             };
         },
         components: {
             "zoom-interactive": ZoomInteractive,
-            "chart-toggle": MagicSwitch
+            "chart-toggle": MagicSwitch,
+            "add-note": AnnotationManagement
         },
         methods: {
             downloadImage: function() {
@@ -1341,23 +1935,55 @@
             },
             onZoomReset: function() {
                 this.isZoom = false;
+            },
+            onSeriesChange: function(v) {
+                this.selectedChartType = v;
+            },
+            handleCommand: function(command) {
+                switch (command) {
+                case "download":
+                    this.downloadImage();
+                    break;
+                case "zoom":
+                    this.isZoom = true;
+                    break;
+                default:
+                    break;
+                }
+            },
+            refresh: function() {
+                this.$emit("graph-notes-refresh");
+            },
+            notesVisibility: function() {
+                this.$emit("notes-visibility");
+            }
+        },
+        created: function() {
+            if (!this.selectedChartType) {
+                this.selectedChartType = this.chartType;
+            }
+            if (window.location.href.split('/').indexOf('custom') > -1) {
+                this.selectedChartType = "dashboard";
             }
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
+                            <div class="bu-level-item" v-if="showToggle && !isZoom">\
+                                <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                            </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
                         </div>\
-                        <div class="bu-level-right">\
+                        <div class="bu-level-right bu-mt-1">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <div class="bu-level-item" v-if="showDownload && !isZoom">\
-                                <el-button @click="downloadImage" size="small" icon="cly-icon-btn cly-icon-download" class="chart-download-button">\
-                                </el-button>\
+                            <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
+                                <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
-                            <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle :chart-type="chartType" v-on="$listeners"></chart-toggle>\
-                            </div>\
-                            <zoom-interactive @zoom-reset="onZoomReset" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
+                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                                <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
+                                <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
+                            </cly-more-options>\
+                            <zoom-interactive @zoom-reset="onZoomReset" :is-zoom="isZoom" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
                     </div>'
     });
@@ -1463,7 +2089,7 @@
                                 >\
                                     <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="item.percentage">{{item.percentage}}</span>\
+                                    <span v-if="item.percentage && !isNaN(item.percentage)">{{item.percentage}}%</span>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1568,11 +2194,10 @@
 
                             if (existingLegend) {
                                 legend.status = existingLegend.status;
-                                legend.displayColor = existingLegend.displayColor;
+                                legend.displayColor = existingLegend.displayColor === 'transparent' ? existingLegend.displayColor : data[i].color;
                             }
                         }
                     }
-
                     this.legendData = data;
                 }
             }
@@ -1608,15 +2233,14 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.option);
+                var opt = _mergeWith({}, this.baseOptions, this.option);
                 opt = this.patchChart(opt);
-
                 return opt;
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header":chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1674,20 +2298,19 @@
         },
         computed: {
             chartOptions: function() {
-                var ops = _merge({}, this.baseOptions, this.option);
+                var ops = _mergeWith({}, this.baseOptions, this.option);
                 delete ops.grid;
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
 
                 ops = this.patchChart(ops);
-
                 return ops;
             }
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'flow\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1723,7 +2346,8 @@
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         mixins: [
-            xAxisOverflowHandler
+            xAxisOverflowHandler,
+            countlyVue.mixins.autoRefresh
         ],
         data: function() {
             return {
@@ -1736,33 +2360,63 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
-
                 return opt;
+            }
+        },
+        methods: {
+            refresh: function() {
+                if (this.seriesOptions.type !== "line") {
+                    this.seriesOptions.markPoint.data = [];
+                }
+                else if (!this.areNotesHidden) {
+                    this.getGraphNotes();
+                }
+            },
+            notesVisibility: function() {
+                if (!this.areNotesHidden) {
+                    this.getGraphNotes();
+                }
+                else {
+                    this.seriesOptions.markPoint.data = [];
+                }
+            }
+        },
+        props: {
+            hideNotation: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                        <chart-header :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
                             <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
-                                <echarts\
-                                    v-if="!isChartEmpty"\
-                                    :updateOptions="echartUpdateOptions"\
-                                    ref="echarts"\
-                                    v-bind="$attrs"\
-                                    v-on="$listeners"\
-                                    :option="chartOptions"\
-                                    :autoresize="autoresize"\
-                                    @finished="onChartFinished"\
-                                    @datazoom="onDataZoom">\
-                                </echarts>\
+                            <echarts\
+                                v-if="!isChartEmpty"\
+                                :updateOptions="echartUpdateOptions"\
+                                ref="echarts"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                :option="chartOptions"\
+                                @click="onClick"\
+                                :autoresize="autoresize"\
+                                @finished="onChartFinished"\
+                                @datazoom="onDataZoom">\
+                            </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
@@ -1776,6 +2430,7 @@
                         </custom-legend>\
                     </div>'
     }));
+
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
@@ -1795,6 +2450,16 @@
             },
             period: {
                 type: [Array, String]
+            },
+            hideNotation: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            noHourly: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         components: {
@@ -1803,7 +2468,12 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
+                var opt = _mergeWith({}, this.mergedOptions);
 
                 var xAxisData = [];
                 if (!opt.xAxis.data) {
@@ -1820,8 +2490,14 @@
 
                     var tickObj = {};
 
-                    if (period === "month" && !this.bucket) {
+                    if (period === "month" && this.category !== "active-users" && !this.bucket) {
                         tickObj = chartsCommon.getTickObj("monthly", false, true);
+                    }
+                    else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
+                        tickObj = {
+                            ticks: [[0, countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]],
+                            tickTexts: [countlyCommon.formatDate(moment((countlyCommon.periodObj.activePeriod).replace(/\./g, "/"), "YYYY/MM/DD"), "D MMM")]
+                        };
                     }
                     else {
                         tickObj = chartsCommon.getTickObj(this.bucket, false, true);
@@ -1863,9 +2539,27 @@
                 return opt;
             }
         },
+        methods: {
+            refresh: function() {
+                if (this.seriesOptions.type !== "line") {
+                    this.seriesOptions.markPoint.data = [];
+                }
+                else if (!this.areNotesHidden) {
+                    this.getGraphNotes();
+                }
+            },
+            notesVisibility: function() {
+                if (!this.areNotesHidden) {
+                    this.getGraphNotes();
+                }
+                else {
+                    this.seriesOptions.markPoint.data = [];
+                }
+            },
+        },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1878,9 +2572,9 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
+                                    @click="onClick"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onDataZoom">\
-                                </echarts>\
+                                    @datazoom="onDataZoom"/>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
@@ -1904,15 +2598,24 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            patchXAxis: {
+                type: Boolean,
+                default: true,
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                opt = this.patchOptionsForXAxis(opt);
+                if (this.patchXAxis) {
+                    opt = this.patchOptionsForXAxis(opt);
+                }
                 return opt;
             }
         },
@@ -1961,7 +2664,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = _merge({}, this.mergedOptions);
+                var opt = _mergeWith({}, this.mergedOptions);
                 opt = this.patchChart(opt);
                 return opt;
             },
@@ -1980,7 +2683,7 @@
                 return classes;
             },
             pieLegendOptions: function() {
-                var opt = _merge({}, this.legendOptions);
+                var opt = _mergeWith({}, this.legendOptions);
                 opt.type = "secondary";
 
                 if (opt.position === "bottom") {
@@ -1992,7 +2695,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
-                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2176,7 +2879,8 @@
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-control': Vue2Leaflet.LControl,
-            'l-tooltip': Vue2Leaflet.LTooltip
+            'l-tooltip': Vue2Leaflet.LTooltip,
+            'l-control-zoom': Vue2Leaflet.LControlZoom
         },
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
@@ -2289,7 +2993,7 @@
             },
             minZoom: {
                 type: Number,
-                default: 0
+                default: 1
             },
             maxZoom: {
                 type: Number,
@@ -2341,9 +3045,7 @@
                 citiesToLatLng: {},
                 markerTooltipOptions: {
                     sticky: true,
-                    direction: "right",
-                    //permanent: true,
-                    //offset: L.point(5, 5)
+                    direction: "auto"
                 },
                 circleMarkerConfig: {
                     pane: "markerPane",
@@ -2353,9 +3055,11 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false,
+                    zoom: 1,
                     zoomSnap: 0.1,
-                    zoom: 1.3
+                    zoomDelta: 0.5,
+                    zoomControl: false,
+                    scrollWheelZoom: false
                 }
             };
         },
@@ -2605,7 +3309,7 @@
                 if (boundingBox) {
                     this.maxBounds = this.boxToLatLng2d(boundingBox);
                     if (this.$refs.lmap && this.$refs.lmap.mapObject) {
-                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds, {animate: false, padding: [20, 20]});
                     }
                 }
             },

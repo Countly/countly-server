@@ -1,4 +1,4 @@
-/*global moment, countlyVue, app, countlyLogger, countlyCommon, CV, countlyGlobal */
+/*global moment, countlyVue, app, countlyLogger, countlyCommon, CV */
 (function() {
     var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
@@ -82,7 +82,6 @@
                 switch: true,
                 isTablePaused: true,
                 logsData: [],
-                autoRefresh: false,
                 isLoading: false,
                 isTurnedOff: false,
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -128,30 +127,53 @@
             })
         ],
         methods: {
-            getExportQuery: function() {
-                /*var projection = {};
-                this.$refs.requestLogTable.exportColumns.forEach(function(col) {
-                    projection[col] = true;
-                });*/
-                var apiQueryData = {
-                    api_key: countlyGlobal.member.api_key,
-                    db: 'countly',
-                    collection: 'logs' + countlyCommon.ACTIVE_APP_ID,
-                    //query: this.$store.getters["countlyUsers/query"] || "{}",
-                    limit: '',
-                    skip: 0,
-                    //projection: JSON.stringify(projection)
-                };
-                return apiQueryData;
+            formatExportFunction: function() {
+                var tableData = this.logsData;
+                var table = [];
+                for (var i = 0; i < tableData.length; i++) {
+                    var item = {};
+                    item[CV.i18n('logger.requests').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].reqts).text;
+                    if (tableData[i].d && tableData[i].d.p && tableData[i].d.pv) {
+                        item[CV.i18n('logger.platform').toUpperCase()] = tableData[i].d.p + "(" + tableData[i].d.pv + ")";
+                    }
+                    if (tableData[i].v) {
+                        item[CV.i18n('logger.version').toUpperCase()] = tableData[i].d.v;
+                    }
+                    if (tableData[i].d && tableData[i].d.id) {
+                        item[CV.i18n('logger.device-id').toUpperCase()] = tableData[i].d.id;
+                    }
+
+                    if (tableData[i].l && tableData[i].l.cc && tableData[i].l.cty) {
+                        item[CV.i18n('logger.location').toUpperCase()] = tableData[i].l.cc + "(" + tableData[i].l.cty + ")";
+                    }
+
+                    if (tableData[i].t && Object.keys(tableData[i].t).length) {
+                        item[CV.i18n('logger.info').toUpperCase()] = Object.keys(tableData[i].t).join(', ');
+                    }
+                    if (tableData[i].q) {
+                        try {
+                            item[CV.i18n('logger.request-query').toUpperCase()] = JSON.stringify(tableData[i].q);
+                        }
+                        catch (err) {
+                            item[CV.i18n('logger.request-header').toUpperCase()] = "-";
+                        }
+                    }
+                    if (tableData[i].h) {
+                        try {
+                            var stringifiedHeader = JSON.stringify(tableData[i].h);
+                            item["REQUEST HEADER"] = stringifiedHeader.replace(/&quot;/g, '"');
+                        }
+                        catch (err) {
+                            item["REQUEST HEADER"] = "-";
+                        }
+                    }
+                    table.push(item);
+                }
+                return table;
+
             },
             getTitleTooltip: function() {
                 return this.i18n('logger.description');
-            },
-            getRefreshTooltip: function() {
-                return this.i18n('logger.auto-refresh-help');
-            },
-            stopAutoRefresh: function() {
-                this.autoRefresh = false;
             },
             fetchRequestLogs: function(isRefreshing) {
                 var vm = this;
@@ -168,7 +190,7 @@
                     });
             },
             refresh: function() {
-                if (this.autoRefresh) {
+                if (this.$refs && this.$refs.loggerAutoRefreshToggle && this.$refs.loggerAutoRefreshToggle.autoRefresh) {
                     this.fetchRequestLogs(true);
                 }
             },
@@ -183,11 +205,14 @@
             },
             tableRowClassName: function() {
                 return 'bu-is-clickable';
-            }
-        },
-        filters: {
-            pretty: function(value) {
-                return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
+            },
+            jsonParser: function(jsonObject) {
+                try {
+                    return JSON.parse(jsonObject);
+                }
+                catch (error) {
+                    //
+                }
             }
         },
         components: {

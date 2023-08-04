@@ -4,7 +4,7 @@
 		<cly-section class="geo-analytics-data">
 			<div class="bu-columns bu-is-gapless" style="height: 534px;">
 				<div style="width:256px;">
-					<cly-radio-block v-bind:items="chooseProperties" type="vertical" v-model="selectedProperty"></cly-radio-block>
+					<cly-radio-block v-bind:items="chooseProperties" type="vertical" v-model="selectedProperty" v-loading="isLoading"></cly-radio-block>
 				</div>
 				<div class="bu-column leaflet-noclick-map" style="position:relative">
 					<cly-worldmap
@@ -20,8 +20,8 @@
 						@country-click="regionClick"
 						>
 					</cly-worldmap>
-					<div style="position: absolute; top: 20px; left:20px;">
-						<a  ref="toCityViewLink" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
+					<div style="position: absolute; top: 20px; left:20px; z-index: 400;">
+						<a ref="toCityViewLink" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
 					</div>
 				</div>
 			</div>

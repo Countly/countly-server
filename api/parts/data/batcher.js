@@ -68,7 +68,7 @@ class InsertBatcher {
             }
             catch (ex) {
                 if (ex.code !== 11000) {
-                    log.e("Error updating documents", ex);
+                    log.e("Error inserting documents into", db, collection, ex, ex.writeErrors);
                 }
 
                 //trying to rollback operations to try again on next iteration
@@ -216,7 +216,7 @@ class WriteBatcher {
             }
             catch (ex) {
                 if (ex.code !== 11000) {
-                    log.e("Error updating documents", ex);
+                    log.e("Error updating documents into", db, collection, ex, ex.writeErrors);
                 }
 
                 //trying to rollback operations to try again on next iteration
@@ -512,7 +512,7 @@ class ReadBatcher {
                 }
             }
 
-            if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+            if (!this.process || !good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
                 if (this.process) {
                     this.data[collection][id] = {
                         query: query,

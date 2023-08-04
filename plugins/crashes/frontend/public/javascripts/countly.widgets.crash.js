@@ -1,9 +1,12 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon, countlyGraphNotesCommon*/
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -66,6 +69,15 @@
                         lineOptions: {xAxis: { data: dates}, "series": series}
                     };
                 }
+                else if (countlyCommon && countlyCommon.periodObj && countlyCommon.periodObj.daysInPeriod === 1 && countlyCommon.periodObj.isSpecialPeriod === true) {
+                    dates = [dates[0] + " 00:00", dates[0] + " 24:00"];
+                    for (var z = 0; z < series.length; z++) {
+                        series[z].data.push(series[z].data[0]);
+                    }
+                    return {
+                        lineOptions: {xAxis: { data: dates}, "series": series}
+                    };
+                }
                 else {
                     return {
                         lineOptions: {"series": series}
@@ -104,6 +116,24 @@
 
                 return labels;
             }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         }
     });
 

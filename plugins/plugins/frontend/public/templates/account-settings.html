@@ -1,7 +1,8 @@
 <div v-bind:class="[componentId]">
     <cly-header>
         <template v-slot:header-left>
-            <h2> {{i18n('plugins.user-account')}} </h2>
+            <h2 v-if="noaccess">{{i18n('plugins.no-access')}}</h2>
+            <h2 v-else> {{i18n('plugins.user-account')}} </h2>
         </template>
     </cly-header>
     <cly-main>
@@ -127,7 +128,7 @@
                         <div class="bu-columns bu-is-vcentered bu-p-3 bu-mx-1">
                             <div class="bu-column bu-is-10">
                                 <p class="bu-has-text-weight-medium">{{i18n('configs.delete-account')}} </p>
-                                <p>{{i18n('configs.cannot-be-undone')}} {{i18n('configs.will-permanently-delete')}}</p>
+                                <p class="text-medium">{{i18n('configs.cannot-be-undone')}} {{i18n('configs.will-permanently-delete')}}</p>
                             </div>
                             <div class="bu-column bu-is-2 bu-has-text-left">
                                 <el-button @click="deleteAccount.showDialog = true" type="danger">{{i18n('configs.delete-account')}}</el-button>

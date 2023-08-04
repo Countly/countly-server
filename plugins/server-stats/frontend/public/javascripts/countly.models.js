@@ -156,7 +156,7 @@
             return countlyGlobal.apps[appId].name;
         }
         else {
-            return "Deleted app (" + appId + ")";
+            return "App name not available (" + appId + ")";
         }
     }
 

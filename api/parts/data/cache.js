@@ -76,7 +76,9 @@ class DataStore {
      * @return {Any}    value or undefined if no value under such key is stored
      */
     read(id) {
-        return this.lru.get(id.toString());
+        if (id && id.toString) {
+            return this.lru.get(id.toString());
+        }
     }
 
     /**
@@ -93,6 +95,9 @@ class DataStore {
             }
             this.lru.set(id.toString(), data);
             return data;
+        }
+        else if (!id) {
+            this.lru.reset();
         }
         else if (this.read(id) !== null) {
             this.lru.del(id.toString());
@@ -1000,13 +1005,9 @@ class StreamedCollection {
      */
     close() {
         if (this.stream) {
-            this.stream.close(e => {
-                this.stream = undefined;
-                if (e) {
-                    log.e('Error while closing stream', e);
-                }
-                log.d('Stream closedd');
-            });
+            this.stream.destroy();
+            this.stream = undefined;
+            log.d('Stream closedd');
         }
     }
 

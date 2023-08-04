@@ -12,19 +12,7 @@
             </span>
         </template>
         <template v-slot:header-right>
-            <div v-if="autoRefresh" class="bu-level-item">
-                <span class="cly-vue-logger__refresh--enabled">{{i18n('logger.auto-refresh-is')}}</span>
-                <span class="cly-vue-logger__refresh--enabled-color">{{i18n('logger.enabled')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-                <el-button @click="stopAutoRefresh()"><i class="fa fa-stop-circle"></i> {{i18n('logger.auto-refresh-stop')}}
-                </el-button>
-            </div>
-            <div v-else="autoRefresh" class="bu-level-item">
-                <el-switch v-model="autoRefresh">
-                </el-switch>
-                <span class="cly-vue-logger__refresh--disabled">{{i18n('logger.auto-refresh')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-            </div>
+            <cly-auto-refresh-toggle ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
         </template>
     </cly-header>
     <cly-main>
@@ -32,8 +20,16 @@
             <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
         </div>
         <cly-section>
-            <cly-datatable-n ref="requestLogTable" :persist-key="tablePersistKey" :rows="logsData"
-                :resizable="false" :force-loading="isLoading" :export-query="getExportQuery" class="is-clickable" @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
+            <cly-datatable-n
+                ref="requestLogTable"
+                :rows="logsData"
+                :resizable="false"
+                :force-loading="isLoading"
+                :exportFormat="formatExportFunction"
+                class="is-clickable"
+                @row-click="handleTableRowClick"
+                :row-class-name="tableRowClassName"
+                :default-sort="{prop: 'reqts', order: 'descending'}">
                 <template v-slot:header-left="filterScope">
                     <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
                         <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label"
@@ -42,26 +38,22 @@
                     </el-select>
                 </template>
                 <template v-slot="scope">
-                    <el-table-column type="expand" fixed="left" class="shadow">
+                    <el-table-column type="expand" class="shadow">
                         <template v-slot="props">
                             <cly-section>
                                 <el-tabs type="card" value="data">
                                     <el-tab-pane name="data" label="Data">
-                                        <div>
-                                            <pre>{{ props.row.q | pretty }}</pre>
-                                        </div>
-                                    </el-tab-pane>
+                                        <vue-json-pretty :data="jsonParser(props.row.q)"/>
+                                    </el-tab-pane>  
                                     <el-tab-pane name="header" label="Header">
-                                        <div>
-                                            <pre>{{ props.row.h | pretty }}</pre>
-                                        </div>
+                                        <vue-json-pretty :data="props.row.h"/>
                                     </el-tab-pane>
                                 </el-tabs>
                             </cly-section>
                         </template>
                     </el-table-column>
                     <el-table-column class="request-date" sortable="custom"
-                        :label="i18n('logger.requests')" vertical-align="middle" min-width="283" fixed="left">
+                        :label="i18n('logger.requests')" vertical-align="middle" prop="reqts" min-width="283">
                         <template slot-scope="rowScope">
                             <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
                         </template>
@@ -74,6 +66,8 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                         <template slot-scope="rowScope">
+							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
+							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
                         </template>
                     </el-table-column>

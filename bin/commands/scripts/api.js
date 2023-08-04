@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('countly-request');
 var countlyConfig = require("../../../frontend/express/config.js");
 var myArgs = process.argv.slice(2);
 

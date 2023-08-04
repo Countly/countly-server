@@ -11,7 +11,7 @@
             <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="userActivityRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n  :rows="userActivityRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="bucket" :label="i18n('user-activity.table-session-count')">
                         <template slot-scope="scope">
@@ -33,7 +33,7 @@
                                         <span>|</span>
                                     </div>
                                     <div class="bu-level bu-is-justify-content-flex-end">
-                                        <span>{{formatPercentage(scope.row.all/seriesTotal.all)}} %</span>
+                                        <span>{{formatPercentage(scope.row.all/seriesTotal.all)}}%</span>
                                     </div>
                                 </div>
                                 <cly-progress-bar :percentage="formatPercentage(scope.row.all/seriesTotal.all)" :color="progressBarColor"> </cly-progress-bar>
@@ -51,7 +51,7 @@
                                         <span>|</span>
                                     </div>
                                     <div class="bu-level bu-is-justify-content-flex-end">
-                                        <span>{{formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)}} %</span>
+                                        <span>{{formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)}}%</span>
                                     </div>
                                 </div>
                                 <cly-progress-bar :percentage="formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)" :color="progressBarColor"> </cly-progress-bar>
@@ -69,7 +69,7 @@
                                             <span>|</span>
                                         </div>
                                         <div class="bu-level bu-is-justify-content-flex-end">
-                                            <span>{{formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)}} %</span>
+                                            <span>{{formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)}}%</span>
                                         </div>
                                     </div>
                                     <cly-progress-bar :percentage="formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)" :color="progressBarColor"> </cly-progress-bar>

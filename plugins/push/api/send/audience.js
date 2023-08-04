@@ -2,7 +2,7 @@ const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
     { util } = require('./std'),
     { Message, State, TriggerKind, Result, dbext } = require('./data'),
-    { DEFAULTS } = require('./data/const'),
+    { DEFAULTS, Time } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
     { fields, TK } = require('./platforms'),
@@ -43,12 +43,23 @@ const common = require('../../../../api/utils/common'),
         else {
             return require('../../../pluginManager').getPluginsApis().geo;
         }
-    },
+    };
 
-    /**
-     * Cache of app objects for quick evented/cohorted/tx message mapping
-     */
-    APPS = {};
+/**
+ * Get current time, to be able to override it in tests
+ * 
+ * @returns {Number} current date in ms
+ */
+let now = () => Date.now();
+
+/**
+ * Set now function, for tests
+ * 
+ * @param {function} f now function
+ */
+function setNow(f) {
+    now = f;
+}
 
 /**
  * Class encapsulating user selection / queue / message scheduling logic
@@ -74,14 +85,9 @@ class Audience {
      */
     async getApp() {
         if (!this.app) {
-            if (APPS[this.message.app]) {
-                this.app = APPS[this.message.app];
-            }
-            else {
-                this.app = APPS[this.message.app] = await common.db.collection('apps').findOne({_id: this.message.app});
-                if (!this.app) {
-                    throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
-                }
+            this.app = await common.db.collection('apps').findOne({_id: this.message.app});
+            if (!this.app) {
+                throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
             }
         }
         return this.app;
@@ -160,7 +166,7 @@ class Audience {
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
-        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: true}));
+        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: {$exists: true}}));
         steps.push({$match: {$or: flds}});
     }
 
@@ -187,6 +193,9 @@ class Audience {
         }
         if (!project.tk) {
             project.tk = 1;
+        }
+        if (!project.tz) {
+            project.tz = 1;
         }
         steps.push({$project: project});
     }
@@ -222,7 +231,7 @@ class Audience {
         let query = filter.user;
         if (query) {
             let params = {
-                time: common.initTimeObj(this.app.timezone, Date.now()),
+                time: common.initTimeObj(this.app.timezone, now()),
                 qstring: Object.assign({app_id: this.app._id.toString()}, query),
                 app_id: this.app._id.toString()
             };
@@ -284,7 +293,7 @@ class Audience {
                 // drill().drill.openDrillDb();
 
                 let params = {
-                    time: common.initTimeObj(this.app.timezone, Date.now()),
+                    time: common.initTimeObj(this.app.timezone, now()),
                     qstring: Object.assign({app_id: this.app._id.toString()}, query),
                     app_id: this.app._id.toString()
                 };
@@ -391,11 +400,12 @@ class Mapper {
      * @param {object} user app_user object
      * @param {number} date notification date as ms timestamp
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset = 0) {
         let ret = {
-            _id: dbext.oidWithDate(date),
+            _id: dbext.oidWithDate(date + offset),
             a: this.message.app,
             m: this.message._id,
             p: this.p,
@@ -412,7 +422,7 @@ class Mapper {
                 ret.pr[k] = user[k];
             }
         });
-        common.log('push').d('mapped push', ret);
+        // common.log('push').d('mapped push', ret);
         return ret;
     }
 }
@@ -427,24 +437,25 @@ class PlainApiMapper extends Mapper {
      * @param {object} user app_user object
      * @param {Date} date notification date
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset = 0) {
         let d = date.getTime();
         if (this.trigger.tz) {
-            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : parseFloat(user.tz) || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
 
-            if (d < Date.now()) {
+            if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
-                    d = d + 24 * 60 * 60000;
+                    d = d + Time.DAY;
                 }
                 else {
                     return null;
                 }
             }
         }
-        return super.map(user, d, c);
+        return super.map(user, d, c, offset);
     }
 }
 
@@ -458,9 +469,10 @@ class CohortsEventsMapper extends Mapper {
      * @param {object} user app_user object
      * @param {Date} date reference date (cohort entry date, event date)
      * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, c) {
+    map(user, date, c, offset) {
         let d = date.getTime();
 
         // send in user's timezone
@@ -475,9 +487,9 @@ class CohortsEventsMapper extends Mapper {
             auto.setMilliseconds(0);
 
             inTz = auto.getTime() + this.trigger.time + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
-            if (inTz < Date.now()) {
+            if (inTz < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
                 if (this.trigger.reschedule) {
-                    d = inTz + 24 * 60 * 60000;
+                    d = inTz + Time.DAY;
                 }
                 else {
                     return null;
@@ -509,10 +521,44 @@ class CohortsEventsMapper extends Mapper {
             return null;
         }
 
-        return super.map(user, d, c);
+        return super.map(user, d, c, offset);
     }
 }
 
+/**
+ * Plain or API triggers mapper - uses date calculation logic for those cases
+ */
+class MultiRecurringMapper extends Mapper {
+    /**
+     * Map app_user object to message
+     * 
+     * @param {object} user app_user object
+     * @param {Date} date reference date (time of delivery in UTC, only user tz is what's left to add here for tz messages)
+     * @param {object[]} c [Content.json] overrides
+     * @param {int} offset rate limit offset
+     * @returns {object} push object ready to be inserted
+     */
+    map(user, date, c, offset) {
+        let d = date.getTime();
+
+        // send in user's timezone
+        if (this.trigger.tz) {
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
+            d -= utz;
+        }
+
+        if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (this.trigger.reschedule) {
+                d += Time.DAY;
+            }
+            else {
+                return null;
+            }
+        }
+
+        return super.map(user, d, c, offset);
+    }
+}
 /**
  * Pushing / popping notes to queue logic
  */
@@ -530,8 +576,14 @@ class PusherPopper {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
-            else {
+            else if (trigger.kind === TriggerKind.Recurring || TriggerKind.Multi) {
+                this.mappers[p + f] = new MultiRecurringMapper(audience.app, audience.message, trigger, p, f);
+            }
+            else if (trigger.kind === TriggerKind.Event || trigger.kind === TriggerKind.Cohort) {
                 this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
+            }
+            else {
+                throw new PushError('Invalid trigger kind ' + trigger.kind);
             }
         }));
     }
@@ -562,6 +614,11 @@ class PusherPopper {
 
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);
+
+        // Increase parallelism by ensuring similar messages go next to each other
+        steps.push({
+            $sort: {la: 1}
+        });
 
         // Lookup for tokens & msgs
         steps.push({
@@ -656,12 +713,16 @@ class Pusher extends PusherPopper {
 
         let batchSize = DEFAULTS.queue_insert_batch,
             steps = await this.steps(),
-            stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
+            stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps, {allowDiskUse: true}).stream(),
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
             result = new Result(),
             updates = {},
-            virtuals = {};
+            virtuals = {},
+            offset = 0,
+            curPeriod = 0,
+            ratePeriod = (this.audience.app.plugins.push.rate || {}).period || 0,
+            rateNumber = (this.audience.app.plugins.push.rate || {}).rate || 0;
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -674,7 +735,14 @@ class Pusher extends PusherPopper {
                     continue;
                 }
 
-                let note = this.mappers[pf].map(user, start, this.contents);
+                if (ratePeriod && rateNumber) {
+                    if ((curPeriod + 1) % rateNumber === 0) {
+                        offset += ratePeriod * 1000;
+                    }
+                    curPeriod++;
+                }
+
+                let note = this.mappers[pf].map(user, start, this.contents, offset);
                 if (!note) {
                     continue;
                 }
@@ -703,7 +771,7 @@ class Pusher extends PusherPopper {
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
                 if (PLATFORM[p].parent) {
-                    rp = result.sub(PLATFORM[p].parent),
+                    rp = result.sub(PLATFORM[p].parent);
                     rpl = rp.sub(la);
                     rp.total++;
                     rpl.total++;
@@ -712,7 +780,7 @@ class Pusher extends PusherPopper {
                     updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
                 }
 
-                note.h = util.hash(note.pr);
+                note.h = util.hash(note.pr, note.c ? util.hash(note.c) : undefined);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
@@ -727,7 +795,7 @@ class Pusher extends PusherPopper {
                 update.$set = virtuals;
             }
             await this.audience.message.update(update, () => {});
-            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            this.audience.log.d('inserting final batch of %d, %d records total, message update %j', batch.length, batch.total, update);
             await batch.flush([11000]);
         }
 
@@ -754,26 +822,28 @@ class Popper extends PusherPopper {
     async clear() {
         let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
             let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
-            return res.deletedCount;
+            return {p, deleted: res.deletedCount};
         }));
         let update;
-        for (let p in deleted) {
+        for (let obj of deleted) {
             if (!update) {
                 update = {$inc: {}};
             }
-            update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + deleted[p];
-            update.$inc[`result.errors.${p}.cancelled`] = (update.$inc[`result.errors.${p}.cancelled`] || 0) + deleted[p];
+            update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + obj.deleted;
+            update.$inc['result.errored'] = (update.$inc['result.errored'] || 0) + obj.deleted;
+            update.$inc[`result.errors.${obj.p}.cancelled`] = (update.$inc[`result.errors.${obj.p}.cancelled`] || 0) + obj.deleted;
         }
         if (update) {
             await this.audience.message.update(update, () => {
-                for (let p in deleted) {
-                    this.audience.message.result.processed += deleted[p];
-                    this.audience.message.result.recordError('cancelled', deleted[p]);
-                    this.audience.message.result.sub(p).recordError('cancelled', deleted[p]);
+                for (let obj of deleted) {
+                    this.audience.message.result.processed += obj.deleted;
+                    this.audience.message.result.errored += obj.deleted;
+                    this.audience.message.result.recordError('cancelled', obj.deleted);
+                    this.audience.message.result.sub(obj.p).recordError('cancelled', obj.deleted);
                 }
             });
         }
-        return Object.values(deleted).reduce((a, b) => a + b, 0);
+        return Object.values(deleted).reduce((a, b) => a.deleted + b.deleted, 0);
     }
 
     /**
@@ -808,4 +878,4 @@ class Popper extends PusherPopper {
     }
 }
 
-module.exports = { Audience };
+module.exports = { Audience, MultiRecurringMapper, setNow };

@@ -4,10 +4,11 @@ $user-activity-progress-bar-background-color: #39C0C8;
     &__divider {
         width: 16px;
         justify-content: space-evenly;
+        color: #a7aeb8;
     }
     &__data-item-container {
         flex-basis: 75px;
-        margin-right: 8px;
+        margin-right: 14px;
     }
 }
 .user-activity-table-progress-bar-container {

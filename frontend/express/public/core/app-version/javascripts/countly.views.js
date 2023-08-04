@@ -7,15 +7,16 @@ var AppVersionView = countlyVue.views.create({
             barChartItemsLegends: {
                 totalSessions: CV.i18n('common.table.total-sessions'),
                 newUsers: CV.i18n('common.table.new-users')
-            }
+            },
         };
     },
+
     mounted: function() {
-        this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
+        this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion', force);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);
@@ -34,6 +35,9 @@ var AppVersionView = countlyVue.views.create({
         appVersionOptions: function() {
             return this.appVersion.chart;
         },
+        appVersionStackedOptions: function() {
+            return {series: this.appVersion.series, xAxis: this.appVersion.xAxis, yAxis: this.appVersion.yAxis, valFormatter: this.appVersion.valFormatter};
+        },
         isLoading: function() {
             return this.$store.state.countlyDevicesAndTypes.versionLoading;
         },
@@ -45,6 +49,36 @@ var AppVersionView = countlyVue.views.create({
                 return null;
             }
 
+        },
+        chooseProperties: function() {
+            return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
+        },
+        chooseDisplay: function() {
+            return [{"value": "percentage", "name": "percentage"}, {"value": "value", "name": "values"}];
+        },
+        selectedProperty: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
+                this.$store.dispatch('countlyDevicesAndTypes/onRecalcProp');
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            },
+            dropdownsDisabled: function() {
+                return "";
+            }
+        },
+        selectedDisplay: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDisplay', value);
+                this.$store.dispatch('countlyDevicesAndTypes/onRecalcProp');
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedDisplay;
+            },
+            dropdownsDisabled: function() {
+                return "";
+            }
         },
     },
     mixins: [

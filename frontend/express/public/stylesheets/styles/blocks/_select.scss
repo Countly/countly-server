@@ -50,6 +50,25 @@
                 }
             }
         }
+
+        &--hidden-header {
+            .cly-vue-select-x__header {
+                padding: 0;
+            }
+        }
+
+        &--hidden-tabs#{&}--hidden-header {
+            .el-tabs {
+                &__header {
+                    &::after {
+                        background: none;
+                        height: 0;
+                        width: 0;
+                    }
+                }
+            }
+        }
+
         // .cly-vue-listbox {
         //     padding: v.$select-dropdown-item-default-padding;
         // }
@@ -87,12 +106,6 @@
     &__pop--has-single-option {
         .el-tabs__header::after {
             content: none;
-        }
-    }
-
-    &__pop--hidden-header {
-        .cly-vue-select-x__header {
-            padding: 0;
         }
     }
 
@@ -161,6 +174,12 @@
     .drag-handler {
         visibility: hidden;
         margin-right: 8px;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
     }
 
     &__header {

@@ -10,10 +10,9 @@ var exports = {},
     plugin = require('./../../../plugins/pluginManager.js'),
     json2csv = require('json2csv');
 
-//const log = require('./../../utils/log.js')('core:export');
+const log = require('./../../utils/log.js')('core:export');
 
-//npm install node-xlsx-stream !!!!!
-var xlsx = require("node-xlsx-stream");
+var XLSXTransformStream = require('xlsx-write-stream');
 const Transform = require('stream').Transform;
 var contents = {
     "json": "application/json",
@@ -168,20 +167,18 @@ exports.convertData = function(data, type) {
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
-        var xc = xlsx();
-        var sheet = xc.sheet("Countly export");
-        sheet.write(obj.fields);
+        var stream = new XLSXTransformStream();
+        stream.write(obj.fields);
         for (var k = 0; k < obj.data.length; k++) {
             var arr1 = [];
             for (var z = 0; z < obj.fields.length; z++) {
                 arr1.push(obj.data[k][obj.fields[z]] || "");
             }
-            sheet.write(arr1);
+            stream.write(arr1);
         }
-        sheet.end();
-        xc.finalize();
+        stream.end();
 
-        return xc;
+        return stream;
     default:
         return data;
     }
@@ -236,11 +233,25 @@ function transformValue(value, key, mapper) {
                 }
                 value = moment(new Date(value)).tz(mapper.tz);
                 if (value) {
-                    value = value.format("ddd, D MMM YYYY HH:mm:ss");
+                    var format = "ddd, D MMM YYYY HH:mm:ss";
+                    if (mapper.fields[key].format) {
+                        format = mapper.fields[key].format;
+                    }
+                    value = value.format(format);
                 }
                 else {
                     value /= 1000;
                 }
+            }
+        }
+        if (mapper.fields[key].type) {
+            switch (mapper.fields[key].type) {
+            case "number":
+                value = common.formatNumber(value);
+                break;
+            case "second":
+                value = common.formatSecond(value);
+                break;
             }
         }
         return value;
@@ -358,35 +369,37 @@ exports.stream = function(params, stream, options) {
         });
 
         stream.once('close', function() {
-            if (listAtEnd) {
-                for (var p = 0; p < paramList.length; p++) {
-                    head.push(processCSVvalue(paramList[p]));
+            setTimeout(function() {
+                if (listAtEnd) {
+                    for (var p = 0; p < paramList.length; p++) {
+                        head.push(processCSVvalue(paramList[p]));
+                    }
+                    params.res.write(head.join(',') + '\r\n');
                 }
-                params.res.write(head.join(',') + '\r\n');
-            }
-            params.res.end();
+                params.res.end();
+            }, 100);
         });
     }
     else if (type === 'xlsx' || type === 'xls') {
-        var xc = xlsx();
+        var xc = new XLSXTransformStream();
         xc.pipe(params.res);
-        var sheet = xc.sheet("Countly export");
         if (listAtEnd === false) {
-            sheet.write(paramList);
+            xc.write(paramList);
         }
         stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
-            sheet.write(values);
+            xc.write(values);
         });
 
         stream.once('close', function() {
-            if (listAtEnd) {
-                sheet.write(paramList);
-            }
-            sheet.end();
-            xc.finalize();
+            setTimeout(function() {
+                if (listAtEnd) {
+                    xc.write(paramList);
+                }
+                xc.end();
+            }, 100);
         });
     }
     else {
@@ -403,8 +416,10 @@ exports.stream = function(params, stream, options) {
         });
 
         stream.once('close', function() {
-            params.res.write("]");
-            params.res.end();
+            setTimeout(function() {
+                params.res.write("]");
+                params.res.end();
+            }, 100);
         });
     }
 };
@@ -462,41 +477,50 @@ exports.fromDatabase = function(options) {
         options.params.qstring.method = "user_details";
         options.params.app_id = options.collection.replace("app_users", "");
     }
-    plugin.dispatch("/drill/preprocess_query", {
-        query: options.query,
-        params: options.params
-    }, ()=>{
-        var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
-        if (options.sort) {
-            cursor.sort(options.sort);
-        }
 
-        if (options.skip) {
-            cursor.skip(parseInt(options.skip));
-        }
-        if (options.limit) {
-            cursor.limit(parseInt(options.limit));
-        }
-        options.streamOptions = {};
-        if (options.type === "stream" || options.type === "json") {
-            options.streamOptions.transform = function(doc) {
-                doc = transformValuesInObject(doc, options.mapper);
-                return JSON.stringify(doc);
-            };
-        }
-        if (options.type === "stream" || options.type === "json" || options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
-            options.output = options.output || function(stream) {
-                exports.stream(options.params, stream, options);
-            };
-            options.output(cursor);
-        }
-        else {
-            cursor.toArray(function(err, data) {
-                exports.fromData(data, options);
-            });
-        }
+    if (options.params && options.params.qstring && options.params.qstring.get_index && options.params.qstring.get_index !== null) {
+        options.db.collection(options.collection).indexes(function(err, indexes) {
+            if (!err) {
+                exports.fromData(indexes, options);
+            }
+        });
+    }
+    else {
+        plugin.dispatch("/drill/preprocess_query", {
+            query: options.query,
+            params: options.params
+        }, ()=>{
+            var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+            if (options.sort) {
+                cursor.sort(options.sort);
+            }
 
-    });
+            if (options.skip) {
+                cursor.skip(parseInt(options.skip));
+            }
+            if (options.limit) {
+                cursor.limit(parseInt(options.limit));
+            }
+            options.streamOptions = {};
+            if (options.type === "stream" || options.type === "json") {
+                options.streamOptions.transform = function(doc) {
+                    doc = transformValuesInObject(doc, options.mapper);
+                    return JSON.stringify(doc);
+                };
+            }
+            if (options.type === "stream" || options.type === "json" || options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+                options.output = options.output || function(stream) {
+                    exports.stream(options.params, stream, options);
+                };
+                options.output(cursor);
+            }
+            else {
+                cursor.toArray(function(err, data) {
+                    exports.fromData(data, options);
+                });
+            }
+        });
+    }
 };
 
 /**
@@ -529,12 +553,40 @@ exports.fromRequest = function(options) {
         },
         //adding custom processing for API responses
         'APICallback': function(err, body) {
+            if (err) {
+                log.e(err);
+                log.e(JSON.stringify(body));
+            }
             var data = [];
             try {
                 if (options.prop) {
                     var path = options.prop.split(".");
                     for (var i = 0; i < path.length; i++) {
                         body = body[path[i]];
+                    }
+                }
+                if (options.projection) {
+                    for (var key in body) {
+                        for (var prop in body[key]) {
+                            if (!options.projection[prop]) {
+                                delete body[key][prop];
+                            }
+                        }
+                    }
+                }
+                if (options.columnNames || options.mapper) {
+                    for (key in body) {
+                        if (options.mapper) {
+                            body[key] = transformValuesInObject(body[key], options.mapper);
+                        }
+                        for (prop in body[key]) {
+                            if (options.columnNames) {
+                                if (options.columnNames[prop]) {
+                                    body[key][options.columnNames[prop]] = body[key][prop];
+                                    delete body[key][prop];
+                                }
+                            }
+                        }
                     }
                 }
                 data = body;
@@ -570,6 +622,9 @@ exports.fromRequestQuery = function(options) {
         },
         //adding custom processing for API responses
         'APICallback': function(err, body) {
+            if (err) {
+                log.e(err);
+            }
             if (body) {
                 var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
                 options.projection = body.projection;
