@@ -29,11 +29,6 @@ common.plugins = plugins;
 common.apis = plugins.getPluginsApis();
 
 /**
- * Jobs handle
- */
-common.jobs = require('../parts/jobs');
-
-/**
 * Logger object for creating module specific logging
 * @type {module:api/utils/log~Logger} 
 * @example

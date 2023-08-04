@@ -4,6 +4,7 @@ const formidable = require('formidable');
 const os = require('os');
 const countlyConfig = require('./config', 'dont-enclose');
 const common = require('./utils/common.js');
+const jobs = require('./parts/jobs');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
@@ -11,7 +12,7 @@ const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher
 const pack = require('../package.json');
 const log = common.log('core:api');
 const versionInfo = require('../frontend/express/version.info.js');
-const {jobs, plugins} = common;
+const {plugins} = common;
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
