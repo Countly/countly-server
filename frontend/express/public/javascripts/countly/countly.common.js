@@ -3829,7 +3829,7 @@
                 endTimestamp = toDate.clone().endOf("day");
                 // fromDate.tz(_appTimezone);
                 // toDate.tz(_appTimezone);
-				if (fromDate.format("YYYY.M.D") === toDate.format("YYYY.M.D")) {
+                if (fromDate.format("YYYY.M.D") === toDate.format("YYYY.M.D")) {
                     cycleDuration = moment.duration(1, "day");
                     Object.assign(periodObject, {
                         dateString: "D MMM, HH:mm",
