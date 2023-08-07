@@ -1332,7 +1332,7 @@
                     isLoading: false
                 };
             },
-            beforeCreate: function() {
+            created: function() {
                 var self = this;
                 self.isLoading = true;
                 this.uid = this.$route.params.uid;
