@@ -3830,13 +3830,14 @@
                 // fromDate.tz(_appTimezone);
                 // toDate.tz(_appTimezone);
 
-                if (fromDate.valueOf() === toDate.valueOf()) {
+                if (fromDate.format("YYYY.M.D") === toDate.format("YYYY.M.D")) {
                     cycleDuration = moment.duration(1, "day");
                     Object.assign(periodObject, {
                         dateString: "D MMM, HH:mm",
                         periodMax: 23,
                         periodMin: 0,
                         activePeriod: fromDate.format("YYYY.M.D"),
+						currentPeriodArr: [fromDate.format("YYYY.M.D")],
                         previousPeriod: fromDate.clone().subtract(1, "day").format("YYYY.M.D")
                     });
                 }
