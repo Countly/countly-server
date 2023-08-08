@@ -799,7 +799,10 @@
                 return table;
 
             },
-        }
+        },
+        created: function() {
+            this.$store.dispatch("countlyRemoteConfig/parameters/setTableLoading", true);
+        },
     });
 
     var ConditionsComponent = countlyVue.views.BaseView.extend({
@@ -903,7 +906,6 @@
         beforeCreate: function() {
             var self = this;
             this.$store.dispatch("countlyRemoteConfig/initialize").then(function() {
-                self.$store.dispatch("countlyRemoteConfig/parameters/setTableLoading", false);
                 self.$store.dispatch("countlyRemoteConfig/conditions/setTableLoading", false);
             });
         },
