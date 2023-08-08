@@ -1,3 +1,19 @@
+## Version 23.06.7
+Fixes:
+- [consent] Fixes for user consent table
+- [core] Do not track region and location if tracking city data is diabled
+- [core] Fixed bug with selecting app containing special characters in dbviewer
+- [core] Fixed encoding for application list
+- [core] Fixed issue with session analytics showing incorrect returning users count for single day.
+- [crashes] Fix query builder property types
+- [db-viewer] Fixed issues with export if used query contains objectID
+- [db-viewer] Fixed using correct filename in export
+- [graph-notes] Fixed issue with editing graph note
+- [report-manager] Fixed export table issue
+
+Enterprise fixes:
+- [cohorts] Revalidate user property rule like '7days' or '30days' in nightly job.
+
 ## Version 23.06.6
 Fixes:
 - [crashes] Limit custom properties key length in crashgroup
