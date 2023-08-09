@@ -675,8 +675,10 @@
                     context.commit('setDensityLoading', false);
                 });
             },
-            fetchDeviceTypes: function(context) {
-                context.commit('setTypeLoading', true);
+            fetchDeviceTypes: function(context, useLoader) {
+                if (useLoader) {
+                    context.commit('setTypeLoading', true);
+                }
                 context.dispatch('onFetchInit', "deviceType");
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
                     var deviceTypes = countlyDevicesAndTypes.service.calculateData("device_type", {"pie": true});
