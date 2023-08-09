@@ -50,6 +50,9 @@
 		<div v-if="browserVersions.length === 0 && !isLoading" class="technology-analytics-wrapper-browser__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
+		<div v-else-if="browserVersions.length === 0 && isLoading">
+			<div style="height: 200px;" v-loading="isLoading"></div>
+		</div>
         <div v-else v-loading="isLoading" class="technology-analytics-wrapper-browser__versions">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">

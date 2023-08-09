@@ -652,14 +652,19 @@
                     context.state.isLoading = false;
                 });
             },
-            fetchBrowser: function(context) {
+            fetchBrowser: function(context, useLoader) {
                 context.dispatch('onFetchInit', "browser");
+                if (useLoader) {
+                    context.state.browserLoading = true;
+                }
                 countlyDevicesAndTypes.service.fetchBrowser().then(function() {
                     var browsers = countlyDevicesAndTypes.service.calculateBrowser();
                     context.commit('setAppBrowser', browsers);
                     context.dispatch('onFetchSuccess', "browser");
+                    context.state.browserLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.browserLoading = false;
                 });
             },
             fetchDensity: function(context, force) {
