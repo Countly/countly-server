@@ -1238,7 +1238,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1307,7 +1307,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1338,7 +1338,7 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
+        var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
         m.stdout.on('data', (data) => {
             console.log(data.toString());
