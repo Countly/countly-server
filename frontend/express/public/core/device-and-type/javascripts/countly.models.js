@@ -635,7 +635,10 @@
                     context.commit('setVersionLoading', false);
                 });
             },
-            fetchPlatform: function(context) {
+            fetchPlatform: function(context, useLoader) {
+                if (useLoader) {
+                    context.state.isLoading = true;
+                }
                 if (countlyDevicesAndTypes.service.validateStates([countlyDevicesAndTypes.getCurrentLoadState()])) {
                     context.dispatch('onFetchInit', "platform");
                 }
@@ -643,8 +646,10 @@
                     var platforms = countlyDevicesAndTypes.service.calculatePlatform();
                     context.commit('setAppPlatform', platforms);
                     context.dispatch('onFetchSuccess', "platform");
+                    context.state.isLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.isLoading = false;
                 });
             },
             fetchBrowser: function(context) {
