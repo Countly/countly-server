@@ -533,6 +533,9 @@
         },
         methods: {
             refresh: function(force) {
+                if (this.$refs && this.$refs.dataTable && this.$refs.dataTable.externalParams) {
+                    this.$refs.dataTable.externalParams.skipLoading = true;
+                }
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
                     if (this.crashgroupsFilter.query) {

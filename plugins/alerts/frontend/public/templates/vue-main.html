@@ -11,17 +11,15 @@
             <el-button type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createAlert">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>
         </cly-header>
-    
         <cly-main>
-            <div class="bu-mb-4 cly-vue-section__content white-bg" v-if="!shouldHideCount">
+            <div class="bu-mb-4 cly-vue-section__content white-bg" v-if="!shouldHideCount" v-loading="!initialized">
                 <cly-metric-cards>
                     <cly-metric-card  :columnWidth=4 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in countData">
                             {{i18n(item.label)}}
                         <template v-slot:number>{{item.value || 0}}</template>
                     </cly-metric-card>	
                 </cly-metric-cards>	
-             </div>
-      
+            </div>
             <div class="bu-mt-6">
                 <table-view  v-on:open-drawer="openDrawer" :callCreateAlertDrawer="createAlert"></table-view>
             </div>
@@ -29,8 +27,7 @@
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
     </div>
     </script>
-    
-    
+
 <script  type="text/x-template" id="alerts-table">
 <div>
     <cly-empty-view 
@@ -46,7 +43,8 @@
             :force-loading="!initialized"
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
-            :rows="tableRows" :resizable="false" >
+            :rows="tableRows"
+            :resizable="false">
             <template v-slot:header-left="scope">
                 <div class="alerts-table-app-selector">
                     <cly-select-x

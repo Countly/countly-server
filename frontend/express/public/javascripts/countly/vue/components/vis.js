@@ -3002,6 +3002,10 @@
             showTooltip: {
                 type: Boolean,
                 default: true
+            },
+            blockAutoLoading: {
+                type: Boolean,
+                default: false
             }
         },
         beforeCreate: function() {
@@ -3097,7 +3101,7 @@
         },
         computed: {
             loading: function() {
-                return this.loadingGeojson || this.loadingCities;
+                return !this.blockAutoLoading && (this.loadingGeojson || this.loadingCities);
             },
             inDetail: function() {
                 return this.country !== null;

@@ -91,6 +91,9 @@
         </div>
     </cly-section>
 
+    <div v-if="isLoading" v-loading="isLoading" class="bu-mx-5" style="height: 300px;">
+        <h4>{{i18n('data-manager.event-segmentation')}}</h4>
+    </div>
     <cly-section class="bu-mx-5" v-if="isDrill && segments.length > 0">
         <template v-slot:header>
             <h4>{{i18n('data-manager.event-segmentation')}}</h4>
