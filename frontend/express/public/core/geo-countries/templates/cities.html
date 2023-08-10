@@ -19,6 +19,8 @@
 				</div>
 				<div class="bu-column" style="position:relative">
 					<cly-worldmap
+						v-loading="isLoading"
+						:block-auto-loading="true"
                         style="height: 100%;"
 						:external-country="region"
 						external-detail-mode="cities"
