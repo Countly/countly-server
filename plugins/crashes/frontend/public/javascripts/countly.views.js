@@ -1341,9 +1341,9 @@
                 this.uid = this.$route.params.uid;
                 countlyCrashes.userCrashes(this.uid)
                     .then(function(res) {
+                        self.isLoading = false;
                         if (res) {
                             self.userCrashesData = res.aaData.map(function(data) {
-                                self.isLoading = false;
                                 return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
                             });
                         }

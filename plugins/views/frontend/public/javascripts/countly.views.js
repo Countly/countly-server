@@ -337,6 +337,8 @@
             },
             segmentChosen: function(val) {
                 var self = this;
+                this.isGraphLoading = true;
+                this.isTableLoading = true;
                 if (val.segment && val.segment !== "all" && val.segmentKey && val.segmentKey !== "all") {
                     this.$store.dispatch('countlyViews/onSetSelectedSegment', val.segment);
                     this.$store.dispatch('countlyViews/onSetSelectedSegmentValue', val.segmentKey);
@@ -347,6 +349,8 @@
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
+                    self.isGraphLoading = false;
+                    self.isTableLoading = false;
                 });
                 this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue});
             },
