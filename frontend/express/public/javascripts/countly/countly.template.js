@@ -960,8 +960,8 @@ var AppRouter = Backbone.Router.extend({
                     viewName.render();
                 }
             }
-            else if (Backbone.history.fragment !== "/manage/apps") {
-                this.navigate("/manage/apps", true);
+            else if (Backbone.history.fragment !== "/initial-setup") {
+                this.navigate("/initial-setup", true);
             }
             else {
                 viewName.render();

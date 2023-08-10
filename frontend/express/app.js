@@ -117,7 +117,8 @@ plugins.setConfigs("frontend", {
     use_google: true,
     code: true,
     google_maps_api_key: "",
-    offline_mode: false
+    offline_mode: false,
+    countly_tracking: false,
 });
 
 plugins.setUserConfigs("frontend", {
@@ -1362,8 +1363,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         var params = req.body || {};
         membersUtility.setup(req, function(err) {
+            const createDemoApp = !!params.createDemoApp;
+
             if (!err) {
-                res.redirect(countlyConfig.path + '/dashboard');
+                res.redirect(countlyConfig.path + '/dashboard' + (createDemoApp ? '?create_demo_app=1' : ''));
             }
             else if (err === "User exists") {
                 res.redirect(countlyConfig.path + '/login');

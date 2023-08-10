@@ -810,6 +810,31 @@
     };
 
     /**
+    * Display modal popup that shows quickstart guide
+    * @param {string} content - modal popup content
+    * @example
+    * CountlyHelpers.showQuickstartDialog();
+    */
+    CountlyHelpers.showQuickstartPopover = function(content) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
+        if (window.countlyVue && window.countlyVue.vuex) {
+            var payload = {
+                intent: "quickstart",
+                message: content,
+                width: "314",
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
+    };
+
+    /**
     * Check the value which passing as parameter
     * isJSON or not
     * return result as boolean

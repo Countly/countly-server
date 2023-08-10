@@ -161,6 +161,15 @@ a:active { color:inherit; }
 #login-button { line-height:14px !important; font-size:14px; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:500; cursor:pointer; width:300px; margin-top:32px;font-family:Inter; height: 40px; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
+#alt-login-button {
+  border: none;
+  background: none;
+  line-height: 14px;
+  font-size: 14px;
+  color: #017AFF;
+  margin-top: 26px;
+  cursor: pointer;
+}
     #forgot-form #login-button {}
 .back-button{padding: 10px 12px;text-align: center; font-size: 14px;color: #0166D6;margin-top: 24px;font-weight: 500;}
 .back-to-login {

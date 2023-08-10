@@ -28,7 +28,7 @@ function fetchFromCMS(params, callback) {
     * @param {number} pageNumber - page number
     **/
     function fetchPage(pageNumber) {
-        const pageUrl = `${url}?pagination[page]=${pageNumber}&pagination[pageSize]=${pageSize}`;
+        const pageUrl = `${url}?populate=*&pagination[page]=${pageNumber}&pagination[pageSize]=${pageSize}`;
 
         fetch(pageUrl, {
             method: 'GET',
