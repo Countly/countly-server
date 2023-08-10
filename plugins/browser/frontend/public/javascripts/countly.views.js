@@ -142,8 +142,16 @@
             this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
         },
         methods: {
-            refresh: function() {
-                this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
+            refresh: function(force) {
+                if (force) {
+                    this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser', true);
+                }
+                else {
+                    this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser', false);
+                }
+            },
+            dateChanged: function() {
+                this.refresh(true);
             },
             handleCardsScroll: function() {
                 if (this.$refs && this.$refs.bottomSlider) {

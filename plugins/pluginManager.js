@@ -8,6 +8,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
     mongodb = require('mongodb'),
     cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
+    apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     url = require('url'),
@@ -1587,6 +1588,10 @@ var pluginManager = function pluginManager() {
         if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
             maxPoolSize = 3;
         }
+        var useConfig = JSON.parse(JSON.stringify(countlyConfig));
+        if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
+            useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
+        }
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -1598,7 +1603,7 @@ var pluginManager = function pluginManager() {
                 }
                 catch (ex) {
                     //user default config
-                    config = JSON.parse(JSON.stringify(countlyConfig));
+                    config = useConfig;
                 }
                 if (this.dbConfigEnvs[confDb]) {
                     config = configextender(this.dbConfigEnvs[confDb], config, process.env);
@@ -1606,11 +1611,11 @@ var pluginManager = function pluginManager() {
             }
             else {
                 //user default config
-                config = JSON.parse(JSON.stringify(countlyConfig));
+                config = useConfig;
             }
         }
         else {
-            config = config || JSON.parse(JSON.stringify(countlyConfig));
+            config = config || useConfig;
         }
 
         if (config && typeof config.mongodb === "string") {

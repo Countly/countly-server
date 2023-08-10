@@ -680,7 +680,7 @@ plugins.setConfigs("crashes", {
                                         common.recordCustomMetric(params, "crashdata", "any**" + report.app_version.replace(/\./g, ":") + "**" + params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
 
                                         var group = {};
-                                        if (!isNew) {
+                                        if (!isNew && crashGroup) {
                                             if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                 group.latest_version = report.app_version;
                                                 group.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);

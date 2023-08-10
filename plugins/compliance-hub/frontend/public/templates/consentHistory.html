@@ -18,7 +18,7 @@
         </div>
     </div>
     <cly-section class="cly-vue-compliance__consent_history cly-vue-complaince__hub_style_widthzero">
-        <cly-datatable-n :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}" ref="table" @row-click="tableRowClickHandler" row-class-name="bu-is-clickable">
+        <cly-datatable-n :force-loading="consentHistoryLoading" :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}" ref="table" @row-click="tableRowClickHandler" row-class-name="bu-is-clickable">
             <template v-slot="scope">
                 <el-table-column fixed type="expand">
                     <template slot-scope="props">

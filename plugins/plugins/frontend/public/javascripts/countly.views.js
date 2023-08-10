@@ -17,7 +17,8 @@
                 localTableTrackedFields: ['enabled'],
                 filterValue: "all",
                 changes: {},
-                dialog: {type: "", showDialog: false, saveButtonLabel: "", cancelButtonLabel: "", title: "", text: ""}
+                dialog: {type: "", showDialog: false, saveButtonLabel: "", cancelButtonLabel: "", title: "", text: ""},
+                isLoading: true,
             };
         },
         beforeCreate: function() {
@@ -33,6 +34,7 @@
                     for (var i = 0; i < self.pluginsData.length; i++) {
                         self.formatRow(self.pluginsData[i]);
                     }
+                    self.isLoading = false;
                 }
             );
         },

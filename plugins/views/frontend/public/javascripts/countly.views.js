@@ -202,6 +202,7 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 isGraphLoading: true,
+                isTableLoading: false,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -238,6 +239,7 @@
                 var self = this;
                 if (force) {
                     self.isGraphLoading = true;
+                    self.isTableLoading = true;
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
@@ -252,7 +254,9 @@
                     self.validateTotalViewCount();
                 });
 
-                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue});
+                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
+                    self.isTableLoading = false;
+                });
             },
             validateTotalViewCount: function() {
                 this.totalViewCount = this.$store.state.countlyViews.totalViewsCount;

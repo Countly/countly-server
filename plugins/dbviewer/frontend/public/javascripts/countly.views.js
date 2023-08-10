@@ -58,13 +58,13 @@
                         response.aaData = response.collections;
                         response.iTotalRecords = response.limit;
                         response.iTotalDisplayRecords = response.total;
-                        if (!self.refresh) {
+                        if (!self.isRefresh) {
                             self.expandKeys = [];
                             self.expandKeysHolder = [];
                         }
                         for (var i = 0; i < response.aaData.length; i++) {
                             response.aaData[i]._view = JSON.stringify(response.aaData[i]);
-                            if (!self.refresh) {
+                            if (!self.isRefresh) {
                                 self.expandKeysHolder.push(response.aaData[i]._id);
                             }
                         }
@@ -104,6 +104,7 @@
                     expandKeys: [],
                     expandKeysHolder: [],
                     isRefresh: false,
+                    isLoading: false,
                     showFilterDialog: false,
                     showDetailDialog: false,
                     rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
@@ -119,13 +120,13 @@
                         this.sortEnabled = false;
                         this.sort = "";
                         app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
-                        this.tableStore.dispatch("fetchDbviewerTable");
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                     else {
                         this.collection = newVal;
                         app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.query, false);
-                        this.tableStore.dispatch("fetchDbviewerTable");
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                 }
@@ -201,8 +202,14 @@
                     this.isDescentSort = false;
                 },
                 fetch: function(force) {
-                    this.refresh = false;
-                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
+                    this.isRefresh = false;
+                    var self = this;
+                    if (force) {
+                        this.isLoading = true;
+                    }
+                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
+                        self.isLoading = false;
+                    });
                 },
                 getExportQuery: function() {
 
@@ -225,7 +232,7 @@
                     return apiQueryData;
                 },
                 refresh: function(force) {
-                    this.refresh = true;
+                    this.isRefresh = true;
                     this.fetch(force);
                 },
                 highlight: function(content) {
@@ -304,7 +311,7 @@
                 }
             },
             created: function() {
-                this.refresh = false;
+                this.isRefresh = false;
                 var routeHashItems = window.location.hash.split("/");
                 if (routeHashItems.length === 6) {
                     this.collection = routeHashItems[5];
@@ -470,8 +477,8 @@
                                     clearAll: true
                                 });
                             }
+                            self.queryLoading = false;
                         });
-                        self.queryLoading = false;
                     }
                     catch (err) {
                         CountlyHelpers.notify({

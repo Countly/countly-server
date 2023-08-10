@@ -7,11 +7,11 @@ var AppResolutionView = countlyVue.views.create({
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyDevicesAndTypes/fetchResolution');
+        this.$store.dispatch('countlyDevicesAndTypes/fetchResolution', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchResolution');
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchResolution', force);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);
