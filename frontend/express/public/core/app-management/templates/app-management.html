@@ -254,6 +254,46 @@
                                             v-bind="conf.attrs"
                                             >
                                         </el-input>
+                                    <el-color-picker 
+                                        v-else-if="conf.input === 'el-color-picker'" 
+                                        @change="onChange(key, $event)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                    </el-color-picker>
+                                    <cly-colorpicker 
+                                        class="feedback-settings__colorpicker"
+                                        v-else-if="conf.input === 'cly-colorpicker'" 
+                                        v-model="conf.value"
+                                        @change="onChange(key, conf.value)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs"
+                                        style="display:inline">
+                                    </cly-colorpicker>
+                                    <el-upload
+                                        class="feedback-settings__upload"
+                                        v-else-if="conf.input === 'image'" 
+                                        :show-file-list="false"
+                                        :data="{'id':selectedApp, 'auth_token': authToken, 'name': 'feedback_logo'+selectedApp}"
+                                        :before-upload="conf.before"
+                                        :on-success="conf.success"
+                                        :on-error="conf.error"
+                                        v-bind="conf.attrs">
+                                    <div :class="conf.image_size">
+                                        <div v-if="conf.value" class="image-delete bu-is-flex">
+                                            <el-button 
+                                                size="small" 
+                                                type="text" 
+                                                @click.stop="onChange(key, '')"
+                                                class="bu-p-0 feedback-settings__button">{{i18n('feedback.delete-logo')}}</el-button>
+                                            <img :src="'/feedback/preview/' + conf.value + '?' + Date.now()">
+                                        </div>
+                                        <div v-else class="bu-is-flex">
+                                            <el-button type="default" style="display:flex;margin:auto;">{{i18n('feedback.choose-file')}}</el-button>
+                                            <el-button type="default" disabled style="width: 165px;height: 50px;cursor: default;">{{i18n('feedback.logo-preview')}}</el-button>
+                                        </div>
+                                    </div>
+                                    <span class="config-error">{{conf.errorMessage || ""}}</span>
+                                </el-upload>
                                         <el-select
                                             v-else-if="conf.input === 'el-select'"
                                             @change="onChange(key, $event)"

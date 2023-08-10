@@ -28,6 +28,9 @@
             },
             hasAppAdminRights: function() {
                 return countlyAuth.validateAppAdmin();
+            },
+            authToken: function() {
+                return countlyGlobal.auth_token;
             }
         },
         data: function() {
