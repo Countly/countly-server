@@ -586,7 +586,7 @@ plugins.setConfigs("crashes", {
                                     //process custom segments
                                     if (report.custom) {
                                         for (let key in report.custom) {
-                                            let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":");
+                                            let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":").slice(0, 100);
                                             if (safeKey) {
                                                 if (groupInc["custom." + key + "." + safeKey]) {
                                                     groupInc["custom." + key + "." + safeKey]++;

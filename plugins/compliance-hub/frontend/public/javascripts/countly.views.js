@@ -640,6 +640,7 @@
             mounted: function() {
                 var userDetails = this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
                 if (userDetails.uid) {
+                    this.$store.dispatch("countlyConsentManager/uid", userDetails.uid);
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
             }
