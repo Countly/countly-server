@@ -240,7 +240,7 @@
         mixins: [SearchableOptionsMixin],
         props: {
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
-            value: { type: [String, Number] }
+            value: { type: [String, Number, Boolean] }
         },
         computed: {
             searchedOptions: function() {
@@ -744,7 +744,7 @@
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
             noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
-            value: { type: [String, Number, Array] },
+            value: { type: [String, Number, Array, Boolean] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
