@@ -74,6 +74,9 @@
 
         quickstartItems.forEach(function(item) {
             var linkUrl = item.link;
+            if (!linkUrl.startsWith('#')) {
+                linkUrl = '#' + linkUrl;
+            }
             var description = (item.description && item.description !== '-') ? item.description : '';
             var title = item.title;
             var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c"></i>' : '<i class="ion-android-open"></i>';
