@@ -1,3 +1,24 @@
+## Version 23.06.8
+Fixes:
+- [core] Automatic license management installation script
+- [core] Fixes for meta merging script
+- [core] Adding automation tests to base code
+- [core] Improvements for views to correctly count unique user count for one view if multiple views with the same name are sent in a single request.
+- [crashes] Fix query builder option source
+- [dbviewer] Fixed bug with  the filter being ignored on export if any value is null in the filter.
+
+Enterprise fixes:
+- [cohorts] Fixed pipeline for the top metric calculation to return only top 3 values, not all possible.
+- [cohorts] Fixes for data fetching upon loading cohorts table
+- [data-manager] Fixed a typo in the import schema function
+- [data-manager] Fixes to prevent Duplicate Events due to Transform Merge
+- [drill] Drill meta document conversion to type string on overflow based on document size
+- [funnels] Funnel edit form does not decode funnel name on open
+- [push] Fixing drill query by push token
+- [push] User Profiles querying by push tokens & messages
+- [push] User details rendering of push tokens present in a profile
+
+
 ## Version 23.06.7
 Fixes:
 - [consent] Fixes for user consent table
