@@ -120,7 +120,7 @@ class Template {
         }
 
         return {
-            id: this.msg.id,
+            _id: this.msg.id,
             title,
             message
         };

@@ -817,9 +817,10 @@ module.exports.user = async params => {
  * @apiQuery {String} app_id REQUIRED, Application ID
  * @apiQuery {String} [id] User ID (uid)
  * @apiQuery {String} [did] User device ID (did)
+ * @apiQuery {Boolean} [full] REQUIRED, return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
  * @apiQuery {String} [platform] REQUIRED, filter messages by platform
  * @apiQuery {Integer} [skip] REQUIRED, messages pagination skip
- * @apiQuery {Integer} [limit] REQUIRED, messages pagination limit
+ * @apiQuery {Integer} [limit] REQUIRED, messages pagination limit, must be in 1..50 range
  * 
  * @apiSuccess {Object[]} [notifications] Array of simplified notifications objects with id, title, message and date properties representing a notification sent to a user at a particular date. 
  * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
@@ -839,7 +840,8 @@ module.exports.notificationsForUser = async params => {
         did: {type: 'String', required: false},
         app_id: {type: 'String', required: true},
         platform: {type: 'String', in: platforms, required: true},
-        limit: {type: 'IntegerString', required: true, min: 1, max: 100},
+        full: {type: 'BooleanString', required: true},
+        limit: {type: 'IntegerString', required: true, min: 1, max: 50},
         skip: {type: 'IntegerString', required: true, min: 0},
     }, true);
     if (data.result) {
@@ -853,6 +855,10 @@ module.exports.notificationsForUser = async params => {
     if (!data.did && !data.id) {
         common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
         return true;
+    }
+
+    if (data.full) {
+        data.limit = Math.min(data.limit, 10);
     }
 
     let uid = data.id,
@@ -908,9 +914,13 @@ module.exports.notificationsForUser = async params => {
         return o;
     }).flat();
 
-    common.returnOutput(params, {
-        notifications,
-    }, true);
+    let ret = {notifications};
+
+    if (data.full) {
+        ret.messages = messages;
+    }
+
+    common.returnOutput(params, ret, true);
 
     return true;
 };
