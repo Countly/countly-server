@@ -885,7 +885,7 @@ module.exports.notificationsForUser = async params => {
         return true;
     }
 
-    id_dates.sort(([, date1], [, date2]) => date1 < date2 ? -1 : 1);
+    id_dates.sort(([, date1], [, date2]) => date1 > date2 ? -1 : 1);
     id_dates = id_dates.slice(data.skip, data.skip + data.limit);
 
     let ids = Array.from(new Set(id_dates.map(idd => idd[0]))).map(common.dbext.oid),
