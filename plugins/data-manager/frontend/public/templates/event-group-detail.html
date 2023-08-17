@@ -5,8 +5,9 @@
         <template v-slot:header-left>
             <div>
                 <cly-back-link link="/manage/data-manager/events/event-groups" title="Back to Manage Event Groups"></cly-back-link>
-                <div class="bu-mt-4">
-                    <h3 class="bu-is-capitalize" v-html="eventGroup.name"></h3>
+                <div class="bu-mt-4 bu-is-flex bu-is-align-items-center">
+                    <h3 class="bu-is-capitalized bu-mr-2" v-html="eventGroup.name"></h3>
+                    <view-guide></view-guide>
                 </div>
                 <div class="bu-mt-4 bu-mr-2">
                     <span v-if="eventGroup.status === false" class="cly-vue-data-manager__hidden-icon"><i class="ion-eye-disabled"></i></span>

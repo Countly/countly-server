@@ -5,7 +5,10 @@
         </template>
         <template v-slot:header-left>
             <div class="bu-is-flex bu-is-flex-direction-column">
-                <h2>Binary Images</h2>
+                <div class="bu-is-flex bu-is-align-items-center">
+                    <h2 class="bu-mr-2">Binary Images</h2>
+                    <view-guide></view-guide>
+                </div>
                 <div class="text-big font-weight-bold bu-mt-4" v-html="crash.name"></div>
                 <div class="bu-mt-2">
                     <span class="text-small bu-mr-4" v-if="'app_build' in crash">

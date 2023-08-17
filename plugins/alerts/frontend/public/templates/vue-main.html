@@ -1,12 +1,9 @@
 <script type="text/x-template" id="alerts-home">
     <div id="alerts-view" v-bind:class="[componentId]">
-        <cly-header>
-            <template v-slot:header-left>
-                <h2> {{i18n('alert.plugin-title')}}
-                </h2>
-                <span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('alert.tips')">
-                </span>
-            </template>
+        <cly-header
+            :title="i18n('alert.plugin-title')"
+            :tooltip="{description: i18n('alert.tips'), placement: 'top-center'}"
+        >
             <template v-slot:header-right>
             <el-button type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createAlert">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>

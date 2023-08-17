@@ -5,7 +5,10 @@
         </template>
         <template v-slot:header-left>
             <div class="bu-is-flex bu-is-flex-direction-column">
-                <h2 class="crashes-crashgroup-header__name" v-html="crashgroupName"></h2>
+                <div class="bu-is-flex bu-is-align-items-center">
+                    <h2 class="crashes-crashgroup-header__name bu-mr-2" v-html="crashgroupName"></h2>
+                    <view-guide></view-guide>
+                </div>
                 <div class="bu-mt-4 bu-is-flex">
                     <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badges"></crash-badge>
                 </div>

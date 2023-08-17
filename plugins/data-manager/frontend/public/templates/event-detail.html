@@ -6,7 +6,10 @@
             <div>
                 <cly-back-link link="/manage/data-manager/events/events" title="Back to Manage Events"></cly-back-link>
                 <div class="bu-mt-4">
-                    <h3 class="bu-is-capitalized"><div v-html="event.name || event.key"></div></h3>
+                    <div class="bu-is-flex bu-is-align-items-center">
+                        <h3 class="bu-is-capitalized bu-mr-2">{{event.name || event.key}}</h3>
+                        <view-guide></view-guide>
+                    </div>
                     <div class="bu-mt-4 bu-mr-2">
                         <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(event.status)" class="bu-tag bu-mt-1"> 

@@ -1,9 +1,7 @@
 <div class="dbviewer-main">
-    <cly-header>
-        <template v-slot:header-left>
-          <h2> {{ i18n('dbviewer.title') }}</h2>
-          &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('dbviewer.title')"
+    >
         <template v-slot:header-tabs>
             <cly-dynamic-tabs
                 v-model="dynamicTab"

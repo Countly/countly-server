@@ -1,8 +1,7 @@
 <div class="technology-analytics-wrapper-sdk" v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2>SDK stats</h2>
-        </template>
+    <cly-header
+		title="SDK stats"
+	>
 		<template v-slot:header-right>
 			<cly-more-options v-if="topDropdown" size="small">
 				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">

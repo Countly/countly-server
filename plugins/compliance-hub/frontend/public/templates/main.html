@@ -2,9 +2,9 @@
     <cly-header>
         <template v-slot:header-left>
             <div class="bu-is-flex bu-is-flex-direction-row title bu-mr-2">
-                <h3>Compliance Hub </h3>
+                <h3 class="bu-mr-2">Compliance Hub </h3>
+                <view-guide></view-guide>
             </div>
-            <cly-tooltip-icon></cly-tooltip-icon>
         </template>
         <template v-slot:header-tabs>
                 <cly-dynamic-tabs class="cly-vue-complaince__hub" v-model="dynamicTab" skin="secondary" :tabs="tabs">
