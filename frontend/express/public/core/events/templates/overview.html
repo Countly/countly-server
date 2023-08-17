@@ -1,11 +1,9 @@
 <script type="text/x-template" id="events-overview">
 	<div v-bind:class="[componentId]">
-		<cly-header>
-		  <template v-slot:header-left>
-			<h2 class="cly-vue-overview-events-header"> {{i18n('events.overview.title.new')}} 
-			</h2>
-			<cly-tooltip-icon icon="ion-help-circled" :tooltip="i18n('events.overview.title.new.tooltip')"></cly-tooltip-icon>
-		  </template>
+		<cly-header
+			:title="i18n('events.overview.title.new')"
+			:tooltip="{description: i18n('events.overview.title.new.tooltip')}"
+		>
 		  <template v-slot:header-bottom>
 			<i v-if="eventsOverview.length>0" class="far fa-clock cly-vue-events-header__subheading--widget"></i>
 			<span v-if="eventsOverview.length>0" class="cly-vue-events-header__subheading--text">{{updatedAt}}</span>

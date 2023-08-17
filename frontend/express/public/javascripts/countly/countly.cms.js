@@ -4,11 +4,18 @@
 
 (function(countlyCMS, $) {
 
-    countlyCMS.fetchEntry = function(entryID) {
+    countlyCMS.fetchEntry = function(entryID, populate, query) {
+        var data = { _id: entryID };
+        if (populate) {
+            data.populate = populate;
+        }
+        if (query) {
+            data.query = JSON.stringify(query);
+        }
         return new Promise(function(resolve, reject) {
             $.ajax({
                 url: countlyCommon.API_PARTS.data.r + "/cms/entries",
-                data: { _id: entryID },
+                data: data,
                 success: function(response) {
                     resolve(response);
                 },

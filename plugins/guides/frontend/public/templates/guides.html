@@ -1,0 +1,33 @@
+<div v-bind:class="[componentId]">
+    <cly-header
+        :title="i18n('guides.plugin-title')"
+    >
+        <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
+            <a class="el-button bu-mr-2" href="https://support.count.ly" target="_blank">
+                {{ i18n('guides.go-to-help-center') }} 
+                <i class="ion-android-open bu-ml-1"></i>
+            </a>
+            <el-input
+                ref="searchBox"
+                autocomplete="off"
+                v-model="searchQuery"
+                :placeholder="i18n('guides.search.in-guides')"
+                @focus="onFocus"
+            >
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+            </el-input>
+        </template>
+        <template v-slot:header-tabs>
+            <cly-dynamic-tabs
+                v-model="currentTab"
+                skin="secondary"
+                :tabs="tabs"
+            >
+                <template v-slot:tables="scope">
+                    <span>{{ scope.tab.title }}</span>
+                </template>
+            </cly-dynamic-tabs>
+        </template>
+    </cly-header>
+</div>

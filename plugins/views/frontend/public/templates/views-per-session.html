@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('views-per-session.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('views-per-session.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('views-per-session.title')"
+        :tooltip="{description: i18n('views-per-session.description')}"
+    >
     </cly-header>
     <cly-main>
         <cly-date-picker-g style="margin-bottom:32px"></cly-date-picker-g>

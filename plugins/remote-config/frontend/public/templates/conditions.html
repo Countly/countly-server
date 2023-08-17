@@ -1,9 +1,7 @@
 <div>
-  <cly-header>
-      <template v-slot:header-left>
-      <h2 class="cly-vue-remote-config__header"> {{i18n('remote-config.title')}} 
-      </h2>
-    </template>
+  <cly-header
+    :title="i18n('remote-config.title')"
+  >
     <template v-slot:header-right>
       <div class="bu-level-item" v-if="hasCreateRight">
         <el-button @click="create" type="success" size="small" icon="el-icon-circle-plus">Add Condition</el-button>

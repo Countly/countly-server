@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]" class="app-management-view">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('management-applications.title')}} </h2>
-        </template>
+    <cly-header
+        :title="i18n('management-applications.title')"
+    >
         <template v-if="!firstApp" v-slot:header-right>
             <el-button v-if="isGlobalAdmin" type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
         </template>

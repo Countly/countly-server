@@ -1,12 +1,9 @@
 
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('carriers.title')}} 
-            </h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
-            </span>
-        </template>
+    <cly-header
+		:title="i18n('carriers.title')"
+		:tooltip="{description, placement: 'top-center'}"
+	>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
             <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
