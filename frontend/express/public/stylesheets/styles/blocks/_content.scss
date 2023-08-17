@@ -24,6 +24,9 @@
 		transition: width 0.55s;
 		will-change: width;
         overflow: auto;
+		#content {
+			position: relative;
+		}
 	}
 }
 

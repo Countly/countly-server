@@ -18,7 +18,8 @@
                 default: function() {
                     return {};
                 }
-            }
+            },
+            tooltip: Object
         },
         computed: {
             slotHeaderTop: function() {
@@ -69,7 +70,8 @@
                                 <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
-                                            <h2>{{title}}</h2>\
+                                            <h2 class="bu-mr-2">{{title}}</h2>\
+                                            <view-guide v-if="title" :tooltip="tooltip"></view-guide>\
                                         </div>\
                                     </slot>\
                                 </template> \

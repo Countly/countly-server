@@ -1,0 +1,13 @@
+<div class="article bu-column bu-columns" :key="index">
+    <div class="bu-column article__image bu-is-flex bu-is-align-items-center bu-is-justify-content-center">
+        <img :src="index % 3 === 1 ? 'images/icons/console.svg' : 'images/icons/reorder-four.svg'" alt="Icon"/>
+    </div>
+    <div class="bu-column bu-is-flex-grow-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-start bu-is-justify-content-flex-start">
+        <h2 class="article__title"> {{ value.title }} </h2>
+        <p class="article__description">{{ value.description }}</p>
+        <a class="article__link" :href="value.url" target="_blank">
+            <span class="bu-mr-1">{{ i18n('guides.read-more')}}</span>
+            <i class="ion-android-arrow-forward"></i>
+        </a>
+    </div>
+</div> 

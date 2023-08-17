@@ -1,0 +1,10 @@
+<div class="bu-is-flex bu-is-flex-wrap-wrap wrapper">
+    <article-component
+        v-for="(item, index) in items"
+        :value="items[index]"
+        :index="index"
+        :class="{'bu-is-one-third': true, 'border-box': true}"
+        :key="items[index].id"
+    >
+    </article-component>   
+</div>

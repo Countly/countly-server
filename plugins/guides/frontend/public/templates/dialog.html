@@ -1,0 +1,82 @@
+<div class="guide-dialog-wrapper">
+    <div v-if="isButtonVisible" class="view-button" @click="onClick">
+        <span class="icon">
+            <img src="images/icons/book-open.svg" alt="Icon"/>
+        </span>
+        <span class="text"> {{ i18n('guides.view') }} </span>
+    </div>
+    
+    <cly-tooltip-icon 
+        v-else-if="tooltip && tooltip.description" 
+        :tooltip="tooltip.description" 
+        icon="ion ion-help-circled" 
+        style="margin-left:8px" 
+        placement="tooltip.placement">
+    </cly-tooltip-icon>
+
+    <el-dialog
+        :visible.sync="isDialogVisible"
+        custom-class="guide-dialog"
+        :modal="false"
+        :lock-scroll="true"
+        :show-close="false"
+    >
+        <template v-slot:title>
+            <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
+                <h2>{{ guideData.sectionTitle || "" }}</h2>
+                <div class="close-icon" @click="onClose">
+                    <img src="images/icons/close-icon.svg" alt="Icon"/>
+                </div>
+            </div>
+        </template>
+        <div class="content">
+            <vue-scroll :ops="scrollDialogContent">
+                <div v-if="guideData.description" class="description">
+                    {{ guideData.description }}
+                </div>
+                <div v-if="guideData.walkthroughs && guideData.walkthroughs.length > 0" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-start" style="margin-bottom: 25px;">
+                    <div class="title">{{ i18n('guides.guide.walkthrough-title') }}</div>
+                    <div class="description">{{ i18n('guides.guide.walkthrough-description') }}</div>
+                    <div>
+                        <vue-scroll ref="walkthroughSlider" :ops="scrollWalkthroughs">
+                            <div class="bu-is-flex">
+                                <walkthrough-component
+                                    v-for="(walkthrough, index) in guideData.walkthroughs"
+                                    :value="guideData.walkthroughs[index]"
+                                    :key="guideData.walkthroughs[index].id"
+                                    style="min-width:25%;"
+                                >
+                                </walkthrough-component>
+                            </div>
+                        </vue-scroll>
+                    </div>
+                </div>
+                <div v-if="guideData.articles && guideData.articles.length > 0" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-start">
+                    <div class="title">{{ i18n('guides.guide.article-title') }}</div>
+                    <div class="description">{{ i18n('guides.guide.article-description') }}</div>
+                    <div class="bu-is-flex bu-is-flex-wrap-wrap" style="width: 100%;">
+                        <article-component
+                            v-for="(article, index) in guideData.articles"
+                            :value="guideData.articles[index]"
+                            :index="index"
+                            :key="guideData.articles[index].id"
+                            :class="{'bu-is-one-third': true, 'border-box': true}"
+                        >
+                        </article-component>
+                    </div>
+                </div>
+            </vue-scroll>
+        </div>
+        <template v-slot:footer>
+            <div class="bu-is-flex bu-is-justify-content-space-between">
+                <div class="feedback">
+                    Do you have any <a class="link" href="#" target="_blank">feedback</a>?
+                </div>
+                <a class="link" href="https://support.count.ly" target="_blank">
+                    <span>Help Center</span>
+                    <i class="ion-android-open bu-ml-1"></i>
+                </a>
+            </div>
+        </template>
+    </el-dialog>   
+</div>

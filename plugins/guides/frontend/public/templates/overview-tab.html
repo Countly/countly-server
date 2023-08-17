@@ -1,0 +1,36 @@
+<div class="bu-columns bu-is-multiline bu-is-gapless">
+    <overview-component
+        v-if="onboardingWalkthroughs && onboardingWalkthroughs.length > 0"
+        :title="i18n('guides.get-started')"
+        :description="i18n('guides.get-started.desc')"
+        link="#/guides/walkthroughs/onboarding"
+        type="walkthrough"
+        :items="onboardingWalkthroughs"
+    ></overview-component>
+    <overview-component
+        v-if="newWalkthroughs && newWalkthroughs.length > 0"
+        :title="i18n('guides.new')"
+        :description="i18n('guides.new.desc')"
+        link="#/guides/walkthroughs/new"
+        type="walkthrough"
+        :items="newWalkthroughs"
+    ></overview-component>
+    <overview-component
+        v-if="suggestionsWalkthroughs && suggestionsWalkthroughs.length > 0"
+        :title="i18n('guides.suggestions')"
+        :description="i18n('guides.suggestions.desc')"
+        link="#/guides/walkthroughs/suggestions"
+        type="walkthrough"
+        :items="suggestionsWalkthroughs"
+        :max="4"
+    ></overview-component>
+    <overview-component
+        v-if="promotedArticles && promotedArticles.length > 0"
+        :title="i18n('guides.promoted')"
+        :description="i18n('guides.promoted.desc')"
+        link="#/guides/articles/promoted"
+        type="article"
+        :items="promotedArticles"
+        :max="3"
+    ></overview-component>
+</div>
