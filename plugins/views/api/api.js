@@ -2077,8 +2077,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
                         tmpTimeObjZero['d.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
+                    if (params.time.timestamp > lastViewTimestamp) {
+                        view[viewName] = params.time.timestamp;
+                    }
                 }
                 else {
+                    view[viewName] = params.time.timestamp;
                     common.fillTimeObjectZero({"time": {"weekly": params.time.weeklyISO || params.time.weekly, "yearly": params.time.yearly, "month": params.time.month }}, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
                     common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.unique, 1, true);
                 }
