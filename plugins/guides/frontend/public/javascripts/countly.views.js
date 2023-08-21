@@ -12,10 +12,21 @@
                 required: true
             }
         },
+        data: function() {
+            return {
+                isDialogIframeVisible: false
+            };
+        },
         methods: {
             onFrameLoad: function(key) {
                 document.getElementById('walkthrough__' + key).style.setProperty('position', 'absolute', 'important');
                 document.getElementById('walkthrough__loading__' + key).style.setProperty('display', 'none', 'important');
+            },
+            openDialog: function() {
+                this.isDialogIframeVisible = true;
+            },
+            closeDialog: function() {
+                this.isDialogIframeVisible = false;
             }
         }
     });
