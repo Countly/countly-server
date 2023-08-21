@@ -817,14 +817,18 @@ module.exports.user = async params => {
  * @apiQuery {String} app_id, Application ID
  * @apiQuery {String} [id] User ID (uid). Either id or did must be specified.
  * @apiQuery {String} [did] User device ID (did). Either id or did must be specified.
- * @apiQuery {Boolean} full return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
- * @apiQuery {String} platform filter messages by platform
- * @apiQuery {Integer} skip messages pagination skip
- * @apiQuery {Integer} limit messages pagination limit, must be in 1..50 range
+ * @apiQuery {Boolean} full Return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
+ * @apiQuery {String} platform Platform for notifications to return
+ * @apiQuery {Integer} skip Pagination skip
+ * @apiQuery {Integer} limit Pagination limit, must be in 1..50 range
  * 
- * @apiSuccess {Object[]} notifications Array of simplified notifications objects with id, title, message and date properties representing a notification sent to a user at a particular date. 
+ * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date. 
  * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
  * Also note that current user profile properties are used for message content personalization when it's set.
+ * @apiSuccess {String} notifications._id Noficiation message id
+ * @apiSuccess {String} notifications.date ISO date when notification was sent to this user, +- few seconds
+ * @apiSuccess {String} [notifications.title] Noficiation title string, if any
+ * @apiSuccess {String} [notifications.message] Noficiation message string, if any
  * 
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
@@ -852,6 +856,68 @@ module.exports.user = async params => {
  *          ]
  *      }
  * 
+ * @apiSuccessExample {json} Success-Response-full=true
+ *      HTTP/1.1 200 Success
+ *      {
+ *          "notifications": [
+ *		        {
+ *			        "_id": "6480d8a03f9ea25502c816ce",
+ *			        "title": "Offers!",
+ *			        "message": "Hi James, check out your personal limited offer",
+ *			        "date": "2023-06-07T19:26:08.683Z"
+ *		        },
+ *		        {
+ *			        "_id": "6465fede1276bf50b2662765",
+ *			        "title": "Balance",
+ *			        "message": "James, your balance is reaching 0",
+ *			        "date": "2023-06-08T19:00:08.683Z"
+ *		        }
+ *          ],
+ *          "messages": [
+ *              {
+ *       			"_id": "6480d8a03f9ea25502c816ce",
+ *                  "app": "5fbb72974e19c6614411d95f",
+ *                  "contents": [
+ *                      {
+ *                          "title": "Offers!",
+ *                          "message": "Hi James, check out your personal limited offer",
+ *                          "expiration": 604800000
+ *                      },
+ *                      {
+ *                          "p": "a",
+ *                          "sound": "default"
+ *                      },
+ *                      {
+ *                          "p": "i",
+ *                          "sound": "default"
+ *                      }
+ *                  ],
+ *                  "filter": {},
+ *                  "other message fields": "..."
+ *              },
+ *              {
+ *       			"_id": "6465fede1276bf50b2662765",
+ *                  "app": "5fbb72974e19c6614411d95f",
+ *                  "contents": [
+ *                      {
+ *      			        "title": "Balance",
+ *		        	        "message": "James, your balance is reaching 0",
+ *                          "expiration": 604800000
+ *                      },
+ *                      {
+ *                          "p": "a",
+ *                          "sound": "default"
+ *                      },
+ *                      {
+ *                          "p": "i",
+ *                          "sound": "default"
+ *                      }
+ *                  ],
+ *                  "filter": {},
+ *                  "other message fields": "..."
+ *              }
+ *          ]
+ *      }
  */
 module.exports.notificationsForUser = async params => {
     let data = common.validateArgs(params.qstring, {
