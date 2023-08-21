@@ -737,7 +737,7 @@ module.exports.one = async params => {
  * @apiSuccess {Object} [notifications] Map of notification ID to array of epochs this message was sent to the user
  * @apiSuccess {Object[]} [messages] Array of messages, returned if "messages" param is set to "true"
  * 
- * @apiDeprecated use now (#Push Notifications:notifications)
+ * @apiDeprecated use now (#Push_Notifications:notifications)
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
  * @apiErrorExample {json} NotFound
@@ -808,21 +808,21 @@ module.exports.user = async params => {
  * @param {object} params params
  * @returns {Promise} resolves to true
  * 
- * @api {GET} o/push/notifications User notifications
+ * @api {GET} o/push/notifications Sent notifications
  * @apiName notifications
  * @apiDescription Get notifications sent to a particular user.
  * Makes a look up either by user id (uid) or did (device id). Returns notifications sent to a user if any.
  * @apiGroup Push Notifications
  *
- * @apiQuery {String} app_id REQUIRED, Application ID
- * @apiQuery {String} [id] User ID (uid)
- * @apiQuery {String} [did] User device ID (did)
- * @apiQuery {Boolean} [full] REQUIRED, return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
- * @apiQuery {String} [platform] REQUIRED, filter messages by platform
- * @apiQuery {Integer} [skip] REQUIRED, messages pagination skip
- * @apiQuery {Integer} [limit] REQUIRED, messages pagination limit, must be in 1..50 range
+ * @apiQuery {String} app_id, Application ID
+ * @apiQuery {String} [id] User ID (uid). Either id or did must be specified.
+ * @apiQuery {String} [did] User device ID (did). Either id or did must be specified.
+ * @apiQuery {Boolean} full return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
+ * @apiQuery {String} platform filter messages by platform
+ * @apiQuery {Integer} skip messages pagination skip
+ * @apiQuery {Integer} limit messages pagination limit, must be in 1..50 range
  * 
- * @apiSuccess {Object[]} [notifications] Array of simplified notifications objects with id, title, message and date properties representing a notification sent to a user at a particular date. 
+ * @apiSuccess {Object[]} notifications Array of simplified notifications objects with id, title, message and date properties representing a notification sent to a user at a particular date. 
  * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
  * Also note that current user profile properties are used for message content personalization when it's set.
  * 
@@ -833,6 +833,25 @@ module.exports.user = async params => {
  *      {
  *          "errors": ["User with the did specified is not found"]
  *      }
+ * @apiSuccessExample {json} Success-Response
+ *      HTTP/1.1 200 Success
+ *      {
+ *          "notifications": [
+ *		        {
+ *			        "_id": "6480d8a03f9ea25502c816ce",
+ *			        "title": "Offers!",
+ *			        "message": "Hi James, check out your personal limited offer",
+ *			        "date": "2023-06-07T19:26:08.683Z"
+ *		        },
+ *		        {
+ *			        "_id": "6465fede1276bf50b2662765",
+ *			        "title": "Balance",
+ *			        "message": "James, your balance is reaching 0",
+ *			        "date": "2023-06-08T19:00:08.683Z"
+ *		        }
+ *          ]
+ *      }
+ * 
  */
 module.exports.notificationsForUser = async params => {
     let data = common.validateArgs(params.qstring, {
