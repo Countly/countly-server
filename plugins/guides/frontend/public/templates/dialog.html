@@ -25,7 +25,7 @@
             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
                 <h2>{{ guideData.sectionTitle || "" }}</h2>
                 <div class="close-icon" @click="onClose">
-                    <img src="images/icons/close-icon.svg" alt="Icon"/>
+                    <img src="images/icons/close-icon-grey.svg" alt="Icon"/>
                 </div>
             </div>
         </template>
@@ -69,11 +69,9 @@
         </div>
         <template v-slot:footer>
             <div class="bu-is-flex bu-is-justify-content-space-between">
-                <div class="feedback">
-                    Do you have any <a class="link" href="#" target="_blank">feedback</a>?
-                </div>
+                <div class="feedback" v-html="i18n('guides.feedback')"></div>
                 <a class="link" href="https://support.count.ly" target="_blank">
-                    <span>Help Center</span>
+                    <span>{{ i18n('guides.help-center') }}</span>
                     <i class="ion-android-open bu-ml-1"></i>
                 </a>
             </div>

@@ -36,8 +36,9 @@
     box-sizing: border-box;
 }
 
-.walkthrough__wrapper {
+.walkthrough-wrapper {
     box-sizing: border-box;
+
     .title {
         font-size: 14px !important;
         font-weight: 500 !important;
@@ -46,6 +47,7 @@
         margin: 10px;
         overflow-wrap: break-word;
     }
+
     .walkthrough {
         position: relative; 
         padding-bottom: calc(66.66666666666666% + 41px); 
@@ -68,6 +70,17 @@
             height: 100%;
             color-scheme: light;
         }
+    }
+
+    .dialog-wrapper {
+        z-index: 201;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        width: 100%;
+        cursor: pointer;
     }
 }
 
@@ -193,25 +206,6 @@
     } 
 }
 
-.el-dialog__wrapper {
-    overflow : unset;
-    position: absolute;
-}
-
-.el-dialog__header {
-    padding: 25px;
-    border-bottom: 1px solid #ECECEC;
-}
-
-.el-dialog__body {
-   padding: 25px 25px 0 25px;
-}
-
-.el-dialog__footer {
-    padding: 25px;
-    border-top: 1px solid #ECECEC;
-}
-
 .guide-dialog-wrapper {
     .view-button {
         display: flex;
@@ -244,8 +238,28 @@
             
         }
     }
+
+    .el-dialog__wrapper {
+        overflow : unset;
+        position: absolute;
+    }
+    
+    .el-dialog__header {
+        padding: 25px;
+        border-bottom: 1px solid #ECECEC;
+    }
+    
+    .el-dialog__body {
+       padding: 25px 25px 0 25px;
+    }
+    
+    .el-dialog__footer {
+        padding: 25px;
+        border-top: 1px solid #ECECEC;
+    }
+
     .guide-dialog {
-        z-index: 9999;
+        z-index: 200;
         float: right;
         box-shadow : 0 1px 3px rgba(0,0,0,1.3);
         border-radius: 20px;
@@ -315,5 +329,27 @@
             }
             
         }
+    }
+}
+
+.iframe-dialog {
+    height: 60vh;
+    width: 50vw;
+    border-radius: 8px;
+
+    .close-icon {
+        cursor: pointer;
+        position: absolute; 
+        right: 0; 
+        top: -30px;
+    }
+
+    .iframe {
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%;
+        color-scheme: light
     }
 }
