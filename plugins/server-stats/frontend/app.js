@@ -54,7 +54,7 @@ const { getUserApps } = require('../../../api/utils/rights');
                             timeout: 4E3,
                             qs: {
                                 device_id: member.email,
-                                app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                                 timestamp: Math.round(date.getTime() / 1000),
                                 hour: date.getHours(),
                                 dow: date.getDay(),
