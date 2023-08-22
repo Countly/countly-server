@@ -2009,19 +2009,11 @@
                     });
                 }
 
-                Countly.user_details({
-                    "name": countlyGlobal["member"]["full_name"] || "",
-                    "username": countlyGlobal["member"]["username"] || "",
-                    "email": countlyGlobal["member"]["email"]
-                });
-
                 Countly.userData.set("lastServer", window.location.hostname);
                 Countly.userData.set("lastVersion", "<%= countlyVersion %>");
                 Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
                 Countly.userData.set("isTrial", <%= countlyTrial %>);
-                <% if (!offline_mode) { %>
-                    Countly.userData.set("cpus", <%= cpus %>);
-                <% } %>
+                Countly.userData.set("cpus", <%= cpus %>);
                 Countly.userData.push_unique("servers", window.location.hostname);
                 Countly.userData.push_unique("versions", "<%= countlyVersion %>");
                 Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
