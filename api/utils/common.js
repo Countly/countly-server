@@ -2595,7 +2595,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && typeof user.did === "undefined") {
+        if (params.qstring.device_id && (!user.did || typeof user.did === "undefined")) {
             if (!update.$set) {
                 update.$set = {};
             }
