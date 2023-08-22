@@ -1941,11 +1941,22 @@
             };
 
             if (countlyGlobal.countly_tracking) {
+                var domain = countlyPlugins.getConfigsData().api.domain;
+
+                try {
+                    // try to extract hostname from full domain url
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
+
                 //initializing countly with params
                 Countly.init({
                     app_key: "<%= frontend_app || "e70ec21cbe19e799472dfaee0adb9223516d238f" %>",
                     url: "<%= frontend_server || "https://stats.count.ly/" %>",
-                    device_id: window.location.hostname,
+                    device_id: domain,
                     app_version: "<%= countlyVersion %>",
                     interval:1000
                 });
