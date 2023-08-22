@@ -1875,8 +1875,8 @@ var pluginManager = function pluginManager() {
         var map = {};
         if (masking && masking.hashMap) {
             if (appID === 'all') {
-                for (var hash in masking.hashMap) {
-                    map[masking.hashMap[hash].e] = hash;
+                for (var hash0 in masking.hashMap) {
+                    map[masking.hashMap[hash0].e] = hash0;
                 }
             }
             else {
