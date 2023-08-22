@@ -286,12 +286,13 @@
             font-weight: 400;
             line-height: 20px;
             color: #81868D;
-            .link {
+            &__link {
                 color: #0166D6;
                 font-size: 14px;
                 font-weight: 400;
                 line-height: 20px;
                 text-decoration: underline;
+                cursor: pointer;
             }
         }
         .content {

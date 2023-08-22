@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides */
+/* global app countlyVue CV countlyCommon Vue countlyGuides Countly */
 
 (function() {
 
@@ -151,6 +151,10 @@
                 sections.pop();
             }
         },
+        mounted: function() {
+            const link = this.$el.querySelector('.feedback__link');
+            link.addEventListener('click', this.fetchAndDisplayWidget);
+        },
         methods: {
             onClick: function() {
                 this.isDialogVisible = true;
@@ -174,7 +178,29 @@
                     }
                 }
                 return sections;
-            }
+            },
+            fetchAndDisplayWidget: function() {
+                let COUNTLY_STATS = Countly.init({
+                    app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
+                    url: "https://stats.count.ly",
+                });
+                COUNTLY_STATS.get_available_feedback_widgets(function(countlyPresentableFeedback, err) {
+                    if (err) {
+                        //console.log(err);
+                        return;
+                    }
+                    var i = countlyPresentableFeedback.length - 1;
+                    var countlyFeedbackWidget = countlyPresentableFeedback[0];
+                    while (i--) {
+                        if (countlyPresentableFeedback[i].type === 'survey') {
+                            countlyFeedbackWidget = countlyPresentableFeedback[i];
+                            break;
+                        }
+                    }
+                    var selectorId = "feedback-survey";
+                    COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId);
+                });
+            },
         },
     }));
 
