@@ -23,6 +23,7 @@ class PingJob extends job.Job {
         }
         plugins.loadConfigs(db, function() {
             const offlineMode = plugins.getConfig("api").offline_mode;
+            const { countly_tracking } = plugins.getConfig('frontend');
             if (!offlineMode) {
                 request(url, function(err, response, body) {
                     if (typeof body === "string") {
@@ -47,7 +48,7 @@ class PingJob extends job.Job {
                         }
                     }
                     log.d(err, body, countlyConfigOrig, countlyConfig);
-                    if (countlyConfig.web.track !== "none") {
+                    if (countly_tracking) {
                         db.collection("members").findOne({global_admin: true}, function(err2, member) {
                             if (!err2 && member) {
                                 var date = new Date();

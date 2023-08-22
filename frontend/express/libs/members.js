@@ -344,9 +344,7 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 *   membersUtility.updateStats(member );
 **/
 membersUtility.updateStats = function(member) {
-    var countlyConfig = membersUtility.countlyConfig;
-
-    if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
+    if (plugins.getConfig('frontend').countly_tracking && !plugins.getConfig("api").offline_mode) {
         countlyStats.getUser(membersUtility.db, member, function(statsObj) {
             const userApps = getUserApps(member);
             var custom = {
