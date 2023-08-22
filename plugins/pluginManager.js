@@ -1850,9 +1850,9 @@ var pluginManager = function pluginManager() {
     };
 
     this.getMaskingSettings = function(appID) {
-		if(appID==='all'){
-			return JSON.parse(JSON.stringify(masking.apps));
-		}
+        if (appID === 'all') {
+            return JSON.parse(JSON.stringify(masking.apps));
+        }
         else if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));
         }
@@ -1874,18 +1874,18 @@ var pluginManager = function pluginManager() {
     this.getEHashes = function(appID) {
         var map = {};
         if (masking && masking.hashMap) {
-			if(appID === 'all') {
-				for (var hash in masking.hashMap) {
+            if (appID === 'all') {
+                for (var hash in masking.hashMap) {
                     map[masking.hashMap[hash].e] = hash;
-				}
-			}
-			else {
-				for (var hash in masking.hashMap) {
-					if (masking.hashMap[hash].a === appID) {
-						map[masking.hashMap[hash].e] = hash;
-					}
-				}
-			}
+                }
+            }
+            else {
+                for (var hash in masking.hashMap) {
+                    if (masking.hashMap[hash].a === appID) {
+                        map[masking.hashMap[hash].e] = hash;
+                    }
+                }
+            }
         }
         return map;
     };
