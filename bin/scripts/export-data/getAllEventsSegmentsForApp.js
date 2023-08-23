@@ -8,11 +8,11 @@
 var plugins = require("../../../plugins/pluginManager.js");
 
 plugins.dbConnection("countly").then(function(db) {
-    db.collection("events").find().toArray(function(err, events) {
-        db.collection("apps").find().toArray(function(err, names) {
+    db.collection("events").find().toArray(function(errNoEvents, events) {
+        db.collection("apps").find({}, {name: 1}).toArray(function(errNoApps, names) {
 
-            if (err) {
-                console.log("Error fetching data", err);
+            if (errNoEvents || errNoApps) {
+                console.log("Error fetching data", errNoEvents, errNoApps);
                 db.close();
                 return;
             }
@@ -22,7 +22,7 @@ plugins.dbConnection("countly").then(function(db) {
                 appMapping[app._id] = app.name;
             }
 
-            console.log("App Name, Event Key, Segment");
+            console.log("App Name, Event Keys, Segments");
 
             for (const event of events) {
                 const appId = event._id;
@@ -34,7 +34,8 @@ plugins.dbConnection("countly").then(function(db) {
                         const values = segments[key];
 
                         for (const segmentValue of values) {
-                            const row = [appName, key, segmentValue];
+                            const valuesToPrint = segmentValue || "null"
+                            const row = [appName, key, valuesToPrint];
                             console.log(row.join(", "));
                         }
                     }
