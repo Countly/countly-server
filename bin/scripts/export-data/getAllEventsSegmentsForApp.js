@@ -2,7 +2,7 @@
  * Output list of app names, event keys, and segments.
  * Server: countly
  * Path: bin/scripts/export-data
- * Command: node getallEventsSegmentsForApp.js
+ * Command: node getAllEventsSegmentsForApp.js
  */
 
 var plugins = require("../../../plugins/pluginManager.js");
@@ -34,7 +34,7 @@ plugins.dbConnection("countly").then(function(db) {
                         const values = segments[key];
 
                         for (const segmentValue of values) {
-                            const valuesToPrint = segmentValue || "null"
+                            const valuesToPrint = segmentValue || "null";
                             const row = [appName, key, valuesToPrint];
                             console.log(row.join(", "));
                         }
