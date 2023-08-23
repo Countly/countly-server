@@ -1961,6 +1961,11 @@
                     interval:1000
                 });
 
+                // if domain has changed since the last time it is saved as device id set the new domain as device id and merge it with the old domain
+                if (Countly.get_device_id() !== domain) {
+                    Countly.change_id(domain, true);
+                }
+
                 //track sessions automatically
                 Countly.track_sessions();
 
