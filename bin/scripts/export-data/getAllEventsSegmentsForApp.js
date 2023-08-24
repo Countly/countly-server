@@ -34,10 +34,10 @@ plugins.dbConnection("countly").then(function(db) {
                         const values = segments[key];
 
                         for (const segmentValue of values) {
-                          if (segmentValue !== null) {
-                            const row = [appName, key, segmentValue];
-                            console.log(row.join(", "));
-                          }
+                            if (segmentValue !== null) {
+                                const row = [appName, key, segmentValue];
+                                console.log(row.join(", "));
+                            }
                         }
                     }
                 }
@@ -45,4 +45,4 @@ plugins.dbConnection("countly").then(function(db) {
             db.close();
         });
     });
-});
+}); 
