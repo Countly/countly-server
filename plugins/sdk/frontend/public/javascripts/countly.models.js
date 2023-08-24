@@ -27,9 +27,24 @@
             if (!obj.d_max) {
                 obj.d_max = 0;
             }
+            if (!obj.hc_hc) {
+                obj.hc_hc = 0;
+            }
+            if (!obj.hc_el) {
+                obj.hc_el = 0;
+            }
+            if (!obj.hc_wl) {
+                obj.hc_wl = 0;
+            }
+            if (!obj.hc_sc) {
+                obj.hc_sc = 0;
+            }
+            if (!obj.hc_em) {
+                obj.hc_em = 0;
+            }
         }
         else {
-            obj = {"r": 0, "c": 0, "q": 0, "d_total": 0, "d_count": 0, "d_min": 0, "d_max": 0};
+            obj = {"r": 0, "c": 0, "q": 0, "d_total": 0, "d_count": 0, "d_min": 0, "d_max": 0, hc_hc: 0, hc_el: 0, hc_wl: 0, hc_sc: 0, hc_em: 0};
         }
 
         return obj;
@@ -410,6 +425,200 @@
     countlySDK.getRequestTotals = function() {
         return countlyCommon.getDashboardData(countlySDK.getDb(), ["r", "c", "q"], [], {}, countlySDK.clearRequestObject);
     };
+    countlySDK.getHealthCheckTotals = function() {
+        return countlyCommon.getDashboardData(countlySDK.getDb(), ["hc_hc", "hc_el", "hc_wl"], [], {}, countlySDK.clearRequestObject);
+    };
+
+    countlySDK.getHealthCheckData = function(clean, join, metric1) {
+        var chartData = {};
+        var i = 0;
+        chartData = countlyCommon.extractTwoLevelData(countlySDK.getDb(), countlySDK.getMeta(metric1), countlySDK.clearRequestObject, [
+            {
+                name: metric1,
+                func: function(rangeArr) {
+                    rangeArr = countlyCommon.decode(rangeArr);
+                    return rangeArr;
+                }
+            },
+            { "name": "hc_sc" },
+            { "name": "hc_em" },
+        ]);
+        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, metric1);
+        chartData.chartData.sort(function(a, b) {
+            return b.t - a.t;
+        });
+        var namesData = _.pluck(chartData.chartData, metric1),
+            totalData = _.pluck(chartData.chartData, 'hc_sc'),
+            canceledData = _.pluck(chartData.chartData, 'hc_em');
+
+        if (join) {
+            chartData.chartDP = {ticks: []};
+            var chartDP = [
+                {data: [], label: "hc_sc"},
+                {data: [], label: "hc_em"}
+            ];
+
+            chartDP[0].data[0] = [-1, null];
+            chartDP[0].data[namesData.length + 1] = [namesData.length, null];
+            chartDP[1].data[0] = [-1, null];
+            chartDP[1].data[namesData.length + 1] = [namesData.length, null];
+
+            chartData.chartDP.ticks.push([-1, ""]);
+            chartData.chartDP.ticks.push([namesData.length, ""]);
+
+            for (i = 0; i < namesData.length; i++) {
+                chartDP[0].data[i + 1] = [i, totalData[i]];
+                chartDP[1].data[i + 1] = [i, canceledData[i]];
+                chartData.chartDP.ticks.push([i, namesData[i]]);
+            }
+
+            chartData.chartDP.dp = chartDP;
+        }
+        else {
+            var chartData2 = [],
+                chartData3 = [];
+
+            for (i = 0; i < namesData.length; i++) {
+                chartData2[i] = {
+                    data: [
+                        [0, totalData[i]]
+                    ],
+                    label: namesData[i]
+                };
+                chartData3[i] = {
+                    data: [
+                        [0, canceledData[i]]
+                    ],
+                    label: namesData[i]
+                };
+            }
+
+            chartData.chartDPTotal = {};
+            chartData.chartDPTotal.dp = chartData2;
+
+            chartData.chartDPCanceled = {};
+            chartData.chartDPCanceled.dp = chartData3;
+        }
+        return chartData;
+    };
+
+    countlySDK.getHealthCheckChartData = function(metric, segment, displayType) {
+        if (!metric) {
+            metric = "r";
+        }
+        var isPercentage = displayType === "percentage";
+        var data = countlySDK.getHealthCheckData(true, false, segment).chartData;
+        var chartData = [];
+        var dataProps = [];
+        for (let i = 0; i < data.length; i++) {
+            chartData.push({ data: [], label: data[i][segment] });
+            dataProps.push({ name: data[i][segment] });
+        }
+        var dd = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearRequestObject, chartData, dataProps, "", true);
+        var series = dd.chartDP;
+        var totals = [];
+        var percent = [];
+        var labels = [];
+
+        for (let z = 0; z < dd.chartData.length; z++) {
+            labels.push(dd.chartData[z].date);
+        }
+
+        var legend = {"type": "primary", data: []};
+        //lets sort series
+        series = series.sort(function(a, b) {
+            var valueA = a.label;
+            var valueB = b.label;
+            if (valueA < valueB) {
+                return -1;
+            }
+            else if (valueA > valueB) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        });
+        for (let i = 0; i < series.length; i++) {
+            for (let j = 0; j < series[i].data.length; j++) {
+                totals[j] = totals[j] || 0;
+                if (series[i].data[j][1]) {
+                    totals[j] += series[i].data[j][1][metric] || 0;
+                    percent[j] = 100;
+                    series[i].data[j] = series[i].data[j][1][metric] || 0;
+                }
+                else {
+                    series[i].data[j] = 0;
+                    if (!percent[j]) {
+                        percent[j] = 0;
+                    }
+                }
+            }
+        }
+        for (let i = 0; i < series.length; i++) {
+            series[i].name = series[i].label;
+            series[i].stack = "default";
+            legend.data[i] = {
+                "name": series[i].label,
+                "value": 0,
+                "trend": "",
+                "tooltip": "",
+                "percentage": 0
+            };
+            for (let j = 0; j < series[i].data.length; j++) {
+                legend.data[i].value += series[i].data[j];
+                if (isPercentage) {
+                    var value = Math.round(series[i].data[j] * 100 / totals[j]);
+                    if ((percent[j] - value) > 0) {
+                        series[i].data[j] = value;
+                        percent[j] = percent[j] - value;
+                        //if last value
+                        if (i + 1 === series.length && percent[j] > 0) {
+                            //find the largest value and assign the remainder to it
+                            let index = -1;
+                            let val = 0;
+                            for (let z = 0; z < series.length; z++) {
+                                if (series[z].data[j] > val) {
+                                    val = series[z].data[j];
+                                    index = z;
+                                }
+                            }
+                            if (index > -1) {
+                                series[index].data[j] += percent[j];
+                            }
+                        }
+                    }
+                    else {
+                        series[i].data[j] = percent[j];
+                        percent[j] = 0;
+                    }
+                }
+            }
+        }
+
+        var xAxis = {
+            type: 'category',
+            data: labels
+        };
+
+        var yAxis = {};
+        if (isPercentage) {
+            yAxis.axisLabel = {formatter: '{value} %'};
+            return {
+                xAxis: xAxis,
+                legend: legend,
+                yAxis: yAxis,
+                series: series,
+                valFormatter: function(val) {
+                    return val + " %";
+                }
+            };
+        }
+        else {
+            return {xAxis: xAxis, legend: legend, yAxis: yAxis, series: series};
+        }
+
+    };
 
     countlySDK.getDelayTotals = function() {
         var data = countlySDK.getDb(),
@@ -631,6 +840,60 @@
         };
     };
 
+    countlySDK.getHealthCheckTimeData = function() {
+        var cData = [
+                { data: [], label: "Health Checks", color: countlyCommon.GRAPH_COLORS[0] },
+                { data: [], label: "Error Logs", color: countlyCommon.GRAPH_COLORS[1] },
+                { data: [], label: "Warning Logs", color: countlyCommon.GRAPH_COLORS[2] }
+            ],
+            dataProps = [
+                { name: "hc_hc" },
+                { name: "hc_el" },
+                { name: "hc_wl" }
+            ];
+        var data = countlyCommon.extractChartData(countlySDK.getDb(), countlySDK.clearRequestObject, cData, dataProps);
+        var chartData = data.chartData;
+        var graphData = [[], [], []];
+        for (var i = 0; i < chartData.length; i++) {
+            graphData[0].push(chartData[i].hc_hc ? chartData[i].hc_hc : 0);
+            graphData[1].push(chartData[i].hc_el ? chartData[i].hc_el : 0);
+            graphData[2].push(chartData[i].hc_wl ? chartData[i].hc_wl : 0);
+        }
+        var series = [];
+        var yAxis = [];
+        series.push({
+            name: "Received Health Checks",
+            data: graphData[0],
+            color: "#017AFF"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        series.push({
+            name: "Error Logs",
+            data: graphData[1],
+            color: "#F96300"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        series.push({
+            name: "Warning Logs",
+            data: graphData[2],
+            color: "#FF9382"
+        });
+        yAxis.push({
+            type: 'value',
+            alignTicks: true
+        });
+        return {
+            series: series,
+            yAxis: yAxis,
+        };
+    };
+
     countlySDK.getRequestDelayData = function() {
         var cData = [
                 { data: [], label: "Minimum Delay", color: countlyCommon.GRAPH_COLORS[0] },
@@ -779,6 +1042,12 @@
                         totals: countlySDK.getRequestTotals(),
                         delays: countlySDK.getDelayTotals()
                     });
+                    context.commit('stats/setHCChartData', {
+                        statusCodes: countlySDK.getHealthCheckChartData("hc_sc", "status", context.state.stats.selectedDisplay),
+                        errorMessages: countlySDK.getHealthCheckChartData("hc_em", "error", context.state.stats.selectedDisplay),
+                        timeseries: countlySDK.getHealthCheckTimeData(),
+                        totals: countlySDK.getHealthCheckTotals()
+                    });
                     context.commit('stats/setSDKData', sdks);
                     context.dispatch('onFetchSuccess', "sdks");
                 }).catch(function(error) {
@@ -812,6 +1081,12 @@
                     timedelays: countlySDK.getRequestDelayData(),
                     totals: countlySDK.getRequestTotals(),
                     delays: countlySDK.getDelayTotals()
+                });
+                context.commit('stats/setHCChartData', {
+                    statusCodes: countlySDK.getHealthCheckChartData("hc_sc", "status", context.state.stats.selectedDisplay),
+                    errorMessages: countlySDK.getHealthCheckChartData("hc_em", "error", context.state.stats.selectedDisplay),
+                    timeseries: countlySDK.getHealthCheckTimeData(),
+                    totals: countlySDK.getHealthCheckTotals()
                 });
             }
         };
@@ -861,7 +1136,10 @@
                     legendData: {},
                     receivedChartData: {},
                     canceledChartData: {},
+                    statusCodesChartData: {},
+                    errorMessagesChartData: {},
                     requestChartData: {},
+                    healthCheckChartData: {},
                     delayChartData: {},
                     requestTotals: {
                         "r": {
@@ -897,6 +1175,26 @@
                             trend: "u"
                         },
                         "d_max": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                    },
+                    HCTotals: {
+                        "hc_hc": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                        "hc_el": {
+                            change: "NA",
+                            "prev-total": 0,
+                            total: 0,
+                            trend: "u"
+                        },
+                        "hc_wl": {
                             change: "NA",
                             "prev-total": 0,
                             total: 0,
@@ -961,6 +1259,22 @@
                     state.delayChartData = value.timedelays;
                     state.requestTotals = value.totals;
                     state.delayTotals = value.delays;
+                },
+                setHCChartData: function(state, value) {
+                    state.statusCodesChartData = {
+                        series: value.statusCodes.series,
+                        xAxis: value.statusCodes.xAxis,
+                        yAxis: value.statusCodes.yAxis,
+                        valFormatter: value.statusCodes.valFormatter
+                    };
+                    state.errorMessagesChartData = {
+                        series: value.errorMessages.series,
+                        xAxis: value.errorMessages.xAxis,
+                        yAxis: value.errorMessages.yAxis,
+                        valFormatter: value.errorMessages.valFormatter
+                    };
+                    state.healthCheckChartData = value.timeseries;
+                    state.HCTotals = value.totals;
                 },
                 setSelectedProperty: function(state, value) {
                     state.selectedProperty = value;

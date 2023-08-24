@@ -197,17 +197,18 @@ plugins.register("/permissions/features", function(ob) {
                     console.log("Parse hc failed", ex);
                 }
             }
+            common.recordCustomMetric(params, "sdks", params.app_id, ["hc_hc"]);
             if (params.qstring.hc.el) {
-                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_el"]);
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_el"], parseInt(params.qstring.hc.el, 10));
             }
             if (params.qstring.hc.wl) {
-                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_wl"]);
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_wl"], parseInt(params.qstring.hc.wl, 10));
             }
             if (params.qstring.hc.sc) {
                 common.recordCustomMetric(params, "sdks", params.app_id, ["hc_sc"], 1, {status: params.qstring.hc.sc});
             }
             if (params.qstring.hc.em) {
-                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_em"], 1, {type: params.qstring.hc.em});
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_em"], 1, {error: params.qstring.hc.em});
             }
         }
     });
