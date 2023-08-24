@@ -155,6 +155,7 @@ plugins.register("/permissions/features", function(ob) {
             "crash",
             "events",
             "token_session",
+            "hc"
         ];
         for (var i in params.qstring) {
             if (accepts.indexOf(i) !== -1) {
@@ -187,13 +188,46 @@ plugins.register("/permissions/features", function(ob) {
 
         //record request delay
         common.recordCustomMeasurement(params, "sdks", params.app_id, ["d"], Math.round(Math.max(Date.now() - params.time.mstimestamp, 0) / 1000));
+        if (params.qstring.hc) {
+            if (typeof params.qstring.hc === "string") {
+                try {
+                    params.qstring.hc = JSON.parse(params.qstring.hc);
+                }
+                catch (ex) {
+                    console.log("Parse hc failed", ex);
+                }
+            }
+            if (params.qstring.hc.el) {
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_el"]);
+            }
+            if (params.qstring.hc.wl) {
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_wl"]);
+            }
+            if (params.qstring.hc.sc) {
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_sc"], 1, {status: params.qstring.hc.sc});
+            }
+            if (params.qstring.hc.em) {
+                common.recordCustomMetric(params, "sdks", params.app_id, ["hc_em"], 1, {type: params.qstring.hc.em});
+            }
+        }
     });
 
     plugins.register("/sdk/user_properties", async function(ob) {
         var params = ob.params;
-
         if (params.qstring.rr) {
             ob.updates.push({$set: {rr: parseInt(params.qstring.rr, 10)}});
+        }
+
+        if (params.qstring.hc) {
+            if (typeof params.qstring.hc === "string") {
+                try {
+                    params.qstring.hc = JSON.parse(params.qstring.hc);
+                }
+                catch (ex) {
+                    console.log("Parse hc failed", ex);
+                }
+            }
+            ob.updates.push({$set: {hc: params.qstring.hc}});
         }
     });
 

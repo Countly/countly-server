@@ -415,9 +415,9 @@
         var data = countlySDK.getDb(),
             properties = ["d_total", "d_count", "d_min", "d_max"],
             unique = [];
-        estOverrideMetric = {},
-        clearObject = countlySDK.clearRequestObject,
-        segment = "";
+        var estOverrideMetric = {},
+            clearObject = countlySDK.clearRequestObject,
+            segment = "";
         var _periodObj = countlyCommon.periodObj,
             dataArr = {},
             tmp_x,
