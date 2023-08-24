@@ -34,9 +34,10 @@ plugins.dbConnection("countly").then(function(db) {
                         const values = segments[key];
 
                         for (const segmentValue of values) {
-                            const valuesToPrint = segmentValue || "null";
-                            const row = [appName, key, valuesToPrint];
+                          if (segmentValue !== null) {
+                            const row = [appName, key, segmentValue];
                             console.log(row.join(", "));
+                          }
                         }
                     }
                 }
