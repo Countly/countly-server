@@ -45,4 +45,4 @@ plugins.dbConnection("countly").then(function(db) {
             db.close();
         });
     });
-}); 
+});
