@@ -1,15 +1,15 @@
 var pluginExported = {};
-var countlyConfig = require('../../../frontend/express/config');
 var versionInfo = require('../../../frontend/express/version.info');
 var request = require('countly-request');
 var moment = require('moment');
+const plugins = require('../../../pluginManager.js');
 const { getUserApps } = require('../../../api/utils/rights');
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
         plugin.loginSuccessful = function(ob) {
             var member = ob.data;
-            if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
+            if (plugins.getConfig('frontend').countly_tracking) {
                 var match = {};
                 if (versionInfo.trial) {
                     match.a = {$in: getUserApps(member) || []};
@@ -48,13 +48,24 @@ const { getUserApps } = require('../../../api/utils/rights');
                         custom.dataPointsMonthlyAvg = data.avg;
                         custom.dataPointsLast3Months = data.month3;
                         var date = new Date();
+                        let domain = plugins.getConfig('api').domain;
+
+                        try {
+                            // try to extract hostname from full domain url
+                            const urlObj = new URL(domain);
+                            domain = urlObj.hostname;
+                        }
+                        catch (_) {
+                            // do nothing, domain from config will be used as is
+                        }
+
                         request({
                             uri: "https://stats.count.ly/i",
                             method: "GET",
                             timeout: 4E3,
                             qs: {
-                                device_id: member.email,
-                                app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                device_id: domain,
+                                app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                                 timestamp: Math.round(date.getTime() / 1000),
                                 hour: date.getHours(),
                                 dow: date.getDay(),
