@@ -1,3 +1,15 @@
+## Version 23.06.9
+Fixes:
+- [push] Adding push/notifications endpoint, deprecating push/user endpoint
+- [push] Docs: fixing required fields, adding example
+- [core] If user property is redacted, it should not show list of values in Data manager too
+- [hooks] Fix for firebase url validation
+
+Enterprise fixes:
+- [push] Allowing push token to be filtered from cohorts
+- [drill] Fix table download bug
+- [data-manager] Transformation - Validation for transformation failing on incoming request
+
 ## Version 23.06.8
 Fixes:
 - [core] Automatic license management installation script
