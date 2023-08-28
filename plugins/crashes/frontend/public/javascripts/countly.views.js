@@ -278,11 +278,15 @@
 
             if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getFilterValues = function(segmentationKey) {
+                var getRemoteFilterValues = function(segmentationKey) {
                     return function() {
-                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                            return {name: name, value: value};
+                        return new Promise(function(resolve) {
+                            crashMeta.getBigListMetaData('sg.' + segmentationKey, '', function(vals) {
+                                resolve(vals.map(function(item) {
+                                    var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + item) : item;
+                                    return {label: name, name: name, value: item};
+                                }));
+                            });
                         });
                     };
                 };
@@ -302,14 +306,14 @@
                     filterProperties.push({
                         id: "app_version",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
@@ -318,28 +322,28 @@
                         name: "OpenGL Version",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("opengl")
+                        searchRemoteList: getRemoteFilterValues('opengl')
                     });
                     filterProperties.push({
                         id: "orientation",
                         name: "Orientation",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("orientation")
+                        searchRemoteList: getRemoteFilterValues('orientation')
                     });
                     filterProperties.push({
                         id: "os",
                         name: "Platform",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("os")
+                        searchRemoteList: getRemoteFilterValues('os')
                     });
                     filterProperties.push({
                         id: "cpu",
                         name: "CPU",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("cpu")
+                        searchRemoteList: getRemoteFilterValues('cpu')
                     });
                 }
             }
@@ -448,9 +452,11 @@
             crashgroupsFilter: {
                 set: function(newValue) {
                     var query = {};
+                    var tmpQuery = {};
 
                     if (newValue.query) {
-                        query = countlyCrashes.modifyExistsQueries(newValue.query);
+                        tmpQuery = countlyCrashes.modifyOsVersionQuery(newValue.query);
+                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
                     if (newValue.query) {
@@ -532,8 +538,10 @@
             refresh: function() {
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
+                    var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                        tmpQuery = countlyCrashes.modifyOsVersionQuery(this.crashgroupsFilter.query);
+                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
                     return Promise.all([
@@ -607,8 +615,10 @@
         },
         beforeCreate: function() {
             var query = {};
+            var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
+                tmpQuery = countlyCrashes.modifyOsVersionQuery(this.$route.params.query.query);
+                query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});

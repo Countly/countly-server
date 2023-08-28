@@ -1228,6 +1228,24 @@ function transformAppVersion(inpVersion) {
         return id;
     };
 
+    countlyCrashes.modifyOsVersionQuery = function(inpQuery) {
+        var resultQuery = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (key.startsWith('os_version')) {
+                var splitKey = key.split('.');
+                var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
+
+                resultQuery[newKey] = inpQuery[key];
+            }
+            else {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        return resultQuery;
+    };
+
     countlyCrashes.modifyExistsQueries = function(inpQuery) {
         var resultQuery = {};
         var existsGroups = {};

@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _ */
+/* global Vue, CV, countlyGlobal, $, _, countlyCommon */
 
 (function(countlyVue) {
 
@@ -247,6 +247,11 @@
                 return this.getMatching(this.options);
             }
         },
+        methods: {
+            decodeHtml: function(str) {
+                return countlyCommon.unescapeHtml(str);
+            }
+        },
         template: '<div\
                     style="height: 100%"\
                     class="cly-vue-listbox scroll-keep-show"\
@@ -289,7 +294,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                                <div class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
+                                                <div class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
