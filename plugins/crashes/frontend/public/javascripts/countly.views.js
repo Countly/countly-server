@@ -455,7 +455,7 @@
                     var tmpQuery = {};
 
                     if (newValue.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(newValue.query);
+                        tmpQuery = countlyCrashes.modifyQueries(newValue.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
@@ -540,7 +540,7 @@
                     var query = {};
                     var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(this.crashgroupsFilter.query);
+                        tmpQuery = countlyCrashes.modifyQueries(this.crashgroupsFilter.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
@@ -617,7 +617,7 @@
             var query = {};
             var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                tmpQuery = countlyCrashes.modifyOsVersionQuery(this.$route.params.query.query);
+                tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
                 query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
