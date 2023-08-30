@@ -72,6 +72,61 @@ class Template {
     }
 
     /**
+     * Simplified version of {@link compile} for push/user query
+     * 
+     * @param {object} push push object to compile
+     * @returns {object} simplified message sending result
+     */
+    guess_compile(push) {
+        let la = push.pr.la,
+            title, message;
+
+        this.result = this.platform.empty(this.msg);
+        for (let i = 0; i < this.contents.length; i++) {
+            let content = this.contents[i];
+            if ((!content.p || content.p === this.platform.key) && (!content.la || content.la === la)) {
+                this.appl(this.platform.fields, content, push.pr);
+                if (content.title && !content.titlePers) {
+                    this.platform.map.title(this, content.title);
+                }
+                if (content.message && !content.messagePers) {
+                    this.platform.map.message(this, content.message);
+                }
+            }
+        }
+
+        for (let i = this.contents.length - 1; i >= 0; i--) {
+            let c = this.contents[i];
+            if (c.la && c.la !== la) {
+                continue;
+            }
+
+            if (title === undefined) {
+                if (c.titlePers) {
+                    title = this.title(c.title, c.titlePersDeup, push.pr);
+                }
+                else {
+                    title = c.title;
+                }
+            }
+            if (message === undefined) {
+                if (c.messagePers) {
+                    message = this.message(c.message, c.messagePersDeup, push.pr);
+                }
+                else {
+                    message = c.message;
+                }
+            }
+        }
+
+        return {
+            _id: this.msg.id,
+            title,
+            message
+        };
+    }
+
+    /**
      * Compile msg to platform-specific payload
      * 
      * @param {object} push push object to compile

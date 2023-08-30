@@ -328,7 +328,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     var app = express();
     app = expose(app);
-    app.enable('trust proxy');
+    //app.enable('trust proxy');
     app.set('x-powered-by', false);
     const limiter = rateLimit({
         windowMs: parseInt(plugins.getConfig("security").dashboard_rate_limit_window) * 1000,
