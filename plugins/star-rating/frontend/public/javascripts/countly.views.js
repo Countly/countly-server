@@ -348,12 +348,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-data-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-data-table-tab-comments"
                     }
                 ],
                 dynamicTab: 'ratings-table',
@@ -520,18 +522,21 @@
                         label: "Platform",
                         key: "platform",
                         items: self.platformOptions,
+                        dataTestId: {label: "ratings-filter-parameters-platform-label", dropdown: "ratings-filter-parameters-platform-dropdown"},
                         default: ""
                     },
                     {
                         label: "App Version",
                         key: "version",
                         items: self.versionOptions,
+                        dataTestId: {label: "ratings-filter-parameters-version-label", dropdown: "ratings-filter-parameters-version-dropdown"},
                         default: ""
                     },
                     {
                         label: "Widget",
                         key: "widget",
                         items: self.widgetOptions,
+                        dataTestId: {label: "ratings-filter-parameters-widget-label", dropdown: "ratings-filter-parameters-widget-dropdown"},
                         default: ""
                     }
                 ];
@@ -690,13 +695,15 @@
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings',
                         component: RatingsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings',
+                        dataTestId: "ratings-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.widgets'),
                         name: 'widgets',
                         component: WidgetsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets',
+                        dataTestId: "ratings-tab-rating-widgets"
                     }
                 ]
             };

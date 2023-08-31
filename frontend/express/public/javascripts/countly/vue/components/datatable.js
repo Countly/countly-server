@@ -909,6 +909,10 @@
             ExportHandlerMixin
         ],
         props: {
+            testId: {
+                type: String,
+                default: 'table-test-id'
+            },
             keyFn: {
                 type: Function,
                 default: function(row) {

@@ -346,13 +346,13 @@
                             <div class="cly-multi-select__body">\
                                 <div>\
                                     <div class="cly-multi-select__title-wrapper">\
-                                        <span class="cly-multi-select__title">{{title}}</span>\
-                                        <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
+                                        <span :data-test-id="contentDataTestId.title" class="cly-multi-select__title">{{title}}</span>\
+                                        <el-button :data-test-id="contentDataTestId.reset" class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
+                                        <tr :data-test-id="(!field || !field.dataTestId || field.dataTestId.label === null) ? \'\' : field.dataTestId.label" v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :data-test-id="(!field || !field.dataTestId ||field.dataTestId.dropdown === null) ? \'\' : field.dataTestId.dropdown" :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -371,8 +371,8 @@
                                     </table>\
                                 </div>\
                                 <div class="cly-multi-select__controls">\
-                                    <el-button v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
-                                    <el-button v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
+                                    <el-button data-test-id="multi-select-cancel-button" v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button data-test-id="multi-select-confirm-button" v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
                                 </div>\
                             </div>\
                         </div>\
@@ -409,7 +409,13 @@
                     return [];
                 }
             },
-            title: {type: String, default: "Filter Parameters"}
+            title: {type: String, default: "Filter Parameters"},
+            contentDataTestId: {
+                type: Object,
+                default: function() {
+                    return { title: '', reset: '' };
+                }
+            }
         },
         computed: {
             optionLabel: function() {

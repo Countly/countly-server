@@ -1979,9 +1979,9 @@
                             <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
                                 <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
-                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
-                                <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
-                                <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
+                            <cly-more-options data-test-id="cly-chart-more-dropdown" v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                                <el-dropdown-item data-test-id="cly-chart-more-download-button" v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
+                                <el-dropdown-item data-test-id="cly-chart-more-zoom-in-button" v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
                             </cly-more-options>\
                             <zoom-interactive @zoom-reset="onZoomReset" :is-zoom="isZoom" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
@@ -2001,6 +2001,10 @@
             },
             position: {
                 type: String
+            },
+            contentDataTestId: {
+                type: Object,
+                default: {tooltipIcon: '', tooltipLabel: ''}
             }
         },
         computed: {
@@ -2046,8 +2050,8 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="contentDataTestId.tooltipIcon" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="contentDataTestId.tooltipLabel" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
@@ -2119,6 +2123,12 @@
             seriesType: {
                 type: String,
                 default: ""
+            },
+            contentDataTestId: {
+                type: Object,
+                default: function() {
+                    return {tooltipIcon: '', tooltipLabel: ''};
+                }
             }
         },
         data: function() {
@@ -2198,6 +2208,9 @@
                             }
                         }
                     }
+                    data.forEach((item) => {
+                        item.name = countlyCommon.unescapeHtml(item.name);
+                    });
                     this.legendData = data;
                 }
             }
@@ -2211,6 +2224,7 @@
                         </template>\
                         <template v-if="options.type === \'secondary\'">\
                             <secondary-legend\
+                                :contentDataTestId="contentDataTestId"\
                                 :data="legendData"\
                                 :position="options.position"\
                                 :onClick="onLegendClick">\
@@ -2603,6 +2617,13 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            contentDataTestId: {
+                type: Object,
+                default: function() {
+                    return {tooltipIcon: '', tooltipLabel: ''};
+                },
+                required: false
             }
         },
         components: {
@@ -2647,6 +2668,7 @@
                             ref="legend"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
+                            :contentDataTestId="contentDataTestId"\
                             v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'

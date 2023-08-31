@@ -30,13 +30,13 @@
             <div v-if="allowCustomRange && !moveRangeTabsToLeftSide" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
             :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
             @click="handleCustomRangeClick">
-            {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
+            <span data-test-id="select-date-custom-label">{{i18n('common.time-period-select.custom-range')}}</span><i class="el-icon-caret-right"></i>
             </div>
             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"
                 :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value, 'cly-vue-daterp__shortcut--deactive': customRangeSelection && !moveRangeTabsToLeftSide}"
                 v-for="shortcut in shortcuts"
                 @click="handleShortcutClick(shortcut.value)">
-                {{shortcut.label}}
+                <span :data-test-id="'select-date-' +  shortcut.label.toString().replace(/[\s,]+/g, '-').toLowerCase() + '-button'">{{shortcut.label}}</span>
             </div>
         </div>
         <div class="cly-vue-daterp__calendars-col" v-if="(isVisible && customRangeSelection)">
@@ -44,7 +44,7 @@
                 <el-tabs v-model="rangeMode" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
                     <el-tab-pane name="inBetween">
                         <template slot="label">
-                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
+                            <span data-test-id="select-date-tab-in-between" class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <template v-if="isRange && !displayOneMode">
@@ -66,7 +66,7 @@
                     </el-tab-pane>
                     <el-tab-pane name="before" v-if="allowBeforeSelection">
                         <template slot="label">
-                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.before')}}</span>
+                            <span data-test-id="select-date-tab-before" class="text-medium font-weight-bold">{{i18n('common.time-period-select.before')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
@@ -74,7 +74,7 @@
                     </el-tab-pane>
                     <el-tab-pane name="since">
                         <template slot="label">
-                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.since')}}</span>
+                            <span data-test-id="select-date-tab-since"  class="text-medium font-weight-bold">{{i18n('common.time-period-select.since')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
@@ -82,7 +82,7 @@
                     </el-tab-pane>
                     <el-tab-pane name="inTheLast">
                         <template slot="label">
-                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
+                            <span data-test-id="select-date-tab-in-the-last" class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
                         </template>
                         <div v-if="!retentionConfiguration" class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
@@ -107,9 +107,9 @@
                 </el-tabs>
                 <div v-if="moveRangeTabsToLeftSide" class="cly-vue-daterp__input-wrapper">
                     <div v-if="rangeMode === 'inBetween'" class="cly-vue-daterp__input-wrapper-content">
-                        <el-input size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
-                        <span class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
-                        <el-input size="small" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
+                        <el-input data-test-id="select-date-range-in-between-start-date" size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
+                        <span data-test-id="select-date-range-in-between-and-label" class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
+                        <el-input size="small" data-test-id="select-date-range-in-between-end-date" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
                     </div>
                     <el-input v-if="rangeMode === 'before'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
                     <el-input v-if="rangeMode === 'since'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
@@ -201,8 +201,8 @@
                 <span class="text-medium" v-for="warning in warnings">{{warning}}</span>
             </div>
             <div class="cly-vue-daterp__commit-section">
-                <el-button @click="handleDiscardClick" class="cly-vue-daterp__cancel-button color-cool-gray-100 bg-warm-gray-20" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="handleConfirmClick" v-tooltip="commitTooltip" class="cly-vue-daterp__confirm-button" type="success" size="small">{{ !isRange ? i18n("common.apply") : i18n("common.apply-range") }}</el-button>
+                <el-button data-test-id="select-date-cancel-button" @click="handleDiscardClick" class="cly-vue-daterp__cancel-button color-cool-gray-100 bg-warm-gray-20" size="small">{{ i18n("common.cancel") }}</el-button>
+                <el-button data-test-id="select-date-apply-range-button" @click="handleConfirmClick" v-tooltip="commitTooltip" class="cly-vue-daterp__confirm-button" type="success" size="small">{{ !isRange ? i18n("common.apply") : i18n("common.apply-range") }}</el-button>
             </div>
         </div>
     </div>
