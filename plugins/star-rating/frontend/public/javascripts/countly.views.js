@@ -135,7 +135,7 @@
                 var loadImage = new Image();
                 if (this.controls.initialEditedObject.logo) {
 
-                    if (this.controls.initialEditedObject.logo.indexOf("feedback_logo")
+                    if (this.controls.initialEditedObject.logo.indexOf("feedback_logo") > -1
                     ) {
                         loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
                     }
@@ -592,8 +592,9 @@
                 var logoType = 'default';
                 var logo = null;
                 var globalLogo = false;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) {
+                if ((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) || countlyPlugins.getConfigsData().feedback) {
                     var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp;
+                    var feedback = countlyPlugins.getConfigsData().feedback;
                     if (feedbackApp.main_color) {
                         trigger_bg_color = feedbackApp.main_color;
                     }
@@ -612,12 +613,9 @@
                         globalLogo = true;
                     }
                     else if (countlyPlugins.getConfigsData().feedback) {
-                        var feedback = countlyPlugins.getConfigsData().feedback;
-                        if (feedback.logo) {
-                            logo = '/feedback/preview/' + feedbackApp.feedback_logo;
-                            logoType = 'custom';
-                            globalLogo = true;
-                        }
+                        logo = '/feedback/preview/' + feedback.feedback_logo;
+                        logoType = 'custom';
+                        globalLogo = true;
                     }
                 }
                 this.openDrawer("widget", {
