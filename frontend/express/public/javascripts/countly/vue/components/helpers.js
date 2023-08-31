@@ -984,18 +984,18 @@
         template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
-                                <img class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
+                                <img :data-test-id="testId + \'-empty-view-icon\'" class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
                             <slot name="title">\
-                                <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+                                <h3 :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-html="subTitle"></span></div>\
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasCreateRight && hasAction">\
-                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
+                                <div :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
@@ -1008,7 +1008,8 @@
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
             hasAction: {default: false, type: Boolean},
-            hasCreateRight: { default: true, type: Boolean }
+            hasCreateRight: { default: true, type: Boolean },
+            testId: {type: String, default: "cly-empty-view"}
         },
         data: function() {
             return {};
