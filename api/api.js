@@ -255,6 +255,7 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        plugins.installMissingPlugins(common.db);
         common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
         common.cache.start().then(() => {
