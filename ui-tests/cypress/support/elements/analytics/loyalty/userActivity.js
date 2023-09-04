@@ -1,3 +1,3 @@
 export default {
-	VISITOR_ACTIVITY_LABEL: '[data-test-id=header-title]',
-}
+    VISITOR_ACTIVITY_LABEL: '[data-test-id=header-title]',
+};

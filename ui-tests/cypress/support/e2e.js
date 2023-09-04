@@ -14,13 +14,13 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
-  
+import './commands';
+
 //When Cypress detects uncaught errors originating from application it will automatically fail the current test.
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
 //Open the below code block after the "Cannot read properties of undefined..." errors occurred.
 //But firstly open an issue about the error.
 Cypress.on('uncaught:exception', (err, runnable) => {
     // returning false here prevents Cypress from failing the test
-    return false
-  });
+    return false;
+});
