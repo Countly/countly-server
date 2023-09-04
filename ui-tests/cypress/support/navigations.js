@@ -9,14 +9,14 @@ const goToLogoutPage = () => {
 };
 
 const goToHomePage = () => {
-	cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS_LIST.MAIN_MENU)
-	cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.HOME)
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS_LIST.MAIN_MENU);
+    cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.HOME);
 };
 
 const goToVisitorLoyalty = () => {
-	cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS_LIST.MAIN_MENU)
-	cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.ANALYTICS)
-	cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.ANALYTICS_LIST.VISITOR_LOYALTY)
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS_LIST.MAIN_MENU);
+    cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.ANALYTICS);
+    cy.clickElement(sidebarElements.SIDEBAR_MAIN_MENU_OPTIONS.ANALYTICS_LIST.VISITOR_LOYALTY);
 };
 
 const isNavigatedToDashboard = () => {
