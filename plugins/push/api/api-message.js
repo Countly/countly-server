@@ -1417,7 +1417,7 @@ function mimeInfo(url, method = 'HEAD') {
     return new Promise((resolve, reject) => {
         let req = request(url.toString(), method, conf);
 
-        req.once('response', res => {
+        req.on('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;
