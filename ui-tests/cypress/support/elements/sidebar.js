@@ -1,6 +1,22 @@
 export default {
+<<<<<<< HEAD
     SIDEBAR: '[data-test-id= dashboard-sidebar]',
     SIDEBAR_MENU_OPTIONS: '[data-test-id= sidebar-menu-options]',
+=======
+	SIDEBAR: '[data-test-id= dashboard-sidebar]',
+	SIDEBAR_MENU_OPTIONS: '[data-test-id= sidebar-menu-options]',
+	
+	SIDEBAR_MENU_OPTIONS_LIST: {
+		MAIN_MENU: '[data-test-id= sidebar-menuoptions-analytics]',
+		DASHBOARDS: '[data-test-id= sidebar-menuoptions-dashboards]',
+		MANAGEMENT: '[data-test-id= sidebar-menuoptions-management]',
+		REPORT_MANAGER: '[data-test-id= sidebar-menuoptions-reportmanager]',
+		HELP_CENTER: '[data-test-id= sidebar-menu-helpcenter]',
+		MY_PROFILE: '[data-test-id= sidebar-menuoptions-myprofile]',
+		LANGUAGE: '[data-test-id= language-menu]',
+		TOGGLE: '[data-test-id=sidebar-menuoptions-toogleleft]'
+	},
+>>>>>>> 5329704f95 (Updated sidebar duplicate defines for lint)
 
     SIDEBAR_MENU_OPTIONS: {
         MAIN_MENU: '[data-test-id= sidebar-menuoptions-analytics]',
