@@ -11,7 +11,7 @@ export default {
         MY_PROFILE: '[data-test-id= sidebar-menuoptions-myprofile]',
         LANGUAGE: '[data-test-id= language-menu]',
         TOGGLE: '[data-test-id=sidebar-menuoptions-toogleleft]'
-	},
+    },
     SIDEBAR_MAIN_MENU_OPTIONS: {
         APP: '[data-test-id= sidebar-mainmenu-app]',
         APP_IMAGE: '[data-test-id= sidebar-mainmenu-app-image]',
