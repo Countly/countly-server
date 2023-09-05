@@ -593,21 +593,21 @@
                 var logo = null;
                 var globalLogo = false;
                 if ((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) || countlyPlugins.getConfigsData().feedback) {
-                    var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp;
+                    var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp ? countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp : null;
                     var feedback = countlyPlugins.getConfigsData().feedback;
-                    if (feedbackApp.main_color) {
+                    if (feedbackApp && feedbackApp.main_color) {
                         trigger_bg_color = feedbackApp.main_color;
                     }
                     else if (countlyPlugins.getConfigsData().feedback) {
                         trigger_bg_color = feedback.main_color;
                     }
-                    if (feedbackApp.font_color) {
+                    if (feedbackApp && feedbackApp.font_color) {
                         trigger_font_color = feedbackApp.font_color;
                     }
                     else if (countlyPlugins.getConfigsData().feedback) {
                         trigger_font_color = feedback.font_color;
                     }
-                    if (feedbackApp.feedback_logo) {
+                    if (feedbackApp && feedbackApp.feedback_logo) {
                         logo = '/feedback/preview/' + feedbackApp.feedback_logo;
                         logoType = 'custom';
                         globalLogo = true;
