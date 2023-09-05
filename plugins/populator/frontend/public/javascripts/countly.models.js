@@ -75,43 +75,49 @@
         {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
         {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
     var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
-    var JsErrors = [
-        {
-            error: "Error: ReferenceError\n" +
-            "   VariableName is not defined\n" +
-                "   at bundle.js:1:15",
-            name: 'Error: ReferenceError',
-            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,QAAQC,MAAMC,aAAaC","sources":["webpack:///./app.js"],"sourcesContent":["console.trace(VariableName.name)"],"names":["console","trace","VariableName","name"],"sourceRoot":""}'
-        },
+    var jsSymbol = '{"version":3,"file":"bundle.js","mappings":"MAqBA,IAAIA,EAAa,CArBjB,WACIC,MAAMC,UAAU,EACpB,EAEA,SAAkBD,EAAQ,KACtBE,mBAAmBF,EACvB,EAEA,WACI,KAAOG,SAAS,IACpB,EAEA,WACIC,QAAQC,IAAIC,YAAY,iBAC5B,EAEA,WACkB,UACNC,SACZ,GAIA,KAEIC,EADiBT,EAAWU,KAAKC,MAAMD,KAAKE,SAAWZ,EAAWa,WAEtE,CAAE,MAAOC,GACLT,QAAQC,IAAIQ,EAChB,C","sources":["webpack:///./app.js"],"sourcesContent":["function referenceError() {\n    param.substring(1);\n}\n\nfunction uRIError(param = \"%\") {\n    decodeURIComponent(param);\n}\n\nfunction rangeError() {\n    (3.54).toFixed(-100);\n}\n\nfunction syntaxError() {\n    console.log(SyntaxError(\"Hello Countly\"));\n}\n\nfunction typeError() {\n    var countly = \"Countly\";\n    countly.reverse();\n}\n\nlet methodList = [referenceError, uRIError, rangeError, syntaxError, typeError];\n\ntry {\n    let funCountly = methodList[Math.floor(Math.random() * methodList.length)];\n    funCountly();\n} catch (error) {\n    console.log(error);\n}\n"],"names":["methodList","param","substring","decodeURIComponent","toFixed","console","log","SyntaxError","reverse","funCountly","Math","floor","random","length","error"],"sourceRoot":""}';
+    var jsErrors = [
         {
             error: "Error: URIError\n" +
-            "URI malformed\n" +
-            "at decodeURIComponent (<anonymous>)\n" +
-            "at bundle.js:1:1",
-            name: 'Error: URIError',
-            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,mBAAmB","sources":["webpack:///./app.js"],"sourcesContent":["decodeURIComponent(\"%\");"],"names":["decodeURIComponent"],"sourceRoot":""}'
-
+            "    URI malformed\n" +
+            "    at decodeURIComponent (<anonymous>)\n" +
+            "    at o (bundle.js:1:61)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: 'Error: URIError'
         },
         {
             error: "Error: RangeError\n" +
-            "   Maximum call stack size exceeded\n" +
-            "   at n (bundle.js:1:12)",
-            name: 'Error: RangeError',
-            symbol: '{"version":3,"file":"bundle.js","mappings":"CAAA,SAASA,EAAKC,GACNA,GAAY,MAChBD,EAAKC,EAAW,EAClB,CACFD,CAAK","sources":["webpack:///./app.js"],"sourcesContent":["function loop(variable) {\n    if (variable >= 1000000000000) return;\n    loop(variable + 1);\n  }\nloop(0);"],"names":["loop","variable"],"sourceRoot":""}'
+            "    toFixed() digits argument must be between 0 and 100\n" +
+            "    at Number.toFixed (<anonymous>)\n" +
+            "    at o (bundle.js:1:100)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: RangeError"
         },
         {
             error: "Error: SyntaxError\n" +
-            "   Hello Countly (at bundle.js:1:13)\n" +
-            "   at bundle.js:1:13",
-            name: 'Error: SyntaxError',
-            symbol: '{"version":3,"file":"bundle.js","mappings":"AAAAA,QAAQC,IAAIC,YAAY","sources":["webpack:///./app.js"],"sourcesContent":["console.log(SyntaxError(\"Hello Countly\"))\n"],"names":["console","log","SyntaxError"],"sourceRoot":""}'
+                "    Hello Countly (at bundle.js:1:138)\n" +
+                "    at o (bundle.js:1:138)\n" +
+                "    at bundle.js:1:247\n" +
+                "    at bundle.js:1:276",
+            name: "Error: SyntaxError"
         },
         {
             error: "Error: TypeError\n" +
-            '   "countly".reverse is not a function\n' +
-            "   at bundle.js:1:23",
-            name: 'Error: TypeError',
-            symbol: '{"version":3,"file":"bundle.js","mappings":"AACAA,QAAQC,IADA,UACMC","sources":["webpack:///./app.js"],"sourcesContent":["var a = \"countly\";\nconsole.log(a.reverse());"],"names":["console","log","reverse"],"sourceRoot":""}'
+            '    "Countly".reverse is not a function\n' +
+            "    at o (bundle.js:1:190)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: TypeError"
+        },
+        {
+            error: "Error: ReferenceError\n" +
+            "    param is not defined\n" +
+            "    at o (bundle.js:1:25)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: ReferenceError"
         }
     ];
     var defaultTemplates = [
@@ -479,7 +485,7 @@
             var error = "";
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                return JsErrors[Math.floor(Math.random() * JsErrors.length)].error;
+                return jsErrors[Math.floor(Math.random() * jsErrors.length)].error;
             }
             else if (this.platform === "Android") {
                 errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
@@ -1039,55 +1045,7 @@
             });
         };
     }
-    /**
-     * Generate list of app versions that appear on top of crashed user groups
-     * @param {Object} crash - crash object of single user
-     **/
-    function generateCrashSymbolUsersGroup(crash) {
-        if (!crashSymbolUsers[crash._name]) {
-            crashSymbolUsers[crash._name] = {};
-        }
-        if (!crashSymbolUsers[crash._name][crash._os]) {
-            crashSymbolUsers[crash._name][crash._os] = {
-                _fatal: {_app_version: ""},
-                _nonfatal: {_app_version: ""}
-            };
-        }
-        if (crash._nonfatal) {
-            if (crash._app_version > crashSymbolUsers[crash._name][crash._os]._nonfatal._app_version) {
-                crashSymbolUsers[crash._name][crash._os]._nonfatal._app_version = crash._app_version;
-            }
-        }
-        else {
-            if (crash._app_version > crashSymbolUsers[crash._name][crash._os]._fatal._app_version) {
-                crashSymbolUsers[crash._name][crash._os]._fatal._app_version = crash._app_version;
-            }
-        }
-    }
-    /**
-     * Generate list of app versions that appear on top of crashed user groups
-     * @returns {Array} list of app versions
-     **/
-    function generateUniqueAppVersionForjsSymbol() {
-        var uniqueVersison = [];
-        Object.keys(crashSymbolUsers).forEach(function(crashName) {
-            var versions = {};
-            Object.keys(crashSymbolUsers[crashName]).forEach(function(os) {
-                if (crashSymbolUsers[crashName][os]._fatal._app_version) {
-                    versions[crashSymbolUsers[crashName][os]._fatal._app_version] = true;
-                }
-                if (crashSymbolUsers[crashName][os]._nonfatal._app_version) {
-                    versions[crashSymbolUsers[crashName][os]._nonfatal._app_version] = true;
-                }
-            });
-            uniqueVersison.push({
-                name: crashName,
-                versions: Object.keys(versions)
-            });
-        });
-        return uniqueVersison;
-    }
-    var crashSymbolUsers = {};
+    var crashSymbolVersions = {};
     var bulk = [];
     var campaingClicks = [];
     var startTs = 1356998400;
@@ -2103,7 +2061,7 @@
                 }
 
                 if (req[i].crash && Object.keys(req[i].crash).length) {
-                    generateCrashSymbolUsersGroup(req[i].crash);
+                    crashSymbolVersions[req[i].crash._app_version] = true;
                 }
             }
             $.ajax({
@@ -2132,46 +2090,35 @@
     };
 
     countlyPopulator.ensureJobs = function() {
-        generateUniqueAppVersionForjsSymbol().forEach(function(crash) {
-            //console.log(crash);
-            //let formData = new FormData();
-            var err = JsErrors.find(function(cras) {
-                return cras.name === crash.name;
-            });
-            var blob = new Blob([err.symbol], { type: 'plain/text' });
-            var symbol = new File(
-                [blob],
-                "bundle.js.map",
-                { type: "text/plain" });
-            var form_data = new FormData();
-            form_data.append('build', crash.versions);
-            form_data.append('platform', 'javascript');
-            form_data.append('symbols', symbol);
-            form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
 
-            $.ajax({
-                url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
-                data:
-                // {
-                //     build: crash.versions,
-                //     platform: 'javascript',
-                //     symbols: symbol,
-                //     //app_id: countlyCommon.ACTIVE_APP_ID,
-                //     app_key: countlyCommon.ACTIVE_APP_KEY,
-                // },
-                form_data,
-                processData: false,
-                contentType: false,
-                type: "POST",
-                success: function() {
-                    console.log("success");
-                },
-                error: function() {
-                    console.log("fail");
-                }
-            });
+        //upload all version at once
+        var crashVersions = Object.keys(crashSymbolVersions);
+        var blob = new Blob(
+            [jsSymbol]
+            , { type: 'plain/text' }
+        );
+        var symbol = new File(
+            [blob],
+            "bundle.js.map"
+            , { type: "text/plain" }
+        );
+        var form_data = new FormData();
+        form_data.append('build', crashVersions);
+        form_data.append('platform', 'javascript');
+        form_data.append('symbols', symbol);
+        form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
+        form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
 
+        $.ajax({
+            url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
+            data: form_data,
+            processData: false,
+            contentType: false,
+            type: "POST",
+            success: function() {},
+            error: function() {}
         });
+
         messages.forEach(function(m) {
             m.apps = [countlyCommon.ACTIVE_APP_ID];
         });
