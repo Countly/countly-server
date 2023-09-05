@@ -1,3 +1,8 @@
+## Version 23.06.11
+Fixes:
+- [crashes] Fix crash visibility filter 
+- [push] Fixing wrong timeout handling for APN
+  
 ## Version 23.06.10
 Fixes:
 - [core] Remove trust proxy
