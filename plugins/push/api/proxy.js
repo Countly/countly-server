@@ -162,10 +162,6 @@ function proxyAgent(url, proxy, agentConfig = {}) {
                 connect.destroy(new Error('ProxyTimeout'));
             });
 
-            setTimeout(() => {
-                connect.destroy(new Error('ProxyTimeout'));
-            }, 50);
-
             connect.end();
         };
 
