@@ -1228,7 +1228,7 @@ function transformAppVersion(inpVersion) {
         return id;
     };
 
-    countlyCrashes.modifyOsVersionQuery = function(inpQuery) {
+    countlyCrashes.modifyQueries = function(inpQuery) {
         var resultQuery = {};
 
         Object.keys(inpQuery).forEach(function(key) {
@@ -1237,6 +1237,19 @@ function transformAppVersion(inpVersion) {
                 var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
 
                 resultQuery[newKey] = inpQuery[key];
+            }
+            else if (key.startsWith('is_hidden')) {
+                Object.keys(inpQuery[key]).forEach(function(innerKey) {
+                    if (
+                        (innerKey === '$in' || innerKey === '$nin') &&
+                        Array.isArray(inpQuery[key][innerKey]) &&
+                        inpQuery[key][innerKey].includes(false)
+                    ) {
+                        inpQuery[key][innerKey].push(null);
+                    }
+                });
+
+                resultQuery[key] = inpQuery[key];
             }
             else {
                 resultQuery[key] = inpQuery[key];
