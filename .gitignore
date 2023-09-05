@@ -1,6 +1,12 @@
 api/node_modules/
 .idea
 .vscode
+.cache
+.npm
+.npmrc
+.local
+bin/config/nginx/
+bin/config/supervisord.conf
 *_en.properties
 frontend/express/node_modules/
 api/config.js
@@ -18,6 +24,7 @@ frontend/express/public/sdk/
 **/.DS_Store
 **/node_modules
 bin/scripts/nghttp2
+frontend/express/public/userimages/
 frontend/express/public/images/*/
 !frontend/express/public/images/leaflet/
 !frontend/express/public/images/annotation/
@@ -33,3 +40,6 @@ frontend/express/public/stylesheets/styles/manifest.css
 frontend/express/public/stylesheets/vue/clyvue.css
 frontend/express/public/stylesheets/styles/manifest.css.map
 frontend/express/public/stylesheets/vue/clyvue.css.map
+log/
+log/supervisord/
+plugins/plugins.json.*
