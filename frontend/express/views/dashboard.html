@@ -1941,7 +1941,7 @@
             };
 
             if (countlyGlobal.countly_tracking) {
-                var domain = countlyPlugins.getConfigsData().api.domain;
+                var domain = countlyGlobal.countly_domain;
 
                 try {
                     // try to extract hostname from full domain url
