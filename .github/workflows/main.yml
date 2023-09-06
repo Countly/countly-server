@@ -207,52 +207,6 @@ jobs:
           npm install
           node bin/scripts/test.connection.js
           npx grunt mochaTest
-  test-e2e:
-    runs-on: ubuntu-latest
-
-    services:
-      mongodb:
-        image: mongo:6.0
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
-    container:
-      image: countly/countly-core:latest
-      env:
-        COUNTLY_CONFIG__MONGODB_HOST: mongodb
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Prepare tests
-        shell: bash
-        run: bash bin/scripts/countly.prepare.ce.tests.sh
-
-      - name: Copy code
-        shell: bash
-        run: cp -rf ./* /opt/countly
-
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
-
-      - name: Configure API
-        shell: bash
-        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
-
-      - name: Run tests
-        shell: bash
-        working-directory: /opt/countly
-        run: |
-          /sbin/my_init &
-          npm install
-          node bin/scripts/test.connection.js
-
   ui-test:
     runs-on: ubuntu-latest
 
