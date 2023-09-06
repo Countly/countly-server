@@ -288,6 +288,7 @@ jobs:
         working-directory: /opt/countly
         run: |
           bash bin/backup/run.sh
+          bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
           mongosh `countly mongo` --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
           cd ui-tests
