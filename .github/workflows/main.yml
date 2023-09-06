@@ -275,6 +275,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Chrome
+        shell: bash
+        run: |
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
+
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
@@ -287,6 +295,10 @@ jobs:
         shell: bash
         working-directory: /opt/countly
         run: |
+          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
+          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+          npm install
+          sudo countly task dist-all
           bash bin/backup/run.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
@@ -297,23 +309,10 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      - name: Configure API
-        shell: bash
-        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
-
-      - name: Install Chrome
-        shell: bash
-        run: |
-          apt update
-          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
-          apt install -y /tmp/chrome.deb
-
       - name: Run UI tests
         shell: bash
         working-directory: /opt/countly
         run: |
-          sudo countly task dist-all
           /sbin/my_init &
           cd ui-tests
           npm install
