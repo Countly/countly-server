@@ -1446,7 +1446,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/i': {
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces !== false) {
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces) {
                     params.qstring = common.trimWhitespaceStartEnd(params.qstring);
                 }
                 params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
