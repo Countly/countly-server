@@ -951,6 +951,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
                 countly_tracking,
+                frontend_app: versionInfo.frontend_app,
+                frontend_server: versionInfo.frontend_server,
                 usermenu: {
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,

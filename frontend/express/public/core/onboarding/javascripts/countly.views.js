@@ -206,10 +206,10 @@
 
                 CV.$.ajax({
                     type: 'GET',
-                    url: Countly.url + '/i',
+                    url: (countlyGlobal.frontend_server || 'https://stats.count.ly/') + '/i',
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
-                        app_key: Countly.app_key,
+                        app_key: countlyGlobal.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
                         device_id: Countly.device_id,
                     },
                     dataType: 'json',
