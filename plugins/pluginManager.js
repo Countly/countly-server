@@ -21,6 +21,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
+    logDriverDb = log('driver:db'),
     exec = cp.exec,
     spawn = cp.spawn,
     configextender = require('../api/configextender');
@@ -1721,8 +1722,46 @@ var pluginManager = function pluginManager() {
             return;
         }
 
-        client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
-        client.on('serverHeartbeatFailed', (event) => logDbRead.d("serverHeartbeatFailed %j", event));
+        /**
+         * Log driver debug logs
+         * @param {String} eventName - name of the event to log
+         * @param {Object} logObject - log object where to write event
+         * @param {String} logLevel - log level
+         */
+        function logDriver(eventName, logObject, logLevel) {
+            logLevel = logLevel || "d";
+            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+        }
+
+        //connection pool
+        logDriver("connectionPoolCreated", logDriverDb);
+        logDriver("connectionPoolReady", logDriverDb);
+        logDriver("connectionPoolClosed", logDriverDb);
+        logDriver("connectionCreated", logDriverDb);
+        logDriver("connectionReady", logDriverDb);
+        logDriver("connectionClosed", logDriverDb);
+        logDriver("connectionCheckOutStarted", logDriverDb);
+        logDriver("connectionCheckOutFailed", logDriverDb);
+        logDriver("connectionCheckedOut", logDriverDb);
+        logDriver("connectionCheckedIn", logDriverDb);
+        logDriver("connectionPoolCleared", logDriverDb);
+
+        //SDAM
+        logDriver("serverOpening", logDriverDb);
+        logDriver("serverClosed", logDriverDb);
+        logDriver("serverDescriptionChanged", logDriverDb);
+        logDriver("topologyOpening", logDriverDb);
+        logDriver("topologyClosed", logDriverDb);
+        logDriver("topologyDescriptionChanged", logDriverDb);
+        logDriver("serverHeartbeatStarted", logDriverDb);
+        logDriver("serverHeartbeatSucceeded", logDriverDb);
+        logDriver("serverHeartbeatFailed", logDriverDb, "e");
+
+        //commands
+        logDriver("commandStarted", logDriverDb);
+        logDriver("commandSucceeded", logDriverDb);
+        logDriver("commandFailed", logDriverDb, "e");
+
 
         client._db = client.db;
 
@@ -1811,7 +1850,10 @@ var pluginManager = function pluginManager() {
     };
 
     this.getMaskingSettings = function(appID) {
-        if (masking && masking.apps && masking.apps[appID]) {
+        if (appID === 'all') {
+            return JSON.parse(JSON.stringify(masking.apps));
+        }
+        else if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));
         }
         else {
@@ -1832,9 +1874,16 @@ var pluginManager = function pluginManager() {
     this.getEHashes = function(appID) {
         var map = {};
         if (masking && masking.hashMap) {
-            for (var hash in masking.hashMap) {
-                if (masking.hashMap[hash].a === appID) {
-                    map[masking.hashMap[hash].e] = hash;
+            if (appID === 'all') {
+                for (var hash0 in masking.hashMap) {
+                    map[masking.hashMap[hash0].e] = hash0;
+                }
+            }
+            else {
+                for (var hash in masking.hashMap) {
+                    if (masking.hashMap[hash].a === appID) {
+                        map[masking.hashMap[hash].e] = hash;
+                    }
                 }
             }
         }

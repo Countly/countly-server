@@ -1228,6 +1228,37 @@ function transformAppVersion(inpVersion) {
         return id;
     };
 
+    countlyCrashes.modifyQueries = function(inpQuery) {
+        var resultQuery = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (key.startsWith('os_version')) {
+                var splitKey = key.split('.');
+                var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
+
+                resultQuery[newKey] = inpQuery[key];
+            }
+            else if (key.startsWith('is_hidden')) {
+                Object.keys(inpQuery[key]).forEach(function(innerKey) {
+                    if (
+                        (innerKey === '$in' || innerKey === '$nin') &&
+                        Array.isArray(inpQuery[key][innerKey]) &&
+                        inpQuery[key][innerKey].includes(false)
+                    ) {
+                        inpQuery[key][innerKey].push(null);
+                    }
+                });
+
+                resultQuery[key] = inpQuery[key];
+            }
+            else {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        return resultQuery;
+    };
+
     countlyCrashes.modifyExistsQueries = function(inpQuery) {
         var resultQuery = {};
         var existsGroups = {};

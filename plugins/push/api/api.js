@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -27,6 +27,7 @@ const plugins = require('../../pluginManager'),
                 GET: [validateRead, one, '_id'],
             },
             user: [validateRead, user],
+            notifications: [validateRead, notificationsForUser],
         },
         i: {
             message: {
@@ -97,7 +98,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
-                log.e('Sender crached', e);
+                log.e('Sending stopped with an error', e);
                 sender = undefined;
             }
         }

@@ -2595,7 +2595,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && typeof user.did === "undefined") {
+        if (params.qstring.device_id && (!user.did || typeof user.did === "undefined")) {
             if (!update.$set) {
                 update.$set = {};
             }
@@ -2744,7 +2744,10 @@ common.p = f => {
 * @returns {vary} modified value, if it had revivable data
 */
 common.reviver = (key, value) => {
-    if (value.toString().indexOf("__REGEXP ") === 0) {
+    if (value === null) {
+        return value;
+    }
+    else if (value.toString().indexOf("__REGEXP ") === 0) {
         const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
         return new RegExp(m[1], m[2] || "");
     }
