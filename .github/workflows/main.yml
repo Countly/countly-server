@@ -290,7 +290,7 @@ jobs:
           bash bin/backup/run.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
-          mongosh `countly mongo` --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
           cd ui-tests
           echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
           sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
