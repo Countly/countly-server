@@ -17,6 +17,7 @@
                 multiple
                 ref="trigger"
                 class="el-select-head"
+                :test-id="testId"
                 :disabled="disabled"
                 :opened="dropdown.visible"
                 :placeholder="placeholder"
@@ -29,6 +30,7 @@
             <cly-input-dropdown-trigger
                 v-else
                 ref="trigger"
+                :test-id="testId"
                 :size="size"
                 :disabled="disabled"
                 :adaptive-length="adaptiveLength"
@@ -57,11 +59,12 @@
                         v-show="showList"
                         ref="searchBox"
                         autocomplete="off"
+                        :test-id="testId + '-search-box'"
                         :disabled="disabled"
                         v-model="searchQuery"
                         @keydown.native.esc.stop.prevent="doClose"
                         :placeholder="searchPlaceholder">
-                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                        <i slot="prefix" :data-test-id="testId + '-search-icon'" class="el-input__icon el-icon-search"></i>
                     </el-input>
                 </div>
                 <slot name="action"></slot>
@@ -70,12 +73,14 @@
         <el-tabs
             v-loading="isQueryPending"
             v-model="activeTabId"
+            :test-id="testId + '-tabs'"
             @keydown.native.esc.stop.prevent="doClose">
             <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">
-                <span slot="label">
+                <span slot="label" :data-test-id="testId + '-el-tab-' + tab.label.toString().replace(/[\s,]+/g, '-').toLowerCase()">
                     {{tab.label}}
                 </span>
                 <cly-listbox
+                    :test-id="testId"
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-if="mode === 'single-list'"
