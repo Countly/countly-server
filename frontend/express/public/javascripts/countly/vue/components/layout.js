@@ -1,4 +1,4 @@
-/* global Vue CountlyHelpers $ */
+/* global Vue CountlyHelpers countlyCMS $ */
 
 (function(countlyVue) {
 
@@ -20,6 +20,14 @@
             return {
                 guidesEnabled: CountlyHelpers.isPluginEnabled('guides')
             };
+        },
+        created: function() {
+            var self = this;
+            if (this.guidesEnabled) {
+                countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                    self.guidesEnabled = (config && config.data && config.data.enableGuides) || false;
+                });
+            }
         },
         template: `
             <div>\
