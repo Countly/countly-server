@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('times-of-day.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('times-of-day.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('times-of-day.title')"
+        :tooltip="{description: i18n('times-of-day.description')}"
+    >
     </cly-header>
     <cly-main>
         <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center" style="margin-bottom:32px"> 

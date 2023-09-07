@@ -64,7 +64,9 @@ set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
-    sudo ln -s "$(which node)" /usr/bin/nodejs
+	sudo ln -s "$(which node)" /usr/bin/nodejs
+elif [ ! -f "/usr/bin/node" ]; then
+    sudo ln -s "$(which nodejs)" /usr/bin/node
 fi
 
 #if npm is not installed, install it too
@@ -106,7 +108,13 @@ fi
 sudo bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
-countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+#configure and start nginx
+if [ -f /etc/nginx/sites-available/default ]; then
+    countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+elif [ -f /etc/nginx/conf.d/default.conf ]; then
+    countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+fi
+
 countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf

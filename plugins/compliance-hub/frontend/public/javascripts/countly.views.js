@@ -181,6 +181,9 @@
                     this.initializeStoreData();
                 }
             },
+            consentHistoryLoading: function() {
+                return this.$store.getters["countlyConsentManager/consentHistoryLoading"];
+            }
         },
         methods: {
             dateChanged: function() {
@@ -379,10 +382,13 @@
                 set: function(newValue) {
                     this.selectedfilter0 = newValue;
                     this.initializeStoreData();
+                    this.consentDpChartloaded = true;
+                    this.purgeDpChartloaded = true;
+                    this.exportDpChartloaded = true;
                 }
             },
             consentDpChart: function() {
-                this.consentDpChartloaded = false;
+                this.consentDpChartloaded = true;
                 var consentDp = this.$store.getters["countlyConsentManager/_consentDP"];
                 var optinYAxisData = [];
                 var optoutYAxisData = [];
@@ -391,10 +397,10 @@
                     optoutYAxisData.push(consentDp.chartData[key].o);
                 }
                 if (optinYAxisData.length > 0) {
-                    this.consentDpChartloaded = true;
+                    this.consentDpChartloaded = false;
                 }
                 else if (consentDp.chartData) {
-                    this.consentDpChartloaded = true;
+                    this.consentDpChartloaded = false;
                 }
                 return {
                     series: [
@@ -435,7 +441,7 @@
                 return legendData;
             },
             exportDpChart: function() {
-                this.exportDpChartloaded = false;
+                this.exportDpChartloaded = true;
                 var exportDP = this.$store.getters["countlyConsentManager/_exportDP"];
                 var presentYAxisData = [];
                 var previousYAxisData = [];
@@ -444,10 +450,10 @@
                     previousYAxisData.push(exportDP.chartData[key].pe);
                 }
                 if (presentYAxisData.length > 0) {
-                    this.exportDpChartloaded = true;
+                    this.exportDpChartloaded = false;
                 }
                 else if (exportDP.chartData) {
-                    this.exportDpChartloaded = true;
+                    this.exportDpChartloaded = false;
                 }
                 return {
                     series: [
@@ -464,7 +470,7 @@
                 };
             },
             purgeDpChart: function() {
-                this.purgeDpChartloaded = false;
+                this.purgeDpChartloaded = true;
                 var purgeDp = this.$store.getters["countlyConsentManager/_purgeDP"];
                 var purgeDpPresent = [];
                 var purgeDpPrevious = [];
@@ -473,10 +479,10 @@
                     purgeDpPrevious.push(purgeDp.chartData[key].pp);
                 }
                 if (purgeDpPresent.length > 0) {
-                    this.purgeDpChartloaded = true;
+                    this.purgeDpChartloaded = false;
                 }
                 else if (purgeDp.chartData) {
-                    this.purgeDpChartloaded = true;
+                    this.purgeDpChartloaded = false;
                 }
                 var data = {
                     series: [
@@ -529,10 +535,12 @@
                 return {};
 
             }
-
         },
         methods: {
             dateChanged: function() {
+                this.consentDpChartloaded = true;
+                this.exportDpChartloaded = true;
+                this.purgeDpChartloaded = true;
                 this.initializeStoreData();
             },
             formatTableNumber: function(data) {
@@ -563,7 +571,6 @@
                 });
             },
         }
-
     });
     var ComplianceMainView = countlyVue.views.create({
         template: CV.T('/compliance-hub/templates/main.html'),
@@ -630,9 +637,10 @@
                     return this.$store.getters["countlyConsentManager/isLoading"];
                 }
             },
-            mounted: function() {
+            beforeCreate: function() {
                 var userDetails = this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
                 if (userDetails.uid) {
+                    this.$store.dispatch("countlyConsentManager/uid", userDetails.uid);
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
             }

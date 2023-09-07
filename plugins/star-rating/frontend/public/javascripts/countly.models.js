@@ -30,7 +30,8 @@
         "rating_symbol",
         "status",
         "logo",
-        "logoType"
+        "logoType",
+        "globalLogo"
     ];
 
     var widgetJSONProperties = [

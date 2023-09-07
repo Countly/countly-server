@@ -1,11 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('countries.title')}} 
-            </h2>
-            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-            </span>
-        </template>
+    <cly-header
+		:title="i18n('countries.title')"
+		:tooltip="{description}"
+	>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
             <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
@@ -24,6 +21,7 @@
 				</div>
 				<div class="bu-column leaflet-noclick-map" style="position:relative">
 					<cly-worldmap
+						v-loading="isLoading"
                         style="height: 100%;"
 						external-country=""
 						external-detail-mode="world"

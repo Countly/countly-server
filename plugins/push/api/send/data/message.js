@@ -209,7 +209,7 @@ class Message extends Mongoable {
      * @returns {boolean} true if the message is in this state
      */
     is(inState) {
-        return (this.state & inState) > 0;
+        return (inState === 0 && this.state === 0) || (this.state !== 0 && (this.state & inState) > 0);
     }
 
     /**

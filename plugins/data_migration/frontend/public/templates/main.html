@@ -1,9 +1,7 @@
 <div class="data_migration__main">
-    <cly-header>
-        <template v-slot:header-left>
-          <h2> {{ i18n('data-migration.page-title') }}</h2>
-          &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('data-migration.page-title')"
+    >
         <template v-slot:header-right>
             <cly-more-options v-if="canUserCreate" @command="handleCommand">
                 <template v-slot:trigger>

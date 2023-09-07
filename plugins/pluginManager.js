@@ -21,6 +21,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
+    logDriverDb = log('driver:db'),
     exec = cp.exec,
     spawn = cp.spawn,
     configextender = require('../api/configextender');
@@ -141,6 +142,57 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    this.installMissingPlugins = function(db, callback) {
+        console.log("Checking if any plugins are missing");
+        var self = this;
+        var installPlugins = [];
+        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            res = res || {};
+            pluginConfig = res.plugins || {}; //currently enabled plugins
+            //list of plugin folders
+            var pluginNames = [];
+            var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
+            //filter out just folders
+            for (var z = 0; z < pluginsList.length; z++) {
+                if (fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z])).isDirectory()) {
+                    pluginNames.push(pluginsList[z]);
+                }
+            }
+            for (var zz = 0; zz < pluginNames.length; zz++) {
+                if (typeof pluginConfig[pluginNames[zz]] === 'undefined') {
+                    installPlugins.push(pluginNames[zz]);
+                }
+            }
+            if (installPlugins.length > 0) {
+                console.log("Plugins to install: " + JSON.stringify(installPlugins));
+            }
+            Promise.each(installPlugins, function(name) {
+                return new Promise(function(resolve) {
+                    var obb = {'name': name};
+                    if (plugins.indexOf(name) === -1) {
+                        obb.enable = false;
+                    }
+                    else {
+                        obb.enable = true;
+                    }
+                    self.processPluginInstall(db, obb, function() {
+                        resolve();
+                    });
+                });
+            }).then(function() {
+                if (callback) {
+                    callback();
+                }
+            }).catch(function(rejection) {
+                console.log(rejection);
+                if (callback) {
+                    callback();
+                }
+            });
+
+
+        });
+    };
     /**
     * Load configurations from database
     * @param {object} db - database connection for countly db
@@ -169,7 +221,7 @@ var pluginManager = function pluginManager() {
                     for (var z = 0; z < plugins.length; z++) {
                         if (typeof pluginConfig[plugins[z]] === 'undefined') {
                             pluginConfig[plugins[z]] = true;
-                            installPlugins.push(plugins[z]);
+                            //installPlugins.push(plugins[z]);
                         }
                     }
                     Promise.each(installPlugins, function(name) {
@@ -1136,6 +1188,13 @@ var pluginManager = function pluginManager() {
 
     this.processPluginInstall = function(db, name, callback) {
         var self = this;
+        var should_enable = true;
+        if (typeof name !== "string" && name.name) {
+            if (name.enable === false || name.enable === true) {
+                should_enable = name.enable;
+            }
+            name = name.name;
+        }
         db.collection("plugins").remove({'_id': 'install_' + name, 'time': {'$lt': Date.now() - 60 * 1000 * 60}}, function(err) {
             if (err) {
                 console.log(err);
@@ -1154,9 +1213,9 @@ var pluginManager = function pluginManager() {
                             if (!errors) {
                                 console.log("Install is finished fine. Updating state in database");
                                 var query = {_id: "plugins"};
-                                query["plugins." + name] = {"$ne": false};
+                                query["plugins." + name] = {"$ne": !should_enable};
                                 var update = {};
-                                update["plugins." + name] = true;
+                                update["plugins." + name] = should_enable;
                                 db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function(err3, res) {
                                     console.log('plugins document updated');
                                     if (err3) {
@@ -1238,7 +1297,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1307,7 +1366,7 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1338,7 +1397,7 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
+        var m = cp.spawn("nodejs", ["--preserve-symlinks", "--preserve-symlinks-main", scriptPath]);
 
         m.stdout.on('data', (data) => {
             console.log(data.toString());
@@ -1721,8 +1780,46 @@ var pluginManager = function pluginManager() {
             return;
         }
 
-        client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
-        client.on('serverHeartbeatFailed', (event) => logDbRead.d("serverHeartbeatFailed %j", event));
+        /**
+         * Log driver debug logs
+         * @param {String} eventName - name of the event to log
+         * @param {Object} logObject - log object where to write event
+         * @param {String} logLevel - log level
+         */
+        function logDriver(eventName, logObject, logLevel) {
+            logLevel = logLevel || "d";
+            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+        }
+
+        //connection pool
+        logDriver("connectionPoolCreated", logDriverDb);
+        logDriver("connectionPoolReady", logDriverDb);
+        logDriver("connectionPoolClosed", logDriverDb);
+        logDriver("connectionCreated", logDriverDb);
+        logDriver("connectionReady", logDriverDb);
+        logDriver("connectionClosed", logDriverDb);
+        logDriver("connectionCheckOutStarted", logDriverDb);
+        logDriver("connectionCheckOutFailed", logDriverDb);
+        logDriver("connectionCheckedOut", logDriverDb);
+        logDriver("connectionCheckedIn", logDriverDb);
+        logDriver("connectionPoolCleared", logDriverDb);
+
+        //SDAM
+        logDriver("serverOpening", logDriverDb);
+        logDriver("serverClosed", logDriverDb);
+        logDriver("serverDescriptionChanged", logDriverDb);
+        logDriver("topologyOpening", logDriverDb);
+        logDriver("topologyClosed", logDriverDb);
+        logDriver("topologyDescriptionChanged", logDriverDb);
+        logDriver("serverHeartbeatStarted", logDriverDb);
+        logDriver("serverHeartbeatSucceeded", logDriverDb);
+        logDriver("serverHeartbeatFailed", logDriverDb, "e");
+
+        //commands
+        logDriver("commandStarted", logDriverDb);
+        logDriver("commandSucceeded", logDriverDb);
+        logDriver("commandFailed", logDriverDb, "e");
+
 
         client._db = client.db;
 
@@ -1811,7 +1908,10 @@ var pluginManager = function pluginManager() {
     };
 
     this.getMaskingSettings = function(appID) {
-        if (masking && masking.apps && masking.apps[appID]) {
+        if (appID === 'all') {
+            return JSON.parse(JSON.stringify(masking.apps));
+        }
+        else if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));
         }
         else {
@@ -1832,9 +1932,16 @@ var pluginManager = function pluginManager() {
     this.getEHashes = function(appID) {
         var map = {};
         if (masking && masking.hashMap) {
-            for (var hash in masking.hashMap) {
-                if (masking.hashMap[hash].a === appID) {
-                    map[masking.hashMap[hash].e] = hash;
+            if (appID === 'all') {
+                for (var hash0 in masking.hashMap) {
+                    map[masking.hashMap[hash0].e] = hash0;
+                }
+            }
+            else {
+                for (var hash in masking.hashMap) {
+                    if (masking.hashMap[hash].a === appID) {
+                        map[masking.hashMap[hash].e] = hash;
+                    }
                 }
             }
         }

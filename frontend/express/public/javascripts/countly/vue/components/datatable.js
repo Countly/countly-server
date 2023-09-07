@@ -978,6 +978,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.externalParams && this.externalParams.skipLoading) {
+                    return false;
+                }
                 if (this.forceLoading === true) {
                     return true;
                 }

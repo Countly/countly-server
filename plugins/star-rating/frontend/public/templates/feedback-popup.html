@@ -245,7 +245,13 @@
                 }
 
                 if ((response.logo && !response.logoType) || (response.logo && response.logoType && response.logoType === "custom")) {
-                    $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
+                    if(response.globalLogo){
+                        $('#powered-by-countly').attr('src', url + response.logo);
+                    }
+                    else
+                    {
+                        $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
+                    }
                     $('#powered-by-countly').parent().attr('href', 'void(0)');
                     $('#powered-by-countly').css({'width':'100px'});
                 }

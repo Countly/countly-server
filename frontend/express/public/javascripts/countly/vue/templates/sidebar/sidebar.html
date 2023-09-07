@@ -30,7 +30,7 @@
                         'cly-vue-sidebar__menu-option-toggle--rotate-left': showMainMenu,
                         'cly-vue-sidebar__menu-option-toggle--rotate-right': !showMainMenu
                     }]" data-test-id="sidebar-menuoptions-toogleleft"></i>
-                <a v-else-if="item.name === 'help-center'" href="https://support.count.ly/" target="_blank"><i :class="['cly-icon-btn', item.icon]" data-test-id="sidebar-menu-helpcenter"></i></a>
+                <a v-else-if="item.name === 'help-center'" :href="helpCenterLink" :target="helpCenterTarget"><i :class="['cly-icon-btn', item.icon]" data-test-id="sidebar-menu-helpcenter"></i></a>
                 <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === pseudoSelectedMenuOption}]"></i>
             </li>
         </ul>

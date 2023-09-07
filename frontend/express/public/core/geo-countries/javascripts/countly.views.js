@@ -18,12 +18,20 @@ var CityView = countlyVue.views.create({
     },
     methods: {
         refresh: function(force) {
-            this.$store.dispatch('countlyCities/fetchData', force);
+            if (force) {
+                this.$store.dispatch('countlyCities/fetchData', force);
+            }
+            else {
+                this.$store.dispatch('countlyCities/fetchData', false);
+            }
         }
     },
     computed: {
         data: function() {
             return this.$store.state.countlyCities.data;
+        },
+        dateChanged: function() {
+            this.refresh(true);
         },
         totalData: function() {
             return this.$store.state.countlyCountry.data;

@@ -2595,7 +2595,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && typeof user.did === "undefined") {
+        if (params.qstring.device_id && (!user.did || typeof user.did === "undefined")) {
             if (!update.$set) {
                 update.$set = {};
             }
@@ -2744,7 +2744,10 @@ common.p = f => {
 * @returns {vary} modified value, if it had revivable data
 */
 common.reviver = (key, value) => {
-    if (value.toString().indexOf("__REGEXP ") === 0) {
+    if (value === null) {
+        return value;
+    }
+    else if (value.toString().indexOf("__REGEXP ") === 0) {
         const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
         return new RegExp(m[1], m[2] || "");
     }
@@ -3640,6 +3643,36 @@ common.formatSecond = function(number) {
     }
 
     return formattedDuration.trim();
+};
+
+/**
+ * Remove spaces, tabs, and newlines from the start and end from all levels of a nested object
+ * @param {any} value - Arbitrary value
+ * @returns {any} Trimmed value
+ */
+common.trimWhitespaceStartEnd = function(value) {
+    if (typeof value === 'string') {
+        try {
+            value = JSON.parse(value);
+        }
+        catch (error) {
+            value = value.trim();
+        }
+    }
+    if (typeof value === 'string') {
+        value = value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    }
+    else if (Array.isArray(value)) {
+        value = value.map(common.trimWhitespaceStartEnd);
+    }
+    else if (typeof value === 'object' && value !== null) {
+        const trimmedObj = {};
+        for (let key in value) {
+            trimmedObj[key] = common.trimWhitespaceStartEnd(value[key]);
+        }
+        return trimmedObj;
+    }
+    return value;
 };
 
 module.exports = common;

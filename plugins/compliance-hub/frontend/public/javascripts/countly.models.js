@@ -219,6 +219,7 @@
         loadedData: {},
         // eslint-disable-next-line
         onRequest: function(context) {
+            context.rootState.countlyConsentManager.consentHistoryLoading = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 period: countlyCommon.getPeriodForAjax()
@@ -276,6 +277,7 @@
                     }
                 }
             }
+            context.rootState.countlyConsentManager.consentHistoryLoading = false;
             return rows;
         }
     });
@@ -283,13 +285,13 @@
     var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
         // eslint-disable-next-line
-        onRequest: function(context, payload) {
+        onRequest: function(context) {
             context.rootState.countlyConsentManager.isLoading = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            if (payload.uid) {
-                data.query = JSON.stringify({ uid: payload.uid });
+            if (context.rootState.countlyConsentManager.uid) {
+                data.query = JSON.stringify({ uid: context.rootState.countlyConsentManager.uid });
             }
             return {
                 type: "POST",
@@ -334,6 +336,7 @@
                     },
                     exportHistoryFilter: "all",
                     isLoading: false,
+                    consentHistoryLoading: false,
                     uid: ''
                 };
             },
@@ -344,6 +347,9 @@
         };
         _consentManagerDbModule.getters.isLoading = function(state) {
             return state.isLoading;
+        };
+        _consentManagerDbModule.getters.consentHistoryLoading = function(state) {
+            return state.consentHistoryLoading;
         };
         _consentManagerDbModule.getters.uid = function(state) {
             return state.uid;

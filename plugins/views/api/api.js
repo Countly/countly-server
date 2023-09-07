@@ -198,6 +198,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (data[k][view].lvid) {
                                     setRule[view + ".lvid"] = data[k][view].lvid;
                                 }
+                                if (data[k][view].sg) {
+                                    setRule[view + ".sg"] = data[k][view].sg;
+                                }
                                 bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
                                 haveUpdate = true;
                             }
@@ -1631,32 +1634,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var update = {'$inc': updateUsersZero, '$set': {}};
             update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
             common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
-
-            if (user.lv) {
-                var segmentation = {name: user.lv, exit: 1};
-                await new Promise(function(resolve) {
-                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                        if (err) {
-                            log.e(err);
-                        }
-                        if (view) {
-                            if (parseInt(user.vc) === 1) {
-                                segmentation.bounce = 1;
-                            }
-                            params.viewsNamingMap = params.viewsNamingMap || {};
-                            params.viewsNamingMap[segmentation.name] = view._id;
-                            recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
-
-                            if (segmentation.exit || segmentation.bounce) {
-                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
-                            }
-                        }
-                        resolve();
-                    });
-                });
-            }
-            checkViewQuery(ob.updates, 0, 0);
-            //update unique view vount for session
             await new Promise(function(resolve) {
                 common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
                     if (err) {
@@ -1664,15 +1641,58 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     data = data || [];
                     data = data[0] || {};
-
-                    for (var key in data) {
-                        if (key !== "_id") {
-                            if (data[key].ts >= user.ls) {
-                                recordMetrics(params, {"viewAlias": key, key: "[CLY]_view", segmentation: {"uvc": 1}}, user);
+                    for (var vw in data) {
+                        if (vw !== "_id") {
+                            if (data[vw].ts >= user.ls) {
+                                var sg = {'uvc': 1};
+                                for (var key0 in (data[vw].sg || {})) {
+                                    if (key0 === 'platform' || !escapedViewSegments[key0]) {
+                                        sg[key0] = data[vw].sg[key0];
+                                    }
+                                }
+                                recordMetrics(params, {"viewAlias": vw, key: "[CLY]_view", segmentation: sg}, user);
                             }
                         }
                     }
-                    resolve();
+                    if (user.lv) {
+                        var segmentation = {name: user.lv, exit: 1};
+
+                        getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err5, view) {
+                            if (err5) {
+                                log.e(err5);
+                            }
+                            if (view) {
+                                if (data[(view._id + "")] && data[(view._id + "")].sg) {
+                                    for (var key in data[(view._id + "")].sg) {
+                                        if (key === 'platform' || !escapedViewSegments[key]) {
+                                            segmentation[key] = data[(view._id + "")].sg[key];
+                                        }
+                                    }
+
+                                }
+                                if (parseInt(user.vc) === 1) {
+                                    segmentation.bounce = 1;
+                                }
+                                params.viewsNamingMap = params.viewsNamingMap || {};
+                                params.viewsNamingMap[segmentation.name] = view._id;
+                                recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
+
+                                if (segmentation.exit || segmentation.bounce) {
+                                    plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
+                                }
+                            }
+                            checkViewQuery(ob.updates, 0, 0);
+                            resolve();
+                        });
+
+                    }
+                    else {
+                        checkViewQuery(ob.updates, 0, 0);
+                        resolve();
+                    }
+
+                    //update unique view vount for session
+
                 });
             });
         }
@@ -1773,6 +1793,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             var runDrill = [];
                             var haveVisit = {};
                             var lastView = {};
+                            var segmentation = {};
                             var projection = {};
                             for (let p = 0; p < results.length; p++) {
                                 if (results[p] !== false) {
@@ -1794,6 +1815,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         if (results[p].segmentation.visit) {
                                             haveVisit[p] = true;
                                             lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
+                                            try {
+                                                segmentation[results[p].viewAlias + '.sg'] = JSON.parse(JSON.stringify(results[p].segmentation || {}));
+                                            }
+                                            catch (ee) {
+                                                log.e(ee);
+                                            }
                                             projection[results[p].viewAlias] = 1;
                                         }
                                         else {
@@ -1807,7 +1834,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
 
                             if (Object.keys(haveVisit).length > 0) {
-                                common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
+                                common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView, "$set": segmentation}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
                                     for (let p in haveVisit) {
                                         if (results[p] && results[p] !== false) {
                                             var currEvent = results[p];
@@ -2017,6 +2044,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             var escapedMetricVal = "";
             var viewName = currEvent.viewAlias;
+            var updateTimestamp = 0;
             if (segment !== "") {
                 escapedMetricVal = common.db.encode(currEvent.segmentation[segment] + "");
             }
@@ -2077,8 +2105,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
                         tmpTimeObjZero['d.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
+                    if (params.time.timestamp > lastViewTimestamp) {
+                        updateTimestamp = params.time.timestamp;
+                    }
                 }
                 else {
+                    updateTimestamp = params.time.timestamp;
                     common.fillTimeObjectZero({"time": {"weekly": params.time.weeklyISO || params.time.weekly, "yearly": params.time.yearly, "month": params.time.month }}, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
                     common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.unique, 1, true);
                 }
@@ -2146,6 +2178,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 common.writeBatcher.add(colName, tmpMonthId, update);
                 // common.writeBatcher.add(colName, tmpMonthId + "_m", update2);
             }
+        }
+        if (updateTimestamp) {
+            view[viewName] = updateTimestamp;
         }
     }
 

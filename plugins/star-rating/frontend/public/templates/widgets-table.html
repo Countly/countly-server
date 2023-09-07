@@ -18,7 +18,7 @@
                 </el-switch>
               </template>
           </el-table-column>
-          <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
+         <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
               <div :data-test-id="'ratings-widgets-data-table-name-' + rowScope.$index">
                 <div @click="goWidgetDetail(rowScope.row._id)" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">

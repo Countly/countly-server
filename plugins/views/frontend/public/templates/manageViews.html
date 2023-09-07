@@ -1,11 +1,10 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
+    <cly-header
+		:title="i18n('views.table.edit-views')"
+	>
 		<template v-slot:header-top>
 			<cly-back-link link="#/analytics/views" :title ="i18n('views.back-to-views')"></cly-back-link>
 		</template>
-        <template v-slot:header-left>
-            <h2> {{i18n('views.table.edit-views')}}</h2>
-        </template>
     </cly-header>
     <cly-main>
 		<cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
