@@ -245,8 +245,7 @@
                 type: String,
                 default: 'cly-listbox-test-id',
                 required: false
-            }
-            value: { type: [String, Number, Boolean] }
+            },
         },
         computed: {
             searchedOptions: function() {
@@ -489,7 +488,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
