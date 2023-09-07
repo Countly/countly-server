@@ -504,6 +504,7 @@
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
+                    :test-id="testId"\
                     pop-class="cly-event-select"\
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
@@ -524,7 +525,7 @@
                             :value="selectScope.activeTabId"\
                             @input="selectScope.updateTab"\
                             size="small">\
-                            <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
+                            <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
                         </el-radio-group>\
                     </template>\
                 </cly-select-x>',
@@ -541,6 +542,7 @@
             title: { type: String, require: false},
             selectedApp: {type: String, required: false, default: ''},
             disabled: {type: Boolean, default: false},
+            testId: {type: String, default: "event-select-test-id"}
         },
         data: function() {
             return {

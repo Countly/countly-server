@@ -19,6 +19,7 @@
             placeholder: {type: String, default: ''},
             disabled: {type: Boolean, default: false},
             adaptiveLength: {type: Boolean, default: false},
+            testId: {type: String, default: 'cly-input-dropdown-trigger'}
         },
         computed: {
             iconClass: function() {
@@ -59,6 +60,9 @@
         },
         template: '<component\
                         :is="componentName"\
+                        :data-test-id="testId"\
+                        :test-id="testId"\
+                        class="cly-input-dropdown-trigger"\
                         ref="elInput"\
                         :class="classes"\
                         v-bind="$attrs"\

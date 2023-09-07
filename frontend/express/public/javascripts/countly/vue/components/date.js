@@ -1001,6 +1001,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: "cly-datepicker-test-id",
+                required: false
             }
         },
         data: function() {
