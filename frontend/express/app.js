@@ -330,6 +330,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.enable('trust proxy');
     app.set('x-powered-by', false);
     const limiter = rateLimit({
+        keyGenerator: common.getIpAddress,
         windowMs: parseInt(plugins.getConfig("security").dashboard_rate_limit_window) * 1000,
         max: parseInt(plugins.getConfig("security").dashboard_rate_limit_requests),
         headers: false,
