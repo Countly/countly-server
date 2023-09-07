@@ -1,12 +1,12 @@
 <div class="dbviewer-aggregate">
-    <cly-header>
-        <template v-slot:header-left>
-            <div class="dbviewer-aggregate__title">
-                <div @click="backToDBViewer()" class="bu-is-size-7 dbviewer-aggregate__back-button">
-                    <i class="el-icon-back"></i> {{ i18n('dbviewer.back-to-dbviewer') }}
-                </div>
-                <h2 class="bu-mt-5"> {{ i18n('dbviewer.aggregation') }}</h2>
-            </div>
+    <cly-header
+        :title="i18n('dbviewer.aggregation')"
+    >
+        <template v-slot:header-top>
+            <cly-back-link
+                :link="'#/manage/db/' + db + '/' + collection" 
+                :title="i18n('dbviewer.back-to-dbviewer')">
+            </cly-back-link>
         </template>
     </cly-header>
     <cly-main>

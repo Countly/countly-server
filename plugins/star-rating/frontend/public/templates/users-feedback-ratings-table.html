@@ -1,5 +1,5 @@
 <div>
-    <cly-datatable-n :rows="ratings">
+    <cly-datatable-n :rows="ratings" :force-loading="isLoading">
         <el-table-column prop="widget" column-key="widget_id" :label="i18n('feedback.widget-id')">
             <template v-slot="rowScope">
               <div class="text-medium">

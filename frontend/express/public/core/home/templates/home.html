@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('sidebar.home')}}</h2>
-        </template>
+    <cly-header
+		:title="i18n('sidebar.home')"
+	>
 		<template v-slot:header-right>
 			<cly-select-x
                 v-if="showComponentSelector"

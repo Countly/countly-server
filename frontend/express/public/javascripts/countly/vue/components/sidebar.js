@@ -571,6 +571,7 @@
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
+                    guidesEnabled: CountlyHelpers.isPluginEnabled('guides'),
                     defaultMainMenuOptions: [
                         {
                             name: "app",
@@ -704,6 +705,12 @@
                 selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
+                },
+                helpCenterLink: function() {
+                    return this.guidesEnabled ? '#/guides' : "https://support.count.ly";
+                },
+                helpCenterTarget: function() {
+                    return this.guidesEnabled ? '_self' : "_blank";
                 }
             },
             methods: {

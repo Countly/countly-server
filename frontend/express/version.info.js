@@ -1,5 +1,5 @@
 var versionInfo = {
-    version: "23.06.5",
+    version: "23.06.9",
     type: "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"
 };
 try {

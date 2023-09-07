@@ -47,16 +47,35 @@ async function process_meta_docs(options, callback) {
     var app_id = options.app_id;
     var cursor = await countlyDrillDB.collection(coll).find({});
     var doc = await cursor.next();
+    var baseprops = ['status', 'lts'];
     while (doc) {
         var queries = [];
         var groups;
         if (doc._id === "meta_up") {
             doc._id = app_id + "_meta_up";
             groups = ['cmp', 'custom', 'up'];
+            var updateBaseUp = {'$set': {"e": doc.e, "app_id": doc.app_id, "type": doc.type}};
+            for (var k = 0; k < baseprops.length;k++) {
+                if (typeof doc[baseprops[k]] !== 'undefined') {
+                    if (baseprops[k] === 'lts') {
+                        updateBaseUp['$max'] = updateBaseUp['$max'] || {};
+                        updateBaseUp['$max'][baseprops[k]] = doc[baseprops[k]];
+                    }
+                    else {
+                        updateBaseUp['$set'][baseprops[k]] = doc[baseprops[k]];
+                    }
+                }
+            }
 
             for (var z = 0; z < groups.length; z++) {
                 if (doc[groups[z]]) {
                     for (var prop in doc[groups[z]]) {
+                        for (var key in doc[groups[z]][prop]) {
+                            if (key !== "values") {
+                                updateBaseUp["$set"][groups[z] + '.' + prop + '.' + key] = doc[groups[z]][prop][key];
+                            }
+                        }
+
                         if (doc[groups[z]][prop].values) {
                             var newDoc = {};
                             newDoc._id = app_id + "_meta_up_" + groups[z] + "." + prop;
@@ -80,8 +99,10 @@ async function process_meta_docs(options, callback) {
                 }
             }
             queries.push({
-                insertOne: {
-                    document: doc
+                updateOne: {
+                    filter: {_id: doc._id},
+                    update: updateBaseUp,
+                    upsert: true
                 }
             });
         }
@@ -91,10 +112,28 @@ async function process_meta_docs(options, callback) {
         else if (doc.type === 'e') {
             doc._id = app_id + "_" + doc._id;
             groups = ['sg'];
+            var updateBase = {"$set": {"e": doc.e, "app_id": doc.app_id, "type": doc.type}};
+            for (var k = 0; k < baseprops.length;k++) {
+                if (typeof doc[baseprops[k]] !== 'undefined') {
+                    if (baseprops[k] === 'lts') {
+                        updateBase['$max'] = updateBase['$max'] || {};
+                        updateBase['$max'][baseprops[k]] = doc[baseprops[k]];
+                    }
+                    else {
+                        updateBase["$set"][baseprops[k]] = doc[baseprops[k]];
+                    }
+                }
+            }
             for (var x = 0; x < groups.length; x++) {
                 if (doc[groups[x]]) {
                     for (var prop2 in doc[groups[x]]) {
+                        for (var key in doc[groups[x]][prop2]) {
+                            if (key !== "values") {
+                                updateBase["$set"][groups[x] + '.' + prop2 + '.' + key] = doc[groups[x]][prop2][key];
+                            }
+                        }
                         if (doc[groups[x]][prop2].values) {
+
                             var newDoc2 = {};
                             newDoc2._id = doc._id + "_" + groups[x] + "." + prop2;
                             for (var val2 in doc[groups[x]][prop2].values) {
@@ -117,8 +156,10 @@ async function process_meta_docs(options, callback) {
                 }
             }
             queries.push({
-                insertOne: {
-                    document: doc
+                updateOne: {
+                    filter: {_id: doc._id},
+                    update: updateBase,
+                    upsert: true
                 }
             });
 
@@ -132,7 +173,6 @@ async function process_meta_docs(options, callback) {
                     console.log(ee);
                 }
             }
-
         }
         doc = await cursor.next();
     }

@@ -195,7 +195,9 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/geo-countries/javascripts/countly.widgets.geo.js',
                     'frontend/express/public/core/home/javascripts/countly.models.js',
                     'frontend/express/public/core/home/javascripts/countly.views.js',
-                    'frontend/express/public/core/notes/javascripts/countly.views.js'
+                    'frontend/express/public/core/notes/javascripts/countly.views.js',
+                    'frontend/express/public/core/onboarding/javascripts/countly.models.js',
+                    'frontend/express/public/core/onboarding/javascripts/countly.views.js',
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }

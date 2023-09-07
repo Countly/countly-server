@@ -18,13 +18,18 @@
 						<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-2" v-tooltip.top-center="item.description"></span>
 					</div>
 					<div class="topData">
-						<div :key="idx2" v-for="(item2, idx2) in item.data" >
-							<div class="version-graph-block bu-p-3">
-								<div class="bu-columns version-graph-title">
-									<div class="bu-column has-ellipsis">{{item2.name}}</div>
-									<div class="bu-column">{{item2.percent}}% </div>
+						<div v-if="!item.data.length">
+							<div style="height: 200px;" v-loading="isLoading"></div>
+						</div>
+						<div v-else v-loading="isLoading">
+							<div :key="idx2" v-for="(item2, idx2) in item.data">
+								<div class="version-graph-block bu-p-3">
+									<div class="bu-columns version-graph-title">
+										<div class="bu-column has-ellipsis">{{item2.name}}</div>
+										<div class="bu-column">{{item2.percent}}% </div>
+									</div>
+									<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 								</div>
-								<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 							</div>
 						</div>
 					</div>

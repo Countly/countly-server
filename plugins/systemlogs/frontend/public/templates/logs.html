@@ -1,10 +1,9 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
+    <cly-header
+        :title="i18n('systemlogs.title')"
+    >
         <template v-if="back" v-slot:header-top>
             <cly-back-link v-on:click="goBack" :title="i18n('plugins.back')"></cly-back-link>
-        </template>
-        <template v-slot:header-left>
-            <h2> {{i18n('systemlogs.title')}} </h2>
         </template>
     </cly-header>
     <cly-main>

@@ -635,7 +635,10 @@
                     context.commit('setVersionLoading', false);
                 });
             },
-            fetchPlatform: function(context) {
+            fetchPlatform: function(context, useLoader) {
+                if (useLoader) {
+                    context.state.isLoading = true;
+                }
                 if (countlyDevicesAndTypes.service.validateStates([countlyDevicesAndTypes.getCurrentLoadState()])) {
                     context.dispatch('onFetchInit', "platform");
                 }
@@ -643,18 +646,25 @@
                     var platforms = countlyDevicesAndTypes.service.calculatePlatform();
                     context.commit('setAppPlatform', platforms);
                     context.dispatch('onFetchSuccess', "platform");
+                    context.state.isLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.isLoading = false;
                 });
             },
-            fetchBrowser: function(context) {
+            fetchBrowser: function(context, useLoader) {
                 context.dispatch('onFetchInit', "browser");
+                if (useLoader) {
+                    context.state.browserLoading = true;
+                }
                 countlyDevicesAndTypes.service.fetchBrowser().then(function() {
                     var browsers = countlyDevicesAndTypes.service.calculateBrowser();
                     context.commit('setAppBrowser', browsers);
                     context.dispatch('onFetchSuccess', "browser");
+                    context.state.browserLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.browserLoading = false;
                 });
             },
             fetchDensity: function(context, force) {
@@ -670,8 +680,10 @@
                     context.commit('setDensityLoading', false);
                 });
             },
-            fetchDeviceTypes: function(context) {
-                context.commit('setTypeLoading', true);
+            fetchDeviceTypes: function(context, useLoader) {
+                if (useLoader) {
+                    context.commit('setTypeLoading', true);
+                }
                 context.dispatch('onFetchInit', "deviceType");
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
                     var deviceTypes = countlyDevicesAndTypes.service.calculateData("device_type", {"pie": true});
