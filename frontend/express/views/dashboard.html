@@ -167,7 +167,7 @@
 </head>
 <body>
 	<div id="main-views-container" class="bu-is-flex">
-        <div id="cly-vue-sidebar">
+        <div id="cly-vue-sidebar" data-test-id="dashboard-sidebar">
             <div id="sidebar-x"></div>
         </div>
         <div class="main-view">
@@ -1837,6 +1837,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.cms.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
@@ -1872,6 +1873,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
@@ -1894,18 +1897,6 @@
             <!--Countly script-->
             <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js?<%= countlyVersion %>'></script>
             <script type='text/javascript'>
-
-            //initializing countly with params
-            Countly.init({
-                app_key: "<%= frontend_app || "386012020c7bf7fcb2f1edf215f1801d6146913f" %>",
-                url: "<%= frontend_server || "https://stats.count.ly/" %>",
-                device_id: countlyGlobal["member"]["email"],
-                app_version: "<%= countlyVersion %>",
-                interval:1000
-            });
-
-            //track sessions automatically
-            Countly.track_sessions();
 
             Countly.getViewName = function(){
                 var view = "/dashboard#";
@@ -1949,74 +1940,96 @@
                 return view + parts.join("/");
             };
 
-            //track pageviews automatically
-            Countly.track_pageview(Countly.getViewName());
+            if (countlyGlobal.countly_tracking) {
+                var domain = countlyPlugins.getConfigsData().api.domain;
 
-            $(window).on('hashchange', function() {
-                Countly.track_pageview(Countly.getViewName());
-            });
+                try {
+                    // try to extract hostname from full domain url
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
 
-            //track any clicks to webpages automatically
-            Countly.track_clicks();
-
-            //track javascript errors
-            Countly.track_errors();
-            
-            if (Countly.report_trace && window.performance && window.performance.timing) {
-                $(window).on( "load", function(){
-                    setTimeout(function(){
-                        var trace = {
-                            type: "device",
-                            name: Countly.getViewName(),
-                            stz: window.performance.timing.navigationStart,
-                            etz: window.performance.timing.domContentLoadedEventEnd,
-                            apm_metrics: {}
-                        };
-                        if (window.performance.timing.domLoading && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.first_paint = window.performance.timing.domLoading - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domContentLoadedEventStart && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.first_contentful_paint = window.performance.timing.domContentLoadedEventStart - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domInteractive && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.dom_interactive = window.performance.timing.domInteractive - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domContentLoadedEventEnd && window.performance.timing.domContentLoadedEventStart) {
-                            trace.apm_metrics.dom_content_loaded_event_end = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domContentLoadedEventStart;
-                        }
-                        if (window.performance.timing.loadEventEnd && window.performance.timing.loadEventStart) {
-                            trace.apm_metrics.load_event_end = window.performance.timing.loadEventEnd - window.performance.timing.loadEventStart;
-                        }
-                        if (Object.keys(trace.apm_metrics).length) {
-                            Countly.report_trace(trace);
-                        }
-                    },1);
+                //initializing countly with params
+                Countly.init({
+                    app_key: "<%= frontend_app || "e70ec21cbe19e799472dfaee0adb9223516d238f" %>",
+                    url: "<%= frontend_server || "https://stats.count.ly/" %>",
+                    device_id: domain,
+                    app_version: "<%= countlyVersion %>",
+                    interval:1000
                 });
-            }
 
-            Countly.user_details({
-                "name": countlyGlobal["member"]["full_name"] || "",
-                "username": countlyGlobal["member"]["username"] || "",
-                "email": countlyGlobal["member"]["email"]
-            });
+                // if domain has changed since the last time it is saved as device id set the new domain as device id and merge it with the old domain
+                if (Countly.get_device_id() !== domain) {
+                    Countly.change_id(domain, true);
+                }
 
-            Countly.userData.set("lastServer", window.location.hostname);
-            Countly.userData.set("lastVersion", "<%= countlyVersion %>");
-            Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
-            Countly.userData.set("isTrial", <%= countlyTrial %>);
-            <% if (!offline_mode) { %>
+                //track sessions automatically
+                Countly.track_sessions();
+
+                //track pageviews automatically
+                Countly.track_pageview(Countly.getViewName());
+
+                $(window).on('hashchange', function() {
+                    Countly.track_pageview(Countly.getViewName());
+                });
+
+                //track any clicks to webpages automatically
+                Countly.track_clicks();
+
+                //track javascript errors
+                Countly.track_errors();
+                
+                if (Countly.report_trace && window.performance && window.performance.timing) {
+                    $(window).on( "load", function(){
+                        setTimeout(function(){
+                            var trace = {
+                                type: "device",
+                                name: Countly.getViewName(),
+                                stz: window.performance.timing.navigationStart,
+                                etz: window.performance.timing.domContentLoadedEventEnd,
+                                apm_metrics: {}
+                            };
+                            if (window.performance.timing.domLoading && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.first_paint = window.performance.timing.domLoading - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domContentLoadedEventStart && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.first_contentful_paint = window.performance.timing.domContentLoadedEventStart - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domInteractive && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.dom_interactive = window.performance.timing.domInteractive - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domContentLoadedEventEnd && window.performance.timing.domContentLoadedEventStart) {
+                                trace.apm_metrics.dom_content_loaded_event_end = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domContentLoadedEventStart;
+                            }
+                            if (window.performance.timing.loadEventEnd && window.performance.timing.loadEventStart) {
+                                trace.apm_metrics.load_event_end = window.performance.timing.loadEventEnd - window.performance.timing.loadEventStart;
+                            }
+                            if (Object.keys(trace.apm_metrics).length) {
+                                Countly.report_trace(trace);
+                            }
+                        },1);
+                    });
+                }
+
+                Countly.userData.set("lastServer", window.location.hostname);
+                Countly.userData.set("lastVersion", "<%= countlyVersion %>");
+                Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
+                Countly.userData.set("isTrial", <%= countlyTrial %>);
                 Countly.userData.set("cpus", <%= cpus %>);
-            <% } %>
-            Countly.userData.push_unique("servers", window.location.hostname);
-            Countly.userData.push_unique("versions", "<%= countlyVersion %>");
-            Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
-            Countly.userData.save();
+                Countly.userData.push_unique("servers", window.location.hostname);
+                Countly.userData.push_unique("versions", "<%= countlyVersion %>");
+                Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
+                Countly.userData.save();
 
-            <% if (installed) { %>
-            Countly.add_event({
-                key:"INSTALL"
-            });
-            <% } %>
+                <% if (installed) { %>
+                Countly.add_event({
+                    key:"INSTALL"
+                });
+                <% } %>
+            }
             </script>
         <% } %>
     <% } %>

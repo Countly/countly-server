@@ -181,8 +181,7 @@ var plugin = {},
                             }
                         });
                     }
-                    else
-                    if (!--pending) {
+                    else if (!--pending) {
                         done(null, results);
                     }
                 });
@@ -200,11 +199,11 @@ var plugin = {},
                 allPlugins = allPlugins || {};
 
                 var pluginList = plugins.getPlugins();//get list of plugins from plugin manager. Should have all available plugins there.
-                for (var zz in allPlugins) {
+                /*for (var zz in allPlugins) {
                     if (pluginList.indexOf(zz) === -1) {
                         delete allPlugins[zz];
                     }
-                }
+                }*/
 
                 for (var z = 0; z < pluginList.length; z++) {
                     if (typeof allPlugins[pluginList[z]] === 'undefined') {

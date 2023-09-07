@@ -1,3 +1,126 @@
+## Version 23.06.9
+Fixes:
+- [push] Adding push/notifications endpoint, deprecating push/user endpoint
+- [push] Docs: fixing required fields, adding example
+- [core] If user property is redacted, it should not show list of values in Data manager too
+- [hooks] Fix for firebase url validation
+
+Enterprise fixes:
+- [push] Allowing push token to be filtered from cohorts
+- [drill] Fix table download bug
+- [data-manager] Transformation - Validation for transformation failing on incoming request
+
+## Version 23.06.8
+Fixes:
+- [core] Automatic license management installation script
+- [core] Fixes for meta merging script
+- [core] Adding automation tests to base code
+- [core] Improvements for views to correctly count unique user count for one view if multiple views with the same name are sent in a single request.
+- [crashes] Fix query builder option source
+- [dbviewer] Fixed bug with  the filter being ignored on export if any value is null in the filter.
+
+Enterprise fixes:
+- [cohorts] Fixed pipeline for the top metric calculation to return only top 3 values, not all possible.
+- [cohorts] Fixes for data fetching upon loading cohorts table
+- [data-manager] Fixed a typo in the import schema function
+- [data-manager] Fixes to prevent Duplicate Events due to Transform Merge
+- [drill] Drill meta document conversion to type string on overflow based on document size
+- [funnels] Funnel edit form does not decode funnel name on open
+- [push] Fixing drill query by push token
+- [push] User Profiles querying by push tokens & messages
+- [push] User details rendering of push tokens present in a profile
+
+
+## Version 23.06.7
+Fixes:
+- [consent] Fixes for user consent table
+- [core] Do not track region and location if tracking city data is diabled
+- [core] Fixed bug with selecting app containing special characters in dbviewer
+- [core] Fixed encoding for application list
+- [core] Fixed issue with session analytics showing incorrect returning users count for single day.
+- [crashes] Fix query builder property types
+- [db-viewer] Fixed issues with export if used query contains objectID
+- [db-viewer] Fixed using correct filename in export
+- [graph-notes] Fixed issue with editing graph note
+- [report-manager] Fixed export table issue
+
+Enterprise fixes:
+- [cohorts] Revalidate user property rule like '7days' or '30days' in nightly job.
+
+## Version 23.06.6
+Fixes:
+- [crashes] Limit custom properties key length in crashgroup
+- [core] Fix issue with encoding and decoding for \u0000
+- [core] Decode carriers name in carriers table
+- [apps] display old salt property value too
+- [db-viewer] Add search to DB Viewer apps filter and do alphabetical order
+- [dashboard] Fix error in charts added in time-series type in User Analytics widgets
+- [dashboard] Fix dashboard widgets showing no data incorrectly
+
+Enterprise fixes:
+- [users][drill] Correctly Match events for user timeline in user profiles
+- [data-manager] Fix issue with incorrect period in regeneration of aggregate data
+
+## Version 23.06.5
+Fixes:
+- [core] Fixes for pluginManager callPromisedAppMethod
+- [core] Fixes for user merging
+- [crashes] Add crash group check
+- [report-manager] Fixes for plugin filter selector.
+- [security] Dependency updates
+
+Enterprise fixes: 
+- [cohorts] fix ui bug when adding User Behavior Segmentation, the items don't fit the box.
+- [flows] null check in flows job
+
+## Version 23.06.4
+Fixes:
+- [ratings] Fix bug where selecting previous month returns an error
+- [core] Added option to return output without encoding
+- [core] Added /i/sdk path in request process
+- [core] use api config on api workers
+- [hooks] trigger hooks, if multiple hooks are listening to the same trigger
+- [whitelabeling] localization fixes
+
+Enterprise fixes: 
+- [drill] Fix empty Drill query with empty result produces none empty table
+- [drill] Fix save visualisations
+- [drill] Prevent error with trying set empty string for values upon recording meta biglist data
+- [ab-testing] Fix for sandboxing APIs and add new /o/sdk path support
+
+## Version 23.06.3
+Fixes:
+- [core] Upgraded node version from 14 to 18 in docker images
+- [core] Update ubuntu for docker to focal-1.2.0
+- [star-rating] fixed the issue with downloading table data.
+
+Enterprise fixes:
+- [cohorts] Correctly validate [ab-testing] rule on incoming data
+- [cohorts] Logic fix for real-time cohorts processing regarding user being in cohort + additional segmentation rule. (User could have been falling in only matching cohort rule)
+- [surveys] Added option "View current target users" for the survey. Goes directly to filtered user list.
+
+## Version 23.06.2
+Fixes:
+- [crashes] Update notification after sending symbolication request
+- [core] Display of detailed error messages in the UI while editing app settings
+- [core] Fix Users cannot login using username with uppercase
+- [core] Calculation of indicator key in graph notes moved to backend
+- [core] Updated geodata to newest version
+- [user-management] Handle partial permission object in depCheck
+- [populator] Fix URL length issue in data populator plugin's edit request
+- [installer] Fix CDN download PACKAGE_NAME variable
+
+Enterprise fixes:
+- [nps] Fix for survey flickering issue
+- [cohorts] Null checks for cohorts
+- [crash_symbolication] Fix for JS Symbolication Timeout
+- [crash_symbolication] Symbolication notification fixes
+- [groups] Prevent adding global admin to a group
+- [drill] Added tests and fixes for list cleanup
+- [drill] Fixes for recheck_list endpoint and function
+- [drill] Added script for calling list rechecking
+- [views] fixes for _idv
+
 ## Version 23.06.1
 Fixes:
 - [core]  Added missing % in Session Analytics
@@ -1474,7 +1597,7 @@ Enterprise Improvements:
 * [surveys] allow text customizations
 * [symbolication] do not display very long error names in full
 * [views] correctly postprocess views in Drill
-* [whitelabelring] override logo in email template too
+* [whitelabeling] override logo in email template too
 
 **Development related**
 * [api] count all merges

@@ -1,13 +1,9 @@
 <div v-bind:class="[componentId]"> 
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')" class="populator-wrapper">
-            <cly-header>
-                <template v-slot:header-left>
-                    <h2>
-                        {{ i18n('populator.plugin-title') }}
-                        <cly-tooltip-icon></cly-tooltip-icon>
-                    </h2>
-                </template>
+            <cly-header
+                :title="i18n('populator.plugin-title')"
+            >
             </cly-header>
             <cly-main>
                 <div>
@@ -60,19 +56,15 @@
             </cly-main>
         </el-tab-pane>
         <el-tab-pane name="templates" :label="i18n('populator.templates-tab-title')">
-            <cly-header>
-                <template v-slot:header-left>
-                    <h2>
-                        {{ i18n('populator.templates-tab-title') }}
-                        <cly-tooltip-icon></cly-tooltip-icon>
-                    </h2>
-                </template>
+            <cly-header
+                :title="i18n('populator.templates-tab-title')"
+            >
                 <template v-slot:header-right>
                     <el-button type="success" v-if="canUserCreate" icon="el-icon-circle-plus" @click="newTemplate">{{i18n("populator.create-new-template")}}</el-button>
                 </template>
             </cly-header>
                 <cly-main>
-                    <cly-datatable-n :rows="templates" class="populator-wrapper__table">
+                    <cly-datatable-n :force-loading="isLoading" :rows="templates" class="populator-wrapper__table">
                         <template v-slot="scope">
                             <el-table-column prop="name" :label="i18n('populator.template')" sortable></el-table-column>
                             <el-table-column prop="isDefault" :label="i18n('populator.template-type')" sortable></el-table-column>

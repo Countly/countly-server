@@ -12,11 +12,11 @@ var AppVersionView = countlyVue.views.create({
     },
 
     mounted: function() {
-        this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
+        this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion', force);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);

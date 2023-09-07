@@ -338,14 +338,13 @@
         };
 
         countlyCommon.unescapeHtml = function(htmlStr) {
-            if (htmlStr) {
+            if (htmlStr && typeof htmlStr === "string") {
                 htmlStr = htmlStr.replace(/&lt;/g, "<");
                 htmlStr = htmlStr.replace(/&gt;/g, ">");
                 htmlStr = htmlStr.replace(/&quot;/g, "\"");
                 htmlStr = htmlStr.replace(/&#39;/g, "\'");
                 htmlStr = htmlStr.replace(/&amp;/g, "&");
             }
-
             return htmlStr;
         };
 
@@ -3830,14 +3829,14 @@
                 endTimestamp = toDate.clone().endOf("day");
                 // fromDate.tz(_appTimezone);
                 // toDate.tz(_appTimezone);
-
-                if (fromDate.valueOf() === toDate.valueOf()) {
+                if (fromDate.format("YYYY.M.D") === toDate.format("YYYY.M.D")) {
                     cycleDuration = moment.duration(1, "day");
                     Object.assign(periodObject, {
                         dateString: "D MMM, HH:mm",
                         periodMax: 23,
                         periodMin: 0,
                         activePeriod: fromDate.format("YYYY.M.D"),
+                        currentPeriodArr: [fromDate.format("YYYY.M.D")],
                         previousPeriod: fromDate.clone().subtract(1, "day").format("YYYY.M.D")
                     });
                 }
@@ -5193,6 +5192,9 @@
          * @returns {String} Trimmed string
          */
         countlyCommon.trimWhitespaceStartEnd = function(str) {
+            if (typeof str !== 'string') {
+                return str;
+            }
             str = str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
             return str;
         };

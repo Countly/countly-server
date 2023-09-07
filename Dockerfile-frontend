@@ -1,4 +1,4 @@
-FROM node:fermium-bullseye-slim
+FROM node:hydrogen-bullseye-slim
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager
 # Enterprise Edition:

@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
-	<cly-header>
-      <template v-slot:header-left>
-        <h2>{{ i18n('feedback.ratings') }} </h2>
-        &nbsp; <cly-tooltip-icon :tooltip="i18n('ratings.tooltip.ratings')" icon="ion-help-circled"></cly-tooltip-icon>
-      </template>
+	<cly-header
+    :title="i18n('feedback.ratings')"
+    :tooltip="{description: i18n('ratings.tooltip.ratings')}"
+  >
 			<template v-slot:header-right></template>
 	</cly-header>
   <cly-main>

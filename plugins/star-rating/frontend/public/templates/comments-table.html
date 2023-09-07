@@ -1,4 +1,4 @@
-<cly-datatable-n :rows="preparedRows" :persist-key="commentsTablePersistKey">
+<cly-datatable-n :rows="preparedRows" :persist-key="commentsTablePersistKey" :force-loading="loadingState">
   <template v-slot="scope">
       <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
           <template v-slot="rowScope">

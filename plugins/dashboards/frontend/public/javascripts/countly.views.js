@@ -1438,7 +1438,7 @@
             document.addEventListener('fullscreenchange', fullscreeToggle);
         },
         methods: {
-            refresh: function() {
+            refresh: function(forceRefresh) {
                 var isRefreshing = this.isRefreshing;
                 var isInitializing = this.isInitLoad;
                 var isDrawerOpen = this.isDrawerOpen;
@@ -1471,11 +1471,11 @@
                     return;
                 }
 
-                this.dateChanged(true);
+                this.dateChanged(forceRefresh);
             },
             dateChanged: function(isRefresh) {
                 var self = this;
-                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", isRefresh);
 
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
                     self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);

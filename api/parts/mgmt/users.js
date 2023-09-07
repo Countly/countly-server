@@ -385,9 +385,9 @@ async function depCheck(params) {
         //check permission dependency for each app
         const crudTypes = ["c", "r", "u", "d"];
         crudTypes.forEach(function(crudType) {
-            let apps = params.qstring.args.permission[crudType];
+            let apps = params.qstring.args && params.qstring.args.permission && params.qstring.args.permission[crudType] || {};
             Object.keys(apps).forEach(function(app) {
-                let feats = apps[app].allowed;
+                let feats = apps[app].allowed || {};
                 Object.keys(feats).forEach(function(feat) {
                     let featEnabled = feats[feat];
                     //check if feature is enabled and if it has any dependency
@@ -468,7 +468,11 @@ usersApi.updateUser = async function(params) {
             'permission': {
                 'required': false,
                 'type': 'Object'
-            }
+            },
+            'subscribe_newsletter': {
+                'required': false,
+                'type': 'Boolean'
+            },
         },
         updatedMember = {},
         passwordNoHash = "";
@@ -538,7 +542,11 @@ usersApi.updateUser = async function(params) {
 
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
-        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {
+        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
+            if (errUpdatingUser) {
+                common.returnMessage(params, 500, 'Error updating user. Please check api logs.');
+                return false;
+            }
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
                     updatedMember._id = params.qstring.args.user_id;

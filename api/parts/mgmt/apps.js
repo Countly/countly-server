@@ -58,8 +58,8 @@ appsApi.getCurrentUserApps = function(params) {
     var adminOfAppIds = getAdminApps(params.member),
         userOfAppIds = getUserApps(params.member);
 
-    common.db.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err, admin_of) {
-        common.db.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err2, user_of) {
+    common.db.collection('apps').find({ _id: { '$in': adminOfAppIds.map(id => common.db.ObjectID(id)) } }).toArray(function(err, admin_of) {
+        common.db.collection('apps').find({ _id: { '$in': userOfAppIds.map(id => common.db.ObjectID(id)) } }).toArray(function(err2, user_of) {
             common.returnOutput(params, {
                 admin_of: packApps(admin_of),
                 user_of: packApps(user_of)
@@ -517,7 +517,12 @@ appsApi.updateAppPlugins = function(params) {
                         else if (changes) {
                             let err = changes.filter(c => c.status === 'rejected')[0];
                             if (err) {
-                                reject(err.reason);
+                                if (err.reason.errors && err.reason.errors.length) {
+                                    reject({errors: err.reason.errors.join(',')});
+                                }
+                                else {
+                                    reject(err.reason);
+                                }
                             }
                             else {
                                 resolve({[k]: changes.map(c => c.value)});
@@ -1016,7 +1021,8 @@ function packApps(apps) {
             'country': apps[i].country,
             'key': apps[i].key,
             'name': apps[i].name,
-            'timezone': apps[i].timezone
+            'timezone': apps[i].timezone,
+            'salt': apps[i].salt || apps[i].checksum_salt || "",
         };
     }
 

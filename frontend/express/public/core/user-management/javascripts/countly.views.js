@@ -766,7 +766,7 @@
                         }
                         else {
                             CountlyHelpers.notify({
-                                message: CV.i18n('management-applications.plugins.smth'),
+                                message: CV.i18n('management-applications.plugins.smth') + ": " + res,
                                 type: 'error'
                             });
                             self.$refs.userDrawer.isSubmitPending = false;

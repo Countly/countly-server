@@ -960,8 +960,8 @@ var AppRouter = Backbone.Router.extend({
                     viewName.render();
                 }
             }
-            else if (Backbone.history.fragment !== "/manage/apps") {
-                this.navigate("/manage/apps", true);
+            else if (Backbone.history.fragment !== "/initial-setup") {
+                this.navigate("/initial-setup", true);
             }
             else {
                 viewName.render();
@@ -1159,9 +1159,9 @@ var AppRouter = Backbone.Router.extend({
             }
         });
 
-        // if (countlyAuth.validateRead('core')) {
-        //     self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
-        // }
+        if (countlyAuth.validateRead('core')) {
+            self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+        }
 
         //management is also a menu category which goes in default menu i.e. visible to all users
 
@@ -1553,7 +1553,7 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
-            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length) {
+            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length && !_.isEmpty(countlyGlobal.apps)) {
                 for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
                     countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
                     CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);

@@ -45,17 +45,15 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
  * @property {object} emptyPermission - empty crud permission
  */
 membersUtility.emptyPermission = {
-    "permission": {
-        "c": {},
-        "r": {},
-        "u": {},
-        "d": {},
-        "_": {
-            "a": [],
-            "u": [
-                []
-            ]
-        }
+    "c": {},
+    "r": {},
+    "u": {},
+    "d": {},
+    "_": {
+        "a": [],
+        "u": [
+            []
+        ]
     }
 };
 
@@ -346,9 +344,7 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 *   membersUtility.updateStats(member );
 **/
 membersUtility.updateStats = function(member) {
-    var countlyConfig = membersUtility.countlyConfig;
-
-    if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
+    if (plugins.getConfig('frontend').countly_tracking && !plugins.getConfig("api").offline_mode) {
         countlyStats.getUser(membersUtility.db, member, function(statsObj) {
             const userApps = getUserApps(member);
             var custom = {
@@ -360,13 +356,24 @@ membersUtility.updateStats = function(member) {
                 users: statsObj["total-users"]
             };
             var date = new Date();
+            let domain = plugins.getConfig('api').domain;
+
+            try {
+                // try to extract hostname from full domain url
+                const urlObj = new URL(domain);
+                domain = urlObj.hostname;
+            }
+            catch (_) {
+                // do nothing, domain from config will be used as is
+            }
+
             request({
                 uri: "https://stats.count.ly/i",
                 method: "GET",
                 timeout: 4E3,
                 qs: {
-                    device_id: member.email,
-                    app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                    device_id: domain,
+                    app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                     timestamp: Math.round(date.getTime() / 1000),
                     hour: date.getHours(),
                     dow: date.getDay(),
@@ -724,6 +731,14 @@ membersUtility.setup = function(req, callback) {
                 },
             };
             var memberCreateValidation = common.validateArgs(req.body, argProps, true);
+
+            //set no license
+            plugins.callPromisedAppMethod('checkMemberLogin', { }).then((licenseCheck) => {
+                common.licenseAssign(req, licenseCheck);
+            }).catch((e) => {
+                console.log(e);
+            });
+
             if (!(req.body = memberCreateValidation.obj)) {
                 callback({
                     message: memberCreateValidation.errors,

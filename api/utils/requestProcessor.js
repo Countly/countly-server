@@ -38,7 +38,8 @@ const countlyApi = {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
         appUsers: require('../parts/mgmt/app_users.js'),
-        eventGroups: require('../parts/mgmt/event_groups.js')
+        eventGroups: require('../parts/mgmt/event_groups.js'),
+        cms: require('../parts/mgmt/cms.js'),
     }
 };
 
@@ -1445,6 +1446,9 @@ const processRequest = (params) => {
                 break;
             }
             case '/i': {
+                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
+                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+                }
                 params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
                 params.user = {};
 
@@ -2781,8 +2785,55 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/sdk': {
+                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+                params.user = {};
+
+                if (!params.qstring.app_key || !params.qstring.device_id) {
+                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                    return false;
+                }
+                else {
+                    params.qstring.device_id += "";
+                    params.app_user_id = common.crypto.createHash('sha1')
+                        .update(params.qstring.app_key + params.qstring.device_id + "")
+                        .digest('hex');
+                }
+
+                log.d('processing request %j', params.qstring);
+
+                params.promises = [];
+
+                validateAppForFetchAPI(params, () => { });
+
+                break;
+            }
             case '/o/notes': {
                 validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
+                break;
+            }
+            case '/o/cms': {
+                switch (paths[3]) {
+                case 'entries':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
+                    break;
+                case 'clear':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                    }
+                    break;
+                }
+
                 break;
             }
             default:
@@ -3208,6 +3259,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             if (params.req.method.toLowerCase() === 'post') {
                 payload += params.req.body;
             }
+            payload = payload.replace(new RegExp("[?&]?(rr=[^&]+)", "gm"), "");
             params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,

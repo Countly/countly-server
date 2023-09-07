@@ -1,4 +1,4 @@
-/*global app, countlyVue, CV, Vue, countlyGlobal, countlyCommon, moment, CountlyHelpers, countlyTaskManager */
+/*global app, countlyVue, CV, Vue, countlyGlobal, countlyCommon, moment, CountlyHelpers, countlyTaskManager, countlyAuth */
 
 (function() {
 
@@ -259,7 +259,6 @@
                     "all": CV.i18n("report-manager.all-origins"),
                     "funnels": CV.i18n("sidebar.funnels") || "Funnels",
                     "drill": CV.i18n("drill.drill") || "Drill",
-                    "flows": CV.i18n("flows.flows") || "Flows",
                     "retention": CV.i18n("retention.retention") || "Retention",
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
@@ -396,8 +395,7 @@
                 }
             },
             getExportAPI: function() {
-                var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
-                    "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&iDisplayStart=0&iDisplayLength=10000',
+                var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key + '&iDisplayStart=0&iDisplayLength=10000',
                     self = this;
 
                 if (this.lastRequestPayload) {
@@ -441,6 +439,21 @@
                 this.$refs.filterDropdown.doClose();
                 //this.handleReloadFilter();
             }
+        },
+        created: function() {
+            var filteredOrigins = {};
+            for (var key in this.availableOrigins) {
+                var isValid = countlyGlobal.plugins.includes(key) || key === "all";
+
+                if (key === "retention" && countlyGlobal.plugins.includes("retention_segments")) {
+                    isValid = true;
+                }
+
+                if (isValid) {
+                    filteredOrigins[key] = this.availableOrigins[key];
+                }
+            }
+            this.availableOrigins = filteredOrigins;
         }
     }));
 
@@ -551,8 +564,12 @@
             component: ReportManagerView,
         });
     };
-
     app.route("/manage/tasks", "manageJobs", function() {
-        this.renderWhenReady(getMainView());
+        if (countlyAuth.validateRead("reports")) {
+            this.renderWhenReady(getMainView());
+        }
+        else {
+            app.navigate("/", true);
+        }
     });
 })();

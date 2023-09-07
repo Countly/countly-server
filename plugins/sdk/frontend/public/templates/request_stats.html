@@ -1,0 +1,78 @@
+<div class="technology-analytics-wrapper-sdk" v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2>Request stats</h2>
+        </template>
+		<template v-slot:header-right>
+		</template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
+        <cly-section>
+			<cly-metric-cards :multiline="false">
+			  <cly-metric-card formatting="long" :number=totals.r.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Requests Received</span>
+				<span v-if="totals.r.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.r.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.r.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=totals.c.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Requests Canceled</span>
+				<span v-if="totals.c.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.c.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.c.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=totals.q.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Requests Queued</span>
+				<span v-if="totals.q.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.q.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.q.change}}</span>
+			  </cly-metric-card>
+			</cly-metric-cards>
+		  </cly-section>
+        <cly-section>
+            <cly-chart-line  xAxisLabelOverflow="unset" :option="lineOptionsRequests" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
+        </cly-section>
+        <!--<cly-section>
+			<cly-metric-cards :multiline="false">
+			  <cly-metric-card formatting="long" :number=delays.d_min.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Minimum Request Delay</span>
+				<span v-if="delays.d_min.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{delays.d_min.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{delays.d_min.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=delays.d.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Average Request Delay</span>
+				<span v-if="delays.d.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{delays.d.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{delays.d.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=delays.d_max.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Maximum Request Delay</span>
+				<span v-if="delays.d_max.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{delays.d_max.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{delays.d_max.change}}</span>
+			  </cly-metric-card>
+			</cly-metric-cards>
+		  </cly-section>-->
+          <cly-section>
+            <cly-chart-line  xAxisLabelOverflow="unset" :option="lineOptionsDelays" :valFormatter="lineOptionsDelays.valFormatter" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
+        </cly-section>
+		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">Received request breakdown by type as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
+		</div>
+		<cly-section>
+			<cly-chart-bar :option="lineOptionsReceived" :valFormatter="lineOptionsReceived.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+		</cly-section>
+        <div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">Canceled request breakdown by reason as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
+		</div>
+		<cly-section>
+			<cly-chart-bar :option="lineOptionsCanceled" :valFormatter="lineOptionsCanceled.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+		</cly-section>
+    </cly-main>
+</div>

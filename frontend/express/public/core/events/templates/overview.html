@@ -1,11 +1,9 @@
 <script type="text/x-template" id="events-overview">
 	<div v-bind:class="[componentId]">
-		<cly-header>
-		  <template v-slot:header-left>
-			<h2 class="cly-vue-overview-events-header"> {{i18n('events.overview.title.new')}} 
-			</h2>
-			<cly-tooltip-icon icon="ion-help-circled" :tooltip="i18n('events.overview.title.new.tooltip')"></cly-tooltip-icon>
-		  </template>
+		<cly-header
+			:title="i18n('events.overview.title.new')"
+			:tooltip="{description: i18n('events.overview.title.new.tooltip')}"
+		>
 		  <template v-slot:header-bottom>
 			<i v-if="eventsOverview.length>0" class="far fa-clock cly-vue-events-header__subheading--widget"></i>
 			<span v-if="eventsOverview.length>0" class="cly-vue-events-header__subheading--text">{{updatedAt}}</span>
@@ -20,20 +18,20 @@
 			  <cly-metric-card formatting="long" :number=eventsOverview[0].value :tooltip="i18n('events.overview.total.event.count')" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 					<span class="has-ellipsis" v-tooltip="eventsOverview[0].name">{{eventsOverview[0].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
-				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[0].change}}</span>
+				<span v-if="eventsOverview[0].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[0].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[0].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :number=eventsOverview[1].value color="#097EFF" :tooltip="i18n('events.overview.event.per.user')" numberClasses="bu-is-flex bu-is-align-items-center">
 				<span class="has-ellipsis" v-tooltip="eventsOverview[1].name">{{eventsOverview[1].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
 				<div slot="number">{{eventsOverview[1].value}}</div>
-				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[1].change}}</span>
+				<span v-if="eventsOverview[1].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[1].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[1].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :number=eventsOverview[2].value color="#097EFF" :tooltip="i18n('events.overview.event.per.session')" numberClasses="bu-is-flex bu-is-align-items-center">
 				<span class="has-ellipsis" v-tooltip="eventsOverview[2].name">{{eventsOverview[2].name}}</span>
 				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
-				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[2].change}}</span>
+				<span v-if="eventsOverview[2].trend==='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[2].change}}</span>
 				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[2].change}}</span>
 			  </cly-metric-card>
 			</cly-metric-cards>
@@ -74,13 +72,13 @@
 				</el-button>  
 			</div>
 		  </div>
-		  <cly-section class="cly-vue-events-overview-monitor-events">
+		  <cly-section class="cly-vue-events-overview-monitor-events" v-loading="isMonitorEventsLoading">
 			<div>
 			  <div class="bu-pl-4">
 				<span class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.overview.time.period')}}</span>
 				<cly-date-picker-g class="bu-m-2"></cly-date-picker-g>
 			  </div>
-			<div v-if="monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
+			<div v-if="!isMonitorEventsLoading && monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
 				<div class="cly-vue-events-overview-monitor-events__empty__block" >
 								<cly-empty-view :hasAction="true" :actionFunc="configureOverview">
 									<div slot="icon">
@@ -98,7 +96,7 @@
 								</cly-empty-view>
 				</div>
 			</div>
-			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
+			  <div v-else-if="!isMonitorEventsLoading && monitorEventsData.length" class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
 >
 				<monitor-events-breakdown-horizontal-tile
 				  :trend="item.trend"
@@ -116,6 +114,7 @@
 				  </div>
 				</monitor-events-breakdown-horizontal-tile>
 			  </div>
+			  <div v-else style="height: 100px"></div>
 			</div>
 		  </cly-section>
 		  <overview-drawer :controls="drawers.configureDrawer" :selectedEvents=selectedEvents ></overview-drawer>

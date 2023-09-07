@@ -138,11 +138,11 @@
             };
         },
         mounted: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDensity', true);
         },
         methods: {
-            refresh: function() {
-                this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+            refresh: function(force) {
+                this.$store.dispatch('countlyDevicesAndTypes/fetchDensity', force);
             },
             handleCardsScroll: function() {
                 if (this.$refs && this.$refs.bottomSlider) {

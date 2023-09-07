@@ -4,19 +4,11 @@
             <div class="bu-column bu-is-one-third">
                 <div class="dbviewer-tab__sidebar bg-white">
                     <div class="dbviewer-tab__app-selector-dropdown">
-                        <el-select v-model="appFilter">
-                            <el-option
-                                key="all"
-                                label="All apps"
-                                value="all">
-                            </el-option>
-                            <el-option
-                                v-for="app in apps"
-                                :key="app.value"
-                                :label="app.label"
-                                :value="app.label">
-                            </el-option>
-                        </el-select>
+                        <cly-select-x
+                            @change="onAppChange($event)"
+                            v-model="appFilter"
+                            :options="apps">
+                        </cly-select-x>
                     </div>
                     <cly-listbox
                         class="dbviewer-tab__collections-list"
@@ -34,7 +26,7 @@
                     <div class="bu-level-left">
                         <div v-if="db" class="dbviewer-tab__content">
                             <div class="bu-has-text-weight-normal bu-is-size-5">
-                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ collections[db].map[collection] }}
+                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[db].map[collection]) }}
                             </div>
                         </div>
                     </div>
@@ -47,7 +39,7 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
+                    <cly-datatable-n :force-loading="forceLoading" row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                         <template slot="header-left">
                             <el-button @click="toggleExpand()">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
                             <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
