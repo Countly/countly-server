@@ -337,6 +337,10 @@
             persistColumnOrderKey: {
                 type: String,
                 default: null
+            },
+            testId: {
+                type: String,
+                default: 'cly-checklistbox-test-id',
             }
         },
         data: function() {
@@ -488,7 +492,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :test-id="testId + \'-\'" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\

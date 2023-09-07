@@ -199,7 +199,8 @@
             color: {type: [String, Function, Array], default: ''},
             numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'},
             boxType: {type: Number, default: -1},
-            tooltip: {type: String, default: ''}
+            tooltip: {type: String, default: ''},
+            testId: {type: String, default: "cly-metric-card-test-id"}
         },
         computed: {
             formattedNumber: function() {
@@ -260,12 +261,12 @@
                             <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
-                                    <cly-tooltip-icon v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
+                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
-                                    <h2><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
+                                    <h2 :data-test-id="testId + \'-metric-card-number\'"><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-metric-card-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1033,7 +1034,8 @@
                         'bu-py-6': true
                     };
                 }
-            }
+            },
+            testId: {type: String, default: "cly-empty-view"}
         },
         data: function() {
             return {};
@@ -1048,15 +1050,15 @@
         template: ' <div :style="topStyle" :class="[\'bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center\', classes]" style="height: 100%;opacity: 0.6">\
                         <slot name="icon">\
                             <div>\
-                                <img :src="image"/>\
+                                <img :data-test-id="testId + \'-empty-logo\'" :src="image"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2">\
                             <slot name="title">\
-                                <h4 class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
+                                <h4 :data-test-id="testId + \'-empty-title\'" class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
+                                <div :data-test-id="testId + \'-empty-subtitle\'" class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',

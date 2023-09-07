@@ -337,6 +337,7 @@
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
                                     ref="trigger"\
+                                    :test-id="testId"\
                                     :disabled="false"\
                                     :adaptive-length="adaptiveLength"\
                                     :focused="dropdown.focused"\
@@ -350,13 +351,13 @@
                             <div class="cly-multi-select__body">\
                                 <div>\
                                     <div class="cly-multi-select__title-wrapper">\
-                                        <span class="cly-multi-select__title">{{title}}</span>\
-                                        <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
+                                        <span class="cly-multi-select__title" :data-test-id="testId + \'-title\'">{{title}}</span>\
+                                        <el-button class="cly-multi-select__reset" :data-test-id="testId + \'-reset\'" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -375,7 +376,7 @@
                                     </table>\
                                 </div>\
                                 <div class="cly-multi-select__controls">\
-                                    <el-button v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button :data-test-id="testId + \'-cancel-button\'" v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
                                     <el-button v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
                                 </div>\
                             </div>\
@@ -413,7 +414,8 @@
                     return [];
                 }
             },
-            title: {type: String, default: "Filter Parameters"}
+            title: {type: String, default: "Filter Parameters"},
+            testId: {type: String, default: 'cly-multi-select-test-id'}
         },
         computed: {
             optionLabel: function() {
@@ -518,8 +520,8 @@
         template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
-                                <el-button :size="size" :icon="icon" :type="type">\
-                                <span v-if="text">{{text}}</span>\
+                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type">\
+                                <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
                                 </el-button>\
                             </slot>\
                         </template>\
@@ -553,6 +555,10 @@
                 type: String,
                 default: 'bottom-end'
             },
+            testId: {
+                type: String,
+                default: 'cly-more-options-test-id'
+            }
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);

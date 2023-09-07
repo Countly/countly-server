@@ -47,7 +47,7 @@
     <div class="cly-vue-select-x__pop" :class="popClasses">
         <div class="cly-vue-select-x__header">
 			<div class="bu-level">
-				<div class="cly-vue-select-x__title" v-if="title">{{title}}</div>
+				<div class="cly-vue-select-x__title" :data-test-id="testId + '-select-x-title'" v-if="title">{{title}}</div>
 				<div class='bu-level-right text-small color-cool-gray-50' v-if="showSelectedCount">{{selectedCountText}}</div>
 			</div>
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">
@@ -101,6 +101,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
+                    :test-id="testId + '-checklistbox'"
                     :disable-non-selected="disableNonSelected"
                     :bordered="false"
                     :options="getMatching(tab.options)"
@@ -111,6 +112,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
+                    :test-id="testId + '-checklistbox'"
                     :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
@@ -125,8 +127,8 @@
         </el-tabs>
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">
             <div class="cly-vue-select-x__commit-section">
-                <el-button @click="doDiscard" type="secondary" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="doCommit" :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
+                <el-button @click="doDiscard" :data-test-id="testId + '-select-x-cancel-button'" type="secondary" size="small">{{ i18n("common.cancel") }}</el-button>
+                <el-button @click="doCommit" :data-test-id="testId + '-select-x-confirm-button'"  :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
             </div>
         </div>
     </div>

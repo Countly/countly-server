@@ -56,10 +56,10 @@
                             <template v-else>
                                 <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline" style="width:100%">
                                     <div>
-                                        <span class="text-medium">{{i18n('common.' + type)}}</span>
+                                        <span :data-test-id="testId + '-in-between-start-date-label'" class="text-medium">{{i18n('common.' + type)}}</span>
                                     </div>
                                     <div>
-                                        <el-input size="small" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
+                                        <el-input :test-id="testId + '-in-between-start-date-input'" size="small" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
                                     </div>
                                 </div>
                             </template>
@@ -70,7 +70,7 @@
                             <span :data-test-id="testId + '-select-date-tab-before'" class="text-medium font-weight-bold">{{i18n('common.time-period-select.before')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
-                            <el-input size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
+                            <el-input :test-id="testId + '-before-start-date-input'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="since">
@@ -78,7 +78,7 @@
                             <span :data-test-id="testId + '-select-date-tab-since'"  class="text-medium font-weight-bold">{{i18n('common.time-period-select.since')}}</span>
                         </template>
                         <div class="cly-vue-daterp__input-wrapper">
-                            <el-input size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
+                            <el-input :test-id="testId + '-since-start-date-input'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="inTheLast">
@@ -86,8 +86,8 @@
                             <span :data-test-id="testId + '-select-date-tab-in-the-last'" class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
                         </template>
                         <div v-if="!retentionConfiguration" class="cly-vue-daterp__input-wrapper">
-                            <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
-                            <el-select size="small" v-model="inTheLastInput.raw.level">
+                            <el-input :test-id="testId + '-in-the-last-start-date-input'" size="small" v-model.number="inTheLastInput.raw.text"></el-input>
+                            <el-select :test-id="testId + '-in-the-last-start-date'" size="small" v-model="inTheLastInput.raw.level">
                                 <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                                 <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                                 <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
@@ -95,22 +95,22 @@
                             </el-select>
                         </div>
                         <div v-else class="cly-vue-daterp__input-wrapper bu-is-justify-content-flex-end">
-                            <el-input size="small" style="width: 100px;" v-model.number="inTheLastInput.raw.text"></el-input>
+                            <el-input :test-id="testId + '-in-the-last-start-date-input'" size="small" style="width: 100px;" v-model.number="inTheLastInput.raw.text"></el-input>
                             <span class="text-medium bu-ml-2">{{retentionConfiguration}}</span>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="onm" v-if="allowOnSelection">
                         <template slot="label"><span class="text-medium font-weight-bold">{{i18n('common.time-period-select.on')}}</span></template>
                         <div class="cly-vue-daterp__input-wrapper">
-                            <el-input size="small" :class="{'is-error': onmInput.raw.invalid0}" v-model="onmInput.raw.text" @blur="handleOnmBlur"></el-input>
+                            <el-input :test-id="testId + '-select-date-range-onm-start-date'" size="small" :class="{'is-error': onmInput.raw.invalid0}" v-model="onmInput.raw.text" @blur="handleOnmBlur"></el-input>
                         </div>
                     </el-tab-pane>
                 </el-tabs>
                 <div v-if="moveRangeTabsToLeftSide" class="cly-vue-daterp__input-wrapper">
                     <div v-if="rangeMode === 'inBetween'" class="cly-vue-daterp__input-wrapper-content">
-                        <el-input :data-test-id="testId + '-select-date-range-in-between-start-date'" size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
+                        <el-input :test-id="testId + '-select-date-range-in-between-start-date'" size="small" :disabled="inputDisable" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
                         <span :data-test-id="testId + '-select-date-range-in-between-and-label'" class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
-                        <el-input size="small" :data-test-id="testId + '-select-date-range-in-between-end-date'" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
+                        <el-input size="small" :test-id="testId + '-select-date-range-in-between-end-date'" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
                     </div>
                     <el-input v-if="rangeMode === 'before'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
                     <el-input v-if="rangeMode === 'since'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
