@@ -270,6 +270,7 @@ module.exports.create = async params => {
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
     if (demo) {
         msg.info.demo = true;
+        msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
     if (params.qstring.status === Status.Draft) {
