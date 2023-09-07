@@ -4,43 +4,49 @@
     :exportFormat="formatExportFunction"
     :persist-key="persistKey"
     :available-dynamic-cols="tableDynamicCols"
-    width="100%">
+    width="100%"
+    test-id="ratings-widgets-data-table"
+    >
       <template v-slot="scope">
-          <el-table-column width="100" fixed type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
+          <el-table-column width="100" fixed type="switch" sortable prop="status" :label="i18n('feedback.status')">
               <template v-slot="rowScope">
                 <el-switch :value="rowScope.row.status"
+                  :data-test-id="'ratings-widgets-data-table-status-' + rowScope.$index"
                   :disabled="!canUserUpdate"
                   @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
                   @change="$emit('set-status', rowScope.row, !rowScope.row.status)">
                 </el-switch>
               </template>
           </el-table-column>
-          <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
+         <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
-              <div v-html="rowScope.row.popup_header_text" @click="goWidgetDetail(rowScope.row._id)" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">
+              <div :data-test-id="'ratings-widgets-data-table-name-' + rowScope.$index">
+                <div @click="goWidgetDetail(rowScope.row._id)" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">
+                  {{rowScope.row.popup_header_text}}
                 </div>
                 <div>
                   <span class="color-cool-gray-40 text-small bu-has-text-weight-semibold"> {{ i18n('feedback.widget-id') }} </span>
                   <span class="color-cool-gray-40 text-small">{{rowScope.row._id}}</span>
                 </div>
+              </div>
             </template>
           </el-table-column>
           <el-table-column min-width="150" v-if="cohortsEnabled" prop="targeting" :label="i18n('feedback.targeting')">
             <template v-slot="rowScope">
-              <cly-cohort-targeting inline :targeting="rowScope.row.targeting">
+              <cly-cohort-targeting :data-test-id="'ratings-widgets-data-table-targeting-' + rowScope.$index" inline :targeting="rowScope.row.targeting">
               </cly-cohort-targeting>
             </template>
           </el-table-column>
           <el-table-column min-width="150" sortable="true" prop="rating_score" column-key="ratingScore" :label="i18n('feedback.rating-score')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
-                <span class="bu-is-size-4">
+                <span class="bu-is-size-4" :data-test-id="'ratings-widgets-data-table-rating-score-' + rowScope.$index">
                   {{ rowScope.row.ratingScore }}
                 </span>
             </template>
           </el-table-column>
           <el-table-column min-width="130" sortable="true" prop="responses" column-key="ratingsCount" :label="i18n('feedback.responses')">
             <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
-              <span class="text-medium">
+              <span class="text-medium" :data-test-id="'ratings-widgets-data-table-responses-' + rowScope.$index">
                 {{ rowScope.row.ratingsCount }}
               </span>
             </template>
@@ -49,7 +55,7 @@
             <el-table-column v-if="col.value === 'target_pages'" :key="idx" 
              min-width="120" sortable="true" prop="target_pages" :label="col.label">
               <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
-                <span class="text-medium">
+                <span class="text-medium" :data-test-id="'ratings-widgets-data-table-pages-' + rowScope.$index">
                   {{ rowScope.row.target_pages }}
                 </span>
               </template>

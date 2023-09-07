@@ -1,11 +1,12 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
-	<cly-header 
-    v-if="widgets.length>0 && !loading"
-    :title="i18n('feedback.widgets')"
-  >
+	<cly-header v-if="widgets.length>0 && !loading">
+      <template v-slot:header-left>
+        <h2 data-test-id="ratings-widgets-header-title">{{ i18n('feedback.widgets') }}</h2>
+        &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+      </template>
 			<template v-slot:header-right>
         <div class="bu-level-item">
-          <el-button v-if="canUserCreate" class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus"> {{ i18n('feedback.add-new-widget') }}
+          <el-button v-if="canUserCreate" data-test-id="ratings-widgets-add-button" class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus"> {{ i18n('feedback.add-new-widget') }}
           </el-button>
         </div>
       </template>
@@ -13,15 +14,15 @@
   <cly-main>
     <widgets-table v-if="widgets.length>0 && !loading" @set-status="setWidget" :loading="loading" :rows="widgets"></widgets-table>
     <drawer @widgets-refresh="refresh()" :settings="drawerSettings" :controls="drawers.widget"></drawer>
-    <cly-empty-view v-if="widgets.length===0 && !loading" :title="empty.title"
+    <cly-empty-view test-id="ratings-widgets" v-if="widgets.length===0 && !loading" :title="empty.title"
       :subTitle="empty.body"
       :actionTitle="i18n('feedback.add-new-widget')"
       :hasAction="canUserCreate">
       <div slot="icon" class="bu-mt-6">
-        <img width="96" height="96" :src="empty.image"/>
+        <img data-test-id="ratings-widgets-empty-view-icon" width="96" height="96" :src="empty.image"/>
       </div>
       <div slot="action" v-if="canUserCreate">
-        <div @click="createWidget()" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">+ {{i18n('feedback.add-new-widget')}}</div>
+        <div data-test-id="ratings-widgets-empty-view-action-button" @click="createWidget()" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">+ {{i18n('feedback.add-new-widget')}}</div>
       </div>
     </cly-empty-view>
   </cly-main>
