@@ -411,6 +411,11 @@
                             return item.intent === "blocker";
                         });
                     },
+                    quickstartContent: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "quickstart";
+                        });
+                    },
                 },
                 mutations: {
                     setAreNotesHidden: function(state, value) {
@@ -752,7 +757,7 @@
             },
             blockerDialogs: function() {
                 return this.$store.getters['countlyCommon/blockerDialogs'];
-            }
+            },
         },
         methods: {
             onCloseDialog: function(dialog, status) {
@@ -773,6 +778,36 @@
                         <NotificationToasts></NotificationToasts>\
                         <Dialogs></Dialogs>\
                     </div>'
+    };
+
+    var QuickstartPopoverView = {
+        template: '<div class="quickstart-popover-wrapper">\
+            <div class="quickstart-popover-positioner">\
+            <el-popover\
+                v-for="content in quickstartContent"\
+                popper-class="quickstart-popover-popover"\
+                :value="!!content"\
+                :visible-arrow="false"\
+                trigger="manual"\
+                :width="content.width"\
+                :key="content.id"\
+                :title="content.title">\
+                <i class="ion-close bu-is-size-7 quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
+                <div v-html="content.message"></div>\
+            </el-popover>\
+            </div>\
+        </div>',
+        store: _vuex.getGlobalStore(),
+        computed: {
+            quickstartContent: function() {
+                return this.$store.getters['countlyCommon/quickstartContent'];
+            },
+        },
+        methods: {
+            handleCloseClick: function(dialogId) {
+                this.$store.dispatch('countlyCommon/onRemoveDialog', dialogId);
+            },
+        },
     };
 
     var countlyVueWrapperView = countlyView.extend({
@@ -824,12 +859,14 @@
                 components: {
                     DummyCompAPI: DummyCompAPI,
                     MainView: self.component,
-                    GenericPopups: GenericPopupsView
+                    GenericPopups: GenericPopupsView,
+                    QuickstartPopover: QuickstartPopoverView,
                 },
                 template: '<div>\
                                 <MainView></MainView>\
                                 <GenericPopups></GenericPopups>\
                                 <DummyCompAPI></DummyCompAPI>\
+                                <QuickstartPopover></QuickstartPopover>\
                             </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;

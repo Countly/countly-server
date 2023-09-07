@@ -1,14 +1,12 @@
 <div v-bind:class="[componentId]" >
-    <cly-header :isHeaderTop=true>
+    <cly-header 
+		:isHeaderTop=true
+		:title="title"
+		:tooltip="{description, placement:'top-center'}"
+	>
 		<template v-slot:header-top>
 			<a class="back back-link" href="#/analytics/geo/countries">Back to Countries</a>
 		</template>
-        <template v-slot:header-left>
-            <h2> {{title}} 
-            </h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
-            </span>
-        </template>
     </cly-header>
     <cly-main >
 		<cly-date-picker-g class="geo-date-picker-container"></cly-date-picker-g>
@@ -19,6 +17,8 @@
 				</div>
 				<div class="bu-column" style="position:relative">
 					<cly-worldmap
+						v-loading="isLoading"
+						:block-auto-loading="true"
                         style="height: 100%;"
 						:external-country="region"
 						external-detail-mode="cities"

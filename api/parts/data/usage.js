@@ -164,7 +164,7 @@ usage.setLocation = function(params) {
  */
 usage.setUserLocation = function(params, loc) {
     params.user.country = plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false ? undefined : loc.country;
-    params.user.region = loc.region;
+    params.user.region = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true ? loc.region : undefined;
     params.user.city = (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ||
         plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false) ? undefined : loc.city;
 };
@@ -1011,7 +1011,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     userProps.cty = data.city;
                 }
 
-                if (!userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
+                if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
                     // only override lat/lon if no recent gps location exists in user document
                     if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
                         userProps.loc = {
@@ -1042,7 +1042,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                         userProps.cty = data.city;
                     }
 
-                    if (!userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
                         // only override lat/lon if no recent gps location exists in user document
                         if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
                             userProps.loc = {

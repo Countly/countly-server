@@ -28,6 +28,9 @@
             },
             hasAppAdminRights: function() {
                 return countlyAuth.validateAppAdmin();
+            },
+            authToken: function() {
+                return countlyGlobal.auth_token;
             }
         },
         data: function() {
@@ -50,6 +53,7 @@
             });
             var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
                 countlyGlobal.apps[id].image = "appimages/" + id + ".png?" + Date.now().toString();
+                countlyGlobal.apps[id].salt = countlyGlobal.apps[id].salt || countlyGlobal.apps[id].checksum_salt;
                 return {
                     label: countlyGlobal.apps[id].name,
                     value: id

@@ -84,6 +84,10 @@
                         iconTemplate: ''
                     };
                 }
+            },
+            customStyle: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -108,6 +112,19 @@
                     return this.tabs[0].component;
                 }
 
+                return;
+            },
+            currentProps: function() {
+                var self = this;
+                var tab = this.tabs.filter(function(t) {
+                    return t.name === self.value;
+                });
+                if (tab.length) {
+                    return Object.assign(tab[0].props || {}, this.$attrs || {});
+                }
+                else if (this.tabs.length) {
+                    return Object.assign(this.tabs[0].props || {}, this.$attrs || {});
+                }
                 return;
             },
             tabClasses: function() {
@@ -173,7 +190,7 @@
         },
         template: '<div>\
                         <div v-if="!hideSingleTab || (tabs && tabs.length > 1)" class="cly-vue-tabs">\
-                            <div :class="tabListClasses">\
+                            <div :class="tabListClasses" :style="customStyle">\
                                 <div\
                                     v-for="tab in tabs"\
                                     v-bind:key="tab.name"\
@@ -189,7 +206,7 @@
                                 </div>\
                             </div>\
                         </div>\
-                        <component v-bind:is="currentTab" v-on="$listeners" v-bind="$attrs" class="cly-vue-tab"></component>\
+                        <component v-bind:is="currentTab" v-on="$listeners" v-bind="currentProps" class="cly-vue-tab"></component>\
                     </div>'
     }));
 

@@ -409,6 +409,10 @@
                             "value": k
                         });
                     });
+                    self.configsList.push({
+                        "label": "Feedback",
+                        "value": "feedback"
+                    });
                     if (self.searchQuery !== "") {
                         self.onEnterSearch();
                         window.scrollTo({top: 0, behavior: "smooth"});
@@ -504,7 +508,7 @@
             },
             getLabelName: function(id, ns) {
                 ns = ns || this.selectedConfig;
-                if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && countlyGlobal.plugins.indexOf(ns) === -1) {
+                if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && ns !== "feedback" && countlyGlobal.plugins.indexOf(ns) === -1) {
                     return null;
                 }
 
@@ -1151,7 +1155,7 @@
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit", "array_list_limit"]},
-            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
+            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period", "trim_trailing_ending_spaces"]},
         ]
     });
 
@@ -1177,6 +1181,7 @@
             "total_users": true,
             "prevent_duplicate_requests": true,
             "metric_changes": true,
+            "trim_trailing_ending_spaces": true
         }
     };
     if (countlyAuth.validateGlobalAdmin()) {

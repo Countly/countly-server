@@ -1,4 +1,4 @@
-const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
+const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
@@ -358,7 +358,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -737,6 +737,7 @@ module.exports.one = async params => {
  * @apiSuccess {Object} [notifications] Map of notification ID to array of epochs this message was sent to the user
  * @apiSuccess {Object[]} [messages] Array of messages, returned if "messages" param is set to "true"
  * 
+ * @apiDeprecated use now (#Push_Notifications:notifications)
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
  * @apiErrorExample {json} NotFound
@@ -801,6 +802,213 @@ module.exports.user = async params => {
     return true;
 };
 
+/**
+ * Get notifications sent to a particular user
+ * 
+ * @param {object} params params
+ * @returns {Promise} resolves to true
+ * 
+ * @api {GET} o/push/notifications Sent notifications
+ * @apiName notifications
+ * @apiDescription Get notifications sent to a particular user.
+ * Makes a look up either by user id (uid) or did (device id). Returns notifications sent to a user if any.
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {String} app_id, Application ID
+ * @apiQuery {String} [id] User ID (uid). Either id or did must be specified.
+ * @apiQuery {String} [did] User device ID (did). Either id or did must be specified.
+ * @apiQuery {Boolean} full Return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
+ * @apiQuery {String} platform Platform for notifications to return
+ * @apiQuery {Integer} skip Pagination skip
+ * @apiQuery {Integer} limit Pagination limit, must be in 1..50 range
+ * 
+ * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date. 
+ * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
+ * Also note that current user profile properties are used for message content personalization when it's set.
+ * @apiSuccess {String} notifications._id Noficiation message id
+ * @apiSuccess {String} notifications.date ISO date when notification was sent to this user, +- few seconds
+ * @apiSuccess {String} [notifications.title] Noficiation title string, if any
+ * @apiSuccess {String} [notifications.message] Noficiation message string, if any
+ * 
+ * @apiUse PushValidationError
+ * @apiError NotFound Message Not Found
+ * @apiErrorExample {json} NotFound
+ *      HTTP/1.1 404 Not Found
+ *      {
+ *          "errors": ["User with the did specified is not found"]
+ *      }
+ * @apiSuccessExample {json} Success-Response
+ *      HTTP/1.1 200 Success
+ *      {
+ *          "notifications": [
+ *		        {
+ *			        "_id": "6480d8a03f9ea25502c816ce",
+ *			        "title": "Offers!",
+ *			        "message": "Hi James, check out your personal limited offer",
+ *			        "date": "2023-06-07T19:26:08.683Z"
+ *		        },
+ *		        {
+ *			        "_id": "6465fede1276bf50b2662765",
+ *			        "title": "Balance",
+ *			        "message": "James, your balance is reaching 0",
+ *			        "date": "2023-06-08T19:00:08.683Z"
+ *		        }
+ *          ]
+ *      }
+ * 
+ * @apiSuccessExample {json} Success-Response-full=true
+ *      HTTP/1.1 200 Success
+ *      {
+ *          "notifications": [
+ *		        {
+ *			        "_id": "6480d8a03f9ea25502c816ce",
+ *			        "title": "Offers!",
+ *			        "message": "Hi James, check out your personal limited offer",
+ *			        "date": "2023-06-07T19:26:08.683Z"
+ *		        },
+ *		        {
+ *			        "_id": "6465fede1276bf50b2662765",
+ *			        "title": "Balance",
+ *			        "message": "James, your balance is reaching 0",
+ *			        "date": "2023-06-08T19:00:08.683Z"
+ *		        }
+ *          ],
+ *          "messages": [
+ *              {
+ *       			"_id": "6480d8a03f9ea25502c816ce",
+ *                  "app": "5fbb72974e19c6614411d95f",
+ *                  "contents": [
+ *                      {
+ *                          "title": "Offers!",
+ *                          "message": "Hi James, check out your personal limited offer",
+ *                          "expiration": 604800000
+ *                      },
+ *                      {
+ *                          "p": "a",
+ *                          "sound": "default"
+ *                      },
+ *                      {
+ *                          "p": "i",
+ *                          "sound": "default"
+ *                      }
+ *                  ],
+ *                  "filter": {},
+ *                  "other message fields": "..."
+ *              },
+ *              {
+ *       			"_id": "6465fede1276bf50b2662765",
+ *                  "app": "5fbb72974e19c6614411d95f",
+ *                  "contents": [
+ *                      {
+ *      			        "title": "Balance",
+ *		        	        "message": "James, your balance is reaching 0",
+ *                          "expiration": 604800000
+ *                      },
+ *                      {
+ *                          "p": "a",
+ *                          "sound": "default"
+ *                      },
+ *                      {
+ *                          "p": "i",
+ *                          "sound": "default"
+ *                      }
+ *                  ],
+ *                  "filter": {},
+ *                  "other message fields": "..."
+ *              }
+ *          ]
+ *      }
+ */
+module.exports.notificationsForUser = async params => {
+    let data = common.validateArgs(params.qstring, {
+        id: {type: 'String', required: false},
+        did: {type: 'String', required: false},
+        app_id: {type: 'String', required: true},
+        platform: {type: 'String', in: platforms, required: true},
+        full: {type: 'BooleanString', required: true},
+        limit: {type: 'IntegerString', required: true, min: 1, max: 50},
+        skip: {type: 'IntegerString', required: true, min: 0},
+    }, true);
+    if (data.result) {
+        data = data.obj;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
+    }
+
+    if (!data.did && !data.id) {
+        common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
+        return true;
+    }
+
+    if (data.full) {
+        data.limit = Math.min(data.limit, 10);
+    }
+
+    let uid = data.id,
+        app_user;
+    if (!uid && data.did) {
+        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({did: data.did});
+        if (!app_user) {
+            common.returnMessage(params, 404, {errors: ['User with the did specified is not found']}, null, true);
+            return true;
+        }
+        uid = app_user.uid;
+    }
+    else {
+        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({uid: uid});
+        if (!app_user) {
+            common.returnMessage(params, 404, {errors: ['User with the uid specified is not found']}, null, true);
+            return true;
+        }
+    }
+
+    let push = await common.db.collection(`push_${data.app_id}`).findOne({_id: uid});
+    if (!push) {
+        common.returnOutput(params, {notifications: []});
+        return true;
+    }
+
+    let id_dates = Object.keys(push.msgs || {}).map(id => push.msgs[id].map(date => [id, date])).flat();
+    if (!id_dates.length) {
+        common.returnOutput(params, {notifications: []});
+        return true;
+    }
+
+    id_dates.sort(([, date1], [, date2]) => date1 > date2 ? -1 : 1);
+    id_dates = id_dates.slice(data.skip, data.skip + data.limit);
+
+    let ids = Array.from(new Set(id_dates.map(idd => idd[0]))).map(common.dbext.oid),
+        messages = await common.db.collection('messages').find({_id: {$in: ids}}).toArray();
+
+    let notifications = id_dates.map(([id, date]) => {
+        let m = messages.find(msg => msg._id.toString() === id.toString());
+        if (m) {
+            m = new Message(m);
+        }
+        else {
+            return [];
+        }
+        if (!m.platforms.includes(data.platform)) {
+            return [];
+        }
+
+        let o = new Template(m, PLATFORM[data.platform]).guess_compile({m: m._id, h: 0, pr: app_user});
+        o.date = new Date(date);
+        return o;
+    }).flat();
+
+    let ret = {notifications};
+
+    if (data.full) {
+        ret.messages = messages;
+    }
+
+    common.returnOutput(params, ret, true);
+
+    return true;
+};
 /**
  * Get messages
  * 

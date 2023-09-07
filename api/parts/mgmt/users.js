@@ -468,7 +468,11 @@ usersApi.updateUser = async function(params) {
             'permission': {
                 'required': false,
                 'type': 'Object'
-            }
+            },
+            'subscribe_newsletter': {
+                'required': false,
+                'type': 'Boolean'
+            },
         },
         updatedMember = {},
         passwordNoHash = "";

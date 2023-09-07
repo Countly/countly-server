@@ -132,6 +132,11 @@
                 }
             },
             methods: {
+                onAppChange: function(val) {
+                    if (val !== "all") {
+                        this.appFilter = countlyGlobal.apps[val].label;
+                    }
+                },
                 toggleExpand: function() {
                     this.isExpanded = !this.isExpanded;
                     if (this.isExpanded) {
@@ -263,7 +268,10 @@
                     if (this.$route && this.$route.params && this.$route.params.query) {
                         delete this.$route.params.query;
                     }
-                }
+                },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
@@ -344,6 +352,15 @@
                         window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
                     }
                 }
+                for (var collectionKey in this.collections) {
+                    if (Object.prototype.hasOwnProperty.call(this.collections, collectionKey)) {
+                        var collection = this.collections[collectionKey];
+                        for (var i = 0; i < collection.list.length; i++) {
+                            var listItem = collection.list[i];
+                            listItem.label = countlyCommon.unescapeHtml(listItem.label);
+                        }
+                    }
+                }
             }
         });
 
@@ -410,6 +427,22 @@
                             value: apps[appKeys[i]]._id
                         });
                     }
+
+                    formattedApps.sort(function(a, b) {
+                        if (a.label < b.label) {
+                            return -1;
+                        }
+                        if (a.label > b.label) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+
+                    formattedApps.unshift({
+                        label: 'All Apps',
+                        value: 'all'
+                    });
+
                     this.apps = formattedApps;
                 }
             },

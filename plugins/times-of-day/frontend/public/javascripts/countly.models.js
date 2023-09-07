@@ -143,14 +143,19 @@
                     dataType: '[CLY]_session'
                 },
                 maxSeriesValue: 0,
+                loading: true
             };
         };
 
         var countlyTimesOfDayActions = {
             fetchAll: function(context, useLoader) {
                 context.dispatch('onFetchInit', {useLoader: useLoader});
+                if (useLoader) {
+                    context.commit('setLoading', true);
+                }
                 countlyTimesOfDay.service.fetchAll(context.state.filters)
                     .then(function(response) {
+                        context.commit('setLoading', false);
                         context.commit('setTimesOfDay', response);
                         context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
@@ -170,13 +175,21 @@
             },
             setFilters: function(state, value) {
                 state.filters = value;
+            },
+            setLoading: function(state, value) {
+                state.loading = value;
             }
         };
-
+        var countlyTimesOfDayGetters = {
+            loading: function(state) {
+                return state.loading;
+            }
+        };
         return countlyVue.vuex.Module("countlyTimesOfDay", {
             state: getInitialState,
             actions: countlyTimesOfDayActions,
             mutations: countlyTimesOfDayMutations,
+            getters: countlyTimesOfDayGetters,
             submodules: [countlyVue.vuex.FetchMixin()]
         });
     };

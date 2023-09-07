@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _ */
+/* global Vue, CV, countlyGlobal, $, _, countlyCommon */
 
 (function(countlyVue) {
 
@@ -246,10 +246,16 @@
                 default: 'cly-listbox-test-id',
                 required: false
             }
+            value: { type: [String, Number, Boolean] }
         },
         computed: {
             searchedOptions: function() {
                 return this.getMatching(this.options);
+            }
+        },
+        methods: {
+            decodeHtml: function(str) {
+                return countlyCommon.unescapeHtml(str);
             }
         },
         template: '<div\
@@ -295,7 +301,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                                <div :data-test-id="testId + \'-item-\' + idx" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
+                                              <div :data-test-id="testId + \'-item-\' + idx" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
@@ -750,7 +756,7 @@
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
             noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
-            value: { type: [String, Number, Array] },
+            value: { type: [String, Number, Array, Boolean] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
