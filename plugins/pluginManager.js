@@ -154,7 +154,8 @@ var pluginManager = function pluginManager() {
             var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
             //filter out just folders
             for (var z = 0; z < pluginsList.length; z++) {
-                if (fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z])).isDirectory()) {
+                var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+                if (p.isDirectory() || p.isSymbolicLink()) {
                     pluginNames.push(pluginsList[z]);
                 }
             }
