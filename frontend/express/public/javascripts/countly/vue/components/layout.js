@@ -25,7 +25,7 @@
             var self = this;
             if (this.guidesEnabled) {
                 countlyCMS.fetchEntry("server-guide-config").then(function(config) {
-                    self.guidesEnabled = (config && config.data && config.data.enableGuides) || false;
+                    self.guidesEnabled = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                 });
             }
         },
