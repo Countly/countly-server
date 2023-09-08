@@ -15,6 +15,7 @@
                         title="Edit columns"
                         mode="multi-check-sortable"
                         placement="bottom-end"
+                        :test-id="testId + '-edit-columns-container'"
                         :persistColumnOrderKey="persistKey"
                         :width="300"
                         :auto-commit="false"
@@ -24,14 +25,14 @@
                         :options="availableDynamicCols"
                         v-model="controlParams.selectedDynamicCols">
                         <template v-slot:trigger>
-                            <el-button size="small" icon="ion-navicon-round"></el-button>
+                            <el-button :test-id="testId + '-edit-columns-button'" size="small" icon="ion-navicon-round"></el-button>
                         </template>
                     </cly-select-x>
                 </div>
                 <div class="bu-level-item" v-if="hasExport">
-                    <cly-dropdown :data-test-id="testId + '-export-as-button'" :width="332" placement="bottom-end" ref="exportDropdown">
+                    <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
                         <template v-slot:trigger="dropdown">
-                            <el-button size="small" icon="cly-icon-btn cly-icon-download"></el-button>
+                            <el-button :data-test-id="testId + '-export-as-button'" size="small" icon="cly-icon-btn cly-icon-download"></el-button>
                         </template>
                         <template>
                             <div class="bu-mx-4 bu-mt-4">
@@ -59,6 +60,7 @@
                                     <div class="bu-level">
                                         <div class="bu-level-item cly-vue-eldatatable__export--search">
                                             <el-input
+                                                :test-id="testId + '-export-as-pop-up-search-input'"
                                                 ref="searchBox"
                                                 autocomplete="off"
                                                 v-model="searchQuery"
@@ -80,19 +82,19 @@
                             <div v-if="customExportFileName" :class="{'cly-vue-eldatatable__export--fileExport': exportColumnSelection}">
                                 <div class="bu-my-4 bu-mx-4">
                                     <p :data-test-id="testId + '-export-as-pop-up-file-name-label'" class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
-                                    <el-input :data-test-id="testId + '-export-as-pop-up-file-name-input'" v-model="exportFileName"></el-input>
+                                    <el-input :test-id="testId + '-export-as-pop-up-file-name-input'" v-model="exportFileName"></el-input>
                                 </div>
                             </div>
                             <slot name="export-config"></slot>
                             <div class="bu-mx-4 bu-mb-4">
-                                <el-button :data-test-id="testId + 'export-as-pop-up-export-button'" size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
+                                <el-button :data-test-id="testId + '-export-as-pop-up-export-button'" size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
                             </div>
                         </template>
                     </cly-dropdown>
                 </div>
                 <div class="bu-level-item" v-if="displaySearch">
                     <form @keydown.enter.prevent="">
-                        <el-input :data-test-id="testId + '-search-input'" autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
+                        <el-input :test-id="testId + '-datatable-search-input'" autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                     </form>
                 </div>
             </div>
@@ -112,7 +114,7 @@
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
                 <template slot="empty">
-                    <cly-empty-datatable></cly-empty-datatable>
+                    <cly-empty-datatable :test-id="testId"></cly-empty-datatable>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
