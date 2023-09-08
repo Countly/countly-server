@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers */
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
@@ -902,6 +902,14 @@
                         });
                     });
                 }, 0);
+            },
+            created: function() {
+                var self = this;
+                if (this.guidesEnabled) {
+                    countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                        self.guidesEnabled = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
+                    });
+                }
             }
         });
 
