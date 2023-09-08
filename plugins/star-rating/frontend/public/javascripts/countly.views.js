@@ -788,12 +788,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-detail-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-detail-table-tab-comments"
                     }
                 ],
                 feedbackData: [],
