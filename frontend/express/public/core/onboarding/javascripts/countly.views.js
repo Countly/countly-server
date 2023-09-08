@@ -230,7 +230,7 @@
                     url: statsUrl,
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
-                        app_key: countlyGlobal.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                        app_key: countlyGlobal.frontend_app,
                         device_id: Countly.device_id || domain,
                     },
                     dataType: 'json',

@@ -93,9 +93,9 @@
     </div>
     <div v-else class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
         <video controls class="bu-is-block bu-mx-auto setup-video-container" v-if="videoLink.length">
-            <source :src="videoLink" />
+            <source :src="videoLink"/>
         </video>
-        <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" v-else />
+        <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" v-else/>
         <template v-if="!isPopulatorFinished">
             <cly-progress-bar :percentage="populatorProgress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
             <div class="setup-byline">Populating data for your app</div>
