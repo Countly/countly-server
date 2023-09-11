@@ -7,7 +7,7 @@ var common = require('../../../api/utils/common.js'),
     taskManager = require('../../../api/utils/taskmanager.js'),
     { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
-const { EJSON, ObjectId } = require('bson');
+const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
 var spawn = require('child_process').spawn,
@@ -118,7 +118,7 @@ var spawn = require('child_process').spawn,
                 else if (typeof filter[k] === 'string') {
                     let m = regex.exec(filter[k]);
                     if (m) {
-                        filter[k] = ObjectId(m[1]);
+                        filter[k] = common.db.ObjectID(m[1]);
                     }
                 }
             }
