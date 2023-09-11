@@ -612,7 +612,7 @@
                         logoType = 'custom';
                         globalLogo = true;
                     }
-                    else if (countlyPlugins.getConfigsData().feedback) {
+                    else if (countlyPlugins.getConfigsData().feedback && countlyPlugins.getConfigsData().feedback.feedback_logo) {
                         logo = '/feedback/preview/' + feedback.feedback_logo;
                         logoType = 'custom';
                         globalLogo = true;
