@@ -643,7 +643,7 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
-                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                    if (params[i].seriesName.toLowerCase() === 'duration' || params[i].seriesName.toLowerCase() === 'avg. duration') {
                                         formatter = countlyCommon.formatSecond;
                                     }
                                     else {

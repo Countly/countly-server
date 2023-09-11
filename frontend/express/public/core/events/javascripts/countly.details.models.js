@@ -11,7 +11,7 @@
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
                 graphData[1].push(chartData[i].s ? chartData[i].s : 0);
-                graphData[2].push(chartData[i].dur ? chartData[i].dur : 0);
+                graphData[2].push(chartData[i].dur ? chartData[i].dur / (chartData[i].c || 1) : 0);
                 if (chartData[i].c) {
                     count += chartData[i].c;
                 }
@@ -62,7 +62,7 @@
             }
             if (dur > 0) {
                 var durObj = {
-                    name: labels.dur,
+                    name: labels.avgDur,
                     data: graphData[2],
                     color: "#FF9382"
                 };
@@ -139,7 +139,7 @@
             for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
                 arrSum.push(eventData.chartData[i].s);
-                arrDuration.push(eventData.chartData[i].dur);
+                arrDuration.push(eventData.chartData[i].dur / (eventData.chartData[i].c || 1));
 
                 xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
                 if (eventData.chartData[i].c) {
@@ -185,7 +185,7 @@
             }
             if (dur > 0) {
                 graphPointsLen++;
-                obDuration.name = labels.dur;
+                obDuration.name = labels.avgDur;
                 obDuration.data = arrDuration;
                 obDuration.color = "#FF9382";
                 if (graphPointsLen > 1) {
@@ -516,13 +516,15 @@
                 return {
                     count: groupData.displayMap.c ? groupData.displayMap.c : CV.i18n("events.overview.count"),
                     sum: groupData.displayMap.s ? groupData.displayMap.s : CV.i18n("events.overview.sum"),
-                    dur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.duration")
+                    dur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.duration"),
+                    avgDur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.avg.duration")
                 };
             }
             return {
                 count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].count ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
                 sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].sum ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
-                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
+                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration"),
+                avgDur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.avg.duration")
             };
 
         },
@@ -730,8 +732,8 @@
             }
             var dur = {};
             if (currentDur > 0) {
-                dur.name = labels.dur;
-                dur.value = countlyCommon.formatSecond(currentDur);
+                dur.name = labels.avgDur;
+                dur.value = countlyCommon.formatSecond(currentDur / (currentTotal || 1));
                 dur.trend = changeDur.trend === "u" ? "up" : "down";
                 dur.percentage = changeDur.percent;
                 legendData.push(dur);
