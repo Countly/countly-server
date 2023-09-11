@@ -49,13 +49,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         return close(err);
     }
 
-
-    async function getDrillCollections(app_id){
+    async function getDrillCollections(app_id) {
         var collections = [];
         try {
-            var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});     
-            var list = ["[CLY]_session","[CLY]_crash","[CLY]_view","[CLY]_action","[CLY]_push_action","[CLY]_star_rating","[CLY]_nps","[CLY]_survey","[CLY]_apm_network","[CLY]_apm_device"];
-            
+            var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});
+            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device"];
+
             if (events && events.list) {
                 list = list.concat(events.list);
             }
@@ -64,14 +63,14 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 collections.push({collectionName: collectionName});
             }
         }
-        catch(err2){
-            console.log("Error getting drill collections for app ", app_id, "error: ", err2);
+        catch (err) {
+            console.log("Error getting drill collections for app ", app_id, "error: ", err);
         }
         return collections;
     }
+
     async function processUser(old_uid, new_uid, collections, app) {
-        console.log("Processing user ", old_uid," -> ",new_uid, "for app ", app.name);
-        var has_merges = false;
+        console.log("Processing user ", old_uid, " -> ", new_uid, "for app ", app.name);
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
@@ -80,7 +79,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     continue;
                 }
                 if (events && events[0]) {
-                    has_merges = true;
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
                     try {
                         await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
