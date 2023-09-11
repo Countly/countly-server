@@ -10,6 +10,7 @@ const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
 const dataviews = require('../../../plugins/drill/api/parts/data/dataviews.js');
 const common = require("../../../api/utils/common.js");
+const drillCommon = require("../../../plugins/drill/api/common.js");
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases.");
@@ -22,14 +23,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         try {
-            //get all drill collections
-            const collections = await drillDb.collections();
-            if (!collections || !collections.length) {
-                return close();
-            }
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
+                console.log("Processing app ", app.name);
                 //get users with merges
+                var collections = await getDrillCollections(app._id); //get all drill collections for this app
                 const usersCursor = countlyDb.collection('app_users' + app._id).find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
                 //for each user
                 while (await usersCursor.hasNext()) {
@@ -51,8 +49,28 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         return close(err);
     }
 
+
+    async function getDrillCollections(app_id){
+        var collections = [];
+        try {
+            var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});     
+            var list = ["[CLY]_session","[CLY]_crash","[CLY]_view","[CLY]_action","[CLY]_push_action","[CLY]_star_rating","[CLY]_nps","[CLY]_survey","[CLY]_apm_network","[CLY]_apm_device"];
+            
+            if (events && events.list) {
+                list = list.concat(events.list);
+            }
+            for (let i = 0; i < list.length; i++) {
+                var collectionName = drillCommon.getCollectionName(list[i], app_id);
+                collections.push({collectionName: collectionName});
+            }
+        }
+        catch(err2){
+            console.log("Error getting drill collections for app ", app_id, "error: ", err2);
+        }
+        return collections;
+    }
     async function processUser(old_uid, new_uid, collections, app) {
-        console.log("Processing user ", new_uid, "for app ", app.name);
+        console.log("Processing user ", old_uid," -> ",new_uid, "for app ", app.name);
         var has_merges = false;
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
@@ -76,7 +94,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
             }
         }
-        if (has_merges && dataviews) {
+        if (dataviews) {
             await new Promise((resolve, reject) => {
                 dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
                     if (err) {
