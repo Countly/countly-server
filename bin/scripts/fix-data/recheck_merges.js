@@ -53,6 +53,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     async function processUser(old_uid, new_uid, collections, app) {
         console.log("Processing user ", new_uid, "for app ", app.name);
+        var has_merges = false;
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
@@ -61,17 +62,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     continue;
                 }
                 if (events && events[0]) {
+                    has_merges = true;
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
                     try {
                         await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
-                        if (dataviews) {
-                            try {
-                                await dataviews.mergeUserTimes({uid: old_uid}, {uid: new_uid}, app._id, function() {});
-                            }
-                            catch (err) {
-                                console.log("Error updating dataviews for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
-                            }
-                        }
                     }
                     catch (err) {
                         console.log("Error updating collection ", collection, "for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
@@ -81,6 +75,19 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             catch (err) {
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
             }
+        }
+        if (has_merges && dataviews) {
+            await new Promise((resolve, reject) => {
+                dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        console.log("Updated user times for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid);
+                        resolve();
+                    }
+                });
+            });
         }
     }
 
