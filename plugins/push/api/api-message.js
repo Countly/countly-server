@@ -270,6 +270,7 @@ module.exports.create = async params => {
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
     if (demo) {
         msg.info.demo = true;
+        msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
     if (params.qstring.status === Status.Draft) {
@@ -358,7 +359,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -1417,7 +1418,7 @@ function mimeInfo(url, method = 'HEAD') {
     return new Promise((resolve, reject) => {
         let req = request(url.toString(), method, conf);
 
-        req.once('response', res => {
+        req.on('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;

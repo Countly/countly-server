@@ -1,0 +1,16 @@
+{
+  "name": "countly-e2e",
+  "version": "1.0.0",
+  "description": "e2e testing",
+  "author": "Countly, Inc.",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/*.cy.js --browser chrome",
+    "cy:run:login": "cypress run --spec **/login.cy.js --browser chrome",
+    "cy:run:userActivity": "cypress run --spec **/analytics/loyalty/userActivity.cy.js --browser chrome"
+  },
+  "devDependencies": {
+    "cypress": "^12.17.1"
+  },
+  "license": "ISC"
+}

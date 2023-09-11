@@ -37,6 +37,7 @@ function proxyAgent(url, proxy, agentConfig = {}) {
         //     socket.ref();
         // };
 
+        let rejects = [];
         this.createConnection = (options, callback) => {
             let connectOptions = {
                     method: 'CONNECT',
@@ -83,6 +84,49 @@ function proxyAgent(url, proxy, agentConfig = {}) {
                         // sock.removeAllListeners();
                         callback(err);
                     });
+                    socket.on('error', err => {
+                        err = err || new Error('ProxySocketError');
+                        log.e('socket errored, rejecting %d promises', rejects.length, err);
+                        rejects.forEach(rej => rej(err));
+
+                        try {
+                            sock.emit('timeout', err);
+                        }
+                        catch (e) {
+                            log.e('Failed to emit err on client socket', e);
+                        }
+                        try {
+                            sock.destroy(err);
+                        }
+                        catch (e) {
+                            log.e('Failed to destroy client socket on proxy err', e);
+                        }
+
+                        callback(err);
+
+                    });
+                    socket.on('timeout', err => {
+                        err = err || new Error('ProxyTimeout');
+                        log.e('socket timeouted, rejecting %d promises', rejects.length, err);
+                        rejects.forEach(rej => rej(err));
+
+                        try {
+                            sock.emit('timeout', err);
+                        }
+                        catch (e) {
+                            log.e('Failed to emit timeout on client socket', e);
+                        }
+                        try {
+                            sock.destroy(err);
+                        }
+                        catch (e) {
+                            log.e('Failed to destroy client socket on ProxyTimeout', e);
+                        }
+                        callback(err);
+                    });
+                    socket.on('end', err => {
+                        log.e('socket ended', err);
+                    });
                     callback(null, sock);
                     // callback(null, sock);
                     // Super.createConnection.apply(self, [{...options, socket}, callback]);
@@ -110,15 +154,26 @@ function proxyAgent(url, proxy, agentConfig = {}) {
             });
 
             connect.once('error', err => {
-                connect.removeAllListeners();
+                // connect.removeAllListeners();
                 callback(err);
             });
 
             connect.once('timeout', () => {
-                connect.destroy(new Error('Proxy timeout'));
+                connect.destroy(new Error('ProxyTimeout'));
             });
 
             connect.end();
+        };
+
+        this.pushReject = rej => {
+            rejects.push(rej);
+        };
+
+        this.popReject = rej => {
+            let i = rejects.indexOf(rej);
+            if (i !== -1) {
+                rejects.splice(i, 1);
+            }
         };
     };
 

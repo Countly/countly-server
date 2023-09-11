@@ -1,3 +1,24 @@
+## Version 23.06.11
+Fixes:
+- [crashes] Fix crash visibility filter 
+- [push] Fixing wrong timeout handling for APN
+  
+## Version 23.06.10
+Fixes:
+- [core] Remove trust proxy
+- [push] Fixing rescheduling delayed not-yet-scheduled messages
+- [star-rating] Decoding header texts
+- [views] Fix for unique value recording for segments.
+- [views] Store segmentation in viewdata to correctly record uvc, bounces exits(session post items) for different segments in aggregated data.
+
+Enterprise fixes:
+- [cohorts] Correctly deal with doesn't contain rule on incoming data.
+- [core] Updated tests
+- [data-manager] Fixed dealing with period param on regeneration endpoint
+- [surveys] Decoding feedback title
+- [users] User profile session sorting descending
+- [users] revert default sort in eventTable
+
 ## Version 23.06.9
 Fixes:
 - [push] Adding push/notifications endpoint, deprecating push/user endpoint
