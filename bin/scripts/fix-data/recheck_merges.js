@@ -6,61 +6,82 @@
  */
 
 
-var asyncjs = require("async");
+const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
 const dataviews = require('../../../plugins/drill/api/parts/data/dataviews.js');
+const common = require("../../../api/utils/common.js");
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases.");
+    common.db = countlyDb;
+    common.drillDb = drillDb;
     //get all apps
-    countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray(function(err, apps) {
-        if (err || !apps || !apps.length) {
-            return close(err);
+    try {
+        const apps = await countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray();
+        if (!apps || !apps.length) {
+            return close();
         }
-        //get all drill collections
-        drillDb.collections(function(err, collections) {
-            if (err || !collections || !collections.length) {
-                return close(err);
+        try {
+            //get all drill collections
+            const collections = await drillDb.collections();
+            if (!collections || !collections.length) {
+                return close();
             }
-            //for each app
-            asyncjs.eachSeries(apps, function(app, done) {
+            //for each app serially process users
+            asyncjs.eachSeries(apps, async function(app) {
                 //get users with merges
                 const usersCursor = countlyDb.collection('app_users' + app._id).find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
                 //for each user
-                usersCursor.next(function(err, user) {
-                    if (err || !user) {
-                        return done(err);
-                    }
+                while (await usersCursor.hasNext()) {
+                    const user = await usersCursor.next();
                     //check if old uid still exists in drill collections
-                    if (user.merged_uid) {
-                        processUser(user.merged_uid, user.uid, collections, app);
+                    if (user && user.merged_uid) {
+                        await processUser(user.merged_uid, user.uid, collections, app);
                     }
-                });
+                }
             }, function(err) {
-                close(err);
+                return close(err);
             });
-        });
-    });
+        }
+        catch (err) {
+            return close(err);
+        }
+    }
+    catch (err) {
+        return close(err);
+    }
 
-    function processUser(old_uid, new_uid, collections, app) {
-        asyncjs.eachSeries(collections, function(collection, done) {
-            collection = collection.collectionName;
-            drillDb.collection(collection).find({uid: old_uid}, {_id: 1}).limit(1).toArray().then(async function(err, events) {
-                if (err || !events || !events.length) {
-                    done();
+    async function processUser(old_uid, new_uid, collections, app) {
+        console.log("Processing user ", new_uid, "for app ", app.name);
+        for (let i = 0; i < collections.length; i++) {
+            const collection = collections[i].collectionName;
+            try {
+                const events = await drillDb.collection(collection).find({uid: old_uid}, {_id: 1}).limit(1).toArray();
+                if (!events || !events.length) {
+                    continue;
                 }
                 if (events && events[0]) {
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
-                    drillDb.collection(drillDb.getCollectionName(events[0], app._id)).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true}, function() {
-                        dataviews.mergeUserTimes({uid: old_uid}, {uid: new_uid}, app._id, function() {
-                            return done();
-                        });
-                    });
+                    try {
+                        await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                        if (dataviews) {
+                            try {
+                                await dataviews.mergeUserTimes({uid: old_uid}, {uid: new_uid}, app._id, function() {});
+                            }
+                            catch (err) {
+                                console.log("Error updating dataviews for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
+                            }
+                        }
+                    }
+                    catch (err) {
+                        console.log("Error updating collection ", collection, "for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
+                    }
                 }
-            });
-        }, function(err) {
-            return close(err);
-        });
+            }
+            catch (err) {
+                console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
+            }
+        }
     }
 
     function close(err) {
