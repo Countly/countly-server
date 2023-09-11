@@ -517,14 +517,14 @@
                     count: groupData.displayMap.c ? groupData.displayMap.c : CV.i18n("events.overview.count"),
                     sum: groupData.displayMap.s ? groupData.displayMap.s : CV.i18n("events.overview.sum"),
                     dur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.duration"),
-                    avgDur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.avg.duration")
+                    avgDur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.table.avg-dur")
                 };
             }
             return {
                 count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].count ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
                 sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].sum ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
                 dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration"),
-                avgDur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.avg.duration")
+                avgDur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.table.avg-dur")
             };
 
         },
