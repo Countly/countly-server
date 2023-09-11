@@ -7,7 +7,7 @@ var common = require('../../../api/utils/common.js'),
     taskManager = require('../../../api/utils/taskmanager.js'),
     { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
-const { EJSON } = require('bson');
+const { EJSON, ObjectId } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
 var spawn = require('child_process').spawn,
@@ -106,6 +106,25 @@ var spawn = require('child_process').spawn,
         }
 
         /**
+        * Recursively go through filter and convert values which match 'OID(hex_string_without_quotes)' pattern replacing them with ObjectIds
+        * @param {object} filter - filter
+        **/
+        function replaceOIDs(filter) {
+            let regex = new RegExp('^OID\\(([0-9a-fA-F]{24})\\)$');
+            for (let k in filter) {
+                if (typeof filter[k] === 'object') {
+                    replaceOIDs(filter[k]);
+                }
+                else if (typeof filter[k] === 'string') {
+                    let m = regex.exec(filter[k]);
+                    if (m) {
+                        filter[k] = ObjectId(m[1]);
+                    }
+                }
+            }
+        }
+
+        /**
         * Get document data from db
         **/
         function dbGetDocument() {
@@ -154,6 +173,7 @@ var spawn = require('child_process').spawn,
             if (filter._id && isObjectId(filter._id)) {
                 filter._id = common.db.ObjectID(filter._id);
             }
+            replaceOIDs(filter);
             if (sSearch) {
                 filter._id = new RegExp(sSearch);
             }
@@ -427,6 +447,7 @@ var spawn = require('child_process').spawn,
                 if (params.member.global_admin) {
                     try {
                         let aggregation = EJSON.parse(params.qstring.aggregation);
+                        replaceOIDs(aggregation);
                         aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
