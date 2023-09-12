@@ -713,6 +713,7 @@
                             visible\
                             :key="dialog.id"\
                             :dialogType="dialog.type"\
+                            :test-id="dialog.testId"\
                             :saveButtonLabel="dialog.confirmLabel"\
                             :cancelButtonLabel="dialog.cancelLabel"\
                             :title="dialog.title">\
@@ -724,6 +725,7 @@
                             v-for="dialog in messageDialogs"\
                             @confirm="onCloseDialog(dialog, true)"\
                             @close="onCloseDialog(dialog, false)"\
+                            :test-id="dialog.testId"\
                             visible\
                             :show-close="false"\
                             :key="dialog.id"\
@@ -737,6 +739,7 @@
                         <el-dialog\
                             v-for="dialog in blockerDialogs"\
                             visible\
+                            :test-id="dialog.testId"\
                             :center="dialog.center"\
                             :width="dialog.width"\
                             :close-on-click-modal="false"\

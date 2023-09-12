@@ -977,7 +977,7 @@
                             });
                             window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
                         });
-                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
+                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') }, "ratings-detail");
                     break;
                 }
             },
