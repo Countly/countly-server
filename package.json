@@ -53,7 +53,7 @@
     "express-rate-limit": "6.11.1",
     "express-session": "1.17.3",
     "form-data": "^4.0.0",
-    "formidable": "2.1.1",
+    "formidable": "3.5.1",
     "fs-extra": "11.1.1",
     "geoip-lite": "1.4.7",
     "get-random-values": "^2.0.0",
