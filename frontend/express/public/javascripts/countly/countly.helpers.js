@@ -712,6 +712,7 @@
     * @param {object} moreData - more data to display
     * @param {string} moreData.image - image id
     * @param {string} moreData.title - alert title
+    * @param {string} testId - test id for ui tests
     * @example
     * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
     *    if (!result) {
@@ -721,7 +722,7 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
+    CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData, testId = 'cly-confirm-test-id') {
         if (countlyGlobal.ssr) {
             return;
         }
@@ -753,7 +754,8 @@
                 cancelLabel: cancelLabel,
                 title: moreData && moreData.title,
                 image: moreData && moreData.image,
-                callback: callback
+                callback: callback,
+                testId: testId
             };
 
             var currentStore = window.countlyVue.vuex.getGlobalStore();

@@ -12,7 +12,8 @@
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
             resetValue: { type: [String, Object], default: "#FFFFFF"},
-            placement: {type: String, default: "left"}
+            placement: {type: String, default: "left"},
+            testId: {type: String, default: "cly-colorpicker-test-id"}
         },
         data: function() {
             return {
@@ -62,7 +63,7 @@
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open" class="preview">\n' +
+                        '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
                             '<div>\n' +
                                 '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
                                 '<img src="/images/icons/blob.svg"/>\n' +
@@ -74,9 +75,9 @@
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
                             '<div class="button-controls">\n' +
-                                '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-reset-button\'" :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-cancel-button\'" :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-confirm-button\'" :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
                             '</div>\n' +
                         '</div>\n' +
                       '</div>'
@@ -300,7 +301,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                              <div :data-test-id="testId + \'-item-\' + idx" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
+                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
@@ -492,7 +493,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :test-id="testId + \'-\'" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\

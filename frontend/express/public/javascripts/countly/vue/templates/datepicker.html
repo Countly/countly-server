@@ -112,11 +112,11 @@
                         <span :data-test-id="testId + '-select-date-range-in-between-and-label'" class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
                         <el-input size="small" :test-id="testId + '-select-date-range-in-between-end-date'" :disabled="inputDisable" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
                     </div>
-                    <el-input v-if="rangeMode === 'before'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
-                    <el-input v-if="rangeMode === 'since'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
+                    <el-input :test-id="testId + '-before-date-raw'" v-if="rangeMode === 'before'" size="small" :disabled="inputDisable" :class="{'is-error': beforeInput.raw.invalid0}" v-model="beforeInput.raw.text"></el-input>
+                    <el-input v-if="rangeMode === 'since'" :test-id="testId + '-since-date-raw'" size="small" :disabled="inputDisable" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
                     <div v-if="rangeMode === 'inTheLast'" class="cly-vue-daterp__input-wrapper-content">
-                        <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
-                        <el-select size="small" v-model="inTheLastInput.raw.level">
+                        <el-input size="small" :test-id="testId + '-in-the-last-date-raw'" v-model.number="inTheLastInput.raw.text"></el-input>
+                        <el-select size="small" v-model="inTheLastInput.raw.level" :test-id="testId + '-in-the-last-date-input'">
                             <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                             <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                             <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
