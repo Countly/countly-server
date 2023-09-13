@@ -5,6 +5,8 @@
  *  Command: node recheck_merges.js
  */
 
+var DRY_RUN = true;
+
 
 const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
@@ -85,7 +87,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 if (events && events[0]) {
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
                     try {
-                        await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                        if (!DRY_RUN) {
+                            await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                        }
                     }
                     catch (err) {
                         console.log("Error updating collection ", collection, "for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
@@ -96,7 +100,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
             }
         }
-        if (dataviews) {
+        if (dataviews && !DRY_RUN) {
             await new Promise((resolve, reject) => {
                 dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
                     if (err) {

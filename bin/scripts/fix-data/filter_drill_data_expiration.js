@@ -5,6 +5,7 @@
  *  Command: node filter_drill_data_expiration.js
  */
 
+var DRY_RUN = true;
 
 const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
@@ -18,12 +19,23 @@ pluginManager.dbConnection("countly_drill").then(async function(drillDb) {
             // if collection name starts with drill_events, remove all documents without cd field or where cd field is empty
             if (collection.collectionName.indexOf("drill_events") === 0) {
                 console.log("Processing collection: ", collection.collectionName);
-                try {
-                    const deleted = await collection.deleteMany({cd: {$exists: false}});
-                    console.log("Deleted documents: ", deleted.deletedCount);
+                if (DRY_RUN) {
+                    try {
+                        const count = await collection.countDocuments({cd: {$exists: false}});
+                        console.log("Found documents: ", count);
+                    }
+                    catch (err) {
+                        console.log("Error while processing collection: ", collection.collectionName, " Error: ", err);
+                    }
                 }
-                catch (err) {
-                    console.log("Error while deleting documents from collection: ", collection.collectionName, " Error: ", err);
+                else {
+                    try {
+                        const deleted = await collection.deleteMany({cd: {$exists: false}});
+                        console.log("Deleted documents: ", deleted.deletedCount);
+                    }
+                    catch (err) {
+                        console.log("Error while deleting documents from collection: ", collection.collectionName, " Error: ", err);
+                    }
                 }
             }
         }, function(err) {
