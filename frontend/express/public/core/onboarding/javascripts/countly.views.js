@@ -203,21 +203,43 @@
                 };
 
                 countlyPlugins.updateConfigs(configs);
+                var domain = countlyPlugins.getConfigsData().api.domain;
+
+                try {
+                    // try to extract hostname from full domain url
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
+
+                var statsUrl = 'https://stats.count.ly/i';
+
+                try {
+                    var uObj = new URL(countlyGlobal.frontend_server);
+                    uObj.pathname = '/i';
+                    statsUrl = uObj.href;
+                }
+                catch (_) {
+                    // do nothing, statsUrl will be used as is
+                }
 
                 CV.$.ajax({
                     type: 'GET',
-                    url: Countly.url + '/i',
+                    url: statsUrl,
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
-                        app_key: Countly.app_key,
-                        device_id: Countly.device_id,
+                        app_key: countlyGlobal.frontend_app,
+                        device_id: Countly.device_id || domain,
                     },
                     dataType: 'json',
+                    complete: function() {
+                        // go home
+                        window.location.href = '#/home';
+                        window.location.reload();
+                    }
                 });
-
-                // go home
-                window.location.href = '#/home';
-                window.location.reload();
             },
         }
     });
