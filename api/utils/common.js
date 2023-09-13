@@ -144,7 +144,7 @@ function escape_html_entities(key, value, more) {
     }
     return value;
 }
-
+common.getJSON = getJSON;
 /**
 * Check if string is a valid json
 * @param {string} val - string that might be json encoded
