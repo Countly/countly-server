@@ -58,7 +58,7 @@ plugins.setConfigs(FEATURE_NAME, {
         rate: '',
         period: ''
     },
-    deduplicate: true,
+    deduplicate: false,
     sendahead: 60000, // send pushes scheduled up to 60 sec in the future
     connection_retries: 3, // retry this many times on recoverable errors
     connection_factor: 1000, // exponential backoff factor
