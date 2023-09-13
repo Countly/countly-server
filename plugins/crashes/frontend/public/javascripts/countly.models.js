@@ -214,7 +214,7 @@ function transformAppVersion(inpVersion) {
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_u[prop]) / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
