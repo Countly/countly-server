@@ -83,6 +83,9 @@ plugins.register('/master', function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    setTimeout(() => {
+        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+    }, 10000);
 });
 
 plugins.register('/master/runners', runners => {

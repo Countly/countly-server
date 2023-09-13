@@ -89,6 +89,7 @@ class Audience {
             if (!this.app) {
                 throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
             }
+            this.plugins = await common.db.collection('plugins').findOne({_id: 'plugins'});
         }
         return this.app;
     }
@@ -723,7 +724,7 @@ class Pusher extends PusherPopper {
             curPeriod = 0,
             ratePeriod = (this.audience.app.plugins.push.rate || {}).period || 0,
             rateNumber = (this.audience.app.plugins.push.rate || {}).rate || 0,
-            deduplicate = this.audience.app.plugins.push.deduplicate || false;
+            deduplicate = this.audience.plugins && this.audience.plugins.push && this.audience.plugins.push.deduplicate || false;
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -799,11 +800,20 @@ class Pusher extends PusherPopper {
         if (result.total > 1 && deduplicate) {
             this.audience.log.d('Checking for duplicates');
 
+            // group notifications just scheduled by token, message id and date up to a minute precision (won't work with heavy rate limiting)
+            // [
+            //     {$match: {m: this.audience.message._id}},
+            //     {$addFields: {d: {$dateToString: {date: '$_id', format: '%Y-%m-%dT%H:%M'}}}},
+            //     {$project: {_id: 1, t: 1, m: 1, d: 1}},
+            //     {$group: {_id: {t: '$t', m: '$m', d: '$d'}, dups: {$push: '$_id'}, count: {$sum: 1}}},
+            //     {$match: {count: {$gt: 1}}},
+            //     {$project: {_id: '$dups'}}
+            // ]
             let dups = await common.db.collection(Push.collection).aggregate([
                 {$match: {m: this.audience.message._id}},
                 {$addFields: {d: {$dateToString: {date: '$_id', format: '%Y-%m-%dT%H:%M'}}}},
-                {$project: {_id: 1, t: 1, m: 1, d: 1}},
-                {$group: {_id: {t: '$t', m: '$m', d: '$d'}, dups: {$push: '$_id'}, count: {$sum: 1}}},
+                {$project: {_id: 1, t: 1, m: 1, d: 1, u: 1, p: 1, f: 1, 'la': '$pr.la'}},
+                {$group: {_id: {t: '$t', m: '$m', d: '$d'}, dups: {$push: {_id: '$_id', u: '$u', la: '$la', p: '$p', f: '$f'}}, count: {$sum: 1}}},
                 {$match: {count: {$gt: 1}}},
                 {$project: {_id: '$dups'}}
             ]).toArray();
@@ -813,17 +823,31 @@ class Pusher extends PusherPopper {
                 push_users_to_remove = [],
                 app_users_to_unset = {},
                 push_tokens_to_unset = {};
+
             if (left) {
                 this.audience.log.i('Going to check %d duplicate with same token', left);
 
+                let uids = new Set();
                 for (const doc of dups) {
-                    let pushes = await common.db.collection(Push.collection).find({_id: {$in: doc._id}}, {_id: 1, u: 1, p: 1, f: 1, 'pr.la': 1}).toArray(),
-                        [app_users, push_users] = await Promise.all([
-                            common.db.collection(`app_users${this.audience.app._id}`).find({uid: {$in: pushes.map(p => p.u)}}, {_id: 1, uid: 1, ls: 1}).toArray(),
-                            common.db.collection(`push_${this.audience.app._id}`).find({_id: {$in: pushes.map(p => p.u)}}, {_id: 1}).toArray()
-                        ]);
+                    for (const dup of doc._id) {
+                        uids.add(dup.u);
+                    }
+                }
+                uids = Array.from(uids);
+                let [all_app_users, all_push_users] = await Promise.all([
+                    common.db.collection(`app_users${this.audience.app._id}`).find({uid: {$in: uids}}, {_id: 1, uid: 1, ls: 1}).toArray(),
+                    common.db.collection(`push_${this.audience.app._id}`).find({_id: {$in: uids}}, {_id: 1}).toArray()
+                ]);
 
-                    push_users = push_users.map(u => u._id);
+                all_app_users = arrayToKeyObject(all_app_users, 'uid');
+                all_push_users = arrayToKeyObject(all_push_users, '_id');
+
+                // iterating one by one is slow enough to have a switch in settings
+                for (const doc of dups) {
+                    let pushes = doc._id,
+                        dup_uids = pushes.map(d => d.u),
+                        app_users = dup_uids.map(uid => all_app_users[uid]).filter(x => !!x),
+                        push_users = dup_uids.map(uid => all_push_users[uid]).filter(x => !!x).map(u => u._id);
 
                     let ghost_push_users = push_users.filter(u => app_users.filter(au => au.uid === u).length === 0);
                     if (ghost_push_users.length) {
@@ -838,7 +862,7 @@ class Pusher extends PusherPopper {
                                 if (updates[`result.subs.${push.p}.total`]) {
                                     updates[`result.subs.${push.p}.total`] -= 1;
                                 }
-                                let la = push.pr && push.pr.la || 'default';
+                                let la = push.la || 'default';
                                 if (updates[`result.subs.${push.p}.subs.${la}.total`]) {
                                     updates[`result.subs.${push.p}.subs.${la}.total`] -= 1;
                                 }
@@ -862,7 +886,7 @@ class Pusher extends PusherPopper {
                                 if (updates[`result.subs.${push.p}.total`]) {
                                     updates[`result.subs.${push.p}.total`] -= 1;
                                 }
-                                let la = push.pr && push.pr.la || 'default';
+                                let la = push.la || 'default';
                                 if (updates[`result.subs.${push.p}.subs.${la}.total`]) {
                                     updates[`result.subs.${push.p}.subs.${la}.total`] -= 1;
                                 }
@@ -877,6 +901,12 @@ class Pusher extends PusherPopper {
                                 push_tokens_to_unset[push.p + push.f].push(au.uid);
                             }
                         }
+                    }
+
+                    left--;
+
+                    if (left > 0 && left % 1000 === 0) {
+                        this.audience.log.i('... still checking duplicates, %d left', left);
                     }
                 }
 
@@ -899,7 +929,7 @@ class Pusher extends PusherPopper {
                 }
 
                 unsets = Object.values(push_tokens_to_unset).map(arr => arr.length).reduce((a, b) => a + b, 0);
-                this.audience.log.d('Unsetting %d duplicate user tokens in app_users', unsets);
+                this.audience.log.d('Unsetting %d duplicate user tokens in push_ collection', unsets);
                 if (unsets) {
                     for (let pf in push_tokens_to_unset) {
                         await common.db.collection(`push_${this.audience.app._id}`).updateMany({_id: {$in: push_tokens_to_unset[pf]}}, {$unset: {['tk.' + pf]: 1}});
@@ -907,7 +937,9 @@ class Pusher extends PusherPopper {
                 }
             }
         }
-
+        else {
+            this.audience.log.d('No duplicates found');
+        }
 
         if (result.total) {
             let update = {$inc: updates};
@@ -994,6 +1026,21 @@ class Popper extends PusherPopper {
     async resend() {
 
     }
+}
+
+/**
+ * Convert array of objects into a map indexed by given key, they key must be present in all objects
+ * 
+ * @param {Object[]} arr array of objects
+ * @param {String} key key
+ * @returns {Object} resulting object
+ */
+function arrayToKeyObject(arr, key) {
+    let obj = {};
+    for (const e of arr) {
+        obj[e[key]] = e;
+    }
+    return obj;
 }
 
 module.exports = { Audience, MultiRecurringMapper, setNow };
