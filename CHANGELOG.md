@@ -1,3 +1,24 @@
+## Version 23.06.12
+Fixes:
+- [core] Added missing space character to user profile photo description
+- [core] Added script for timeline data cleanup
+- [core] Created script for clearing out records without cd field in drill
+- [core] Created script for rechecking merged users and retrying to finish merging
+- [core] Fixed permission check
+- [core] Fixed workflow for user's document on changed did
+- [core] Update mongo_expireData.js script
+- [hooks] invalid json in hooks is fixed
+- [populator] Fixed Push notification campaign names are blank on detail page when using populator
+- [push] Added ui tests
+- [push] Faster deduplication on scheduling + ghost clearing job
+- [push] Fixing duplicate notifications for the same token
+- [push] Turning deduplication off by default
+
+Enterprise fixes:
+- [ab-testing] add fetch_experiments api
+- [cognito] post install script added to congito install.js
+- [retention] Fixed Cohort breakdown query on retention
+  
 ## Version 23.06.11
 Fixes:
 - [crashes] Fix crash visibility filter 
