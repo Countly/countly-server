@@ -78,7 +78,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
-                const events = await drillDb.collection(collection).find({uid: old_uid}, {_id: 1}).limit(1).toArray();
+                const events = await drillDb.collection(collection).find({uid: old_uid}, {uid: 1, _id: 0}).limit(1).toArray();
                 if (!events || !events.length) {
                     continue;
                 }
