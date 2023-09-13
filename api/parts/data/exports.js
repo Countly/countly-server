@@ -328,7 +328,7 @@ function getValues(values, valuesMap, paramList, doc, options) {
 */
 exports.stream = function(params, stream, options) {
     var headers = {};
-
+    var transformFunction = options.transformFunction;
     var filename = options.filename;
     var type = options.type;
     var projection = options.projection;
@@ -408,6 +408,9 @@ exports.stream = function(params, stream, options) {
         stream.stream(options.streamOptions).on('data', function(doc) {
             if (!first) {
                 first = true;
+                if (transformFunction) {
+                    transformFunction(doc);
+                }
                 params.res.write(doc);
             }
             else {
@@ -627,6 +630,7 @@ exports.fromRequest = function(options) {
 
 
 exports.fromRequestQuery = function(options) {
+    options.db = options.db || common.db;
     options.path = options.path || "/";
     if (!options.path.startsWith("/")) {
         options.path = "/" + options.path;
@@ -648,7 +652,10 @@ exports.fromRequestQuery = function(options) {
                 log.e(err);
             }
             if (body) {
-                var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
+                if (body.transformFunction) {
+                    options.transformFunction = body.transformFunction;
+                }
+                var cursor = options.db.collection(body.collection).aggregate(body.pipeline);
                 options.projection = body.projection;
                 var outputStream = new Transform({
                     objectMode: true,
