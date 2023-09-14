@@ -91,3 +91,35 @@
     display: flex;
     align-items: center;
 }
+
+.cly-countly-icon-solid {
+	width: 20px;
+	height: 20px;
+	background-image: url("../../../images/icons/countly-icon-solid.svg");
+}
+
+.cly-countly-icon-outline {
+	width: 20px;
+	height: 20px;
+	padding: 2px 7px; //this part is discutable. I needed to add it because of other stying in dropdown. It might be better to do not use here, but apply somewhere else. (to mark that we do this only in dropdowns not in icons everywhere
+	background-image: url("../../../images/icons/countly-icon-outline.svg");
+}
+
+.cly-countly-icon-outline-{
+	&trash-16px {
+		background-position: 99px 963px;
+	}
+    // code and external_link pixels are probably not right yet
+    &code-16px {
+		background-position: 99px 674px;
+	}
+    &external-link-16px {
+		background-position: 419px 674px;
+	}
+    &download-16px {
+		background-position: 299px 819px;
+	}
+    &x-16px {
+		background-position: 139px 1107px;
+	}
+}
