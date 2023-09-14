@@ -328,9 +328,9 @@ function getValues(values, valuesMap, paramList, doc, options) {
 */
 exports.stream = function(params, stream, options) {
     var headers = {};
-    var emptyFun = function (val) {
+    var emptyFun = function(val) {
         return val;
-    }
+    };
     var transformFunction = options.transformFunction || emptyFun;
     var filename = options.filename;
     var type = options.type;
@@ -670,8 +670,8 @@ exports.fromRequestQuery = function(options) {
                     options.streamOptions.transform = function(doc) {
                         doc = transformValuesInObject(doc, options.mapper);
                         if (body.transformFunction) {
-                            return  JSON.stringify(body.transformFunction(doc))
-                         }
+                            return JSON.stringify(body.transformFunction(doc));
+                        }
                         else {
                             return JSON.stringify(doc);
                         }
