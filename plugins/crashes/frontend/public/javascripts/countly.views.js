@@ -278,11 +278,15 @@
 
             if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getFilterValues = function(segmentationKey) {
+                var getRemoteFilterValues = function(segmentationKey) {
                     return function() {
-                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                            return {name: name, value: value};
+                        return new Promise(function(resolve) {
+                            crashMeta.getBigListMetaData('sg.' + segmentationKey, '', function(vals) {
+                                resolve(vals.map(function(item) {
+                                    var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + item) : item;
+                                    return {label: name, name: name, value: item};
+                                }));
+                            });
                         });
                     };
                 };
@@ -302,14 +306,14 @@
                     filterProperties.push({
                         id: "app_version",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
@@ -318,28 +322,28 @@
                         name: "OpenGL Version",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("opengl")
+                        searchRemoteList: getRemoteFilterValues('opengl')
                     });
                     filterProperties.push({
                         id: "orientation",
                         name: "Orientation",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("orientation")
+                        searchRemoteList: getRemoteFilterValues('orientation')
                     });
                     filterProperties.push({
                         id: "os",
                         name: "Platform",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("os")
+                        searchRemoteList: getRemoteFilterValues('os')
                     });
                     filterProperties.push({
                         id: "cpu",
                         name: "CPU",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getFilterValues("cpu")
+                        searchRemoteList: getRemoteFilterValues('cpu')
                     });
                 }
             }
@@ -448,9 +452,11 @@
             crashgroupsFilter: {
                 set: function(newValue) {
                     var query = {};
+                    var tmpQuery = {};
 
                     if (newValue.query) {
-                        query = countlyCrashes.modifyExistsQueries(newValue.query);
+                        tmpQuery = countlyCrashes.modifyOsVersionQuery(newValue.query);
+                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
                     if (newValue.query) {
@@ -525,20 +531,28 @@
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             },
             isLoading: function() {
-                return this.$store.getters['countlyCrashes/overview/isLoading'];
+                return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
+            loading: function() {
+                return this.$store.getters["countlyCrashes/overview/loading"];
+            }
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
+                if (this.$refs && this.$refs.dataTable && this.$refs.dataTable.externalParams) {
+                    this.$refs.dataTable.externalParams.skipLoading = true;
+                }
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
+                    var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
+                        tmpQuery = countlyCrashes.modifyOsVersionQuery(this.crashgroupsFilter.query);
+                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                        this.$store.dispatch("countlyCrashes/overview/refresh", force)
                     ]);
                 }
             },
@@ -607,16 +621,16 @@
         },
         beforeCreate: function() {
             var query = {};
+            var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
+                tmpQuery = countlyCrashes.modifyOsVersionQuery(this.$route.params.query.query);
+                query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
             }
 
-            return Promise.all([
-                this.$store.dispatch("countlyCrashes/overview/refresh")
-            ]);
+            this.$store.dispatch("countlyCrashes/overview/refresh", true);
         }
     });
 
@@ -1151,7 +1165,7 @@
 
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
-                        countlyCrashSymbols.fetchSymbols(true)
+                        countlyCrashSymbols.fetchSymbols(false)
                             .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
@@ -1327,14 +1341,17 @@
                 return {
                     uid: '',
                     userCrashesData: [],
-                    title: CV.i18n('crashes.unresolved-crashes')
+                    title: CV.i18n('crashes.unresolved-crashes'),
+                    isLoading: false
                 };
             },
-            beforeCreate: function() {
+            created: function() {
                 var self = this;
+                self.isLoading = true;
                 this.uid = this.$route.params.uid;
                 countlyCrashes.userCrashes(this.uid)
                     .then(function(res) {
+                        self.isLoading = false;
                         if (res) {
                             self.userCrashesData = res.aaData.map(function(data) {
                                 return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});

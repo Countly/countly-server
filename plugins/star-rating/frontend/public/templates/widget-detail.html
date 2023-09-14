@@ -3,69 +3,77 @@
     <template v-slot:header-left>
       <div class="ratings-widget-detail-view__widget-information">
         <div @click="backToWidgets()" class="ratings-widget-detail-view__back-link bu-is-size-7">
-          <i class="el-icon-back"></i> {{ i18n('feedback.back-to-rating-widgets') }}
+          <i data-test-id="ratings-detail-back-link-icon" class="el-icon-back"></i>
+          <span data-test-id="ratings-detail-back-link-label">{{ i18n('feedback.back-to-rating-widgets') }}</span>
         </div>
         <div class="ratings-widget-detail-view__widget-name">
-          <h3 class="ratings-widget-detail-view__widget-name">{{ widget.popup_header_text }}</h3>
+          <h3 v-html="widget.popup_header_text" class="ratings-widget-detail-view__widget-name" data-test-id="ratings-detail-widget-name-label"></h3>
         </div>
         <div class="ratings-widget-detail-view__widget-informations bu-mt-4">
           <div :class="[widget.status && 'ratings-widget-detail-view__widget-status-active', !widget.status && 'ratings-widget-detail-view__widget-status-disabled', 'bu-has-text-weight-semibold text-small bu-mt-1']">
-            <span v-if="widget.status" class="blinker"></span> {{ widget.status ? i18n('feedback.active') : i18n('feedback.disabled') }}
+            <span v-if="widget.status" class="blinker"></span> 
+            <span data-test-id="ratings-detail-widget-status">{{ widget.status ? i18n('feedback.active') : i18n('feedback.disabled') }}</span>
           </div>
-          <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="ion-android-time"></i> {{ i18n('feedback.created-at') }} <span v-html="widget.created_at"></span></div>
-          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2"> <i class="ion-pricetag"></i> <span class="ratings-widget-detail-view__widget-id">{{ i18n('feedback.widget-id') }} </span><span class="ratings-widget-detail-view__ID">{{ widget._id }}</span></div>
+          <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="ion-android-time" data-test-id="ratings-detail-created-at-icon"></i> 
+            <span data-test-id="ratings-detail-created-at-label">{{ i18n('feedback.created-at') }}</span>
+            <span data-test-id="ratings-detail-created-at-value" v-html="widget.created_at"></span></div>
+          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2">
+            <i data-test-id="ratings-detail-price-tag-icon" class="ion-pricetag"></i>
+            <span data-test-id="ratings-detail-widget-id-label" class="ratings-widget-detail-view__widget-id">{{ i18n('feedback.widget-id') }} </span>
+            <span data-test-id="ratings-detail-widget-id-value" class="ratings-widget-detail-view__ID">{{ widget._id }}</span>
+          </div>
         </div>
       </div>
     </template>
     <template v-slot:header-right>
       <div class="bu-mt-2">
-        <el-button v-if="widget.status && canUserUpdate" @click="setWidget(false)" size="small" icon="ion-android-cancel"> {{ i18n('feedback.stop-widget') }}
+        <el-button data-test-id="ratings-detail-stop-widget-button" v-if="widget.status && canUserUpdate" @click="setWidget(false)" size="small" icon="ion-android-cancel"> {{ i18n('feedback.stop-widget') }}
         </el-button>
-        <el-button v-if="!widget.status && canUserUpdate" @click="setWidget(true)" size="small" icon="ion-android-arrow-dropright-circle"> {{ i18n('feedback.start-widget') }}
+        <el-button data-test-id="ratings-detail-start-widget-button" v-if="!widget.status && canUserUpdate" @click="setWidget(true)" size="small" icon="ion-android-arrow-dropright-circle"> {{ i18n('feedback.start-widget') }}
         </el-button>
-        <el-button v-if="canUserUpdate" @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="ion-edit"> {{ i18n('feedback.edit-widget') }}
+        <el-button data-test-id="ratings-detail-edit-widget-button" v-if="canUserUpdate" @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="ion-edit"> {{ i18n('feedback.edit-widget') }}
         </el-button>
-        <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event)">
-          <el-dropdown-item command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
+        <cly-more-options test-id="ratings-detail" v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event)">
+          <el-dropdown-item data-test-id="ratings-detail" command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
         </cly-more-options>
       </div>
     </template>
   </cly-header>
   <cly-main>
     <el-collapse class="ratings-widget-detail-view__targeting is-bordered-box" v-if="cohortsEnabled" :icon = "{ position: 'left', direction: 'right'}" v-model="activeNames">
-      <el-collapse-item :title="i18n('feedback.targeting')" name="1">
-          <cly-cohort-targeting :targeting="widget.targeting">
+      <el-collapse-item test-id="ratings-detail-collapse-item" :title="i18n('feedback.targeting')" name="1">
+          <cly-cohort-targeting test-id="ratings-detail" :targeting="widget.targeting">
           </cly-cohort-targeting>
       </el-collapse-item>
     </el-collapse>
     <div class="bu-level ratings-widget-detail-view__filter-level">
       <div class="bu-level-left">
         <div class="bu-level-item">
-          {{ i18n('feedback.results-for') }}
-          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="refresh" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+          <span data-test-id="ratings-detail-results-for-label">{{ i18n('feedback.results-for') }}</span>
+          <cly-multi-select test-id="ratings-detail" class="bu-ml-3 ratings-tab-view__filter-selector" @change="refresh" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
         </div>
       </div>
       <div class="bu-level-right">
         <div class="bu-level-item">
-          <cly-date-picker-g></cly-date-picker-g>
+          <cly-date-picker-g test-id="ratings-detail"></cly-date-picker-g>
         </div>
       </div>
     </div>
     <cly-section>
       <cly-metric-cards class="ratings-widget-detail-view__cards bu-has-background-white">
-        <cly-metric-card :number="count" :tooltip="i18n('ratings.tooltip.widget-detail-ratings')">
-          <span class="ratings-section-title">{{ i18n('feedback.ratings') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        <cly-metric-card test-id="ratings-detail-metric-card-widget-detail-ratings" :number="count" :tooltip="i18n('ratings.tooltip.widget-detail-ratings')">
+          <span data-test-id="ratings-detail-metric-card-widget-detail-ratings-label" class="ratings-section-title">{{ i18n('feedback.ratings') }}</span><cly-tooltip-icon data-test-id="ratings-detail-metric-card-widget-detail-ratings-tooltip" icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
-        <cly-metric-card :number="ratingRate" :is-percentage="true" :tooltip="i18n('ratings.tooltip.widget-detail-rate')">
-          <span class="ratings-section-title">{{ i18n('feedback.ratings-rate') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        <cly-metric-card test-id="ratings-detail-metric-card-widget-detail-rate" :number="ratingRate" :is-percentage="true" :tooltip="i18n('ratings.tooltip.widget-detail-rate')">
+          <span data-test-id="ratings-detail-metric-card-widget-detail-rate-label" class="ratings-section-title">{{ i18n('feedback.ratings-rate') }}</span><cly-tooltip-icon data-test-id="ratings-detail-metric-card-widget-detail-rate-tooltip" icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
-        <cly-metric-card :number="widget.timesShown" :tooltip="i18n('ratings.tooltip.widget-detail-times-shown')">
-          <span class="ratings-section-title">{{ i18n('feedback.times-shown') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        <cly-metric-card test-id="ratings-detail-metric-card-widget-detail-times-shown" :number="widget.timesShown" :tooltip="i18n('ratings.tooltip.widget-detail-times-shown')">
+          <span data-test-id="ratings-detail-metric-card-widget-detail-times-shown-label" class="ratings-section-title">{{ i18n('feedback.times-shown') }}</span><cly-tooltip-icon data-test-id="ratings-detail-metric-card-widget-detail-times-shown-tooltip" icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>
     <cly-section>
-      <cly-chart-bar v-loading="isLoading" :force-loading="isLoading" class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
+      <cly-chart-bar test-id="ratings-detail-chart" v-loading="isLoading" :force-loading="isLoading" class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
     </cly-section>
     <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" :loadingState="isLoading" skin="secondary" v-model="dynamicTab" :tabs="tabs">
       <template v-slot:tables="scope">

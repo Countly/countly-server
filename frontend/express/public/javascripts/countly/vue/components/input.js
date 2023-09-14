@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _ */
+/* global Vue, CV, countlyGlobal, $, _, countlyCommon */
 
 (function(countlyVue) {
 
@@ -12,7 +12,8 @@
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
             resetValue: { type: [String, Object], default: "#FFFFFF"},
-            placement: {type: String, default: "left"}
+            placement: {type: String, default: "left"},
+            testId: {type: String, default: "cly-colorpicker-test-id"}
         },
         data: function() {
             return {
@@ -62,7 +63,7 @@
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open" class="preview">\n' +
+                        '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
                             '<div>\n' +
                                 '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
                                 '<img src="/images/icons/blob.svg"/>\n' +
@@ -74,9 +75,9 @@
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
                             '<div class="button-controls">\n' +
-                                '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-reset-button\'" :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-cancel-button\'" :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-confirm-button\'" :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
                             '</div>\n' +
                         '</div>\n' +
                       '</div>'
@@ -240,11 +241,21 @@
         mixins: [SearchableOptionsMixin],
         props: {
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
-            value: { type: [String, Number] }
+            value: { type: [String, Number] },
+            testId: {
+                type: String,
+                default: 'cly-listbox-test-id',
+                required: false
+            },
         },
         computed: {
             searchedOptions: function() {
                 return this.getMatching(this.options);
+            }
+        },
+        methods: {
+            decodeHtml: function(str) {
+                return countlyCommon.unescapeHtml(str);
             }
         },
         template: '<div\
@@ -270,6 +281,7 @@
                     <vue-scroll\
                         :style="vueScrollStyle"\
                         v-if="searchedOptions.length > 0"\
+                        :data-test-id="testId + \'-scroll\'"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
@@ -289,7 +301,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                                <div class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
+                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
@@ -326,6 +338,10 @@
             persistColumnOrderKey: {
                 type: String,
                 default: null
+            },
+            testId: {
+                type: String,
+                default: 'cly-checklistbox-test-id',
             }
         },
         data: function() {
@@ -477,7 +493,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -744,7 +760,7 @@
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
             noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
-            value: { type: [String, Number, Array] },
+            value: { type: [String, Number, Array, Boolean] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
@@ -803,7 +819,8 @@
             remoteMethod: {type: Function, required: false},
             showSearch: {type: Boolean, default: false},
             popperAppendToBody: {type: Boolean, default: true},
-            persistColumnOrderKey: { type: String, default: null}
+            persistColumnOrderKey: { type: String, default: null},
+            testId: { type: String, default: "cly-select-x-test-id"},
         },
         data: function() {
             return {

@@ -58,13 +58,13 @@
                         response.aaData = response.collections;
                         response.iTotalRecords = response.limit;
                         response.iTotalDisplayRecords = response.total;
-                        if (!self.refresh) {
+                        if (!self.isRefresh) {
                             self.expandKeys = [];
                             self.expandKeysHolder = [];
                         }
                         for (var i = 0; i < response.aaData.length; i++) {
                             response.aaData[i]._view = JSON.stringify(response.aaData[i]);
-                            if (!self.refresh) {
+                            if (!self.isRefresh) {
                                 self.expandKeysHolder.push(response.aaData[i]._id);
                             }
                         }
@@ -104,6 +104,7 @@
                     expandKeys: [],
                     expandKeysHolder: [],
                     isRefresh: false,
+                    isLoading: false,
                     showFilterDialog: false,
                     showDetailDialog: false,
                     rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
@@ -119,18 +120,23 @@
                         this.sortEnabled = false;
                         this.sort = "";
                         app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
-                        this.tableStore.dispatch("fetchDbviewerTable");
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                     else {
                         this.collection = newVal;
                         app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.query, false);
-                        this.tableStore.dispatch("fetchDbviewerTable");
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                 }
             },
             methods: {
+                onAppChange: function(val) {
+                    if (val !== "all") {
+                        this.appFilter = countlyGlobal.apps[val].label;
+                    }
+                },
                 toggleExpand: function() {
                     this.isExpanded = !this.isExpanded;
                     if (this.isExpanded) {
@@ -201,8 +207,14 @@
                     this.isDescentSort = false;
                 },
                 fetch: function(force) {
-                    this.refresh = false;
-                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
+                    this.isRefresh = false;
+                    var self = this;
+                    if (force) {
+                        this.isLoading = true;
+                    }
+                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
+                        self.isLoading = false;
+                    });
                 },
                 getExportQuery: function() {
 
@@ -225,7 +237,7 @@
                     return apiQueryData;
                 },
                 refresh: function(force) {
-                    this.refresh = true;
+                    this.isRefresh = true;
                     this.fetch(force);
                 },
                 highlight: function(content) {
@@ -256,7 +268,10 @@
                     if (this.$route && this.$route.params && this.$route.params.query) {
                         delete this.$route.params.query;
                     }
-                }
+                },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
@@ -304,7 +319,7 @@
                 }
             },
             created: function() {
-                this.refresh = false;
+                this.isRefresh = false;
                 var routeHashItems = window.location.hash.split("/");
                 if (routeHashItems.length === 6) {
                     this.collection = routeHashItems[5];
@@ -335,6 +350,15 @@
                         this.collection = this.collections[this.db].list[0].value;
                         this.selectedCollection = this.collection;
                         window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
+                    }
+                }
+                for (var collectionKey in this.collections) {
+                    if (Object.prototype.hasOwnProperty.call(this.collections, collectionKey)) {
+                        var collection = this.collections[collectionKey];
+                        for (var i = 0; i < collection.list.length; i++) {
+                            var listItem = collection.list[i];
+                            listItem.label = countlyCommon.unescapeHtml(listItem.label);
+                        }
                     }
                 }
             }
@@ -403,6 +427,22 @@
                             value: apps[appKeys[i]]._id
                         });
                     }
+
+                    formattedApps.sort(function(a, b) {
+                        if (a.label < b.label) {
+                            return -1;
+                        }
+                        if (a.label > b.label) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+
+                    formattedApps.unshift({
+                        label: 'All Apps',
+                        value: 'all'
+                    });
+
                     this.apps = formattedApps;
                 }
             },
@@ -470,8 +510,8 @@
                                     clearAll: true
                                 });
                             }
+                            self.queryLoading = false;
                         });
-                        self.queryLoading = false;
                     }
                     catch (err) {
                         CountlyHelpers.notify({

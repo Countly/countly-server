@@ -497,7 +497,11 @@
                 var result = this.$store.getters["countlyAlerts/table/getInitialized"];
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 return result && (rows.length === 0);
-            }
+            },
+            initialized: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                return result;
+            },
         },
         data: function() {
             return {

@@ -1261,6 +1261,9 @@
                     return seg;
                 });
             },
+            isLoading: function() {
+                return this.$store.getters["countlyDataManager/segmentsMapLoading"];
+            },
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },

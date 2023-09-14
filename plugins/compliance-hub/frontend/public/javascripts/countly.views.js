@@ -181,6 +181,9 @@
                     this.initializeStoreData();
                 }
             },
+            consentHistoryLoading: function() {
+                return this.$store.getters["countlyConsentManager/consentHistoryLoading"];
+            }
         },
         methods: {
             dateChanged: function() {
@@ -301,6 +304,8 @@
         data: function() {
             return {
                 consentDpChartloaded: false,
+                exportDpChartloaded: false,
+                purgeDpChartloaded: false,
                 chartLoading: false,
                 filter0: [
                     {
@@ -377,10 +382,13 @@
                 set: function(newValue) {
                     this.selectedfilter0 = newValue;
                     this.initializeStoreData();
+                    this.consentDpChartloaded = true;
+                    this.purgeDpChartloaded = true;
+                    this.exportDpChartloaded = true;
                 }
             },
             consentDpChart: function() {
-                this.consentDpChartloaded = false;
+                this.consentDpChartloaded = true;
                 var consentDp = this.$store.getters["countlyConsentManager/_consentDP"];
                 var optinYAxisData = [];
                 var optoutYAxisData = [];
@@ -389,10 +397,10 @@
                     optoutYAxisData.push(consentDp.chartData[key].o);
                 }
                 if (optinYAxisData.length > 0) {
-                    this.consentDpChartloaded = true;
+                    this.consentDpChartloaded = false;
                 }
                 else if (consentDp.chartData) {
-                    this.consentDpChartloaded = true;
+                    this.consentDpChartloaded = false;
                 }
                 return {
                     series: [
@@ -433,14 +441,19 @@
                 return legendData;
             },
             exportDpChart: function() {
+                this.exportDpChartloaded = true;
                 var exportDP = this.$store.getters["countlyConsentManager/_exportDP"];
                 var presentYAxisData = [];
                 var previousYAxisData = [];
                 for (var key in exportDP.chartData) {
                     presentYAxisData.push(exportDP.chartData[key].e);
                     previousYAxisData.push(exportDP.chartData[key].pe);
-
-
+                }
+                if (presentYAxisData.length > 0) {
+                    this.exportDpChartloaded = false;
+                }
+                else if (exportDP.chartData) {
+                    this.exportDpChartloaded = false;
                 }
                 return {
                     series: [
@@ -457,12 +470,19 @@
                 };
             },
             purgeDpChart: function() {
+                this.purgeDpChartloaded = true;
                 var purgeDp = this.$store.getters["countlyConsentManager/_purgeDP"];
                 var purgeDpPresent = [];
                 var purgeDpPrevious = [];
                 for (var key in purgeDp.chartData) {
                     purgeDpPresent.push(purgeDp.chartData[key].p);
                     purgeDpPrevious.push(purgeDp.chartData[key].pp);
+                }
+                if (purgeDpPresent.length > 0) {
+                    this.purgeDpChartloaded = false;
+                }
+                else if (purgeDp.chartData) {
+                    this.purgeDpChartloaded = false;
                 }
                 var data = {
                     series: [
@@ -515,10 +535,12 @@
                 return {};
 
             }
-
         },
         methods: {
             dateChanged: function() {
+                this.consentDpChartloaded = true;
+                this.exportDpChartloaded = true;
+                this.purgeDpChartloaded = true;
                 this.initializeStoreData();
             },
             formatTableNumber: function(data) {
@@ -549,7 +571,6 @@
                 });
             },
         }
-
     });
     var ComplianceMainView = countlyVue.views.create({
         template: CV.T('/compliance-hub/templates/main.html'),
@@ -616,9 +637,10 @@
                     return this.$store.getters["countlyConsentManager/isLoading"];
                 }
             },
-            mounted: function() {
+            beforeCreate: function() {
                 var userDetails = this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
                 if (userDetails.uid) {
+                    this.$store.dispatch("countlyConsentManager/uid", userDetails.uid);
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
             }

@@ -20,6 +20,15 @@ if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
 }
 
+if (!surveysEnabled) {
+    plugins.setConfigs("feedback", {
+        main_color: "#0166D6",
+        font_color: "#0166D6",
+        feedback_logo: ""
+
+    });
+}
+
 const FEATURE_NAME = 'star_rating';
 
 const widgetProperties = {
@@ -102,6 +111,10 @@ const widgetProperties = {
     logoType: {
         required: false,
         type: "String"
+    },
+    globalLogo: {
+        required: false,
+        type: "Boolean"
     },
     appearance: {
         required: false,
@@ -320,6 +333,107 @@ function uploadFile(myfile, id, callback) {
         });
     });
 
+    /**
+* Used for file upload
+* @param {string} myname - input name
+* @param {object} myfile - file object
+* @returns {object} Promise
+**/
+    function uploadFeedbackFile(myname, myfile) {
+        return new Promise(function(resolve, reject) {
+            var tmp_path = myfile.path;
+            var type = myfile.type;
+            if (myfile.size > 1.5 * 1024 * 1024) {
+                fs.unlink(tmp_path, function() {});
+                reject(Error("feedback.image-error"));
+            }
+            else {
+                fs.readFile(tmp_path, (err, data) => {
+                    if (err) {
+                        reject(Error("feedback.imagee-error"));
+                    }
+                    //convert file to data
+                    if (data) {
+                        try {
+                            var data_uri_prefix = "data:" + type + ";base64,";
+                            var buf = Buffer.from(data);
+                            var image = buf.toString('base64');
+                            image = data_uri_prefix + image;
+                            countlyFs.gridfs.saveData("feedback", myname, image, {id: myname, writeMode: "overwrite"}, function(err2) {
+                                fs.unlink(tmp_path, function() {});
+                                if (err2) {
+                                    return reject(err2);
+                                }
+                                resolve();
+                            });
+                        }
+                        catch (SyntaxError) {
+                            reject(Error("feedback.imagee-error"));
+                        }
+                    }
+                    else {
+                        reject(Error("feedback.imagee-error"));
+                    }
+                });
+            }
+        });
+    }
+
+
+    /**
+     * @api {post} /i/feedback/upload
+     * @apiName Upload Image
+     * @apiGroup feedback
+     *
+     * @apiDescription Changes in Countly user interfaces logo
+     * @apiBody {File} logo
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *  "result": "Success"
+     * }
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
+    plugins.register("/i/feedback/upload", function(ob) {
+        // do not respond if this isn't feedback fetch request 
+        // or surveys plugin enabled
+        if (surveysEnabled) {
+            return false;
+        }
+
+        var params = ob.params;
+        validateUpdate(params, "global_plugins", function() {
+            var images = ["feedback_logo"];
+            var flag = 0;
+            if (params.files) {
+                for (let i = 0; i < images.length; i++) {
+                    if (params.files[images[i]]) {
+                        flag = 1;
+                        uploadFeedbackFile(images[i], params.files[images[i]]).then(function() {
+                            common.returnOutput(params, {"result": "Success"});
+                        }, function(err) {
+                            common.returnMessage(params, 400, err.message);
+                        });
+                        break;
+                    }
+                }
+                if (flag === 0) {
+                    uploadFeedbackFile(params.qstring.name, params.files.file).then(function() {
+                        common.returnOutput(params, {"result": "Success"});
+                    }, function(err) {
+                        common.returnMessage(params, 400, err.message);
+                    });
+                }
+            }
+        });
+        return true;
+    });
     /*
     * internal event that fetch ratings widget
     * and push them to passed widgets array.

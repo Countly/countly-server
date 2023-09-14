@@ -1,15 +1,14 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('plugins.title')}} </h2>
-        </template>
+    <cly-header
+        :title="i18n('plugins.title')"
+    >
         <template v-slot:header-right>
             <component v-if="value.component" v-bind:is="value.component" :key="id" v-for="(value, id) in components" @update-row="updateRow($event)"></component>
         </template>
     </cly-header>
     <cly-main>
 		<cly-section>
-			<cly-datatable-n :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
+			<cly-datatable-n :force-loading="isLoading" :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="switch" fixed="left" width="70" prop="enabled">
                         <template v-slot="rowScope">

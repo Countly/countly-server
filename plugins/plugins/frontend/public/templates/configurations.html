@@ -1,11 +1,9 @@
 <div v-bind:class="[componentId]" class="configurations">
-    <cly-header>
+    <cly-header
+        :title="back ? i18n('plugins.search-settings') : i18n('plugins.configs')"
+    >
         <template v-slot:header-top>
             <cly-back-link :title="i18n('plugins.back-to-settings')" v-if="back" link="#/manage/configurations"></cly-back-link>
-        </template>
-        <template v-slot:header-left>
-            <h2 v-if="!back"> {{i18n('plugins.configs')}} </h2>
-            <h2 v-else> {{i18n('plugins.search-settings')}} </h2>
         </template>
         <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
             <el-input
@@ -128,8 +126,9 @@
                                                     size="small" 
                                                     type="text" 
                                                     @click.stop="onChange(key, '')"
-                                                    class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
-                                                    <img :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
+                                                    class="bu-p-0">{{i18n('management-users.remove-image')}}</el-button>
+                                                    <img v-if="selectedConfig==='feedback'":src="'/feedback/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
+                                                    <img v-else :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
                                                 </div>
                                                 <div v-else class="bu-is-flex">
                                                     <el-button type="default" style="display:flex;margin:auto;">{{i18n('white-labeling.choose-file')}}</el-button>
@@ -273,7 +272,7 @@
                                                 size="small" 
                                                 type="text" 
                                                 @click.stop="onChange(key, '', configKey)"
-                                                class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
+                                                class="bu-p-0">{{i18n('management-users.remove-image')}}</el-button>
                                                 <img :src="'/white-label/preview/' + configsData[configKey][key] + '?' + Date.now()">
                                             </div>
                                             <div v-else class="bu-is-flex">

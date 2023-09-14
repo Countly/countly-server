@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('platforms.title')}} </h2>
-            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('platforms.title')"
+        :tooltip="{description}"
+    >
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
             <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
@@ -49,6 +48,9 @@
 		<div v-if="platformVersions.length === 0 && !isLoading" class="technology-analytics-wrapper__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
+        <div v-else-if="platformVersions.length === 0 && isLoading">
+            <div  class="technology-analytics-wrapper__versions-empty-card" v-loading="isLoading"></div>
+        </div>
         <div v-else class="technology-analytics-wrapper__versions" v-loading="isLoading">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">

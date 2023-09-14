@@ -392,9 +392,13 @@ countlyModel.create = function(fetchValue) {
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
     countlyMetric.getBars = function(segment, maxItems, metric) {
+        var periodObject = null;
+        if (this.getPeriod()) { // only set custom period if it was explicitly set on the model object
+            periodObject = countlyCommon.getPeriodObj({qstring: {}}, this.getPeriod());
+        }
         metric = metric || _metrics[0];
         if (segment) {
-            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj(), this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
+            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj(), this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined, periodObject);
         }
         else {
             var barData = [],

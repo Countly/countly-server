@@ -1,9 +1,9 @@
 <script type="text/x-template" id="push-notification-details">
     <div v-bind:class="[componentId]">
-        <cly-header class="cly-vue-push-notification-details-header">
-            <template v-slot:header-left>
-                <h2> {{pushNotification.name || '-' }} </h2>
-            </template>
+        <cly-header 
+            class="cly-vue-push-notification-details-header"
+            :title="pushNotification.name || '-'"
+        >
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
@@ -114,7 +114,7 @@
                     </div>
                 </div>
             </cly-section>
-            <div class="cly-vue-push-notification-details-summary">
+            <div class="cly-vue-push-notification-details-summary" v-loading="isLoading">
                 <div style="width: calc(100% - 72px); display: flex; align-items: end;">
                     <div style="width: 83.133333%; padding-right: 24px; padding-top: 48px">
                         <div class="bu-py-3" style="display: flex; align-items: baseline;">

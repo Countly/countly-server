@@ -27,7 +27,7 @@
       </template>
     </cly-header>
     <cly-main>
-      <div class="hook-detail-card">
+      <div class="hook-detail-card" v-loading="!detailLogsInitialized">
         <div class="bu-mx-5 white-bg bu-my-4  bu-pt-1  bu-pb-4 ">
           <div class="text-medium color-cool-gray-100 text-heading">{{i18n('hooks.detail-title')}}</div>
           <div class="bu-mt-5">
