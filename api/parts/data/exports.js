@@ -328,7 +328,10 @@ function getValues(values, valuesMap, paramList, doc, options) {
 */
 exports.stream = function(params, stream, options) {
     var headers = {};
-    var transformFunction = options.transformFunction;
+    var emptyFun = function (val) {
+        return val;
+    }
+    var transformFunction = options.transformFunction || emptyFun;
     var filename = options.filename;
     var type = options.type;
     var projection = options.projection;
@@ -349,6 +352,7 @@ exports.stream = function(params, stream, options) {
         params.res.writeHead(200, headers);
     }
     if (type === "csv") {
+        options.streamOptions.transform = transformFunction;
         var head = [];
         if (listAtEnd === false) {
             for (let p = 0; p < paramList.length; p++) {
@@ -381,6 +385,7 @@ exports.stream = function(params, stream, options) {
         });
     }
     else if (type === 'xlsx' || type === 'xls') {
+        options.streamOptions.transform = transformFunction;
         var xc = new XLSXTransformStream();
         xc.pipe(params.res);
         if (listAtEnd === false) {
@@ -408,9 +413,6 @@ exports.stream = function(params, stream, options) {
         stream.stream(options.streamOptions).on('data', function(doc) {
             if (!first) {
                 first = true;
-                if (transformFunction) {
-                    transformFunction(doc);
-                }
                 params.res.write(doc);
             }
             else {
@@ -667,7 +669,12 @@ exports.fromRequestQuery = function(options) {
                 if (options.type === "stream" || options.type === "json") {
                     options.streamOptions.transform = function(doc) {
                         doc = transformValuesInObject(doc, options.mapper);
-                        return JSON.stringify(doc);
+                        if (body.transformFunction) {
+                            return  JSON.stringify(body.transformFunction(doc))
+                         }
+                        else {
+                            return JSON.stringify(doc);
+                        }
                     };
                 }
                 exports.stream({res: outputStream}, cursor, options);
