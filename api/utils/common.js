@@ -1968,6 +1968,81 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
 };
 
 /**
+* Record measurement in Countly standard metric model
+* Can be used by plugins to record measurements, similar to temperature, it will record min/max/avg values
+* Does not support unique values like users
+* @param {params} params - {@link params} object
+* @param {string} collection - name of the collections where to store data
+* @param {string} id - id to prefix document ids, like app_id or segment id, etc
+* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {number=} value - value to increment all metrics for, default 1
+* @param {object} segments - object with segments to record data, key segment name and value segment value
+* @example
+* //recording attribution
+* common.recordCustomMeasurement(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"});
+*/
+common.recordCustomMeasurement = function(params, collection, id, metrics, value, segments) {
+    value = value || 1;
+    var updateUsersZero = {},
+        updateTotal = {},
+        updateMin = {},
+        updateMax = {},
+        tmpSet = {};
+
+    if (metrics) {
+        for (let i = 0; i < metrics.length; i++) {
+
+            if (value !== 0) {
+                recordMetric(params, metrics[i] + "_total", {
+                    segments: segments,
+                    value: value
+                },
+                tmpSet, updateUsersZero, updateTotal);
+            }
+
+            recordMetric(params, metrics[i] + "_count", {
+                segments: segments,
+                value: 1
+            },
+            tmpSet, updateUsersZero, updateTotal);
+
+            recordMetric(params, metrics[i] + "_min", {
+                segments: segments,
+                value: value
+            },
+            tmpSet, updateUsersZero, updateMin);
+
+            recordMetric(params, metrics[i] + "_max", {
+                segments: segments,
+                value: value
+            },
+            tmpSet, updateUsersZero, updateMax);
+        }
+    }
+
+    var dbDateIds = common.getDateIds(params);
+    var update = {};
+
+    if (Object.keys(updateTotal).length) {
+        update.$inc = updateTotal;
+    }
+    if (Object.keys(updateMin).length) {
+        update.$min = updateMin;
+    }
+    if (Object.keys(updateMax).length) {
+        update.$max = updateMax;
+    }
+
+    if (Object.keys(update).length) {
+        update.$set = {
+            m: dbDateIds.month,
+            a: params.app_id + ""
+        };
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, update);
+    }
+};
+
+/**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
 * @param {params} params - {@link params} object
