@@ -289,9 +289,17 @@ function periodic() {
         imAlive((done) => {
             Promise.all(runners.map(runner => {
                 try {
-                    return runner().catch(e => {
-                        log.e('Rejection in runner', e);
-                    });
+                    if (runner && (runner instanceof Promise || runner.toString().includes('async'))) {
+                        return runner().catch(e => {
+                            log.e('Rejection in runner', e);
+                        });
+                    }
+                    else if (runner && typeof runner === 'function') {
+                        return runner();
+                    }
+                    else {
+                        log.e('Invalid runner type:', typeof runner);
+                    }
                 }
                 catch (e) {
                     log.e('Error in runner', e);
