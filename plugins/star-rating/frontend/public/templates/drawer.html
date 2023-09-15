@@ -73,12 +73,14 @@
             </div>
 					</div>
           <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
-						<div class="bu-is-size-7 ratings-drawer__stage-label">
+						<div data-test-id="ratings-drawer-trigger-button-preview-label" class="bu-is-size-7 ratings-drawer__stage-label">
 							{{ i18n('feedback.trigger-button-preview') }}
 						</div>
 						<div class="ratings-drawer__trigger-button">
               <img class="ratings-drawer__tb-background" src="star-rating/images/star-rating/browser.svg"/>
-              <div :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color }" :class="['ratings-drawer__tb-sticker', 'ratings-drawer__tb-' + drawerScope.editedObject.trigger_position + '-' + drawerScope.editedObject.trigger_size]">{{ drawerScope.editedObject.trigger_button_text }}</div>
+              <div data-test-id="ratings-drawer-trigger-button" :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color }" :class="['ratings-drawer__tb-sticker', 'ratings-drawer__tb-' + drawerScope.editedObject.trigger_position + '-' + drawerScope.editedObject.trigger_size]">
+                <span data-test-id="ratings-drawer-trigger-button-label">{{ drawerScope.editedObject.trigger_button_text }}</span>
+              </div>
             </div>
           </div>
 				</div>
