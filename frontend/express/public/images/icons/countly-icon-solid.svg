@@ -448,19 +448,19 @@
 <circle cx="466" cy="1182" r="2.5" fill="#F96300" stroke="#E2E4E8"/>
 <defs>
 <clipPath id="clip0_1824_509">
-<rect width="20" height="20" fill="white" transform="translate(312 1124)"/>
+<rect width="20" height="20" fill="" transform="translate(312 1124)"/>
 </clipPath>
 <clipPath id="clip1_1824_509">
-<rect width="20" height="20" fill="white" transform="translate(360 1124)"/>
+<rect width="20" height="20" fill="" transform="translate(360 1124)"/>
 </clipPath>
 <clipPath id="clip2_1824_509">
-<rect width="20" height="20" fill="white" transform="translate(408 1124)"/>
+<rect width="20" height="20" fill="" transform="translate(408 1124)"/>
 </clipPath>
 <clipPath id="clip3_1824_509">
-<rect width="20" height="20" fill="white" transform="translate(24 1172)"/>
+<rect width="20" height="20" fill="" transform="translate(24 1172)"/>
 </clipPath>
 <clipPath id="clip4_1824_509">
-<rect width="20" height="20" fill="white" transform="translate(360 1172)"/>
+<rect width="20" height="20" fill="" transform="translate(360 1172)"/>
 </clipPath>
 </defs>
 </svg>
