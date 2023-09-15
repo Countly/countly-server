@@ -94,7 +94,12 @@ npm config set prefix "$DIR/../.local/"
 sudo yum install -y numactl
 
 #install mongodb
-sudo bash "$DIR/scripts/mongodb.install.sh"
+if ! command -v mongod &> /dev/null; then
+    echo "mongod not found, installing MongoDB"
+    sudo bash "$DIR/scripts/mongodb.install.sh"
+else
+    echo "mongodb is already installed"
+fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
     sudo sed -i 's/  fork/#  fork/g' /etc/mongod.conf
