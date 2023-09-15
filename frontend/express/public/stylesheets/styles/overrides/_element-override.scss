@@ -334,6 +334,10 @@
     }
 }
 
+.el-dropdown-menu__item > i {
+    padding: 2px 7px;
+}
+
 .el-select-dropdown {
     .el-scrollbar {
         &__bar{
