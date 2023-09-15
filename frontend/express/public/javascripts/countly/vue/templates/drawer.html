@@ -30,13 +30,13 @@
                         </div>
                         <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__subtitle">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
-                                <div class="cly-vue-drawer__steps-header">
+                                <div class="cly-vue-drawer__steps-header" :data-test-id="testId + '-steps-header-container'" >
                                     <template v-for="(currentContent, i) in stepContents">
-                                        <div :key="'label_' + i" @click="setStepSafe(i, 'header-click')" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
-                                            <div class="bu-is-flex">
-                                                <div class="cly-vue-drawer__step-sign">
-                                                    <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
-                                                    <span class="done-icon text-small color-white bu-pt-0">
+                                        <div :key="'label_' + i" @click="setStepSafe(i, 'header-click')" class="cly-vue-drawer__step-label"  :data-test-id="testId + '-step-label'" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
+                                            <div class="bu-is-flex" :data-test-id="testId + '-step-sign-container'">
+                                                <div class="cly-vue-drawer__step-sign" :data-test-id="testId + '-step-sign'">
+                                                    <span class="index text-small" :data-test-id="testId + '-current-step-index-' + (i + 1)" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
+                                                    <span class="done-icon text-small color-white bu-pt-0" :data-test-id="testId + '-current-step-index-img-container' + (i + 1)">
                                                         <img :data-test-id="testId + '-step-' + (i + 1)" src="images/icons/check-icon.svg">
                                                     </span>                                                     
                                                 </div>
