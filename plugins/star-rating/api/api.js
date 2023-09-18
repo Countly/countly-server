@@ -846,6 +846,7 @@ function uploadFile(myfile, id, callback) {
                     */
                     currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
                     currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
+                    currEvent.segmentation.ratingSum = currEvent.segmentation.rating || 0;
                     currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
@@ -873,7 +874,7 @@ function uploadFile(myfile, id, callback) {
                     common.db.collection('feedback_widgets').update({
                         _id: common.db.ObjectID(currEvent.segmentation.widget_id)
                     }, {
-                        $inc: { ratingsSum: currEvent.segmentation.rating, ratingsCount: 1 }
+                        $inc: { ratingsSum: currEvent.segmentation.ratingSum, ratingsCount: 1 }
                     }, function(err) {
                         if (err) {
                             return false;
