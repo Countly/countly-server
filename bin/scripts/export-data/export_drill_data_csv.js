@@ -1,8 +1,8 @@
 /**
- *  Description: 
+ *  Description: Creates 3 CSV files for drill data of the previous day
  *  Server: countly
- *  Path: $(countly dir)/bin/scripts/path
- *  Command: node export_drill_data.js
+ *  Path: $(countly dir)/bin/scripts/export-data
+ *  Command: node export_drill_data_csv.js
  */
 
 
@@ -13,10 +13,10 @@ const { Parser, transforms: { flatten } } = require('json2csv');
 
 const pluginManager = require('../../../plugins/pluginManager.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
+const countlyCommon = require('../../../api/lib/countly.common.js');
 
-var keepPeriod = '3month'; //one of 1month, 3month, 6month, 1year, 2year
-var app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
-var path = './'; //path to save csv files
+const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
+const path = './'; //path to save csv files
 
 const EventDetailsFields = {
     "app_id": "AppId",
@@ -69,7 +69,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
-            const oldestTimestampWanted = getPeriod(keepPeriod);
+            //CREATE FILES
             const eventDetailsWriteStream = fs.createWriteStream(path + "/EventDetails.csv");
             const eventSegmentWriteStream = fs.createWriteStream(path + "/EventDetailSegmentInfo.csv");
             const eventCustomPropsWriteStream = fs.createWriteStream(path + "/EventDetailCustomUserProps.csv");
@@ -78,14 +78,37 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
+                //SET COMMON PERIOD
+                countlyCommon.setTimezone(app.timezone);
+                countlyCommon.setPeriod('yesterday');
+                var periodObj = countlyCommon.periodObj;
+
                 try {
+                    //GET EVENTS FOR APP
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
                     events = events && events.list || [];
+                    //PROCESS EACH EVENT
                     for (let j = 0; j < events.length; j++) {
                         var event = events[j];
                         console.log("Processing event:", event);
                         var collectionName = drillCommon.getCollectionName(event, app._id);
-                        var query = {ts: {$gt: oldestTimestampWanted}};
+                        //QUERY TO GET DATA
+                        let query = {ts: {}};
+                        let tmpArr = periodObj.currentPeriodArr[0].split(".");
+                        query.ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+                        if (app.appTimezone) {
+                            query.ts.$gte.tz(app.appTimezone);
+                        }
+                        query.ts.$gte = query.ts.$gte.valueOf() - query.ts.$gte.utcOffset() * 60000;
+
+                        tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+                        query.ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+                        if (app.appTimezone) {
+                            query.ts.$lt.tz(app.appTimezone);
+                        }
+                        query.ts.$lt = query.ts.$lt.valueOf() - query.ts.$lt.utcOffset() * 60000;
+
+                        //FETCH DATA AND WRITE TO FILES
                         try {
                             var cursor = drillDb.collection(collectionName).find(query);
                             while (await cursor.hasNext()) {
@@ -101,8 +124,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         newRow[EventDetailsFields[key]] = row[key];
                                     }
                                 }
-                                const eventDetailsParser = new Parser({ transforms: [ flatten({objects: 'true', arrays: 'true', separator: '_'}) ], fields: Object.values(EventDetailsFields), header: false });
-                                const eventDetails = eventDetailsParser.parse(newRow);
+                                var eventDetailsParser = new Parser({ transforms: [ flatten({objects: 'true', arrays: 'true', separator: '_'}) ], fields: Object.values(EventDetailsFields), header: false });
+                                var eventDetails = eventDetailsParser.parse(newRow);
 
                                 //EVENT DETAIL SEGMENT INFO
                                 var segmentRows = [];
@@ -116,8 +139,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         });
                                     }
                                 }
-                                const eventDetailSegmentsParser = new Parser({ fields: EventDetailSegmentsFields, header: false });
-                                const eventDetailSegments = eventDetailSegmentsParser.parse(segmentRows);
+                                var eventDetailSegmentsParser = new Parser({ fields: EventDetailSegmentsFields, header: false });
+                                var eventDetailSegments = eventDetailSegmentsParser.parse(segmentRows);
 
                                 //EVENT DETAIL CUSTOM PROPS
                                 var customPropsRows = [];
@@ -131,8 +154,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         });
                                     }
                                 }
-                                const eventDetailCustomPropsParser = new Parser({ fields: EventDetailCustomPropsFields, header: false });
-                                const eventDetailCustomProps = eventDetailCustomPropsParser.parse(customPropsRows);
+                                var eventDetailCustomPropsParser = new Parser({ fields: EventDetailCustomPropsFields, header: false });
+                                var eventDetailCustomProps = eventDetailCustomPropsParser.parse(customPropsRows);
 
                                 //WRITE TO FILES
                                 if (isFirst) {
@@ -183,27 +206,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return [];
         }
 
-    }
-
-    function getPeriod(pp) {
-        var periods = {
-            "1month": 1,
-            "3month": 3,
-            "6month": 6,
-            "1year": 12,
-            "2year": 24
-        };
-        var back = periods[pp];
-        if (!back) {
-            back = 12;
-            console.log('Invalid perod. Falling back to one year');
-        }
-        var now = moment();
-        for (let i = 0; i < back; i++) {
-            now = now.subtract(1, "months");
-        }
-        var oldestTimestampWanted = now.valueOf();
-        return oldestTimestampWanted;
     }
 
     function close(err) {
