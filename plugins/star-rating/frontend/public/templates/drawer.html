@@ -277,6 +277,7 @@
           </div>
           <div class="bu-is-flex text-center ratings-drawer__sticker-size">
             <el-radio
+              :test-id="'ratings-drawer-position-on-the-page-' + item.value"
 							v-model="drawerScope.editedObject.trigger_position"
               class="is-bordered is-autosized bu-is-justify-content-center"
 							:label="item.value"
