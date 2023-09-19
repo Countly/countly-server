@@ -15,8 +15,21 @@ let queue_size = 0,
 
 if (require('cluster').isMaster) {
     ipc = new CentralMaster(CMD_PUSH_TOKEN_SESSION, function(msg) {
-        queue[msg.app_id + msg.uid + msg.p + msg.f] = msg;
-        queue_size++;
+        let id = msg.app_id + msg.uid + msg.p + msg.f;
+        if (queue[id]) {
+            if (queue[id].token !== msg.token) {
+                // ensure token reset or token chanage is processed (processing for this user might be already running)
+                queue[id + Math.random()] = msg;
+                queue_size++;
+            }
+            else {
+                // duplicate token is ignored
+            }
+        }
+        else {
+            queue[id] = msg;
+            queue_size++;
+        }
     });
 
     /**
