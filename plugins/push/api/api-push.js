@@ -15,8 +15,21 @@ let queue_size = 0,
 
 if (require('cluster').isMaster) {
     ipc = new CentralMaster(CMD_PUSH_TOKEN_SESSION, function(msg) {
-        queue[msg.app_id + msg.uid + msg.p + msg.f] = msg;
-        queue_size++;
+        let id = msg.app_id + msg.uid + msg.p + msg.f;
+        if (queue[id]) {
+            if (queue[id].token !== msg.token) {
+                // ensure token reset or token chanage is processed (processing for this user might be already running)
+                queue[id + Math.random()] = msg;
+                queue_size++;
+            }
+            else {
+                // duplicate token is ignored
+            }
+        }
+        else {
+            queue[id] = msg;
+            queue_size++;
+        }
     });
 
     /**
@@ -28,16 +41,37 @@ if (require('cluster').isMaster) {
                 log.d('token_session queue size is %d (%d setTimeouts)', queue_size, timeouts_size);
                 queue_print = Date.now();
             }
+            let arr = [],
+                take = 0;
+            if (queue_size < 100) {
+                take = 1;
+            }
+            else if (queue_size < 300) {
+                take = 5;
+                log.d('setting batch size for token_session to %d', take);
+            }
+            else {
+                take = 100;
+                log.w('setting batch size for token_session to %d', take);
+            }
+
             for (const k in queue) {
-                processTokenSession(queue[k])
-                    .catch(e => {
+                arr.push(k);
+                if (arr.length >= take) {
+                    break;
+                }
+            }
+            if (arr.length) {
+                Promise.all(arr.map(async k => {
+                    try {
+                        await processTokenSession(queue[k]);
+                    }
+                    catch (e) {
                         log.e('Error in processTokenSession for %j', queue[k], e);
-                    })
-                    .then(() => {
-                        delete queue[k];
-                        queue_size--;
-                        next();
-                    });
+                    }
+                    delete queue[k];
+                    queue_size--;
+                })).catch(() => {}).then(() => next());
                 return;
             }
         }
@@ -100,7 +134,7 @@ async function processTokenSession(msg) {
 
         timeouts_size++;
         setTimeout(() => {
-            common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, (er, user) => {
+            common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, {projection: {_id: 1}}, (er, user) => {
                 if (er) {
                     log.e('Error while loading user', er);
                 }
