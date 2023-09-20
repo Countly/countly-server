@@ -17,6 +17,7 @@ const countlyCommon = require('../../../api/lib/countly.common.js');
 
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
 const path = './'; //path to save csv files
+const period = 'month'; //will work for most standard countly periods.
 
 const EventDetailsFields = {
     "app_id": "AppId",
@@ -69,20 +70,21 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
+            //SET PERIOD
+            countlyCommon.setPeriod(period);
+            const activePeriod = typeof countlyCommon.periodObj.activePeriod === "number" ? JSON.stringify(countlyCommon.periodObj.activePeriod).replace(/\./g, ":") : countlyCommon.periodObj.activePeriod.replace(/\./g, ":");
             //CREATE FILES
-            const eventDetailsWriteStream = fs.createWriteStream(path + "/EventDetails.csv");
-            const eventSegmentWriteStream = fs.createWriteStream(path + "/EventDetailSegmentInfo.csv");
-            const eventCustomPropsWriteStream = fs.createWriteStream(path + "/EventDetailCustomUserProps.csv");
+            const eventDetailsWriteStream = fs.createWriteStream(path + `/EventDetails_${activePeriod}.csv`);
+            const eventSegmentWriteStream = fs.createWriteStream(path + `/EventDetailSegmentInfo_${activePeriod}.csv`);
+            const eventCustomPropsWriteStream = fs.createWriteStream(path + `/EventDetailCustomUserProps_${activePeriod}.csv`);
             var isFirst = true;
 
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
-                //SET COMMON PERIOD
+                //SET APP TIMEZONE
                 countlyCommon.setTimezone(app.timezone);
-                countlyCommon.setPeriod('yesterday');
                 var periodObj = countlyCommon.periodObj;
-
                 try {
                     //GET EVENTS FOR APP
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
