@@ -103,6 +103,7 @@ else
     else
         echo "MongoDB service is not running, starting the services"
         sudo systemctl start mongod
+        sudo systemctl status mongod
     fi
 fi
 
