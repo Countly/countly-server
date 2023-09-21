@@ -109,10 +109,10 @@ else
         INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
         INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
         if ping -c 1 -6 localhost >> /dev/null 2>&1; then
-            sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
-            sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
+            sudo sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
+            sudo sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
             if ! (grep 'bindIp' ${MONGODB_CONFIG_FILE} | grep -q '::1' ${MONGODB_CONFIG_FILE}); then
-                sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
+                sudo sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
             fi
         fi
         sudo systemctl start mongod
