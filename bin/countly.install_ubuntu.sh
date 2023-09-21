@@ -92,6 +92,9 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
+MONGODB_CONFIG_FILE="/etc/mongod.conf"
+
+# Check if the 'mongod' command is installed
 if ! command -v mongod &> /dev/null; then
     echo "mongod not found, installing MongoDB"
     sudo bash "$DIR/scripts/mongodb.install.sh"
@@ -101,7 +104,17 @@ else
     if sudo systemctl is-active --quiet mongod; then
         echo "MongoDB service is already running, no action needed."
     else
-        echo "MongoDB service is not running, starting the services"
+        echo "MongoDB service is not running, starting the service"
+        # Enable IPv6 support
+        INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+        INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
+        if ping -c 1 -6 localhost >> /dev/null 2>&1; then
+            sed -i "/ipv6/d" ${MONGODB_CONFIG_FILE}
+            sed -i "s#net:#net:\n${INDENT_STRING}ipv6: true#g" ${MONGODB_CONFIG_FILE}
+            if ! (grep 'bindIp' ${MONGODB_CONFIG_FILE} | grep -q '::1' ${MONGODB_CONFIG_FILE}); then
+                sed -i 's|bindIp: |bindIp: ::1, |g' ${MONGODB_CONFIG_FILE}
+            fi
+        fi
         sudo systemctl start mongod
         sudo systemctl status mongod
     fi
