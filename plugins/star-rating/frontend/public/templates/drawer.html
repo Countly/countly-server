@@ -63,7 +63,7 @@
 						</div>
 						<div class="ratings-drawer__thanks-popup" v-if="drawerScope.currentStepId !== 'step3'">
               <div class="ratings-drawer__tp-icon bu-mt-4" data-test-id="ratings-drawer-thankyoupopup-icon">
-                <span class="el-icon-success" :style="{'color': drawerScope.editedObject.trigger_bg_color}"></span>
+                <span class="el-icon-success" data-test-id="ratings-drawer-thankyoupopup-color-icon" :style="{'color': drawerScope.editedObject.trigger_bg_color}"></span>
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4" data-test-id="ratings-drawer-thankyoupopup-message-text">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer" data-test-id="ratings-drawer-thankyoupopup-poweredby-label">
@@ -277,6 +277,7 @@
           </div>
           <div class="bu-is-flex text-center ratings-drawer__sticker-size">
             <el-radio
+              :test-id="'ratings-drawer-position-on-the-page-' + item.value"
 							v-model="drawerScope.editedObject.trigger_position"
               class="is-bordered is-autosized bu-is-justify-content-center"
 							:label="item.value"
