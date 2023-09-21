@@ -1,3 +1,21 @@
+## Version 23.06.13
+Fixes:
+- [core] Correctly cleanup drill meta on segment omission
+- [concurrent-users] Fixed border issue in concurrent users settings
+- [push] Moving token_session processing to master with an object as a debouncy buffer
+- [push] Concurrent processing of several token_session requests at once
+- [views] Fix for views dashboard plugin
+- [star-rating] Fix rating sum error
+- [dashboard] Fix user widget x axis in visualisation
+- [hooks] Fix hook request json payload
+
+Enterprise Fixes: 
+- [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
+- [active-directory] Add postinstall for active directory plugin
+- [okta] Add postinstall for okta plugin
+- [drill] Fixed cd parameter in drill not updating properly
+- [timeline] Added setting to disable recording data in timeline
+
 ## Version 23.06.12
 Fixes:
 - [core] Added missing space character to user profile photo description
