@@ -185,6 +185,7 @@
         var app_key = getParameterByName('app_key');
         var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
         var app_version = getParameterByName('app_version');
+        var custom = { sg: JSON.parse(getParameterByName('segmentation')) };
         var parentOrigin = getParameterByName('origin');
         var url = window.location.origin;
         var d = new Date();
@@ -393,7 +394,7 @@
             }
             $.ajax({
                 "type": "GET",
-                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
+                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version + '&custom=' + encodeURIComponent(JSON.stringify(custom)),
                 "success": function(response) {
                     document.getElementsByClassName("success-modal-content")[0].style.display = "flex";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";
