@@ -1,5 +1,10 @@
+const exp = require('constants');
 var common = require('../../../api/utils/common.js');
+const inspector = require('inspector');
+const fs = require('fs');
 var exec = require('child_process').exec;
+const session = new inspector.Session();
+session.connect();
 
 var _id = null;
 
@@ -395,5 +400,38 @@ function mongodbConnectionCheck() {
     });
 }
 
+
 exports.healthcheck = healthCheck;
 exports.dbcheck = mongodbConnectionCheck;
+
+//PROFILING
+/**
+ * Start profiling
+ */
+function startProfiling() {
+    session.post('Profiler.enable', () => {
+        session.post('Profiler.start', () => {
+            console.log('Profiling started');
+        });
+    });  
+}
+
+function stopProfiling() {
+    session.post('Profiler.stop', (err, { profile }) => {
+        if (err) {
+            console.log('Profiling error', err);
+        }
+        else {
+            console.log('Profiling stopped');
+            fs.writeFileSync('profile.cpuprofile', JSON.stringify(profile));
+        }
+    });
+
+}
+
+function downloadProfiling() {
+
+}
+exports.startProfiling = startProfiling;
+exports.stopProfiling = stopProfiling;
+exports.downloadProfiling = downloadProfiling;
