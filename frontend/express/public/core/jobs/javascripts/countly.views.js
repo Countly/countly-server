@@ -1,9 +1,12 @@
-/*global countlyAuth, countlyCommon, app, countlyVue, CV */
+/*global countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $ */
 
 (function() {
     var getColor = function(row) {
         if (row.status === "SCHEDULED") {
             return "yellow";
+        }
+        else if (row.status === "SUSPENDED") {
+            return "gray";
         }
         else if (row.status === "CANCELLED") {
             return "red";
@@ -62,6 +65,11 @@
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "jobsTable")
             };
         },
+        computed: {
+            canSuspendJob: function() {
+                return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
+            },
+        },
         methods: {
             refresh: function(force) {
                 if (this.loaded || force) {
@@ -72,7 +80,41 @@
             goTo: function(row) {
                 app.navigate("#/manage/jobs/" + row.name, true);
             },
-            getColor: getColor
+            getColor: getColor,
+            handleCommand: function(command, row) {
+                if (row.rowId) {
+                    var self = this;
+                    if (command === "change-job-status") {
+                        const suspend = row.status !== "SUSPENDED" ? true : false;
+                        const data = {id: row.rowId, app_id: countlyCommon.ACTIVE_APP_ID, method: 'suspend_job', suspend: suspend};
+                        let notifyType = "Success";
+                        $.ajax({
+                            type: "POST",
+                            url: countlyCommon.API_URL + "/o",
+                            data: JSON.stringify(data),
+                            contentType: "application/json",
+                            success: function(res) {
+                                if (res.result) {
+                                    self.refresh(true);
+                                }
+                                else {
+                                    notifyType = "warning";
+                                }
+                                CountlyHelpers.notify({
+                                    title: notifyType,
+                                    message: res.message
+                                });
+                            },
+                            error: function(err) {
+                                CountlyHelpers.notify({
+                                    title: "Error",
+                                    message: err.responseJSON.error
+                                });
+                            }
+                        });
+                    }
+                }
+            },
         }
     });
 

@@ -2024,7 +2024,8 @@ fetch.alljobs = async function(metric, params) {
                 schedule: { $first: "$schedule" },
                 next: { $first: "$next" },
                 finished: { $first: "$finished" },
-                total: { $sum: 1 }
+                total: { $sum: 1 },
+                rowId: { $first: "$_id" }
             }
         }
     ];
@@ -2075,6 +2076,40 @@ fetch.jobDetails = async function(metric, params) {
     });
     cursor.close();
     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
+};
+
+/**
+ * Suspend a job from UI
+ * @param {string} metric - name of the collection where to get data from
+ * @param {object} params - params object with job id
+ * @returns {object} - result of the operation
+ **/
+fetch.suspendJob = async function(metric, params) {
+    try {
+        let jobStatus = params.qstring.suspend ? 7 : 0;
+        const result = await common.db.collection('jobs').findOneAndUpdate(
+            {
+                _id: common.db.ObjectID(params.qstring.id),
+                status: {$ne: jobStatus}
+            },
+            {$set: {status: jobStatus}},
+            {upsert: false}
+        );
+
+        if (result.value) {
+            common.returnOutput(params, {result: true, message: jobStatus ? "Job suspended successfully" : "Job scheduled successfully"});
+        }
+        else if (result.lastErrorObject.n === 0) {
+            common.returnOutput(params, {result: false, message: jobStatus ? "Job is already suspended" : "Job is already scheduled" });
+        }
+        else {
+            common.returnOutput(params, 500, "Updating job status failed");
+        }
+    }
+    catch (e) {
+        console.log(e);
+        common.returnOutput(params, 500, "Updating job status failed");
+    }
 };
 
 /**
