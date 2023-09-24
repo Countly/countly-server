@@ -670,14 +670,14 @@
                         }
 
                         if (tempY[segment]) {
-                            if (typeof tempY[segment].c === 'number') {
-                                tmpPrevCount += tempY[segment].c || 0;
+                            if (typeof tempY.c === 'number' || typeof tempY[segment].c === 'number') {
+                                tmpPrevCount += tempY[segment].c || tempY.c || 0;
                             }
-                            if (typeof tempY[segment].s === 'number') {
-                                tmpPrevSum += tempY[segment].s || 0;
+                            if (typeof tempY.s === 'number' || typeof tempY[segment].s === 'number') {
+                                tmpPrevSum += tempY[segment].s || tempY.s || 0;
                             }
-                            if (typeof tempY[segment].dur === 'number') {
-                                tmpPrevDur += tempY[segment].dur || 0;
+                            if (typeof tempY.dur === 'number' || typeof tempY[segment].dur === 'number') {
+                                tmpPrevDur += tempY[segment].dur || tempY.dur || 0;
                             }
                         }
                     }
