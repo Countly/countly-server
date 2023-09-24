@@ -578,7 +578,7 @@
         },
         getSelectedEventsLegend: function(context, currentEventData) {
             var periodObj = countlyCommon.periodObj;
-            var currentSegment = context.currentActiveSegmentation;
+            var currentSegment = context.currentActiveSegmentation || "segment";
             var lineLegend = {};
             var legendData = [];
             var labels = context.state.labels;
