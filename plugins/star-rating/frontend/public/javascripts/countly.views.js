@@ -140,7 +140,7 @@
                         loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
                     }
                     else {
-                        loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                        loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
                     }
                 }
                 loadImage.onload = function() {
