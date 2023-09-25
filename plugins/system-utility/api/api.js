@@ -16,7 +16,6 @@ var plugin = {},
 
         var params = ob.params,
             path = ob.paths[3].toLowerCase(),
-            qstring = ob.params.qstring,
             validate = ob.validateUserForGlobalAdmin;
 
         switch (path) {
@@ -38,21 +37,21 @@ var plugin = {},
                     );
             });
             return true;
-            case 'download':
-                validate(params, () => {
-                    systemUtility.downloadProfiling()
-                        .then(
-                            res => common.returnMessage(params, 200, res),
-                            res => common.returnMessage(params, 500, res)
-                        );
-                });
-                return true;
+        case 'download':
+            validate(params, () => {
+                systemUtility.downloadProfiling()
+                    .then(
+                        res => res.download,
+                        res => common.returnMessage(params, 500, res)
+                    );
+            });
+            return true;
         default:
             return false;
         }
     });
 
-   
+
 
     plugins.register("/o/system", function(ob) {
 
