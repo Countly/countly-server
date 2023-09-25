@@ -185,7 +185,13 @@
         var app_key = getParameterByName('app_key');
         var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
         var app_version = getParameterByName('app_version');
-        var custom = { sg: JSON.parse(getParameterByName('segmentation')) };
+        var custom_sg = getParameterByName('segmentation');
+        var custom;
+        try {
+          custom = { sg: JSON.parse(custom_sg) };
+        } catch (error) {
+          custom = { sg: null };
+        }
         var parentOrigin = getParameterByName('origin');
         var url = window.location.origin;
         var d = new Date();
