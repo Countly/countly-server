@@ -23,6 +23,7 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request');
+const Handle = require('../../api/parts/jobs/index.js');
 
 var loaded_configs_time = 0;
 
@@ -2593,7 +2594,9 @@ const processRequest = (params) => {
                      * }
                      * 
                     */
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.suspendJob, 'jobs');
+                    validateUserForGlobalAdmin(params, async() => {
+                        await Handle.suspendJob(params);
+                    });
                     break;
                 }
                 case 'total_users':

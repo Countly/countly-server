@@ -87,7 +87,7 @@
                     if (command === "change-job-status") {
                         const suspend = row.status !== "SUSPENDED" ? true : false;
                         const data = {id: row.rowId, app_id: countlyCommon.ACTIVE_APP_ID, method: 'suspend_job', suspend: suspend};
-                        let notifyType = "Success";
+                        var notifyType = "ok";
                         $.ajax({
                             type: "POST",
                             url: countlyCommon.API_URL + "/o",
@@ -98,16 +98,16 @@
                                     self.refresh(true);
                                 }
                                 else {
-                                    notifyType = "warning";
+                                    notifyType = "error";
                                 }
                                 CountlyHelpers.notify({
-                                    title: notifyType,
+                                    type: notifyType,
                                     message: res.message
                                 });
                             },
                             error: function(err) {
                                 CountlyHelpers.notify({
-                                    title: "Error",
+                                    type: "error",
                                     message: err.responseJSON.error
                                 });
                             }

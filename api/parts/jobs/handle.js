@@ -5,7 +5,8 @@ const logger = require('../../utils/log.js'),
     ipc = require('./ipc.js'),
     job = require('./job.js'),
     scan = require('./scanner.js'),
-    manager = require('../../../plugins/pluginManager.js');
+    manager = require('../../../plugins/pluginManager.js'),
+    common = require('../../utils/common.js');
 
 const TRANSIENT_JOB_TIMEOUT = 300000;
 
@@ -112,6 +113,38 @@ class Handle {
         return ipc;
     }
 
+
+    /**
+     * Suspend a job from UI
+     * @param {object} params - params object with job id
+     * @returns {object} - result of the operation
+     **/
+    async suspendJob(params) {
+        try {
+            let jobStatus = params.qstring.suspend ? job.STATUS.SUSPENDED : job.STATUS.SCHEDULED;
+            const result = await common.db.collection('jobs').findOne({_id: common.db.ObjectID(params.qstring.id), status: {$ne: jobStatus}});
+
+            if (result) {
+                const currentStatus = result.status;
+
+                if (currentStatus !== jobStatus) {
+                    await common.db.collection('jobs').updateOne({_id: result._id}, {$set: {status: jobStatus}});
+                    common.returnOutput(params, {result: true, message: jobStatus ? "Job suspended successfully" : "Job scheduled successfully"});
+                }
+                else {
+                    common.returnOutput(params, {result: false, message: jobStatus ? "Job is already suspended" : "Job is already scheduled"});
+                }
+            }
+            else {
+                log.e("Updating job status failed, related job could not find. Job id: " + params.qstring.id, " Job Status: " + params.qstring.suspend);
+                common.returnOutput(params, {result: false, message: "Updating job status failed, related job could not find"});
+            }
+        }
+        catch (err) {
+            log.e("Error while suspending job", err);
+            common.returnOutput(params, {result: false, message: "Updating job status failed. Please check API logs"});
+        }
+    }
 }
 
 if (!Handle.instance) {
