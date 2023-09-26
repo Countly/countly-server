@@ -98,16 +98,11 @@ if ! command -v mongod &> /dev/null; then
     echo "mongod not found, installing MongoDB"
     sudo bash "$DIR/scripts/mongodb.install.sh"
 else
-    echo "MongoDB is already installed" 
-    # Check if the MongoDB service is active or not
-    if sudo systemctl is-active --quiet mongod; then
-        echo "MongoDB service is already running, no action needed."
-    else
-        echo "MongoDB service is not running, starting the service"
-        sudo bash "$DIR/scripts/mongodb.install.sh" configure
-        sudo systemctl start mongod
-        sudo systemctl status mongod
-    fi
+    echo "MongoDB is already installed"
+    # check for ipv6 compatibility and restart mongo service
+    sudo bash "$DIR/scripts/mongodb.install.sh" configure
+    sudo systemctl start mongod
+    sudo systemctl status mongod
 fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
