@@ -24,23 +24,39 @@ const FEATURE_NAME = 'server-stats';
     });
 
     /**
+     * @param {string} event - event key to be mapped
+     * @returns {object} Returns object with event key and count
+     */
+    function eventCountMapper(event) {
+        const eventKeyCount = parseInt(event.count) || 0;
+        const eventCountMap = {};
+        if (event.key.startsWith("[CLY]_")) {
+            var eventKey = event.key.split("_")[1][0].toLowerCase() === "a" ? event.key.split("_")[1].slice(0, 2) : event.key.split("_")[1][0];
+            eventCountMap[eventKey] = eventKeyCount + parseInt(eventCountMap[eventKey]) || 0;
+
+        }
+        else {
+            eventCountMap.ce = eventKeyCount + parseInt(eventCountMap.ce) || 0;
+        }
+        return eventCountMap;
+    }
+    /**
     * Register to all requests to /plugins/drill to catch all events
     * sent by plugins such as views and crashes
     * @returns {undefined} Returns nothing
     **/
     plugins.register("/plugins/drill", function(ob) {
-        var eventCount = 0;
+        var eventCountMap = {};
 
         if (ob.events && Array.isArray(ob.events)) {
             var events = ob.events;
 
             for (var i = 0; i < events.length; i++) {
                 if (events[i].key) {
-                    eventCount += 1;
+                    eventCountMap = eventCountMapper(events[i]);
                 }
             }
-
-            stats.updateDataPoints(common.writeBatcher, ob.params.app_id, 0, eventCount, stats.isConsolidated(ob.params));
+            stats.updateDataPoints(common.writeBatcher, ob.params.app_id, 0, eventCountMap, stats.isConsolidated(ob.params));
         }
     });
 
@@ -51,14 +67,14 @@ const FEATURE_NAME = 'server-stats';
     plugins.register("/sdk/data_ingestion", function(ob) {
         var params = ob.params,
             sessionCount = 0,
-            eventCount = 0;
+            eventCountMap = {};
 
         if (!params.cancelRequest) {
             if (params.qstring.events && Array.isArray(params.qstring.events)) {
                 var events = params.qstring.events;
                 for (var i = 0; i < events.length; i++) {
                     if (events[i].key) {
-                        eventCount += 1;
+                        eventCountMap = eventCountMapper(events[i]);
                     }
                 }
             }
@@ -69,7 +85,7 @@ const FEATURE_NAME = 'server-stats';
             if (params.qstring.begin_session && (params.qstring.ignore_cooldown || !lastEndSession || (params.time.timestamp - lastEndSession) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown)) {
                 sessionCount++;
             }
-            stats.updateDataPoints(common.writeBatcher, params.app_id, sessionCount, eventCount, stats.isConsolidated(params));
+            stats.updateDataPoints(common.writeBatcher, params.app_id, sessionCount, eventCountMap, stats.isConsolidated(params));
         }
         return true;
     });

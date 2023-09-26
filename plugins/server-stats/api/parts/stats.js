@@ -28,7 +28,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         s: sessionCount,
         [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.s`]: sessionCount
     };
-    if (typeof eventCount === 'object') {
+    if (typeof eventCount === 'object' && Object.keys(eventCount).length) {
         var sum = sessionCount || 0;
         for (var key in eventCount) {
             incObject[key] = eventCount[key];
