@@ -633,11 +633,11 @@ class Message extends Mongoable {
      * @param {log} log logger
      */
     async schedule(log) {
-        // if (this.is(State.Streamable) || this.is(State.Streaming)) {
-        //     await this.stop(log);
-        // }
         let plain = this.triggerPlain();
         if (plain) {
+            if (this.is(State.Streamable) || this.is(State.Streaming)) {
+                await this.stop(log);
+            }
             if (this.is(State.Cleared) && !this.triggerAutoOrApi()) {
                 // reset message state removing all errors set by .stop() above
                 await this.updateAtomically({_id: this._id, state: this.state}, {
@@ -713,6 +713,8 @@ class Message extends Mongoable {
         if (auto) {
             await PLUGINS.getPluginsApis().push.cache.remove(this.id);
         }
+
+        log.i('Stopped message %s deleting %d notes', this.id, removed);
 
         return removed;
     }

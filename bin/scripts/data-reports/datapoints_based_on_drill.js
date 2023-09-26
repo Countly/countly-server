@@ -27,7 +27,7 @@ plugins.dbConnection("countly_drill").then(function(db) {
                 db.collection(col.collectionName).find({"cd": {"$gte": startDate, "$lt": endDate}}).count(function(err, count) {
                     if (count) {
                         console.log("Processing", col.collectionName, cnt++, results.length);
-                        data.push([remap[col.collectionName], count]);
+                        data.push([(remap[col.collectionName] || col.collectionName), count]);
                     }
                     done();
                 });

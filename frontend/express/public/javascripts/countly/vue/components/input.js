@@ -241,7 +241,7 @@
         mixins: [SearchableOptionsMixin],
         props: {
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
-            value: { type: [String, Number] },
+            value: { type: [String, Number, Boolean] },
             testId: {
                 type: String,
                 default: 'cly-listbox-test-id',

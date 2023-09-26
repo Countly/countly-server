@@ -148,7 +148,7 @@ jobs:
       - name: Remove plugin tests
         shell: bash
         run: rm -rf /opt/countly/test/4.plugins
-        
+
       - name: Configure API
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
@@ -194,7 +194,7 @@ jobs:
       - name: Prepare tests
         shell: bash
         run: bash bin/scripts/countly.prepare.ce.plugins.tests.sh
-        
+
       - name: Configure API
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
@@ -207,7 +207,7 @@ jobs:
           npm install
           node bin/scripts/test.connection.js
           npx grunt mochaTest
-  test-e2e:
+  ui-test:
     runs-on: ubuntu-latest
 
     services:
@@ -227,11 +227,15 @@ jobs:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Prepare tests
+      - name: Install Chrome
         shell: bash
-        run: bash bin/scripts/countly.prepare.ce.tests.sh
+        run: |
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
 
       - name: Copy code
         shell: bash
@@ -240,15 +244,53 @@ jobs:
       - name: Prepare files to use correct MongoDB host
         shell: bash
         run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
-        
-      - name: Configure API
-        shell: bash
-        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
 
-      - name: Run tests
+      - name: Prepare environment
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
+          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+          npm install
+          sudo countly task dist-all
+          bash bin/backup/run.sh
+          bash bin/scripts/countly.prepare.ce.tests.sh
+          countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
+          cd ui-tests
+          mkdir cypress/fixtures
+          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
+          cp cypress.config.sample.js cypress.config.js
+          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+
+      - name: Run UI tests
         shell: bash
         working-directory: /opt/countly
         run: |
           /sbin/my_init &
+          cd ui-tests
           npm install
-          node bin/scripts/test.connection.js
+          npm run cy:run
+
+      - name: Upload UI tests artifacts
+        if: ${{ failure() }}
+        shell: bash
+        working-directory: /opt/countly/ui-tests/cypress
+        run: |
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos hars
+          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [ install, lint, test-api-core, test-api-plugins ]
+    steps:
+      - name: Send slack notification
+        id: slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

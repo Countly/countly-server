@@ -58,6 +58,7 @@ plugins.setConfigs(FEATURE_NAME, {
         rate: '',
         period: ''
     },
+    deduplicate: false,
     sendahead: 60000, // send pushes scheduled up to 60 sec in the future
     connection_retries: 3, // retry this many times on recoverable errors
     connection_factor: 1000, // exponential backoff factor
@@ -82,6 +83,9 @@ plugins.register('/master', function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    setTimeout(() => {
+        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+    }, 10000);
 });
 
 plugins.register('/master/runners', runners => {
@@ -98,7 +102,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
-                log.e('Sender crached', e);
+                log.e('Sending stopped with an error', e);
                 sender = undefined;
             }
         }

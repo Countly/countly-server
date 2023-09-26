@@ -1009,8 +1009,9 @@ plugins.setConfigs("crashes", {
                             break;
                         }
                     }
-                    if (params.qstring.filter !== "crash-hidden") {
-                        filter.is_hidden = {$ne: true};
+
+                    if (!('is_hidden' in filter)) {
+                        filter.is_hidden = { $ne: true };
                     }
 
                     plugins.dispatch("/drill/preprocess_query", {

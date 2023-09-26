@@ -2322,7 +2322,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var data = ob.widget;
             var allApps = data.apps;
             var customPeriod = data.custom_period;
-            if (typeof customPeriod === 'object') {
+            if (customPeriod && typeof customPeriod === 'object') {
                 customPeriod = JSON.stringify(data.custom_period);
             }
             if (data.widget_type === "analytics" && data.data_type === "views") {
