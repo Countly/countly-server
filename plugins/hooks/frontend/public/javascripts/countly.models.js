@@ -413,9 +413,7 @@
                             });
                         }
                         context.commit("setInitialized", true);
-                        if (tableData && tableData.length > 0) {
-                            context.commit("setAll", tableData);
-                        }
+                        context.commit("setAll", tableData);
                     });
                 },
             }
