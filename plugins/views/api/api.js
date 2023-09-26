@@ -11,7 +11,7 @@ var pluginOb = {},
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true,};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
