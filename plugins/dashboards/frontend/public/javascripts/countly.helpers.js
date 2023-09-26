@@ -1046,12 +1046,6 @@
         template: CV.T('/dashboards/templates/helpers/widget/primary-legend.html'),
         mixins: [countlyVue.mixins.customDashboards.apps],
         props: {
-            apps: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
             customPeriod: {
                 type: [Array, String, Object, Boolean],
             },
@@ -1064,25 +1058,6 @@
             showPeriod: {
                 type: Boolean,
                 default: true
-            },
-            showApps: {
-                type: Boolean,
-                default: true
-            }
-        },
-        computed: {
-            app: function() {
-                var appId = this.apps[0];
-
-                if (!appId) {
-                    return null;
-                }
-
-                return {
-                    id: appId,
-                    name: this.__getAppName(appId),
-                    image: 'background-image: url("' + this.__getAppLogo(appId) + '")'
-                };
             }
         }
     });
@@ -1118,8 +1093,6 @@
                     var appId = this.apps[i];
                     appData.push({
                         id: appId,
-                        name: this.__getAppName(appId),
-                        image: 'background-image: url("' + this.__getAppLogo(appId) + '")',
                         labels: labels[appId] || []
                     });
                 }
@@ -1133,10 +1106,6 @@
                 var paddingRight = '0';
 
                 var rem = allApps.length % 2;
-
-                if (((index + 1) % 2) !== 0) {
-                    paddingRight = '8px';
-                }
 
                 if (rem !== 0) {
                     //There are odd numbers of apps.
@@ -1187,6 +1156,54 @@
         }
     });
 
+    var WidgetAppsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/apps.html'),
+        mixins: [countlyVue.mixins.customDashboards.apps],
+        props: {
+            apps: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        computed: {
+            isMultiple: function() {
+                return this.apps.length > 1;
+            },
+            app: function() {
+                var appId = this.apps[0];
+                if (!appId) {
+                    return null;
+                }
+                return {
+                    id: appId,
+                    name: this.__getAppName(appId),
+                    image: 'background-image: url("' + this.__getAppLogo(appId) + '")'
+                };
+            },
+            tooltip: function() {
+                let self = this;
+                let content = this.apps.map(function(appId) {
+                    return self.__getAppName(appId);
+                });
+                return {
+                    content: content.join(", "),
+                    placement: "auto"
+                };
+            }
+        },
+        methods: {
+            getInitials: function(app_name) {
+                var name = (app_name || "").trim().split(" ");
+                if (name.length === 1) {
+                    return name[0][0] || "";
+                }
+                return (name[0][0] || "") + (name[name.length - 1][0] || "");
+            }
+        }
+    });
+
     /**
      * DRAWER HELPERS REGISTRATION
      */
@@ -1211,5 +1228,6 @@
     Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
     Vue.component("clyd-title-labels", TitleLabelsComponent);
     Vue.component("clyd-widget-title", WidgetTitleComponent);
+    Vue.component("clyd-widget-apps", WidgetAppsComponent);
 
 })();
