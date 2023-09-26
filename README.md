@@ -69,7 +69,7 @@ There are several ways to install Countly:
 
 2. For bash lovers, we provide a beautiful installation script (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases).
 
-3. Countly Community Edition also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
+3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.count.ly/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
 
