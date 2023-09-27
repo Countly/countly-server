@@ -37,7 +37,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         }
         incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`] = sum;
     }
-    else {
+    else if (typeof eventCount === 'number') {
         incObject = {
             e: eventCount,
             s: sessionCount,

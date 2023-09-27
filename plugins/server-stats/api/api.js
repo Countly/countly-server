@@ -10,6 +10,21 @@ var log = common.log('data-points:api');
 
 const FEATURE_NAME = 'server-stats';
 
+const internalEventsEnum =
+{
+    "[CLY]_session": "s",
+    "[CLY]_view": "v",
+    "[CLY]_nps": "n",
+    "[CLY]_crash": "c",
+    "[CLY]_action": "ac",
+    "[CLY]_survey": "s",
+    "[CLY]_star_rating": "str",
+    "[CLY]_apm_device": "ad",
+    "[CLY]_apm_network": "an",
+    "[CLY]_push_action": "p"
+};
+
+
 (function() {
 
     plugins.register("/permissions/features", function(ob) {
@@ -24,22 +39,26 @@ const FEATURE_NAME = 'server-stats';
     });
 
     /**
-     * @param {string} event - event key to be mapped
+     * @param {string} events - events to be mapped
      * @returns {object} Returns object with event key and count
      */
-    function eventCountMapper(event) {
-        const eventKeyCount = parseInt(event.count) || 0;
+    function eventCountMapper(events) {
         const eventCountMap = {};
-        if (event.key.startsWith("[CLY]_")) {
-            var eventKey = event.key.split("_")[1][0].toLowerCase() === "a" ? event.key.split("_")[1].slice(0, 2) : event.key.split("_")[1][0];
-            eventCountMap[eventKey] = eventKeyCount + parseInt(eventCountMap[eventKey]) || 0;
+        for (let i = 0; i < events.length; i++) {
+            const eventKeyCount = events[i].count || 0;
 
-        }
-        else {
-            eventCountMap.ce = eventKeyCount + parseInt(eventCountMap.ce) || 0;
+            if (internalEventsEnum[events[i].key]) {
+                eventCountMap[internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[internalEventsEnum[events[i].key]] || 0);
+            }
+            else {
+                eventCountMap.ce = eventKeyCount + (eventCountMap.ce || 0);
+            }
+
+            eventCountMap.e = eventKeyCount + (eventCountMap.e || 0);
         }
         return eventCountMap;
     }
+
     /**
     * Register to all requests to /plugins/drill to catch all events
     * sent by plugins such as views and crashes
@@ -49,13 +68,7 @@ const FEATURE_NAME = 'server-stats';
         var eventCountMap = {};
 
         if (ob.events && Array.isArray(ob.events)) {
-            var events = ob.events;
-
-            for (var i = 0; i < events.length; i++) {
-                if (events[i].key) {
-                    eventCountMap = eventCountMapper(events[i]);
-                }
-            }
+            eventCountMap = eventCountMapper(ob.events);
             stats.updateDataPoints(common.writeBatcher, ob.params.app_id, 0, eventCountMap, stats.isConsolidated(ob.params));
         }
     });
@@ -72,11 +85,7 @@ const FEATURE_NAME = 'server-stats';
         if (!params.cancelRequest) {
             if (params.qstring.events && Array.isArray(params.qstring.events)) {
                 var events = params.qstring.events;
-                for (var i = 0; i < events.length; i++) {
-                    if (events[i].key) {
-                        eventCountMap = eventCountMapper(events[i]);
-                    }
-                }
+                eventCountMap = eventCountMapper(events);
             }
             // If the last end_session is received less than 15 seconds ago we will ignore
             // current begin_session request and mark this user as having an ongoing session
