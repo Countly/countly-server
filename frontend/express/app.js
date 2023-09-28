@@ -1067,6 +1067,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 apps[i].type = apps[i].type || "mobile";
                                 countlyGlobalApps[apps[i]._id] = apps[i];
                                 countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                                countlyGlobalApps[apps[i]._id].hasImage = !!countlyGlobalApps[apps[i]._id].image;
                             }
                             countlyGlobalAdminApps = countlyGlobalApps;
                             renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);

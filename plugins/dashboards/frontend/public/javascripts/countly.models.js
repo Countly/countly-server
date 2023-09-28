@@ -549,11 +549,9 @@
                         name: countlyGlobal.apps[key].name,
                         image: countlyGlobal.apps[key].image,
                         type: countlyGlobal.apps[key].type,
-                        created_at: countlyGlobal.apps[key].created_at
+                        created_at: countlyGlobal.apps[key].created_at,
+                        hasImage: countlyGlobal.apps[key].hasImage
                     };
-                    if (appsObj[key]) {
-                        globalApps[key].hasImage = appsObj[key].hasImage;
-                    }
                 }
 
                 state.apps = Object.assign({}, appsObj, globalApps);
