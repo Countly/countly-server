@@ -213,17 +213,19 @@
         margin-top: 1rem;
         padding-top: 0.5rem;
         &__single {
-            &__logo {
+            &--avatar {
                 width: 16px;
                 height: 16px;
                 background-position: 50% 50%;
                 border-radius: 4px;
                 background-repeat: no-repeat;
                 background-size: auto 16px;
+                span {
+                    color: #fff;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                }
             }
-        }
-        &__multiple {
-
         }
     }
 }

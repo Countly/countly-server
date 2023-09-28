@@ -534,7 +534,9 @@
                         _id: app._id,
                         name: app.name,
                         image: app.image,
-                        type: app.type
+                        type: app.type,
+                        created_at: app.created_at,
+                        hasImage: app.hasImage
                     };
                     return acc;
                 }, {});
@@ -546,8 +548,12 @@
                         _id: key,
                         name: countlyGlobal.apps[key].name,
                         image: countlyGlobal.apps[key].image,
-                        type: countlyGlobal.apps[key].type
+                        type: countlyGlobal.apps[key].type,
+                        created_at: countlyGlobal.apps[key].created_at
                     };
+                    if (appsObj[key]) {
+                        globalApps[key].hasImage = appsObj[key].hasImage;
+                    }
                 }
 
                 state.apps = Object.assign({}, appsObj, globalApps);

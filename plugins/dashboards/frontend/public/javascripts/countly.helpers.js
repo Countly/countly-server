@@ -1176,10 +1176,12 @@
                 if (!appId) {
                     return null;
                 }
+                let image = this.getAppImage(appId);
                 return {
                     id: appId,
                     name: this.__getAppName(appId),
-                    image: 'background-image: url("' + this.__getAppLogo(appId) + '")'
+                    image: image,
+                    avatar: this.getAppAvatar(appId, image)
                 };
             },
             tooltip: function() {
@@ -1194,13 +1196,35 @@
             }
         },
         methods: {
-            getInitials: function(app_name) {
-                var name = (app_name || "").trim().split(" ");
+            getAppInitials: function(name) {
+                name = (name || "").trim().split(" ");
                 if (name.length === 1) {
                     return name[0][0] || "";
                 }
                 return (name[0][0] || "") + (name[name.length - 1][0] || "");
-            }
+            },
+            getAppImage: function(appId) {
+                if (this.__allApps[appId] && this.__allApps[appId].hasImage) {
+                    return this.__allApps[appId].image;
+                }
+                return null;
+            },
+            getAppAvatar: function(appId, image) {
+                if (image) {
+                    return {'background-image': 'url("' + image + '")'};
+                }
+                else {
+                    var position = (this.__allApps[appId].created_at % 12) * -100;
+                    return {
+                        'background-image': 'url("images/avatar-sprite.png?v2")',
+                        'background-position': position + 'px center',
+                        'background-size': 'auto',
+                        'display': 'flex',
+                        'align-items': 'center',
+                        'justify-content': 'center',
+                    };
+                }
+            },
         }
     });
 
