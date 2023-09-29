@@ -1,3 +1,15 @@
+## Version 23.06.14
+Fixes:
+- [cache] Fixing initialization race conditions (group store is not initialized)
+- [events] Fixed % value for events trends
+- [push] Fixing wrong pusher for automated messages
+
+Enterprise fixes:
+- [active_directory] Fixed bug with azure AD config change not beeing reflected in the backend.
+- [drill] Fixed bug with aggregated data regeneration from granlural data to do not recreate ommited segments.
+- [timeline] Optimisation for clearing out timeline data on call for clearing out older data.
+- [users] Update users filter to use first session (fs)and first seen(fac)
+
 ## Version 23.06.13
 Fixes:
 - [core] Correctly cleanup drill meta on segment omission
