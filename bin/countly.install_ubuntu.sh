@@ -99,7 +99,7 @@ else
     echo "MongoDB is already installed"
     # check for ipv6 compatibility and restart mongo service
     sudo bash "$DIR/scripts/mongodb.install.sh" configure
-    sudo systemctl start mongod
+    sudo systemctl restart mongod
     sudo systemctl status mongod
 fi
 
