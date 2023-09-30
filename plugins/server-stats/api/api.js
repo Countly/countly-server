@@ -10,19 +10,6 @@ var log = common.log('data-points:api');
 
 const FEATURE_NAME = 'server-stats';
 
-const internalEventsEnum =
-{
-    "[CLY]_session": "s",
-    "[CLY]_view": "v",
-    "[CLY]_nps": "n",
-    "[CLY]_crash": "c",
-    "[CLY]_action": "ac",
-    "[CLY]_survey": "s",
-    "[CLY]_star_rating": "str",
-    "[CLY]_apm_device": "ad",
-    "[CLY]_apm_network": "an",
-    "[CLY]_push_action": "p"
-};
 
 
 (function() {
@@ -47,8 +34,8 @@ const internalEventsEnum =
         for (let i = 0; i < events.length; i++) {
             const eventKeyCount = events[i].count || 0;
 
-            if (internalEventsEnum[events[i].key]) {
-                eventCountMap[internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[internalEventsEnum[events[i].key]] || 0);
+            if (stats.internalEventsEnum[events[i].key]) {
+                eventCountMap[stats.internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[stats.internalEventsEnum[events[i].key]] || 0);
             }
             else {
                 eventCountMap.ce = eventKeyCount + (eventCountMap.ce || 0);
@@ -57,6 +44,43 @@ const internalEventsEnum =
             eventCountMap.e = eventKeyCount + (eventCountMap.e || 0);
         }
         return eventCountMap;
+    }
+
+    /**
+     * 
+     * @param {object} ob - params
+     * @returns {boolean } Returns boolean, always true
+     */
+    function sdkDataIngestion(ob) {
+        var params = ob.params,
+            sessionCount = 0,
+            eventCountMap = {},
+            appId = params.app_id || params.qstring.app_id;
+
+        try {
+            if (params.qstring.events && typeof params.qstring.events === 'string') {
+                params.qstring.events = JSON.parse(params.qstring.events);
+            }
+        }
+        catch (error) {
+            //
+        }
+
+        if (!params.cancelRequest) {
+            if (params.qstring.events && Array.isArray(params.qstring.events)) {
+                var events = params.qstring.events;
+                eventCountMap = eventCountMapper(events);
+            }
+            // If the last end_session is received less than 15 seconds ago we will ignore
+            // current begin_session request and mark this user as having an ongoing session
+            var lastEndSession = params.app_user && params.app_user[common.dbUserMap.last_end_session_timestamp] || 0;
+
+            if (params.qstring.begin_session && (params.qstring.ignore_cooldown || !lastEndSession || (params.time.timestamp - lastEndSession) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown)) {
+                sessionCount++;
+            }
+            stats.updateDataPoints(common.writeBatcher, appId, sessionCount, eventCountMap, stats.isConsolidated(params));
+        }
+        return true;
     }
 
     /**
@@ -78,24 +102,12 @@ const internalEventsEnum =
     * @returns {boolean} Returns boolean, always true
     **/
     plugins.register("/sdk/data_ingestion", function(ob) {
-        var params = ob.params,
-            sessionCount = 0,
-            eventCountMap = {};
+        sdkDataIngestion(ob);
+    });
 
-        if (!params.cancelRequest) {
-            if (params.qstring.events && Array.isArray(params.qstring.events)) {
-                var events = params.qstring.events;
-                eventCountMap = eventCountMapper(events);
-            }
-            // If the last end_session is received less than 15 seconds ago we will ignore
-            // current begin_session request and mark this user as having an ongoing session
-            var lastEndSession = params.app_user && params.app_user[common.dbUserMap.last_end_session_timestamp] || 0;
-
-            if (params.qstring.begin_session && (params.qstring.ignore_cooldown || !lastEndSession || (params.time.timestamp - lastEndSession) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown)) {
-                sessionCount++;
-            }
-            stats.updateDataPoints(common.writeBatcher, params.app_id, sessionCount, eventCountMap, stats.isConsolidated(params));
-        }
+    plugins.register("/o/data_ingestion", function(ob) {
+        sdkDataIngestion(ob);
+        common.returnOutput(ob.params, {result: true});
         return true;
     });
 
