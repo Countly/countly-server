@@ -51,7 +51,7 @@ function sendEventRequest(events) {
         });
 }
 
-function verifyAddedEvents(addedEvents) {
+function verifyAddedEvents(addedEvents, initialRequest) {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const query = {"_id": APP_ID + "_" + year + ":" + month};
@@ -61,10 +61,18 @@ function verifyAddedEvents(addedEvents) {
             if (err) {
                 throw ({err: err});
             }
-            if (!res.length) {
+            if (!res || (!res.length && !initialRequest)) {
                 throw ({err: "Invalid length"});
             }
 
+            if (initialRequest) {
+                lastEventCounts.e = res && res[0] && res[0].e ? res[0].e : 0;
+                for (let key in statInternalEvents) {
+                    let internalEventKey = statInternalEvents[key] || 'ce';
+                    lastEventCounts[internalEventKey] = res && res[0] && res[0][internalEventKey] ? res[0][internalEventKey] : 0;
+                }
+                return;
+            }
             addedEvents.forEach(event => {
                 const key = event.key;
                 const internalEventKey = statInternalEvents[key] || 'ce';
@@ -113,6 +121,7 @@ describe('Testing data points plugin', function() {
             APP_KEY = testUtils.get("APP_KEY");
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
+
             request
                 .get('/o/server-stats/data-points?period=30days' + '&api_key=' + API_KEY_ADMIN)
                 .expect(200)
@@ -209,7 +218,13 @@ describe('Testing data points plugin', function() {
                 lastEventCounts[value] = 0;
             }
         }
-
+        it('should initialize event counts successfully', function(done) {
+            verifyAddedEvents(internalEvents, true).then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should add all sytem events correctly', function(done) {
             const result = sendEventRequest(internalEvents);
             if (result && result.error) {
@@ -307,6 +322,17 @@ describe('Testing data points plugin', function() {
                 done();
             }).catch(err => {
                 done(err);
+            });
+        });
+        it('should delete data point record for the test app', function(done) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const query = {"_id": APP_ID + "_" + year + ":" + month};
+            testUtils.db.collection("server_stats_data_points").deleteOne(query, function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                done();
             });
         });
     });
