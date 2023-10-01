@@ -1,25 +1,27 @@
-<cly-datatable-n :rows="preparedRows" :persist-key="commentsTablePersistKey">
+<cly-datatable-n :rows="preparedRows" :persist-key="commentsTablePersistKey" width="100%">
   <template v-slot="scope">
-      <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
-          <template v-slot="rowScope">
-              <span class="text-medium">
-                {{rowScope.row.rating}}
-              </span>
-          </template>
-      </el-table-column>
-      <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')">
+      <el-table-column prop="comment" :label="i18n('feedback.comment')" min-width="260">
         <template v-slot="rowScope">
-            <span class="text-medium" v-html="rowScope.row.cd"></span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="comment" :label="i18n('feedback.comment')">
-        <template v-slot="rowScope">
+          <div class="has-ellipsis">
             <span class="text-medium">
               {{ rowScope.row.comment }}
             </span>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column prop="email" :label="i18n('feedback.email')">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')" min-width="60">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                <span :class="'rating-color rating-comments-color-' + rowScope.row.rating"></span> {{ rowScope.row.rating}}
+              </span>
+          </template>
+      </el-table-column>
+      <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')" min-width="120">
+        <template v-slot="rowScope">
+            <span class="text-medium"  v-html="rowScope.row.cd"></span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">
         <template v-slot="rowScope">
             <span class="text-medium">
               {{ rowScope.row.email }}
