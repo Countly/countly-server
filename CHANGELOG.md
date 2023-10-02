@@ -1,3 +1,63 @@
+## Version 23.06.13
+Fixes:
+- [core] Correctly cleanup drill meta on segment omission
+- [concurrent-users] Fixed border issue in concurrent users settings
+- [push] Moving token_session processing to master with an object as a debouncy buffer
+- [push] Concurrent processing of several token_session requests at once
+- [views] Fix for views dashboard plugin
+- [star-rating] Fix rating sum error
+- [dashboard] Fix user widget x axis in visualisation
+- [hooks] Fix hook request json payload
+
+Enterprise Fixes: 
+- [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
+- [active-directory] Add postinstall for active directory plugin
+- [okta] Add postinstall for okta plugin
+- [drill] Fixed cd parameter in drill not updating properly
+- [timeline] Added setting to disable recording data in timeline
+
+## Version 23.06.12
+Fixes:
+- [core] Added missing space character to user profile photo description
+- [core] Added script for timeline data cleanup
+- [core] Created script for clearing out records without cd field in drill
+- [core] Created script for rechecking merged users and retrying to finish merging
+- [core] Fixed permission check
+- [core] Fixed workflow for user's document on changed did
+- [core] Update mongo_expireData.js script
+- [hooks] invalid json in hooks is fixed
+- [populator] Fixed Push notification campaign names are blank on detail page when using populator
+- [push] Added ui tests
+- [push] Faster deduplication on scheduling + ghost clearing job
+- [push] Fixing duplicate notifications for the same token
+- [push] Turning deduplication off by default
+
+Enterprise fixes:
+- [ab-testing] add fetch_experiments api
+- [cognito] post install script added to congito install.js
+- [retention] Fixed Cohort breakdown query on retention
+  
+## Version 23.06.11
+Fixes:
+- [crashes] Fix crash visibility filter 
+- [push] Fixing wrong timeout handling for APN
+  
+## Version 23.06.10
+Fixes:
+- [core] Remove trust proxy
+- [push] Fixing rescheduling delayed not-yet-scheduled messages
+- [star-rating] Decoding header texts
+- [views] Fix for unique value recording for segments.
+- [views] Store segmentation in viewdata to correctly record uvc, bounces exits(session post items) for different segments in aggregated data.
+
+Enterprise fixes:
+- [cohorts] Correctly deal with doesn't contain rule on incoming data.
+- [core] Updated tests
+- [data-manager] Fixed dealing with period param on regeneration endpoint
+- [surveys] Decoding feedback title
+- [users] User profile session sorting descending
+- [users] revert default sort in eventTable
+
 ## Version 23.06.9
 Fixes:
 - [push] Adding push/notifications endpoint, deprecating push/user endpoint
