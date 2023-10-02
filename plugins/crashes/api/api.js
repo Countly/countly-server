@@ -21,7 +21,8 @@ plugins.setConfigs("crashes", {
     smart_preprocessing: true,
     smart_regexes: "{.*?}\n/.*?/",
     same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS
+    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
+    activate_custom_field_cleanup_job: false,
 });
 
 /**
