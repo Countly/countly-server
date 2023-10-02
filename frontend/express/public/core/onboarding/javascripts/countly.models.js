@@ -155,8 +155,8 @@
             fetchIntroVideos: function(context) {
                 countlyCMS.fetchEntry('server-intro-video').then(function(resp) {
                     context.commit('setIntroVideos', {
-                        videoLinkForCE: resp.data[0].videoLinkForCE,
-                        videoLinkForEE: resp.data[0].videoLinkForEE,
+                        videoLinkForCE: resp.data[0].videoLinkForCE || '',
+                        videoLinkForEE: resp.data[0].videoLinkForEE || '',
                     });
                 });
             },
