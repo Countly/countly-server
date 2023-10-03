@@ -243,7 +243,7 @@ jobs:
 
       - name: Prepare files to use correct MongoDB host
         shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
 
       - name: Prepare environment
         shell: bash
@@ -253,7 +253,7 @@ jobs:
           cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
           npm install
           sudo countly task dist-all
-          bash bin/backup/run.sh
+          bash bin/backup/import_events.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
           mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
