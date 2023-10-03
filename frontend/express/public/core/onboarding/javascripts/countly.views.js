@@ -327,6 +327,7 @@
             var showForNSessions = resp.data[0].showForNSessions;
 
             if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
+                var quickstartHeadingTitle = resp.data[0].title;
                 var quickstartItems = resp.data[0].links.filter(function(item) {
                     if (item.forUserType === 'all') {
                         return true;
@@ -339,7 +340,7 @@
                 });
 
                 if (quickstartItems.length > 0) {
-                    var content = countlyOnboarding.generateQuickstartContent(quickstartItems);
+                    var content = countlyOnboarding.generateQuickstartContent(quickstartItems, quickstartHeadingTitle);
                     CountlyHelpers.showQuickstartPopover(content);
                 }
             }
