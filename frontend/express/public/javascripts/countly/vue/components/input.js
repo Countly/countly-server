@@ -65,7 +65,7 @@
         template: '<div class="cly-vue-colorpicker">\n' +
                         '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
                             '<div>\n' +
-                                '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
+                                '<div class="drop bu-mt-auto" :data-test-id="testId + \'-cly-color-picker-img-wrapper\'" :style="previewStyle"></div>\n' +
                                 '<img src="/images/icons/blob.svg"/>\n' +
                             '</div>\n' +
                             '<input class="color-input" v-model="localValue" type="text"/>\n' +
@@ -241,7 +241,7 @@
         mixins: [SearchableOptionsMixin],
         props: {
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
-            value: { type: [String, Number] },
+            value: { type: [String, Number, Boolean] },
             testId: {
                 type: String,
                 default: 'cly-listbox-test-id',

@@ -203,7 +203,7 @@
                 };
 
                 countlyPlugins.updateConfigs(configs);
-                var domain = countlyPlugins.getConfigsData().api.domain;
+                var domain = countlyGlobal.countly_domain || window.location.origin;
 
                 try {
                     // try to extract hostname from full domain url

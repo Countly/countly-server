@@ -8,7 +8,7 @@
     test-id="ratings-widgets-data-table"
     >
       <template v-slot="scope">
-          <el-table-column width="100" fixed type="switch" sortable prop="status" :label="i18n('feedback.status')">
+          <el-table-column width="100" fixed type="switch" sortable prop="status" data-test-id="ratings-widgets-data-table-status-column" :label="i18n('feedback.status')">
               <template v-slot="rowScope">
                 <el-switch :value="rowScope.row.status"
                   :test-id="'ratings-widgets-data-table-status-' + rowScope.$index"
@@ -18,7 +18,7 @@
                 </el-switch>
               </template>
           </el-table-column>
-         <el-table-column min-width="300" prop="popup_header_text" fixed :label="i18n('feedback.ratings-widget-name')">
+         <el-table-column min-width="300" prop="popup_header_text" fixed data-test-id="ratings-widgets-data-table-widget-name-column" :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
               <div>
                 <div @click="goWidgetDetail(rowScope.row._id)" :data-test-id="'ratings-widgets-data-table-widget-name-' + rowScope.$index" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">

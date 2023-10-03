@@ -1119,7 +1119,7 @@ const processRequest = (params) => {
                                                         if (plugins.isPluginEnabled('drill')) {
                                                             //remove from drill
                                                             var eventHash = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
-                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id: "meta_" + eventHash}, function(err5, resEvent) {
+                                                            common.drillDb.collection("drill_meta").findOne({_id: params.qstring.app_id + "_meta_" + eventHash}, function(err5, resEvent) {
                                                                 if (err5) {
                                                                     console.log(err5);
                                                                 }
@@ -1129,18 +1129,16 @@ const processRequest = (params) => {
                                                                 resEvent = resEvent || {};
                                                                 resEvent.sg = resEvent.sg || {};
                                                                 for (let p = 0; p < obj.list.length; p++) {
-                                                                    if (resEvent.sg[obj.list[p]] && resEvent.sg[obj.list[p]].type === "bl") {
-                                                                        remove_biglists.push("meta_" + eventHash + "_sg." + obj.list[p]);
-                                                                    }
+                                                                    remove_biglists.push(params.qstring.app_id + "_meta_" + eventHash + "_sg." + obj.list[p]);
                                                                     newsg["sg." + obj.list[p]] = {"type": "s"};
                                                                 }
                                                                 //big list, delete also big list file
                                                                 if (remove_biglists.length > 0) {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id: {$in: remove_biglists}}, function(err6) {
+                                                                    common.drillDb.collection("drill_meta").remove({_id: {$in: remove_biglists}}, function(err6) {
                                                                         if (err6) {
                                                                             console.log(err6);
                                                                         }
-                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function(err7) {
+                                                                        common.drillDb.collection("drill_meta").update({_id: params.qstring.app_id + "_meta_" + eventHash}, {$set: newsg}, function(err7) {
                                                                             if (err7) {
                                                                                 console.log(err7);
                                                                             }
@@ -1149,7 +1147,7 @@ const processRequest = (params) => {
                                                                     });
                                                                 }
                                                                 else {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function() {
+                                                                    common.drillDb.collection("drill_meta").update({_id: params.qstring.app_id + "_meta_" + eventHash}, {$set: newsg}, function() {
                                                                         resolve();
                                                                     });
                                                                 }
@@ -2133,6 +2131,7 @@ const processRequest = (params) => {
                         });
 
                         countlyApi.data.exports.fromRequestQuery({
+                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                             params: params,
                             path: params.qstring.path,
                             data: params.qstring.data,
