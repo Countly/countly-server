@@ -56,4 +56,4 @@ check_connectivity mongosh
 /usr/bin/mongoimport --db countly --collection apps --file apps.json --upsert
 /usr/bin/mongoimport --db countly --collection members --file members.json --upsert
 /usr/bin/mongoimport --db countly --collection events --file events.json --upsert
-/usr/bin/mongoimport --db countly_drill --collection drill_meta --file drill_meeta.json --upsert
+/usr/bin/mongoimport --db countly_drill --collection drill_meta --file drill_meta.json --upsert
