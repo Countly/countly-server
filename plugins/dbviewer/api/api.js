@@ -116,6 +116,15 @@ var spawn = require('child_process').spawn,
                 if (dbs[dbNameOnParam]) {
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne({ _id: params.qstring.document }, function(err, results) {
                         if (!err) {
+                            if (params.qstring.collection === 'members' && results) {
+                                delete results.password;
+                                delete results.api_key;
+                            }
+                            else if (params.qstring.collection === 'auth_tokens' && results) {
+                                if (results._id) {
+                                    results._id = '***redacted***';
+                                }
+                            }
                             common.returnOutput(params, objectIdCheck(results) || {});
                         }
                         else {
@@ -176,6 +185,17 @@ var spawn = require('child_process').spawn,
                     var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
+
+                            if (params.qstring.collection === 'members' && doc) {
+                                delete doc.password;
+                                delete doc.api_key;
+                            }
+                            else if (params.qstring.collection === 'auth_tokens' && doc) {
+                                if (doc._id) {
+                                    doc._id = '***redacted***';
+                                }
+                            }
+
                             try {
                                 return EJSON.stringify(objectIdCheck(doc));
                             }
