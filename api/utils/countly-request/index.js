@@ -36,6 +36,9 @@ var initParams = function(uri, options, callback) {
 
 
     if (config && config.proxy_hostname) {
+        if (!params.options) {
+            params.options = {}; // Create options object if it's undefined
+        }
         params.options.agent = {
             https: new HttpsProxyAgent({
                 keepAlive: true,
