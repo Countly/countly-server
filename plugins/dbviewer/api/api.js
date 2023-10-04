@@ -310,6 +310,18 @@ var spawn = require('child_process').spawn,
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
+                var addProjectionAt = 0;
+                if (aggregation[0] && aggregation[0].$match) {
+                    while (aggregation.length > addProjectionAt && aggregation[addProjectionAt].$match) {
+                        addProjectionAt++;
+                    }
+                }
+                if (collection === 'members') {
+                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0}});
+                }
+                else if (collection === 'auth_tokens') {
+                    aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
+                }
                 // check task is already running?
                 taskManager.checkIfRunning({
                     db: dbs[dbNameOnParam],
