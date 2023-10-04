@@ -4,7 +4,7 @@
 
     countlyCMS.fetchEntry('server-consents');
     countlyCMS.fetchEntry('server-intro-video');
-    countlyCMS.fetchEntry('server-quick-start');
+    countlyCMS.fetchEntry('server-quick-start', true);
 
     countlyOnboarding.generateAPIKey = function() {
         var length = 40;
@@ -68,8 +68,9 @@
         '</div>' +
         '</div>';
 
-    countlyOnboarding.generateQuickstartContent = function(quickstartItems) {
-        var heading = '<div class="bu-has-text-weight-medium">' + CV.i18n('initial-setup.quickstart-title') + '</div>';
+    countlyOnboarding.generateQuickstartContent = function(quickstartItems, quickstartHeadingTitle) {
+        var headingTitle = quickstartHeadingTitle || CV.i18n('initial-setup.quickstart-title');
+        var heading = '<div class="bu-has-text-weight-medium">' + headingTitle + '</div>';
         var body = '';
 
         quickstartItems.forEach(function(item) {
