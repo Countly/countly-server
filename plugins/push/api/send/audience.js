@@ -577,7 +577,7 @@ class PusherPopper {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
-            else if (trigger.kind === TriggerKind.Recurring || TriggerKind.Multi) {
+            else if (trigger.kind === TriggerKind.Recurring || trigger.kind === TriggerKind.Multi) {
                 this.mappers[p + f] = new MultiRecurringMapper(audience.app, audience.message, trigger, p, f);
             }
             else if (trigger.kind === TriggerKind.Event || trigger.kind === TriggerKind.Cohort) {
