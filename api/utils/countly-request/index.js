@@ -35,9 +35,14 @@ var initParams = function(uri, options, callback) {
     var config = plugins.getConfig("security");
 
 
+
     if (config && config.proxy_hostname) {
         if (!params.options) {
             params.options = {}; // Create options object if it's undefined
+        }
+        var proxyUrl = `https://${config.proxy_hostname}:${config.proxy_port}`;
+        if (config.proxy_username && config.proxy_password) {
+            proxyUrl = `https://${config.proxy_username}:${config.proxy_password}@${config.proxy_hostname}:${config.proxy_port}`;
         }
         params.options.agent = {
             https: new HttpsProxyAgent({
@@ -46,8 +51,9 @@ var initParams = function(uri, options, callback) {
                 maxSockets: 256,
                 maxFreeSockets: 256,
                 scheduling: 'lifo',
-                proxy: `https://${config.proxy_username}:/${config.proxy_password}@${config.proxy_hostname}:${config.proxy_port}`,
+                proxy: proxyUrl,
             })
+
         };
     }
 
@@ -139,10 +145,12 @@ module.exports = function(uri, options, callback) {
         // Make the request using got
         got(params.options)
             .then(response => {
+                console.log("appi called success");
                 // Call the callback with the response data
                 params.callback(null, response, response.body);
             })
             .catch(error => {
+                console.log("appi called failure");
                 // Call the callback with the error
                 params.callback(error);
             });
@@ -151,9 +159,11 @@ module.exports = function(uri, options, callback) {
         // Make the request using got
         got(params.uri, params.options)
             .then(response => {
+                console.log("appi called success");
                 params.callback(null, response, response.body);
             })
             .catch(error => {
+                console.log("appi called failure");
                 // Call the callback with the error
                 params.callback(error);
             });
