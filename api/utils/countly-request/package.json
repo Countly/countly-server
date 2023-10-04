@@ -14,7 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "got": "^11.8.5"
+    "got": "^11.8.5",
+    "hpagent": "^1.2.0"
   },
   "devDependencies": {
     "mocha": "^10.2.0",
