@@ -1204,7 +1204,7 @@
                 return (name[0][0] || "") + (name[name.length - 1][0] || "");
             },
             getAppImage: function(appId) {
-                if (this.__allApps[appId] && this.__allApps[appId].hasImage) {
+                if (this.__allApps[appId] && this.__allApps[appId].has_image) {
                     return this.__allApps[appId].image;
                 }
                 return null;

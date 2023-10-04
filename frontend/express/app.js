@@ -1067,7 +1067,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 apps[i].type = apps[i].type || "mobile";
                                 countlyGlobalApps[apps[i]._id] = apps[i];
                                 countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
-                                countlyGlobalApps[apps[i]._id].hasImage = !!countlyGlobalApps[apps[i]._id].image;
                             }
                             countlyGlobalAdminApps = countlyGlobalApps;
                             renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
@@ -1593,6 +1592,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
                             fs.unlink(tmp_path, function() {});
                             res.send("appimages/" + req.body.app_image_id + ".png");
+                            countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
                         });
                     }); // save
                 });

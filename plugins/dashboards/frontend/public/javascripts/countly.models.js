@@ -536,7 +536,7 @@
                         image: app.image,
                         type: app.type,
                         created_at: app.created_at,
-                        hasImage: app.hasImage
+                        has_image: app.has_image
                     };
                     return acc;
                 }, {});
@@ -550,7 +550,7 @@
                         image: countlyGlobal.apps[key].image,
                         type: countlyGlobal.apps[key].type,
                         created_at: countlyGlobal.apps[key].created_at,
-                        hasImage: countlyGlobal.apps[key].hasImage
+                        has_image: countlyGlobal.apps[key].has_image
                     };
                 }
 
