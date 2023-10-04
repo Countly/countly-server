@@ -1,3 +1,54 @@
+## Version 23.06.14
+Fixes:
+- [cache] Fixing initialization race conditions (group store is not initialized)
+- [events] Fixed % value for events trends
+- [push] Fixing wrong pusher for automated messages
+
+Enterprise fixes:
+- [active_directory] Fixed bug with azure AD config change not beeing reflected in the backend.
+- [drill] Fixed bug with aggregated data regeneration from granlural data to do not recreate ommited segments.
+- [timeline] Optimisation for clearing out timeline data on call for clearing out older data.
+- [users] Update users filter to use first session (fs)and first seen(fac)
+
+## Version 23.06.13
+Fixes:
+- [core] Correctly cleanup drill meta on segment omission
+- [concurrent-users] Fixed border issue in concurrent users settings
+- [push] Moving token_session processing to master with an object as a debouncy buffer
+- [push] Concurrent processing of several token_session requests at once
+- [views] Fix for views dashboard plugin
+- [star-rating] Fix rating sum error
+- [dashboard] Fix user widget x axis in visualisation
+- [hooks] Fix hook request json payload
+
+Enterprise Fixes: 
+- [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
+- [active-directory] Add postinstall for active directory plugin
+- [okta] Add postinstall for okta plugin
+- [drill] Fixed cd parameter in drill not updating properly
+- [timeline] Added setting to disable recording data in timeline
+
+## Version 23.06.12
+Fixes:
+- [core] Added missing space character to user profile photo description
+- [core] Added script for timeline data cleanup
+- [core] Created script for clearing out records without cd field in drill
+- [core] Created script for rechecking merged users and retrying to finish merging
+- [core] Fixed permission check
+- [core] Fixed workflow for user's document on changed did
+- [core] Update mongo_expireData.js script
+- [hooks] invalid json in hooks is fixed
+- [populator] Fixed Push notification campaign names are blank on detail page when using populator
+- [push] Added ui tests
+- [push] Faster deduplication on scheduling + ghost clearing job
+- [push] Fixing duplicate notifications for the same token
+- [push] Turning deduplication off by default
+
+Enterprise fixes:
+- [ab-testing] add fetch_experiments api
+- [cognito] post install script added to congito install.js
+- [retention] Fixed Cohort breakdown query on retention
+  
 ## Version 23.06.11
 Fixes:
 - [crashes] Fix crash visibility filter 

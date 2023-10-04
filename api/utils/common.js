@@ -144,7 +144,7 @@ function escape_html_entities(key, value, more) {
     }
     return value;
 }
-
+common.getJSON = getJSON;
 /**
 * Check if string is a valid json
 * @param {string} val - string that might be json encoded
@@ -2595,7 +2595,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && (!user.did || typeof user.did === "undefined")) {
+        if (params.qstring.device_id && user.did !== params.qstring.device_id) {
             if (!update.$set) {
                 update.$set = {};
             }

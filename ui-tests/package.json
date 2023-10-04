@@ -10,7 +10,7 @@
     "cy:run:userActivity": "cypress run --spec **/analytics/loyalty/userActivity.cy.js --browser chrome"
   },
   "devDependencies": {
-    "cypress": "^12.17.1"
+    "cypress": "^13.1.0"
   },
   "license": "ISC"
 }
