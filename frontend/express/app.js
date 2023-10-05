@@ -117,7 +117,8 @@ plugins.setConfigs("frontend", {
     use_google: true,
     code: true,
     google_maps_api_key: "",
-    offline_mode: false
+    offline_mode: false,
+    countly_tracking: false,
 });
 
 plugins.setUserConfigs("frontend", {
@@ -880,6 +881,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
+            countly_tracking = plugins.getConfig('frontend').countly_tracking,
+            countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
@@ -949,6 +952,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
+                countly_tracking,
+                countly_domain,
+                frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
                 usermenu: {
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
@@ -1363,8 +1370,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         var params = req.body || {};
         membersUtility.setup(req, function(err) {
+            const createDemoApp = !!params.createDemoApp;
+
             if (!err) {
-                res.redirect(countlyConfig.path + '/dashboard');
+                res.redirect(countlyConfig.path + '/dashboard' + (createDemoApp ? '?create_demo_app=1' : ''));
             }
             else if (err === "User exists") {
                 res.redirect(countlyConfig.path + '/login');

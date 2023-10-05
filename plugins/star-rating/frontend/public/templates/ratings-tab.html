@@ -1,8 +1,8 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
 	<cly-header>
       <template v-slot:header-left>
-        <h2>{{ i18n('feedback.ratings') }} </h2>
-        &nbsp; <cly-tooltip-icon :tooltip="i18n('ratings.tooltip.ratings')" icon="ion-help-circled"></cly-tooltip-icon>
+        <h2 data-test-id="ratings-header-title">{{ i18n('feedback.ratings') }} </h2>
+        &nbsp; <cly-tooltip-icon data-test-id="ratings-header-tooltip" :tooltip="i18n('ratings.tooltip.ratings')" icon="ion-help-circled"></cly-tooltip-icon>
       </template>
 			<template v-slot:header-right></template>
 	</cly-header>
@@ -10,34 +10,26 @@
     <div class="bu-level bu-mb-5">
       <div class="bu-level-left">
         <div class="bu-level-item">
-          {{ i18n('feedback.results-for') }}
-          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="filterUpdated()" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
-          <!--
-          <el-select class="bu-ml-3" placement="bottom-start" :placeholder="'All Ratings, Versions and Widgets'">
-            <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
-            <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
-            <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
-            <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
-          </el-select>
-          -->
+          <span data-test-id="ratings-result-for-label">{{ i18n('feedback.results-for') }}</span>
+          <cly-multi-select test-id="ratings-filter-parameters-dropdown" :content-data-test-id="{title: 'ratings-filter-parameters-header-label', reset: 'ratings-filter-parameters-reset-button'}" class="bu-ml-3 ratings-tab-view__filter-selector" @change="filterUpdated()" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
         </div>
       </div>
       <div class="bu-level-right">
         <div class="bu-level-item">
-          <cly-date-picker-g placement="bottom-end"></cly-date-picker-g>
+          <cly-date-picker-g test-id="ratings-date-range-select-dropdown" placement="bottom-end"></cly-date-picker-g>
         </div>
       </div>
     </div>
     <cly-section>
       <cly-metric-cards :multiline="false">
-        <cly-metric-card :number="count" :label="i18n('feedback.total-ratings')" :tooltip="i18n('ratings.tooltip.total-ratings')">
+        <cly-metric-card test-id="ratings-total-ratings" :number="count" :label="i18n('feedback.total-ratings')" :tooltip="i18n('ratings.tooltip.total-ratings')">
         </cly-metric-card>
-        <cly-metric-card :number="avg" :label="i18n('feedback.average-ratings-score')" :tooltip="i18n('ratings.tooltip.average-ratings-score')">
+        <cly-metric-card test-id="ratings-average-ratings-score" :number="avg" :label="i18n('feedback.average-ratings-score')" :tooltip="i18n('ratings.tooltip.average-ratings-score')">
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>
     <cly-section>
-      <cly-chart-bar v-loading="isLoading" :force-loading="isLoading" class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
+      <cly-chart-bar data-test-id="ratings-main-bar-chart" test-id="ratings-chart" v-loading="isLoading" :force-loading="isLoading" class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
     </cly-section>
     <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" :loadingState="isLoading" skin="secondary" v-model="dynamicTab" :tabs="tabs">
       <template v-slot:tables="scope">

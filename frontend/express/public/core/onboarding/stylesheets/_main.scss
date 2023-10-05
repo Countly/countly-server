@@ -1,0 +1,143 @@
+.centered-content {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -35px;
+}
+
+.setup-byline {
+    color: #81868D;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.setup-form {
+    width: 520px;
+}
+
+.setup-radio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+.setup-radio .el-radio.is-checked {
+    background-color: #E1EFFF;
+}
+
+.setup-radio .el-radio {
+    margin-left: 0 !important;
+}
+
+.setup-radio .el-radio__input {
+    display: none;
+}
+
+.setup-radio .el-radio__label {
+    padding-left: 0;
+}
+
+.setup-radio-item {
+    display: flex;
+    align-items: center;
+}
+
+.setup-radio-icon-bg {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #E1EFFF;
+    border-radius: 100%;
+}
+
+.is-checked .setup-radio-icon-bg {
+    background-color: #0166D6;
+}
+
+.setup-radio-icon {
+    background-image: url('../../../images/dashboard/onboarding/box.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+.setup-radio-icon--app-type-mobile {
+    background-image: url('../../../images/dashboard/onboarding/app-type-mobile.svg');
+}
+
+.setup-radio-icon--app-type-web {
+    background-image: url('../../../images/dashboard/onboarding/app-type-web.svg');
+}
+
+.setup-radio-icon--app-type-desktop {
+    background-image: url('../../../images/dashboard/onboarding/app-type-desktop.svg');
+}
+
+.setup-radio-icon--app-template-banking {
+    background-image: url('../../../images/dashboard/onboarding/app-template-banking.svg');
+}
+
+.setup-radio-icon--app-template-ecommerce {
+    background-image: url('../../../images/dashboard/onboarding/app-template-ecommerce.svg');
+}
+
+.setup-radio-icon--app-template-education {
+    background-image: url('../../../images/dashboard/onboarding/app-template-education.svg');
+}
+
+.setup-radio-icon--app-template-healthcare {
+    background-image: url('../../../images/dashboard/onboarding/app-template-healthcare.svg');
+}
+
+.setup-radio-icon--app-template-gaming {
+    background-image: url('../../../images/dashboard/onboarding/app-template-gaming.svg');
+}
+
+.is-checked .setup-radio-icon {
+    filter: brightness(10);
+}
+
+.setup-video-container {
+    max-width: 800px;
+}
+
+.consent-form {
+    width: 700px;
+}
+
+.consent-blurb {
+    color: #81868D;
+    font-size: 14px;
+}
+
+.consent-question {
+    font-size: 14px;
+}
+
+.initial-populator {
+    width: 800px;
+}
+
+.quickstart-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.quickstart-item-desc {
+    color: #81868D;
+    text-align: left;
+    word-break: break-word;
+}
+
+.quickstart-link, .quickstart-link:visited {
+    color: #0166D6;
+}
+
+.quickstart-link:hover {
+    color: #333c48;
+}

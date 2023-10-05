@@ -48,8 +48,9 @@
             </div>
             <div id="login-logo"></div>
         </div>
-        <h1 style="font-weight: 500; text-align: center; line-height: 48px;" id="header" data-localize="setup.title"></h1>
-		<div style="height: 40px; font-size: 14px; color: #333C48; text-align: center; width: 578px; margin: 0 auto 16px; line-height: 21px;" data-localize="setup.explanation"></div>
+        <img src="/images/pre-login/hi-five.svg" style="display: block; margin: 0 auto;"/>
+        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px" id="header" data-localize="setup.ready"></h1>
+		<div style="height: 40px; font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto; line-height: 21px;" data-localize="setup.byline"></div>
         <div id="forgot-form" style="width:304px; margin:auto;">
             <form id="account-form" method="POST" style="width:300px; margin:auto;">
                 <div>
@@ -69,14 +70,22 @@
                 </div>
                 <div>
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.password"></p>
-                    <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                    <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Enter your new password" data-localize="placeholder.new-password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                     <div id="password-requirements">
                         <ul>
-                            <span class="dot"></span><li id="hint-password_min"  data-localize="management-users.password.length"></li>
-                            <span class="dot"></span><li id="hint-password_char"  data-localize="management-users.password.has-char"></li>
-                            <span class="dot"></span><li id="hint-password_number" data-localize="management-users.password.has-number"></li>
-                            <span class="dot"></span><li id="hint-password_symbol"  data-localize="management-users.password.has-special"></li>
+                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_min"  data-localize="management-users.password.length" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_char"  data-localize="management-users.password.has-char" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_number" data-localize="management-users.password.has-number" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_symbol"  data-localize="management-users.password.has-special" style="display: none"></li>
                         </ul>
+                    </div>
+                </div>
+                <div>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.confirm-password"></p>
+                    <input name="confirm_password" id="confirm_password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Confirm your new password" data-localize="placeholder.again"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                    <div>
+                        <span id="confirm-password-dot" class="dot" style="display: none; background-color: red;"></span>
+                        <div id="confirm-password-error" style="display: none;" data-localize="setup.error-confirm-password"></div>
                     </div>
                 </div>
                 <% if (typeof inject_template.form != "undefined") { %>
@@ -85,9 +94,11 @@
                 <div>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
-                    <input id="login-button" value="Create account" type="submit" data-localize="setup.button" style="margin-top: 16px;"/>
+                    <input type="hidden" value="true" name="createDemoApp" id="create-demo-app" />
+                    <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 32px;"/>
+                    <button id="alt-login-button" data-localize="setup.continue-own-app"></button>
                 </div>
-                <div style="height: 100px;"></div>
+                <div style="height: 160px;"></div>
             </form>
             <% if (typeof inject_template.html != "undefined") { %>
                 <%- inject_template.html %>
@@ -139,6 +150,9 @@
                 errors.push(jQuery.i18n.map["placeholder.password"] + ": " + CountlyHelpers.validatePassword($("#password").val()));
                 valid = false;
             }
+            if ($('#confirm_password').val() !== $('#password').val()) {
+                valid = false;
+            }
             $("#error-message").html(errors.join("<br/>"));
             return valid;
         }
@@ -167,6 +181,16 @@
                 $(this).addClass("error");
                 $("#email-error").show();
             });
+            $("#confirm_password").focusin(function(){
+                $(this).removeClass("error");
+                $("#confirm-password-error").hide();
+                $("#confirm-password-dot").hide();
+            });
+            $("#confirm_password").focusout(function(){
+                $(this).addClass("error");
+                $("#confirm-password-error").show();
+                $("#confirm-password-dot").show();
+            });
             $("#account-form").validate({
                 rules: {
                     username: {
@@ -183,31 +207,52 @@
                             depends: function(){
                                 var password = $("#password").val();
                                 if (password.length < countlyGlobal.security.password_min) {
-                                    $('ul span:nth-of-type(1).dot').css("background-color", "red");
+                                    $('ul span:nth-of-type(1).dot').show();
+                                    $('ul #hint-password_min').show();
                                 }
                                 else{
-                                    $('ul span:nth-of-type(1).dot').css("background-color", "green");
+                                    $('ul span:nth-of-type(1).dot').hide();
+                                    $('ul #hint-password_min').hide();
                                 }
                                 if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
-                                    $('ul span:nth-of-type(2).dot').css("background-color", "red");
+                                    $('ul span:nth-of-type(2).dot').show();
+                                    $('ul #hint-password_char').show();
                                 }
                                 else{
-                                    $('ul span:nth-of-type(2).dot').css("background-color", "green");
+                                    $('ul span:nth-of-type(2).dot').hide();
+                                    $('ul #hint-password_char').hide();
                                 }
                                 if (countlyGlobal.security.password_number && !/\d/.test(password)) {
-                                    $('ul span:nth-of-type(3).dot').css("background-color", "red");
+                                    $('ul span:nth-of-type(3).dot').show();
+                                    $('ul #hint-password_number').show();
                                 }
                                 else{
-                                    $('ul span:nth-of-type(3).dot').css("background-color", "green");
+                                    $('ul span:nth-of-type(3).dot').hide();
+                                    $('ul #hint-password_number').hide();
                                 }
                                 if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
-                                    $('ul span:nth-of-type(4).dot').css("background-color", "red");
+                                    $('ul span:nth-of-type(4).dot').show();
+                                    $('ul #hint-password_symbol').show();
                                 }
                                 else{
-                                    $('ul span:nth-of-type(4).dot').css("background-color", "green");
+                                    $('ul span:nth-of-type(4).dot').hide();
+                                    $('ul #hint-password_symbol').hide();
                                 }
                             }
-                            
+                        }
+                    },
+                    confirm_password: {
+                        required: {
+                            depends: function() {
+                                if ($('#confirm_password').val() !== $('#password').val()) {
+                                    $('#confirm-password-dot').show();
+                                    $('#confirm-password-error').show();
+                                }
+                                else {
+                                    $('#confirm-password-dot').hide();
+                                    $('#confirm-password-error').hide();
+                                }
+                            }
                         }
                     }
                 },
@@ -243,32 +288,52 @@
                     if (CountlyHelpers.validatePassword($("#password").val())) {
                         var password = $("#password").val();
                         if (password.length < countlyGlobal.security.password_min) {
-                            $('ul span:nth-of-type(1).dot').css("background-color", "red");
+                            $('ul span:nth-of-type(1).dot').show();
+                            $('ul #hint-password_min').show();
                         }
                         else{
-                            $('ul span:nth-of-type(1).dot').css("background-color", "green");
+                            $('ul span:nth-of-type(1).dot').hide();
+                            $('ul #hint-password_min').hide();
                         }
                         if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
-                            $('ul span:nth-of-type(2).dot').css("background-color", "red");
+                            $('ul span:nth-of-type(2).dot').show();
+                            $('ul #hint-password_char').show();
                         }
                         else{
-                            $('ul span:nth-of-type(2).dot').css("background-color", "green");
+                            $('ul span:nth-of-type(2).dot').hide();
+                            $('ul #hint-password_char').hide();
                         }
                         if (countlyGlobal.security.password_number && !/\d/.test(password)) {
-                            $('ul span:nth-of-type(3).dot').css("background-color", "red");
+                            $('ul span:nth-of-type(3).dot').show();
+                            $('ul #hint-password_number').show();
                         }
                         else{
-                            $('ul span:nth-of-type(3).dot').css("background-color", "green");
+                            $('ul span:nth-of-type(3).dot').hide();
+                            $('ul #hint-password_number').hide();
                         }
                         if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
-                            $('ul span:nth-of-type(4).dot').css("background-color", "red");
+                            $('ul span:nth-of-type(4).dot').show();
+                            $('ul #hint-password_symbol').show();
                         }
                         else{
-                            $('ul span:nth-of-type(4).dot').css("background-color", "green");
+                            $('ul span:nth-of-type(4).dot').hide();
+                            $('ul #hint-password_symbol').hide();
                         }
+                    }
+                    if ($('#confirm_password').val() !== $('#password').val()) {
+                        $('#confirm-password-dot').show();
+                        $('#confirm-password-error').show();
+                    }
+                    else {
+                        $('#confirm-password-dot').hide();
+                        $('#confirm-password-error').hide();
                     }
                     return false;
                 }
+            });
+            $('#alt-login-button').click(function() {
+                $('#create-demo-app').val('');
+                $('#login-button').click();
             });
         });
 		$(document).ready(function() {

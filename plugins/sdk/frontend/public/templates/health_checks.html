@@ -1,0 +1,56 @@
+<div class="technology-analytics-wrapper-sdk" v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2>Health Checks</h2>
+        </template>
+		<template v-slot:header-right>
+		</template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
+        <cly-section>
+			<cly-metric-cards :multiline="false">
+			  <cly-metric-card formatting="long" :number=totals.hc_hc.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">Health Checks Received</span>
+				<span v-if="totals.hc_hc.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.hc_hc.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.hc_hc.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=totals.hc_el.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">SDK Error Logs</span>
+				<span v-if="totals.hc_el.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.hc_el.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.hc_el.change}}</span>
+			  </cly-metric-card>
+			  <cly-metric-card :number=totals.hc_wl.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis">SDK Warn Logs</span>
+				<span v-if="totals.hc_wl.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{totals.hc_wl.change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{totals.hc_wl.change}}</span>
+			  </cly-metric-card>
+			</cly-metric-cards>
+		  </cly-section>
+        <cly-section>
+            <cly-chart-line  xAxisLabelOverflow="unset" :option="lineOptionsHCs" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
+        </cly-section>
+		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">Health check breakdown by status as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
+		</div>
+		<cly-section>
+			<cly-chart-bar :option="lineOptionsStatusCodes" :valFormatter="lineOptionsStatusCodes.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+		</cly-section>
+        <div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
+			<h4 class="bu-pb-4">Health check breakdown by errors as </h4>
+    		<div class ="selector_wrapper">
+      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			</el-select>
+    		</div>
+		</div>
+		<cly-section>
+			<cly-chart-bar :option="lineOptionsErrorMessages" :valFormatter="lineOptionsErrorMessages.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+		</cly-section>
+    </cly-main>
+</div>

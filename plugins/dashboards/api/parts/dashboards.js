@@ -562,6 +562,108 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
+/**
+ * Remove deleted records from widgets
+ * @param {object} params params object
+ * @param {object} matchOperator match operator for aggregation
+ * @param {object} db database object - if coming from script
+ * @returns {boolean} true if success
+ */
+dashboard.removeDeletedRecordsFromWidgets = async function(params, matchOperator, db) {
+    try {
+        if (!params || !matchOperator) {
+            log.e('missing parameters for removeDeletedRecordsFromWidgets', params, matchOperator);
+            return false;
+        }
+
+        if (typeof matchOperator === 'string') {
+            matchOperator = JSON.parse(matchOperator);
+        }
+
+        if (typeof db !== 'undefined') {
+            common.db = db;
+        }
+
+        var pipeline = [
+            {
+                $match: matchOperator
+            },
+            {
+                $lookup: {
+                    from: "dashboards",
+                    localField: "_id",
+                    foreignField: "widgets",
+                    as: "dashboard"
+                }
+            },
+            {
+                $unwind: "$dashboard"
+            },
+            {
+                $project: {
+                    _id: 0,
+                    widget_id: "$_id",
+                    dashboard_id: "$dashboard._id",
+                }
+            }
+        ];
+        var widgets = await common.db.collection('widgets').aggregate(pipeline, {allowDiskUse: true}).toArray();
+
+        for (const widget of widgets) {
+            var dashboardId = widget.dashboard_id;
+            var widgetId = widget.widget_id;
+            if (!dashboardId || !widgetId) {
+                log.e('dashbordId or widgetId could not found in remove widget');
+                continue;
+            }
+
+            await new Promise((resolve, reject) => {
+                dashboard.deleteWidget(params, dashboardId, widgetId, function(success) {
+                    if (success) {
+                        resolve();
+                    }
+                    else {
+                        reject();
+                    }
+                });
+            });
+        }
+        return true;
+    }
+    catch (error) {
+        log.e('Invalid request for remove widget', error);
+        return false;
+    }
+};
+
+dashboard.deleteWidget = function(params, dashboardId, widgetId, callback) {
+    common.db.collection("dashboards").update({_id: common.db.ObjectID(dashboardId)}, { $pull: {widgets: common.db.ObjectID(widgetId)}}, function(dashboardErr) {
+        if (!dashboardErr) {
+            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {}, {remove: true}, function(widgetErr, widgetResult) {
+                if (widgetErr || !widgetResult || !widgetResult.value) {
+                    callback(false);
+                }
+                else {
+                    var logData = widgetResult.value;
+                    logData.dashboard = dashboard.name;
+
+                    plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
+                    plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
+                    callback(true);
+                }
+            });
+        }
+        else {
+            callback(false);
+        }
+    });
+};
+
+plugins.register("/dashboard/clean-deleted-widgets", async function(ob) {
+    var response = await dashboard.removeDeletedRecordsFromWidgets(ob.params, ob.match);
+    return response;
+}, true);
+
 
 /**
  * Function to fetch technology analytics data for app

@@ -1,10 +1,7 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2 v-if="currentSecondaryTab === 'validations'"> {{i18n('data-manager.manage-validations')}} </h2>
-            <h2 v-else-if="currentSecondaryTab === 'segmentation'"> {{i18n('data-manager.manage-event-segmentation')}} </h2>
-            <h2 v-else> {{i18n('data-manager.manage-events')}} </h2>
-        </template>
+    <cly-header
+        :title="currentSecondaryTab === 'validations' ? i18n('data-manager.manage-validations') : currentSecondaryTab === 'segmentation' ? i18n('data-manager.manage-event-segmentation') : i18n('data-manager.manage-events')"
+    >
         <template v-slot:header-tabs>
             <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary" :hideSingleTab="false"></cly-dynamic-tabs>
       </template>

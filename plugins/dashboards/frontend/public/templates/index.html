@@ -83,7 +83,7 @@
         </header>
         <cly-main>
             <no-widget v-if="noWidgets && !isWidgetProcessing" :can-update="canUpdateGrid" @new-widget="newWidget"></no-widget>
-            <dashboards-grid ref="grid" :loading="isInitLoad" :can-update="canUpdateGrid"></dashboards-grid>
+            <dashboards-grid ref="grid" :loading="isInitLoad || isRefreshing" :can-update="canUpdateGrid"></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
             <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>

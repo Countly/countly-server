@@ -1,10 +1,9 @@
 <script type="text/x-template" id="push-notification">
     <div v-bind:class="[componentId]">
-        <cly-header>
-            <template v-slot:header-left>
-                <h2> {{i18n('push-notification.title')}} </h2>
-                <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-2"> </cly-tooltip-icon>
-            </template>
+        <cly-header
+            :title="i18n('push-notification.title')"
+            :tooltip="{description: i18n('push-notification.description')}"
+        >
             <template v-slot:header-right v-if="canUserCreate">
                 <div class="bu-level-item">
                     <el-button @click="onCreatePushNotification" type="success" size="small" icon="el-icon-circle-plus">{{i18n('push-notification.create-button')}}</el-button>

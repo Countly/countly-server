@@ -1,0 +1,10 @@
+
+<div class="bu-is-flex bu-is-flex-wrap-wrap wrapper">
+    <walkthrough-component 
+        v-for="(item, index) in items"
+        :value = "items[index]" 
+        :class="{'bu-is-one-quarter': true, 'border-box': true}"
+        :key="items[index].id"
+    >
+    </walkthrough-component> 
+</div>

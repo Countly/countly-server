@@ -21,7 +21,7 @@
                 return this.$store.state.countlyTimesOfDay.rows;
             },
             isLoading: function() {
-                return this.$store.getters['countlyTimesOfDay/isLoading'];
+                return this.$store.getters['countlyTimesOfDay/loading'];
             },
             selectedFilter: {
                 get: function() {
