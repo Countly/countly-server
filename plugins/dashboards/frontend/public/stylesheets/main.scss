@@ -207,6 +207,27 @@
             padding: 0px;
         }
     }
+
+    .clyd-apps {
+        border-top: 1px solid #E2E4E8;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+        &__single {
+            &--avatar {
+                width: 16px;
+                height: 16px;
+                background-position: 50% 50%;
+                border-radius: 4px;
+                background-repeat: no-repeat;
+                background-size: auto 16px;
+                span {
+                    color: #fff;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                }
+            }
+        }
+    }
 }
 
 .dashboard-more-options {

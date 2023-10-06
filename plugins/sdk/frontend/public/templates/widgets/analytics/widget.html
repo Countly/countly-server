@@ -23,7 +23,7 @@
         </div>
     </div>
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
-    <clyd-primary-legend :apps="data.apps" :showApps="true" :custom-period="data.custom_period" :custom-text="data.selectedSDK"></clyd-primary-legend>
+    <clyd-primary-legend :custom-period="data.custom_period" :custom-text="data.selectedSDK"></clyd-primary-legend>
     <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
 		<template v-if="!loading">
             <div v-if="data.visualization === 'table'" style="width: 100%; height: 100%;">
@@ -48,5 +48,6 @@
             <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
         </template>
 	</div>
+    <clyd-widget-apps :apps="data.apps"></clyd-widget-apps>
     <drawer :settings="drawerSettingsForWidgets" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
 </div>
