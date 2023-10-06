@@ -195,7 +195,7 @@ cmsApi.getEntries = function(params) {
             return false;
         }
         let results = {data: entries || []};
-        if (!entries || entries.length === 0) {
+        if (params.qstring.refresh || !entries || entries.length === 0) {
             //No entries, fetch them
             results.updating = true;
             syncCMSDataToDB(params);
