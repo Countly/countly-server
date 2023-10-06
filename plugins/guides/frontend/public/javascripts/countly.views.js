@@ -10,6 +10,10 @@
             value: {
                 type: Object,
                 required: true
+            },
+            index: {
+                type: Number,
+                required: true
             }
         },
         data: function() {
@@ -17,11 +21,28 @@
                 isDialogIframeVisible: false
             };
         },
+        computed: {
+            gradientClass: function() {
+                var index = this.index % 4;
+                var color = 'blue';
+                switch (index) {
+                case 0:
+                    color = 'blue';
+                    break;
+                case 1:
+                    color = 'green';
+                    break;
+                case 2:
+                    color = 'orange';
+                    break;
+                case 3:
+                    color = 'purple';
+                    break;
+                }
+                return 'walkthrough--' + color;
+            }
+        },
         methods: {
-            onFrameLoad: function(key) {
-                document.getElementById('walkthrough__' + key).style.setProperty('position', 'absolute', 'important');
-                document.getElementById('walkthrough__loading__' + key).style.setProperty('display', 'none', 'important');
-            },
             openDialog: function() {
                 this.isDialogIframeVisible = true;
             },
