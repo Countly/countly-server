@@ -13,7 +13,7 @@
                             <template v-if="item.type !== 'tracking' || !isCountlyHosted">
                                 <div class="consent-blurb bu-mb-5">{{ decodeHtmlEntities(item.description) }}</div>
                                 <div class="consent-question bu-mb-5">{{ item.question }}</div>
-                                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                                <validation-provider tag="div" class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned" :name="'countly_' + item.type" rules="required">
                                     <el-radio
                                         v-model="formScope.editedObject['countly_' + item.type]"
                                         :label="true"
@@ -28,7 +28,7 @@
                                         border>
                                         <div class="text-medium">{{ item.optoutText }}</div>
                                     </el-radio>
-                                </div>
+                                </validation-provider>
                             </template>
                         </cly-form-field>
                     </cly-form-step>
