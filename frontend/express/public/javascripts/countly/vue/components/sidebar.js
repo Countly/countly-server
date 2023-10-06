@@ -924,7 +924,7 @@
             });
         };
 
-        if (Object.keys(countlyGlobal.apps).length) {
+        if (Object.keys(countlyGlobal.apps).length && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.initSidebar();
         }
     });
