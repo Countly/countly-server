@@ -104,18 +104,6 @@
                 <%- inject_template.html %>
             <% } %>
         </div>
-        <div class="footer">
-			<div>
-				<p style="margin: 0px;">© <%= new Date().getFullYear() %> <%- countlyTitle %></p>
-				<div style="margin: 0px; color: #0166D6;">
-					<% if (countlyPage) { %> <a href="<%- countlyPage %>"> <%- countlyTitle %> </a> <% }%>
-                    <% if (featureRequestLink) { %> <a href="<%- featureRequestLink %>" data-localize="login.terms"></a> <% }%>
-                    <% if (feedbackLink) { %> <a href="<%- feedbackLink %>" data-localize="login.privacy"></a> <% }%>
-                    <% if (documentationLink) { %> <a href="<%- documentationLink %>" data-localize="login.documentation"></a> <% }%>
-                    <% if (helpCenterLink) { %> <a href="<%- helpCenterLink %>" data-localize="login.help-center"></a> <% }%>
-				</div>
-			</div>
-		</div>
     </div>    
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
