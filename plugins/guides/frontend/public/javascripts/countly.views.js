@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides Countly */
+/* global app countlyVue CV countlyCommon Vue countlyGuides countlyGlobal Countly */
 
 (function() {
 
@@ -201,9 +201,18 @@
                 return sections;
             },
             fetchAndDisplayWidget: function() {
+                var domain = countlyGlobal.countly_domain;
+                try {
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
                 let COUNTLY_STATS = Countly.init({
                     app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                     url: "https://stats.count.ly",
+                    device_id: domain
                 });
                 COUNTLY_STATS.get_available_feedback_widgets(function(countlyPresentableFeedback, err) {
                     if (err) {
