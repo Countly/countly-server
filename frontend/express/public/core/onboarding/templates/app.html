@@ -3,10 +3,10 @@
         <div class="bu-is-size-4">
             {{ isDemoApp ? i18n('initial-setup.add-demo-application-title') : i18n('initial-setup.add-first-application-title') }}
         </div>
-        <div v-if="!isDemoApp" class="setup-byline bu-mb-5">{{ i18n('initial-setup.add-first-application-byline') }}</div>
+        <div v-if="!isDemoApp" class="setup-byline">{{ i18n('initial-setup.add-first-application-byline') }}</div>
         <cly-form
             :initial-edited-object="newApp"
-            class="setup-form"
+            class="setup-form bu-mt-5"
             @submit="handleSubmit">
             <template v-slot="formScope">
                 <cly-form-step :id="'create-app'">
