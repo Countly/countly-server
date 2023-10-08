@@ -18,21 +18,21 @@
         },
         data: function() {
             return {
-                guidesEnabled: CountlyHelpers.isPluginEnabled('guides')
+                enableGuides: CountlyHelpers.isPluginEnabled('guides')
             };
         },
         created: function() {
             var self = this;
-            if (this.guidesEnabled) {
-                countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
-                    let guidesEnabledCMS = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
-                    self.guidesEnabled = guidesEnabledCMS || countlyPlugins.getConfigsData().guidesEnabled;
+            if (this.enableGuides) {
+                countlyCMS.fetchEntry("server-guide-config", {refresh: false}).then(function(config) {
+                    let enableGuidesCMS = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
+                    self.enableGuides = enableGuidesCMS || countlyPlugins.getConfigsData().guides.enabled;
                 });
             }
         },
         template: `
             <div>\
-                <template v-if="guidesEnabled">\
+                <template v-if="enableGuides">\
                     <view-guide :tooltip="tooltip"></view-guide>\
                 </template>\
                 <template v-else-if="tooltip && tooltip.description">\
