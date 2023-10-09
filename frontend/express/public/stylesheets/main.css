@@ -4991,7 +4991,7 @@ x-vue-echarts > div:has(> .graph-tooltip-wrapper), x-vue-echarts > div:has(> .gr
   bottom: 0;
   left: 64px;
   height: 12px;
-  z-index: 2001;
+  z-index: 2000;
 }
 
 .quickstart-popover-positioner {
