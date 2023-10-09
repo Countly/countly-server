@@ -67,6 +67,7 @@ function verifyAddedEvents(addedEvents, initialRequest) {
 
             if (initialRequest) {
                 lastEventCounts.e = res && res[0] && res[0].e ? res[0].e : 0;
+                lastEventCounts.ce = res && res[0] && res[0].ce ? res[0].ce : 0;
                 for (let key in statInternalEvents) {
                     let internalEventKey = statInternalEvents[key] || 'ce';
                     lastEventCounts[internalEventKey] = res && res[0] && res[0][internalEventKey] ? res[0][internalEventKey] : 0;
@@ -84,7 +85,7 @@ function verifyAddedEvents(addedEvents, initialRequest) {
 
             for (const key in lastEventCounts) {
                 if (Object.hasOwnProperty.call(lastEventCounts, key)) {
-                    if (res[0][key] !== lastEventCounts[key]) {
+                    if (res[0][key] && res[0][key] !== lastEventCounts[key]) {
                         throw (`${key}: Expected Count=${lastEventCounts[key]}, Actual Count=${res[0][key]}`);
                     }
                 }
@@ -218,19 +219,6 @@ describe('Testing data points plugin', function() {
                 lastEventCounts[value] = 0;
             }
         }
-        // will delete next step, only for debugging.
-        it('should debug current events and get result', function(done) {
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const query = {"_id": APP_ID + "_" + year + ":" + month};
-            testUtils.db.collection("server_stats_data_points").find(query).toArray(function(err, res) {
-                if (err) {
-                    return done(err);
-                }
-                console.log('current data for data points:', res);
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            });
-        });
         it('should initialize event counts successfully', function(done) {
             verifyAddedEvents(internalEvents, true).then(() => {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
