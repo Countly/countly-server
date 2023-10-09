@@ -61,7 +61,7 @@
             background: linear-gradient(139.6deg, #6C47FF 22.99%, rgba(108, 71, 255, 0.5) 95%);
         }
 
-        .title {
+        &__title {
             position: absolute;
             left: 1rem;
             top: 35%;
@@ -72,13 +72,15 @@
             text-align: left;
             color: #fff;
             z-index: 9;
-            width: 65%;
+            width: 70%;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
-        .icon {
+        &__icon {
             z-index: 10;
             width: 50px;
-            opacity: 0.7;
+            opacity: 0.8;
         }
     }
 }
