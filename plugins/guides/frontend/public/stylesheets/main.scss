@@ -72,13 +72,15 @@
             text-align: left;
             color: #fff;
             z-index: 9;
-            width: 65%;
+            width: 70%;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         &__icon {
             z-index: 10;
             width: 50px;
-            opacity: 0.7;
+            opacity: 0.8;
         }
     }
 }
