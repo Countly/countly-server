@@ -218,6 +218,19 @@ describe('Testing data points plugin', function() {
                 lastEventCounts[value] = 0;
             }
         }
+        // will delete next step, only for debugging.
+        it('should debug current events and get result', function(done) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const query = {"_id": APP_ID + "_" + year + ":" + month};
+            testUtils.db.collection("server_stats_data_points").find(query).toArray(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                console.log('current data for data points:', res);
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            });
+        });
         it('should initialize event counts successfully', function(done) {
             verifyAddedEvents(internalEvents, true).then(() => {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);

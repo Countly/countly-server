@@ -106,6 +106,7 @@ const FEATURE_NAME = 'server-stats';
     });
 
     plugins.register("/o/data_ingestion", function(ob) {
+        log.d('o/data_ingestion called', ob.params.qstring);
         sdkDataIngestion(ob);
         common.returnOutput(ob.params, {result: true});
         return true;
