@@ -1,4 +1,4 @@
-/* global Vue CountlyHelpers countlyCMS countlyPlugins $ */
+/* global Vue CountlyHelpers countlyCMS $ */
 
 (function(countlyVue) {
 
@@ -24,9 +24,8 @@
         created: function() {
             var self = this;
             if (this.enableGuides) {
-                countlyCMS.fetchEntry("server-guide-config", {refresh: false}).then(function(config) {
-                    let enableGuidesCMS = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
-                    self.enableGuides = enableGuidesCMS || countlyPlugins.getConfigsData().guides.enabled;
+                countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
+                    self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                 });
             }
         },

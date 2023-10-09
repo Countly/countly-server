@@ -6,6 +6,7 @@
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
     common = require('./../../utils/common.js'),
+    config = require('./../../config.js'),
     current_processes = {};
 
 const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-video", "server-quick-start", "server-guide-config"],
@@ -213,6 +214,10 @@ cmsApi.getEntries = function(params) {
         }
 
         results.data = results.data.filter((item) => !item._id.endsWith('meta'));
+        if (params.qstring._id === 'server-guide-config' && results.data && results.data[0]) {
+            results.data[0].enableGuides = results.data[0].enableGuides || config.enableGuides;
+        }
+
         common.returnOutput(params, results);
         return true;
     });
