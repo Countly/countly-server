@@ -571,7 +571,7 @@
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
-                    guidesEnabled: CountlyHelpers.isPluginEnabled('guides'),
+                    enableGuides: CountlyHelpers.isPluginEnabled('guides'),
                     defaultMainMenuOptions: [
                         {
                             name: "app",
@@ -707,10 +707,10 @@
                     return selected && selected.menu;
                 },
                 helpCenterLink: function() {
-                    return this.guidesEnabled ? '#/guides' : "https://support.count.ly";
+                    return this.enableGuides ? '#/guides' : "https://support.count.ly";
                 },
                 helpCenterTarget: function() {
-                    return this.guidesEnabled ? '_self' : "_blank";
+                    return this.enableGuides ? '_self' : "_blank";
                 }
             },
             methods: {
@@ -905,9 +905,9 @@
             },
             created: function() {
                 var self = this;
-                if (this.guidesEnabled) {
-                    countlyCMS.fetchEntry("server-guide-config").then(function(config) {
-                        self.guidesEnabled = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
+                if (this.enableGuides) {
+                    countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
+                        self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
                 }
             }
