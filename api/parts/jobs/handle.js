@@ -136,12 +136,9 @@ class Handle {
             if (result.value) {
                 common.returnOutput(params, {result: true, message: jobStatus ? "Job suspended successfully" : "Job scheduled successfully"});
             }
-            else if (result.lastErrorObject.n === 0) {
-                common.returnOutput(params, {result: false, message: "No documents with appropriate status were found to update" });
-            }
             else {
-                log.e("Updating job status failed, related job could not find. Job id: " + params.qstring.id, " Job Status: " + params.qstring.suspend);
-                common.returnOutput(params, {result: false, message: "Updating job status failed, related job could not find"});
+                log.e("Updating job status failed. Job id: " + params.qstring.id, " Job Status: " + params.qstring.suspend);
+                common.returnOutput(params, {result: false, message: "Updating job status failed, please check api logs"});
             }
         }
         catch (err) {
