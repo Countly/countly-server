@@ -86,12 +86,16 @@
                     var self = this;
                     if (command === "change-job-status") {
                         const suspend = row.status !== "SUSPENDED" ? true : false;
-                        const data = {id: row.rowId, app_id: countlyCommon.ACTIVE_APP_ID, method: 'suspend_job', suspend: suspend};
                         var notifyType = "ok";
                         $.ajax({
-                            type: "POST",
+                            type: "GET",
                             url: countlyCommon.API_URL + "/o",
-                            data: JSON.stringify(data),
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'suspend_job',
+                                id: row.rowId,
+                                suspend: suspend
+                            },
                             contentType: "application/json",
                             success: function(res) {
                                 if (res.result) {

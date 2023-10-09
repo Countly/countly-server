@@ -121,19 +121,23 @@ class Handle {
      **/
     async suspendJob(params) {
         try {
-            let jobStatus = params.qstring.suspend ? job.STATUS.SUSPENDED : job.STATUS.SCHEDULED;
-            const result = await common.db.collection('jobs').findOne({_id: common.db.ObjectID(params.qstring.id), status: {$ne: jobStatus}});
+            let jobStatus = JSON.parse(params.qstring.suspend) ? job.STATUS.SUSPENDED : job.STATUS.SCHEDULED;
+            let currentStatus = JSON.parse(params.qstring.suspend) ? job.STATUS.SCHEDULED : job.STATUS.SUSPENDED;
 
-            if (result) {
-                const currentStatus = result.status;
+            const result = await common.db.collection('jobs').findOneAndUpdate(
+                {
+                    _id: common.db.ObjectID(params.qstring.id),
+                    status: currentStatus
+                },
+                {$set: {status: jobStatus}},
+                {upsert: false}
+            );
 
-                if (currentStatus !== jobStatus) {
-                    await common.db.collection('jobs').updateOne({_id: result._id}, {$set: {status: jobStatus}});
-                    common.returnOutput(params, {result: true, message: jobStatus ? "Job suspended successfully" : "Job scheduled successfully"});
-                }
-                else {
-                    common.returnOutput(params, {result: false, message: jobStatus ? "Job is already suspended" : "Job is already scheduled"});
-                }
+            if (result.value) {
+                common.returnOutput(params, {result: true, message: jobStatus ? "Job suspended successfully" : "Job scheduled successfully"});
+            }
+            else if (result.lastErrorObject.n === 0) {
+                common.returnOutput(params, {result: false, message: "No documents with appropriate status were found to update" });
             }
             else {
                 log.e("Updating job status failed, related job could not find. Job id: " + params.qstring.id, " Job Status: " + params.qstring.suspend);
