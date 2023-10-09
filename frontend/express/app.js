@@ -1055,6 +1055,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         countlyGlobalApps = {},
                         countlyGlobalAdminApps = {};
 
+                    if (Number.isInteger(member.session_count)) {
+                        member.session_count += 1;
+                    }
+                    else {
+                        member.session_count = 1;
+                    }
+
+                    countlyDb.collection('members').update(
+                        { _id: common.db.ObjectID(member._id) },
+                        { $inc: { session_count: 1 } },
+                    );
+
                     if (member.global_admin) {
                         countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
                             adminOfApps = apps;

@@ -319,14 +319,14 @@
         }));
     });
 
-    var loginCount = countlyGlobal.member.login_count || 0;
+    var sessionCount = countlyGlobal.member.session_count || 0;
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
     countlyCMS.fetchEntry('server-quick-start', true).then(function(resp) {
         if (resp.data && resp.data.length) {
             var showForNSessions = resp.data[0].showForNSessions;
 
-            if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
+            if (!_.isEmpty(countlyGlobal.apps) && sessionCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
                 var quickstartHeadingTitle = resp.data[0].title;
                 var quickstartItems = resp.data[0].links.filter(function(item) {
                     if (item.forUserType === 'all') {
