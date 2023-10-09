@@ -63,9 +63,9 @@
                     <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email adress" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
                     <label id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
                 </div>
-                <div>
+                <div style="display: none">
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="setup.username"></p>
-                    <input type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" placeholder="Enter your username" data-localize="placeholder.enter-username"<% if (params && params.username){ %> value="<%- params.username %>" <% } %>/>
+                    <input type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" placeholder="Enter your username" data-localize="placeholder.enter-username"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
                     <label id="username-error" class="error" for="username" style="display: none;" data-localize="setup.error-username"></label>
                 </div>
                 <div>
@@ -126,10 +126,6 @@
                 valid = false;
                 errors.push(jQuery.i18n.map["management-users.full_name.invalid"]);
             }
-            if ($("#username").val().trim().length === 0) {
-                valid = false;
-                errors.push(jQuery.i18n.map["management-users.username.invalid"]);
-            }
             if (!CountlyHelpers.validateEmail($("#email").val())) {
                 valid = false;
                 errors.push(jQuery.i18n.map["management-users.email.invalid"]);
@@ -145,14 +141,6 @@
             return valid;
         }
         $(document).ready(function () {
-            $("#username").focusin(function(){
-                $(this).removeClass("error");
-                $("#username-error").hide();
-            });
-            $("#username").focusout(function(){
-                $(this).addClass("error");
-                $("#username-error").show();
-            });
             $("#full_name").focusin(function(){
                 $(this).removeClass("error");
                 $("#full_name-error").hide();
@@ -181,9 +169,6 @@
             });
             $("#account-form").validate({
                 rules: {
-                    username: {
-                        required: true
-                    },
                     full_name: {
                         required: true
                     },
@@ -245,9 +230,6 @@
                     }
                 },
                 messages: {
-                    username: {
-                        required: encodeSomeHtml(jQuery.i18n.map["setup.error-username"])
-                    },
                     full_name: {
                         required: encodeSomeHtml(jQuery.i18n.map["setup.error-full-name"])
                     },
@@ -259,12 +241,9 @@
             });
             $('#login-button').click(function() {
                 if(validateForm() === true){
+                    $('#username').val($('#email').val());
                     $("#account-form").submit();
                 }else{
-                    if ($('#username').val().trim().length === 0) {
-                        $("#username-error").show();
-                        $("#username").addClass("error");
-                    }
                     if ($("#full_name").val().trim().length === 0) {
                         $("#full_name-error").show();
                         $("#full_name").addClass("error");
