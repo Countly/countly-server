@@ -17,7 +17,7 @@ function sendEmailToGlobalAdmins(oldVersion, newVersion) {
             try {
                 await Promise.all(
                     admins.map((admin) => {
-                        localize.getProperties(admin.lang, function (err2, properties) {
+                        localize.getProperties(admin.lang, function(err2, properties) {
                             var subject = localize.format(properties["mail.server-upgrade-to-global-admins-subject"], oldVersion, newVersion);
                             var message = localize.format(properties["mail.server-upgrade-to-global-admins"], oldVersion, newVersion, serverLink);
                             mail.sendMessage(admin.email, subject, message);
