@@ -4,7 +4,7 @@
 
     countlyCMS.fetchEntry('server-consents');
     countlyCMS.fetchEntry('server-intro-video');
-    countlyCMS.fetchEntry('server-quick-start', true);
+    countlyCMS.fetchEntry('server-quick-start', { populate: true });
 
     countlyOnboarding.generateAPIKey = function() {
         var length = 40;

@@ -410,7 +410,7 @@
     var sessionCount = countlyGlobal.member.session_count || 0;
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
-    countlyCMS.fetchEntry('server-quick-start', true).then(function(resp) {
+    countlyCMS.fetchEntry('server-quick-start', { populate: true }).then(function(resp) {
         if (resp.data && resp.data.length) {
             var showForNSessions = resp.data[0].showForNSessions;
 
