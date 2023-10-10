@@ -1,6 +1,6 @@
 const fs = require('fs'),
-    { promisify } = require('util'),
-    sendLocalizedMessage = promisify(require('../../api/parts/mgmt/mail').sendLocalizedMessage),
+    mail = require('../../api/parts/mgmt/mail'),
+    localize = require('../../api/utils/localization.js'),
     common = require('../../api/utils/common'),
     pluginManager = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird");
@@ -15,7 +15,15 @@ function sendEmailToGlobalAdmins(oldVersion, newVersion) {
                 admins = await countlyDb.collection('members').find({global_admin: true}).toArray();
 
             try {
-                await Promise.all(admins.map(admin => sendLocalizedMessage(admin.lang || 'en', admin.email, 'Countly has been updated', `${serverLink} has been updated from ${oldVersion} to ${newVersion}`)));
+                await Promise.all(
+                    admins.map((admin) => {
+                        localize.getProperties(admin.lang, function (err2, properties) {
+                            var subject = localize.format(properties["mail.server-upgrade-to-global-admins-subject"], oldVersion, newVersion);
+                            var message = localize.format(properties["mail.server-upgrade-to-global-admins"], oldVersion, newVersion, serverLink);
+                            mail.sendMessage(admin.email, subject, message);
+                        });
+                    })
+                );
             }
             catch (e) {
                 common.log('core:mark_version').e('Error while sending update emails', e);
