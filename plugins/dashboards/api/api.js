@@ -1094,6 +1094,10 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
+            if (widget.widget_type === "note") {
+                widget.contenthtml = common.sanitizeHTML(widget.contenthtml);
+            }
+
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
                     common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");

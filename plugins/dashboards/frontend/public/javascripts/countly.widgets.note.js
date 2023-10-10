@@ -68,10 +68,7 @@
         computed: {
             contentHtml: {
                 get() {
-                    if (this.scope.editedObject.contenthtml) {
-                        return countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
-                    }
-                    return this.scope.editedObject.contenthtml;
+                    return this.scope.editedObject.contenthtml && countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
                 },
                 set(val) {
                     this.scope.editedObject.contenthtml = val;
@@ -106,8 +103,18 @@
                     contenthtml: "",
                 };
             },
-            // beforeSaveFn: function(doc) {
-            // }
+            beforeSaveFn: function(doc) {
+                const tempElement = document.createElement('div');
+                tempElement.innerHTML = doc.contenthtml;
+                const anchorTags = tempElement.querySelectorAll('a');
+                anchorTags.forEach((aTag) => {
+                    const href = aTag.getAttribute('href');
+                    if (!/^https?:\/\//i.test(href)) {
+                        aTag.removeAttribute('href');
+                    }
+                });
+                doc.contenthtml = tempElement.innerHTML;
+            }
         },
         grid: {
             component: WidgetComponent,
