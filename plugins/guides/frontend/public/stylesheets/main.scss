@@ -335,10 +335,12 @@
 }
 
 .iframe-dialog {
-    width: 70vw;
-    height: 80vh;
+    width: 65vw;
+    height: 90vh;
     border-radius: 8px;
-    margin-top: 10vh !important;
+    margin: 7vh auto 0 !important;
+    background: unset;
+    box-shadow: unset;
 
     .close-icon {
         cursor: pointer;
