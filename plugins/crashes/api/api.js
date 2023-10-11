@@ -781,7 +781,7 @@ plugins.setConfigs("crashes", {
                         });
                     });
                 }
-            });
+            }, params.app && params.app.plugins);
         }
     });
 
