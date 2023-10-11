@@ -209,23 +209,29 @@
     }
 
     .clyd-apps {
-        border-top: 1px solid #E2E4E8;
-        margin-top: 1rem;
-        padding-top: 0.5rem;
-        &__single {
-            &--avatar {
-                width: 16px;
-                height: 16px;
-                background-position: 50% 50%;
-                border-radius: 4px;
-                background-repeat: no-repeat;
-                background-size: auto 16px;
-                span {
-                    color: #fff;
-                    font-size: 9px;
-                    text-transform: uppercase;
+        margin-bottom: -1rem;
+        .apps {
+            &__single {
+                &--avatar {
+                    width: 16px;
+                    height: 16px;
+                    background-position: 50% 50%;
+                    border-radius: 4px;
+                    background-repeat: no-repeat;
+                    background-size: auto 16px;
+                    span {
+                        color: #fff;
+                        font-size: 9px;
+                        text-transform: uppercase;
+                    }
                 }
             }
+        }
+        hr {
+            margin: 1rem -1.5rem 0.5rem;
+            border: none;
+            height: 0.5px;
+            background-color: #E2E4E8;
         }
     }
 }
