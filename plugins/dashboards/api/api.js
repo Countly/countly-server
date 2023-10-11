@@ -1095,7 +1095,7 @@ plugins.setConfigs("dashboards", {
             }
 
             if (widget.widget_type === "note") {
-                widget.contenthtml = common.sanitizeHTML(widget.contenthtml);
+                widget.contenthtml = validateLinks(widget.contenthtml);
             }
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
@@ -1165,6 +1165,10 @@ plugins.setConfigs("dashboards", {
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
+            }
+
+            if (widget.widget_type === "note") {
+                widget.contenthtml = validateLinks(widget.contenthtml);
             }
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -1577,6 +1581,24 @@ plugins.setConfigs("dashboards", {
         }
 
         return true;
+    }
+
+    /**
+     * Function to validate Note widget links
+     * @param  {String} contenthtml - note widget HTML
+     * @returns {String} note widget HTML with valid links only
+     */
+    function validateLinks(contenthtml) {
+        var regex = /<a\s+(?:[^>]*\s+)?href="([^"]*)"/g;
+        contenthtml = contenthtml.replace(regex, function(match, href) {
+            if (href.startsWith('http://') || href.startsWith('https://')) {
+                return match;
+            }
+            else {
+                return match.replace(href, '#');
+            }
+        });
+        return contenthtml;
     }
 
     // /**

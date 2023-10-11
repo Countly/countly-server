@@ -2990,7 +2990,7 @@ common.sanitizeFilename = (filename, replacement = "") => {
  */
 common.sanitizeHTML = (html) => {
     const whiteList = {
-        a: ["target", "title", "href"],
+        a: ["target", "title"],
         abbr: ["title"],
         address: [],
         area: ["shape", "coords", "href", "alt"],
@@ -3099,24 +3099,17 @@ common.sanitizeHTML = (html) => {
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-                if (tagName === "a" && attributeName === "href") {
-                    if (/^https?:\/\//i.test(attributeValue)) {
+                var attributeValueStart = fullAttribute.indexOf(attributeValue);
+                if (attributeValueStart >= 1) {
+                    var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
+                    if (attributeWithQuote.indexOf(doubleQuote) === 0) {
                         filteredAttributes.push(`${attributeName}=${doubleQuote}${attributeValue}${doubleQuote}`);
                     }
-                }
-                else {
-                    var attributeValueStart = fullAttribute.indexOf(attributeValue);
-                    if (attributeValueStart >= 1) {
-                        var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
-                        if (attributeWithQuote.indexOf(doubleQuote) === 0) {
-                            filteredAttributes.push(`${attributeName}=${doubleQuote}${attributeValue}${doubleQuote}`);
-                        }
-                        else if ((attributeWithQuote.indexOf(singleQuote) === 0)) {
-                            filteredAttributes.push(`${attributeName}=${singleQuote}${attributeValue}${singleQuote}`);
-                        }
-                        else { //no quote
-                            filteredAttributes.push(`${attributeName}=${attributeValue}`);
-                        }
+                    else if ((attributeWithQuote.indexOf(singleQuote) === 0)) {
+                        filteredAttributes.push(`${attributeName}=${singleQuote}${attributeValue}${singleQuote}`);
+                    }
+                    else { //no quote
+                        filteredAttributes.push(`${attributeName}=${attributeValue}`);
                     }
                 }
             }

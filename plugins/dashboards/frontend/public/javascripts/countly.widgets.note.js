@@ -68,10 +68,19 @@
         computed: {
             contentHtml: {
                 get() {
-                    return this.scope.editedObject.contenthtml && countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
+                    return countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
                 },
                 set(val) {
-                    this.scope.editedObject.contenthtml = val;
+                    const tempElement = document.createElement('div');
+                    tempElement.innerHTML = val;
+                    const anchorTags = tempElement.querySelectorAll('a');
+                    anchorTags.forEach((aTag) => {
+                        const href = aTag.getAttribute('href');
+                        if (href && !/^https?:\/\//i.test(href)) {
+                            aTag.setAttribute('href', '#');
+                        }
+                    });
+                    this.scope.editedObject.contenthtml = tempElement.innerHTML;
                 }
             }
         }
@@ -103,17 +112,7 @@
                     contenthtml: "",
                 };
             },
-            beforeSaveFn: function(doc) {
-                const tempElement = document.createElement('div');
-                tempElement.innerHTML = doc.contenthtml;
-                const anchorTags = tempElement.querySelectorAll('a');
-                anchorTags.forEach((aTag) => {
-                    const href = aTag.getAttribute('href');
-                    if (!/^https?:\/\//i.test(href)) {
-                        aTag.removeAttribute('href');
-                    }
-                });
-                doc.contenthtml = tempElement.innerHTML;
+            beforeSaveFn: function() {
             }
         },
         grid: {
