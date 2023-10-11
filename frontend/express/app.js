@@ -118,7 +118,7 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_tracking: false,
+    countly_tracking: null,
 });
 
 plugins.setUserConfigs("frontend", {
@@ -1054,6 +1054,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         userOfApps = [],
                         countlyGlobalApps = {},
                         countlyGlobalAdminApps = {};
+
+                    if (Number.isInteger(member.session_count)) {
+                        member.session_count += 1;
+                    }
+                    else {
+                        member.session_count = 1;
+                    }
+
+                    countlyDb.collection('members').update(
+                        { _id: common.db.ObjectID(member._id) },
+                        { $inc: { session_count: 1 } },
+                    );
 
                     if (member.global_admin) {
                         countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
