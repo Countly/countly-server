@@ -39,7 +39,7 @@ var initParams = function(uri, options, callback) {
             params.options = {}; // Create options object if it's undefined
         }
     
-        const proxyType = config.proxy_type || "http";
+        const proxyType = config.proxy_type || "https";
         const proxyUrlBase = `${proxyType}://${config.proxy_hostname}:${config.proxy_port}`;
         
         let proxyUrl = proxyUrlBase;

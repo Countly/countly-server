@@ -1123,8 +1123,8 @@
         input : "el-select",
         attrs: {},
         list: [
-            {value: 'https'},
-            {value: 'http'}
+            {value: 'https',label:'https'},
+            {value: 'http',label:'http'}
         ]
     })
 
