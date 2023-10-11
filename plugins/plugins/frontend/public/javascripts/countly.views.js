@@ -1133,6 +1133,15 @@
 
     app.configurationsView.registerInput("security.proxy_password", {input: "el-input", attrs: {type: "textarea", rows: 1}});
 
+    app.configurationsView.registerInput("security.proxy_type",{
+        input : "el-select",
+        attrs: {},
+        list: [
+            {value: 'https'},
+            {value: 'http'}
+        ]
+    })
+
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
