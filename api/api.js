@@ -114,7 +114,8 @@ plugins.connectToAllDatabases().then(function() {
         proxy_hostname: "",
         proxy_port: "",
         proxy_username: "",
-        proxy_password: ""
+        proxy_password: "",
+        proxy_type: "https"
     });
 
     /**
