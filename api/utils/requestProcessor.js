@@ -23,6 +23,7 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request');
+const Handle = require('../../api/parts/jobs/index.js');
 
 var loaded_configs_time = 0;
 
@@ -2570,6 +2571,33 @@ const processRequest = (params) => {
 
                     validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
                     break;
+                case 'suspend_job': {
+                    /**
+                     * @api {get} /o?method=suspend_job Suspend Job
+                     * @apiName SuspendJob
+                     * @apiGroup Jobs
+                     *  
+                     * @apiDescription Suspend the selected job
+                     * * 
+                     * @apiSuccessExample {json} Success-Response:
+                     * HTTP/1.1 200 OK
+                     * {
+                     *  "result": true,
+                     *  "message": "Job suspended successfully"
+                     * }
+                     * 
+                     * @apiErrorExample {json} Error-Response:
+                     * HTTP/1.1 400 Bad Request
+                     * {
+                     *  "result": "Updating job status failed" 
+                     * }
+                     * 
+                    */
+                    validateUserForGlobalAdmin(params, async() => {
+                        await Handle.suspendJob(params);
+                    });
+                    break;
+                }
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;

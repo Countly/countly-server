@@ -534,7 +534,9 @@
                         _id: app._id,
                         name: app.name,
                         image: app.image,
-                        type: app.type
+                        type: app.type,
+                        created_at: app.created_at,
+                        has_image: app.has_image
                     };
                     return acc;
                 }, {});
@@ -546,7 +548,9 @@
                         _id: key,
                         name: countlyGlobal.apps[key].name,
                         image: countlyGlobal.apps[key].image,
-                        type: countlyGlobal.apps[key].type
+                        type: countlyGlobal.apps[key].type,
+                        created_at: countlyGlobal.apps[key].created_at,
+                        has_image: countlyGlobal.apps[key].has_image
                     };
                 }
 

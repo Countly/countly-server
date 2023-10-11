@@ -1,112 +1,115 @@
-<div id="initial-setup" class="centered-content">
-    <div v-if="!isPopulating" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
-        <div class="bu-is-size-4">
-            {{ isDemoApp ? i18n('initial-setup.add-demo-application-title') : i18n('initial-setup.add-first-application-title') }}
+<div>
+    <div class="setup-logo"></div>
+    <div id="initial-setup" class="centered-content">
+        <div v-if="!isPopulating" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
+            <div class="bu-is-size-4">
+                {{ isDemoApp ? i18n('initial-setup.add-demo-application-title') : i18n('initial-setup.add-first-application-title') }}
+            </div>
+            <div v-if="!isDemoApp" class="setup-byline">{{ i18n('initial-setup.add-first-application-byline') }}</div>
+            <cly-form
+                :initial-edited-object="newApp"
+                class="setup-form bu-mt-5"
+                @submit="handleSubmit">
+                <template v-slot="formScope">
+                    <cly-form-step :id="'create-app'">
+                        <cly-form-field v-if="!isDemoApp" rules="required" :label="i18n('management-applications.application-name')" :name="i18n('management-applications.application-name')" v-slot="v">
+                            <div class="bu-is-relative">
+                                <el-input
+                                    class="bu-mt-1"
+                                    :placeholder="i18n('management-applications.application-name')"
+                                    v-model="formScope.editedObject.name">
+                                </el-input>
+                                <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
+                            </div>
+                        </cly-form-field>
+                        <cly-form-field :label="i18n('initial-setup.application-type-label')">
+                            <div class="setup-radio setup-radio-grid bu-mt-2">
+                                <el-radio
+                                    v-for="type in types"
+                                    :key="type"
+                                    v-model="formScope.editedObject.type"
+                                    :label="type"
+                                    class="is-autosized"
+                                    border>
+                                    <div class="setup-radio-item">
+                                        <div class="setup-radio-icon-bg bu-mr-2">
+                                            <div class="setup-radio-icon" :class="'setup-radio-icon--app-type-' + type"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-medium bu-is-capitalized">{{type}}</div>
+                                            <div class="text-medium">{{i18n('initial-setup.application')}}</div>
+                                        </div>
+                                    </div>
+                                </el-radio>
+                            </div>
+                        </cly-form-field>
+                        <cly-form-field :label="i18n('initial-setup.time-zone-label')" :tooltip="i18n('management-applications.time-zone.hint')">
+                            <cly-select-x
+                                :placeholder="i18n('management-applications.time-zone')"
+                                v-model="formScope.editedObject.timezone"
+                                class="cly-is-fullwidth bu-mt-1"
+                                :options="timezones">
+                            </cly-select-x>
+                        </cly-form-field>
+                        <cly-form-field v-if="!isDemoApp" :label="i18n('management-applications.app-key')" :tooltip="i18n('management-applications.app-key.hint')" :name="i18n('management-applications.app-key')" rules="required" v-slot="v">
+                            <div class="bu-is-relative">
+                                <el-input
+                                    class="bu-mt-1"
+                                    :placeholder="i18n('management-applications.app-key')"
+                                    v-model="formScope.editedObject.key">
+                                </el-input>
+                                <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
+                            </div>
+                        </cly-form-field>
+                        <cly-form-field v-if="isDemoApp" :label="i18n('initial-setup.application-sample-label')">
+                            <div class="setup-radio setup-radio-grid bu-mt-2">
+                                <el-radio
+                                    v-for="appTemplate in appTemplates"
+                                    :key="appTemplate.id"
+                                    v-model="formScope.editedObject.appTemplate"
+                                    :label="appTemplate.id"
+                                    class="is-autosized"
+                                    border>
+                                    <div class="setup-radio-item">
+                                        <div class="setup-radio-icon-bg bu-mr-2">
+                                            <div class="setup-radio-icon" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-medium bu-is-capitalized">{{appTemplate.name}}</div>
+                                        </div>
+                                    </div>
+                                </el-radio>
+                            </div>
+                        </cly-form-field>
+                    </cly-form-step>
+                    <el-button
+                        :disabled="!formScope.isSubmissionAllowed"
+                        @click="formScope.submit()"
+                        class="bu-is-block bu-mt-2 bu-mx-auto"
+                        size="medium"
+                        type="success">
+                        {{i18n('common.create')}} Application
+                    </el-button>
+                </template>
+            </cly-form>
         </div>
-        <div v-if="!isDemoApp" class="setup-byline bu-mb-5">{{ i18n('initial-setup.add-first-application-byline') }}</div>
-        <cly-form
-            :initial-edited-object="newApp"
-            class="setup-form"
-            @submit="handleSubmit">
-            <template v-slot="formScope">
-                <cly-form-step :id="'create-app'">
-                    <cly-form-field v-if="!isDemoApp" rules="required" :label="i18n('management-applications.application-name')" :name="i18n('management-applications.application-name')" v-slot="v">
-                        <div class="bu-is-relative">
-                            <el-input
-                                class="bu-mt-1"
-                                :placeholder="i18n('management-applications.application-name')"
-                                v-model="formScope.editedObject.name">
-                            </el-input>
-                            <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
-                        </div>
-                    </cly-form-field>
-                    <cly-form-field :label="i18n('initial-setup.application-type-label')">
-                        <div class="setup-radio setup-radio-grid bu-mt-2">
-                            <el-radio
-                                v-for="type in types"
-                                :key="type"
-                                v-model="formScope.editedObject.type"
-                                :label="type"
-                                class="is-autosized"
-                                border>
-                                <div class="setup-radio-item">
-                                    <div class="setup-radio-icon-bg bu-mr-2">
-                                        <div class="setup-radio-icon" :class="'setup-radio-icon--app-type-' + type"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-medium bu-is-capitalized">{{type}}</div>
-                                        <div class="text-medium">{{i18n('initial-setup.application')}}</div>
-                                    </div>
-                                </div>
-                            </el-radio>
-                        </div>
-                    </cly-form-field>
-                    <cly-form-field :label="i18n('initial-setup.time-zone-label')" :tooltip="i18n('management-applications.time-zone.hint')">
-                        <cly-select-x
-                            :placeholder="i18n('management-applications.time-zone')"
-                            v-model="formScope.editedObject.timezone"
-                            class="cly-is-fullwidth bu-mt-1"
-                            :options="timezones">
-                        </cly-select-x>
-                    </cly-form-field>
-                    <cly-form-field v-if="!isDemoApp" :label="i18n('management-applications.app-key')" :tooltip="i18n('management-applications.app-key.hint')" :name="i18n('management-applications.app-key')" rules="required" v-slot="v">
-                        <div class="bu-is-relative">
-                            <el-input
-                                class="bu-mt-1"
-                                :placeholder="i18n('management-applications.app-key')"
-                                v-model="formScope.editedObject.key">
-                            </el-input>
-                            <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
-                        </div>
-                    </cly-form-field>
-                    <cly-form-field v-if="isDemoApp" :label="i18n('initial-setup.application-sample-label')">
-                        <div class="setup-radio setup-radio-grid bu-mt-2">
-                            <el-radio
-                                v-for="appTemplate in appTemplates"
-                                :key="appTemplate.id"
-                                v-model="formScope.editedObject.appTemplate"
-                                :label="appTemplate.id"
-                                class="is-autosized"
-                                border>
-                                <div class="setup-radio-item">
-                                    <div class="setup-radio-icon-bg bu-mr-2">
-                                        <div class="setup-radio-icon" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-medium bu-is-capitalized">{{appTemplate.name}}</div>
-                                    </div>
-                                </div>
-                            </el-radio>
-                        </div>
-                    </cly-form-field>
-                </cly-form-step>
-                <el-button
-                    :disabled="!formScope.isSubmissionAllowed"
-                    @click="formScope.submit()"
-                    class="bu-is-block bu-mt-2 bu-mx-auto"
-                    size="medium"
-                    type="success">
-                    {{i18n('common.create')}} Application
-                </el-button>
+        <div v-else class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
+            <video controls class="bu-is-block bu-mx-auto setup-video-container" v-if="videoLink.length">
+                <source :src="videoLink"/>
+            </video>
+            <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" v-else/>
+            <template v-if="!isPopulatorFinished">
+                <cly-progress-bar :percentage="populatorProgress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
+                <div class="setup-byline">Populating data for your app</div>
             </template>
-        </cly-form>
-    </div>
-    <div v-else class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
-        <video controls class="bu-is-block bu-mx-auto setup-video-container" v-if="videoLink.length">
-            <source :src="videoLink"/>
-        </video>
-        <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" v-else/>
-        <template v-if="!isPopulatorFinished">
-            <cly-progress-bar :percentage="populatorProgress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
-            <div class="setup-byline">Populating data for your app</div>
-        </template>
-        <el-button
-            v-else
-            @click="handleContinueClick"
-            class="bu-is-block bu-mt-5 bu-mx-auto"
-            size="medium"
-            type="success">
-            {{i18n('common.continue')}}
-        </el-button>
+            <el-button
+                v-else
+                @click="handleContinueClick"
+                class="bu-is-block bu-mt-5 bu-mx-auto"
+                size="medium"
+                type="success">
+                {{i18n('common.continue')}}
+            </el-button>
+        </div>
     </div>
 </div>

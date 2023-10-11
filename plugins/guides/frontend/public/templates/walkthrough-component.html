@@ -1,25 +1,9 @@
 <div class="walkthrough-wrapper bu-column">
-    <div class="walkthrough">
-        <div class="dialog-wrapper" @click="openDialog(value)"></div>
-        <iframe 
-            :id="'walkthrough__'+value.id"
-            :src="value.url" 
-            :title="value.title" 
-            class="walkthrough__iframe"
-            frameborder="0" 
-            loading="lazy" 
-            webkitallowfullscreen 
-            mozallowfullscreen 
-            allowfullscreen
-            @load="onFrameLoad(value.id)"
-        >
-        </iframe>
-        <div class="walkthrough__loading bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :id="'walkthrough__loading__'+value.id">
-            <img src="images/icons/play-circle-filled.svg" alt="Icon"/>
+    <div :class="['walkthrough', gradientClass]" :id="'walkthrough__'+value.id" @click="openDialog()">
+        <img src="images/icons/play-circle-filled.svg" alt="Icon" class="walkthrough__icon"/>
+        <div class="walkthrough__title">
+            {{ value.title }}
         </div>
-    </div>
-    <div class="title">
-        {{ value.title }}
     </div>
     <el-dialog
         :visible.sync="isDialogIframeVisible"        

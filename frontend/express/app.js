@@ -118,7 +118,7 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_tracking: false,
+    countly_tracking: null,
 });
 
 plugins.setUserConfigs("frontend", {
@@ -1055,6 +1055,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         countlyGlobalApps = {},
                         countlyGlobalAdminApps = {};
 
+                    if (Number.isInteger(member.session_count)) {
+                        member.session_count += 1;
+                    }
+                    else {
+                        member.session_count = 1;
+                    }
+
+                    countlyDb.collection('members').update(
+                        { _id: common.db.ObjectID(member._id) },
+                        { $inc: { session_count: 1 } },
+                    );
+
                     if (member.global_admin) {
                         countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
                             adminOfApps = apps;
@@ -1592,6 +1604,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
                             fs.unlink(tmp_path, function() {});
                             res.send("appimages/" + req.body.app_image_id + ".png");
+                            countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
                         });
                     }); // save
                 });

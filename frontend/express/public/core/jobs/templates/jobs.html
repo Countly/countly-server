@@ -33,6 +33,13 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="total" :label="i18n('jobs.job-total-scheduled')">
                     </el-table-column>
+                    <el-table-column align="center" type="options">
+                        <template v-slot="scope">
+                            <cly-more-options v-if="scope.row.status !== 'RUNNING' && canSuspendJob && scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end">
+                                <el-dropdown-item command="change-job-status">{{scope.row.status === 'SUSPENDED' ? i18n('jobs.schedule') : i18n('jobs.suspend')}}</el-dropdown-item>
+                            </cly-more-options>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
 		</cly-section>
