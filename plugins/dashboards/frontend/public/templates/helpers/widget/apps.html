@@ -1,13 +1,14 @@
-<div class="bu-is-flex bu-is-flex-wrap-wrap clyd-apps">
-    <div v-if="isMultiple">
-        <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1" v-tooltip="tooltip">
+<div class="clyd-apps">
+    <hr>
+    <div class="bu-is-flex bu-is-flex-wrap-wrap apps">
+        <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1" v-if="isMultiple" v-tooltip="tooltip">
             {{ i18n("dashboards.multiple-apps-count", apps.length) }}
         </span>
-    </div>
-    <div v-else class="bu-is-flex clyd-apps__single">
-        <div class="clyd-apps__single--avatar" :style="app.avatar">
-            <span v-if="!app.image" class="has-ellipsis">{{getAppInitials(app.name)}}</span>
+        <div v-else class="bu-is-flex apps__single">
+            <div class="apps__single--avatar" :style="app.avatar">
+                <span v-if="!app.image" class="has-ellipsis">{{getAppInitials(app.name)}}</span>
+            </div>
+            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
         </div>
-        <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
     </div>
 </div>
