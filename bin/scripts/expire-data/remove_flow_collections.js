@@ -15,7 +15,7 @@ pluginManager.dbConnection().then(async(countlyDb) => {
         const flowDataCollections = collectionNames.filter(x => x.startsWith('flowData'));
 
         try {
-            for(const collectionName of flowSchemaCollections) {
+            for (const collectionName of flowSchemaCollections) {
                 await countlyDb.collection(collectionName).drop();
                 console.log('Finished removing flowSchema collections.');
             }
@@ -24,7 +24,7 @@ pluginManager.dbConnection().then(async(countlyDb) => {
             console.log(`Error removing flowSchema collections: ${error}`);
         }
         try {
-            for(const collectionName of flowDataCollections) {
+            for (const collectionName of flowDataCollections) {
                 await countlyDb.collection(collectionName).drop();
                 console.log('Finished removing flowData collections.');
             }
