@@ -156,12 +156,10 @@ module.exports = function(uri, options, callback) {
         // Make the request using got
         got(params.options)
             .then(response => {
-                console.log("appi called success");
                 // Call the callback with the response data
                 params.callback(null, response, response.body);
             })
             .catch(error => {
-                console.log("appi called failure");
                 // Call the callback with the error
                 params.callback(error);
             });
@@ -170,11 +168,9 @@ module.exports = function(uri, options, callback) {
         // Make the request using got
         got(params.uri, params.options)
             .then(response => {
-                console.log("appi called success");
                 params.callback(null, response, response.body);
             })
             .catch(error => {
-                console.log("appi called failure");
                 // Call the callback with the error
                 params.callback(error);
             });
