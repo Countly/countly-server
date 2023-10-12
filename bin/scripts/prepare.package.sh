@@ -1,6 +1,7 @@
 #!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "$DIR/../../frontend/express/version.info.js")"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../" && pwd )"
+NAME=$(basename "$DIR");
+VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "$DIR/frontend/express/version.info.js")"
 
 echo "Installing prerequisites"
 if [ "$1" = "zip" ]; then
@@ -12,11 +13,11 @@ git pull
 
 echo "Preparing package"
 if [ "$1" = "zip" ]; then
-    (cd "$DIR/../../.." ;
-    zip -r "countly-community-edition-v$VERSION.zip" countly/ -x "countly/.git/*" "countly/api/config.js" "countly/api/node_modules/*" "countly/frontend/express/config.js" "countly/frontend/express/public/stylesheets/main.min.css" "countly/frontend/express/public/javascripts/countly/countly.config.js" "countly/frontend/express/public/userimages/*"  "countly/frontend/express/certificates/*" "countly/frontend/express/node_modules/*" "countly/log/countly-api.log" "countly/log/countly-dashboard.log" "countly/node_modules/*" "countly/plugins/plugins.json")
+    (cd "$DIR/../" ;
+    zip -r "countly-community-edition-v$VERSION.zip" $NAME/ -x "$NAME/.git/*" "$NAME/api/config.js" "$NAME/api/node_modules/*" "$NAME/frontend/express/config.js" "$NAME/frontend/express/public/stylesheets/main.min.css" "$NAME/frontend/express/public/javascripts/$NAME/countly.config.js" "$NAME/frontend/express/public/userimages/*"  "$NAME/frontend/express/certificates/*" "$NAME/frontend/express/node_modules/*" "$NAME/log/countly-api.log" "$NAME/log/countly-dashboard.log" "$NAME/node_modules/*" "$NAME/plugins/plugins.json")
 else
-    (cd "$DIR/../../.." ;
-    tar --exclude="countly/.git" --exclude="countly/api/config.js" --exclude="countly/api/node_modules" --exclude="countly/frontend/express/config.js" --exclude="countly/frontend/express/public/stylesheets/main.min.css" --exclude="countly/frontend/express/public/javascripts/countly/countly.config.js" --exclude="countly/frontend/express/public/userimages"  --exclude="countly/frontend/express/certificates" --exclude="countly/frontend/express/node_modules" --exclude="countly/log/countly-api.log" --exclude="countly/log/countly-dashboard.log" --exclude="countly/node_modules" --exclude="countly/plugins/plugins.json" -zcvf "countly-community-edition-v$VERSION.tar.gz" countly/)
+    (cd "$DIR/../" ;
+    tar --exclude="$NAME/.git" --exclude="$NAME/api/config.js" --exclude="$NAME/api/node_modules" --exclude="$NAME/frontend/express/config.js" --exclude="$NAME/frontend/express/public/stylesheets/main.min.css" --exclude="$NAME/frontend/express/public/javascripts/$NAME/countly.config.js" --exclude="$NAME/frontend/express/public/userimages"  --exclude="$NAME/frontend/express/certificates" --exclude="$NAME/frontend/express/node_modules" --exclude="$NAME/log/countly-api.log" --exclude="$NAME/log/countly-dashboard.log" --exclude="$NAME/node_modules" --exclude="$NAME/plugins/plugins.json" --transform "s/$NAME/countly/" -zcvf "countly-community-edition-v$VERSION.tar.gz" $NAME/)
 fi
 
 echo "Install package prepared"
