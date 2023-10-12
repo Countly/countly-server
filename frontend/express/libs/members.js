@@ -21,8 +21,6 @@ var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
 
-const log = common.log('members');
-
 var versionInfo = require('./../version.info'),
     COUNTLY_TYPE = versionInfo.type;
 
