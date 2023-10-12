@@ -39,48 +39,49 @@
 .walkthrough-wrapper {
     box-sizing: border-box;
 
-    .title {
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        color: #333C48;
-        line-height: 20px !important;
-        margin: 10px;
-        overflow-wrap: break-word;
-    }
-
     .walkthrough {
         position: relative; 
-        padding-bottom: calc(66.66666666666666% + 41px); 
-        height: 0; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
         width: 100%;
-        &__loading {
-            position: absolute;
-            height: 100%;
-            top: 0;
-            left: 0;
-            width: 100%;
-            border-radius: 10px;
-            background-color: #cfd6e4;
-        }
-        &__iframe {
-            position: unset; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            color-scheme: light;
-        }
-    }
-
-    .dialog-wrapper {
-        z-index: 201;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        top: 0;
-        width: 100%;
+        height: 250px;
         cursor: pointer;
+        &--blue {
+            background: linear-gradient(139.69deg, #017AFF 22.95%, rgba(1, 122, 255, 0.5) 96.04%);
+        }
+        &--green {
+            background: linear-gradient(134.63deg, #39C0C8 25.16%, rgba(57, 192, 200, 0.5) 98.18%);
+        }
+        &--orange {
+            background: linear-gradient(134.19deg, #F96300 25.35%, rgba(249, 99, 0, 0.5) 93.52%);
+        }
+        &--purple {
+            background: linear-gradient(139.6deg, #6C47FF 22.99%, rgba(108, 71, 255, 0.5) 95%);
+        }
+
+        &__title {
+            position: absolute;
+            left: 1rem;
+            top: 35%;
+            font-size: 23px;
+            font-weight: 500;
+            line-height: 30px;
+            letter-spacing: .003em;
+            text-align: left;
+            color: #fff;
+            z-index: 9;
+            width: 70%;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        &__icon {
+            z-index: 10;
+            width: 50px;
+            opacity: 0.8;
+        }
     }
 }
 
@@ -334,10 +335,12 @@
 }
 
 .iframe-dialog {
-    width: 70vw;
-    height: 80vh;
+    width: 65vw;
+    height: 90vh;
     border-radius: 8px;
-    margin-top: 10vh !important;
+    margin: 7vh auto 0 !important;
+    background: unset;
+    box-shadow: unset;
 
     .close-icon {
         cursor: pointer;

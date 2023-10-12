@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides Countly */
+/* global app countlyVue CV countlyCommon Vue countlyGuides countlyGlobal Countly */
 
 (function() {
 
@@ -10,6 +10,10 @@
             value: {
                 type: Object,
                 required: true
+            },
+            index: {
+                type: Number,
+                required: true
             }
         },
         data: function() {
@@ -17,11 +21,28 @@
                 isDialogIframeVisible: false
             };
         },
+        computed: {
+            gradientClass: function() {
+                var index = this.index % 4;
+                var color = 'blue';
+                switch (index) {
+                case 0:
+                    color = 'blue';
+                    break;
+                case 1:
+                    color = 'green';
+                    break;
+                case 2:
+                    color = 'orange';
+                    break;
+                case 3:
+                    color = 'purple';
+                    break;
+                }
+                return 'walkthrough--' + color;
+            }
+        },
         methods: {
-            onFrameLoad: function(key) {
-                document.getElementById('walkthrough__' + key).style.setProperty('position', 'absolute', 'important');
-                document.getElementById('walkthrough__loading__' + key).style.setProperty('display', 'none', 'important');
-            },
             openDialog: function() {
                 this.isDialogIframeVisible = true;
             },
@@ -180,9 +201,18 @@
                 return sections;
             },
             fetchAndDisplayWidget: function() {
+                var domain = countlyGlobal.countly_domain;
+                try {
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
                 let COUNTLY_STATS = Countly.init({
                     app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                     url: "https://stats.count.ly",
+                    device_id: domain
                 });
                 COUNTLY_STATS.get_available_feedback_widgets(function(countlyPresentableFeedback, err) {
                     if (err) {

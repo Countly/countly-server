@@ -37,14 +37,15 @@
                 <div v-if="guideData.walkthroughs && guideData.walkthroughs.length > 0" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-start" style="margin-bottom: 25px;">
                     <div class="title">{{ i18n('guides.guide.walkthrough-title') }}</div>
                     <div class="description">{{ i18n('guides.guide.walkthrough-description') }}</div>
-                    <div>
-                        <vue-scroll ref="walkthroughSlider" :ops="scrollWalkthroughs">
+                    <div style="width:100%;">
+                        <vue-scroll ref="walkthroughSlider" :ops="scrollWalkthroughs" style="width:100%;">
                             <div class="bu-is-flex">
                                 <walkthrough-component
                                     v-for="(walkthrough, index) in guideData.walkthroughs"
                                     :value="guideData.walkthroughs[index]"
                                     :key="guideData.walkthroughs[index].id"
-                                    style="min-width:25%;"
+                                    style="max-width:25%;"
+                                    :index="index"
                                 >
                                 </walkthrough-component>
                             </div>
