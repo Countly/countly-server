@@ -400,7 +400,7 @@
         }));
     });
 
-    app.route('/newsletter', 'newsletter', function() {
+    app.route('/not-subscribed-newsletter', 'not-subscribed-newsletter', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: newsletterView,
             vuex: [{ clyModel: countlyOnboarding }],
@@ -435,14 +435,14 @@
         }
     });
 
-    if (typeof countlyGlobal.countly_tracking !== 'boolean') {
+    if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin) {
         if (Backbone.history.fragment !== '/not-responded-consent') {
             app.navigate("/not-responded-consent", true);
         }
     }
     else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
-        if (Backbone.history.fragment !== '/newsletter') {
-            app.navigate("/newsletter", true);
+        if (Backbone.history.fragment !== '/not-subscribed-newsletter') {
+            app.navigate("/not-subscribed-newsletter", true);
         }
     }
     else if (!countlyGlobal.member.subscribe_newsletter && (countlyGlobal.member.login_count !== 3 && moment().dayOfYear() % 90 !== 0)) {
