@@ -1,5 +1,5 @@
 const { defineConfig } = require("cypress");
-const fs = require('fs')
+const fs = require('fs');
 
 module.exports = defineConfig({
     e2e: {
@@ -17,13 +17,13 @@ module.exports = defineConfig({
                 if (results && results.video) {
                     const failures = results.tests.some((test) =>
                         test.attempts.some((attempt) => attempt.state === 'failed')
-                    )
+                    );
                     if (!failures) {
                         // delete the video if the spec passed and no tests retried
-                        fs.unlinkSync(results.video)
+                        fs.unlinkSync(results.video);
                     }
                 }
-            })
+            });
         },
     },
-})
+});
