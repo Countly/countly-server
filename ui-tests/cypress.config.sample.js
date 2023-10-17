@@ -10,20 +10,20 @@ module.exports = defineConfig({
         numTestsKeptInMemory: 0,
         projectId: "000000",
         chromeWebSecurity: false,
-		watchForFileChanges: true,
-		video: true,		
-		setupNodeEvents(on, config) {
-			on('after:spec', (spec, results) => {
-			  if (results && results.video) {
-				const failures = results.tests.some((test) =>
-				  test.attempts.some((attempt) => attempt.state === 'failed')
-				)
-				if (!failures) {
-				  // delete the video if the spec passed and no tests retried
-				  fs.unlinkSync(results.video)
-				}
-			  }
-			})
-		  },
-	},
+        watchForFileChanges: true,
+        video: true,
+        setupNodeEvents(on, config) {
+            on('after:spec', (spec, results) => {
+                if (results && results.video) {
+                    const failures = results.tests.some((test) =>
+                        test.attempts.some((attempt) => attempt.state === 'failed')
+                    )
+                    if (!failures) {
+                        // delete the video if the spec passed and no tests retried
+                        fs.unlinkSync(results.video)
+                    }
+                }
+            })
+        },
+    },
 })
