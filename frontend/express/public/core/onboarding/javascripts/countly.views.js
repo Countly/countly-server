@@ -52,6 +52,14 @@
 
                 return introVideos.videoLinkForCE;
             },
+            buttonText: function() {
+                if (this.isDemoApp) {
+                    return CV.i18n('initial-setup.continue-data-population');
+                }
+                else {
+                    return CV.i18n('initial-setup.create-application');
+                }
+            },
         },
         created: function() {
             delete countlyGlobal.licenseError;

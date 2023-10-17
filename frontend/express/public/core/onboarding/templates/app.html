@@ -88,7 +88,7 @@
                         class="bu-is-block bu-mt-2 bu-mx-auto"
                         size="medium"
                         type="success">
-                        {{i18n('common.create')}} Application
+                        {{ buttonText }}
                     </el-button>
                 </template>
             </cly-form>
@@ -105,7 +105,7 @@
             <el-button
                 v-else
                 @click="handleContinueClick"
-                class="bu-is-block bu-mt-5 bu-mx-auto"
+                class="bu-is-block bu-mt-5 bu-mx-auto bu-px-6"
                 size="medium"
                 type="success">
                 {{i18n('common.continue')}}
