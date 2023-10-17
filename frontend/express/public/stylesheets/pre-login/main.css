@@ -182,7 +182,7 @@ a:active { color:inherit; }
   height:17px !important;
 }
 .wrapper {
-  position:relative;padding-top:86px;
+  position:relative;padding-top:20px;
 }
 input.error{
   background: #FFF4CE;
