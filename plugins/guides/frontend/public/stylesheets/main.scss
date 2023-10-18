@@ -36,6 +36,19 @@
     box-sizing: border-box;
 }
 
+.walkthroughs {
+    &__item {
+        flex: none;
+        width: 25%;
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            width: 20%;
+        }
+        @media (min-width: 2560px) {
+            width: calc(100% / 6);
+        }
+    }
+}
+
 .walkthrough-wrapper {
     box-sizing: border-box;
 
@@ -63,8 +76,6 @@
 
         &__title {
             position: absolute;
-            left: 1rem;
-            top: 35%;
             font-size: 23px;
             font-weight: 500;
             line-height: 30px;
@@ -72,15 +83,22 @@
             text-align: left;
             color: #fff;
             z-index: 9;
-            width: 70%;
+            width: 80%;
             word-break: break-word;
             overflow-wrap: break-word;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         &__icon {
-            z-index: 10;
+            position: absolute;
             width: 50px;
             opacity: 0.8;
+            z-index: 10;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
     }
 }
