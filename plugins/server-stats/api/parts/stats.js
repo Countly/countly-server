@@ -1,4 +1,19 @@
 const moment = require("moment");
+
+const internalEventsEnum =
+{
+    "[CLY]_session": "ss",
+    "[CLY]_view": "v",
+    "[CLY]_nps": "n",
+    "[CLY]_crash": "c",
+    "[CLY]_action": "ac",
+    "[CLY]_survey": "srv",
+    "[CLY]_star_rating": "str",
+    "[CLY]_apm_device": "apm",
+    "[CLY]_apm_network": "apm",
+    "[CLY]_push_action": "p"
+};
+
 /**
 * Saves session and event count information to server_stats_data_points
 * collection in countly database
@@ -28,7 +43,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         s: sessionCount,
         [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.s`]: sessionCount
     };
-    if (typeof eventCount === 'object') {
+    if (typeof eventCount === 'object' && Object.keys(eventCount).length) {
         var sum = sessionCount || 0;
         for (var key in eventCount) {
             incObject[key] = eventCount[key];
@@ -37,7 +52,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         }
         incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`] = sum;
     }
-    else {
+    else if (typeof eventCount === 'number') {
         incObject = {
             e: eventCount,
             s: sessionCount,
@@ -340,4 +355,5 @@ function getAppName(appId, appNames) {
     }
 }
 
-module.exports = {updateDataPoints, isConsolidated, increaseDataPoints, punchCard, fetchDatapoints, getTop, getAppName};
+
+module.exports = {updateDataPoints, isConsolidated, increaseDataPoints, punchCard, fetchDatapoints, getTop, getAppName, internalEventsEnum};

@@ -924,7 +924,7 @@
             });
         };
 
-        if (Object.keys(countlyGlobal.apps).length && !/initial-setup|initial-consent/.test(window.location.hash)) {
+        if (Object.keys(countlyGlobal.apps).length && !/initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash)) {
             app.initSidebar();
         }
     });
