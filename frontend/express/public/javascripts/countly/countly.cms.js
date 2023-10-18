@@ -6,14 +6,16 @@
 
     countlyCMS.fetchEntry = function(entryID, options) {
         var data = { _id: entryID };
-        if (options.populate) {
-            data.populate = options.populate;
-        }
-        if (options.query) {
-            data.query = JSON.stringify(options.query);
-        }
-        if (options.refresh) {
-            data.refresh = options.refresh;
+        if (options) {
+            if (options.populate) {
+                data.populate = options.populate;
+            }
+            if (options.query) {
+                data.query = JSON.stringify(options.query);
+            }
+            if (options.refresh) {
+                data.refresh = options.refresh;
+            }
         }
         return new Promise(function(resolve, reject) {
             $.ajax({

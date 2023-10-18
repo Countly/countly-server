@@ -35,8 +35,8 @@
                     {{ guideData.description }}
                 </div>
                 <div v-if="guideData.walkthroughs && guideData.walkthroughs.length > 0" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-start" style="margin-bottom: 25px;">
-                    <div class="title">{{ i18n('guides.guide.walkthrough-title') }}</div>
-                    <div class="description">{{ i18n('guides.guide.walkthrough-description') }}</div>
+                    <div class="title">{{ guideConfig.walkthroughTitle }}</div>
+                    <div class="description">{{ guideConfig.walkthroughDescription }}</div>
                     <div style="width:100%;">
                         <vue-scroll ref="walkthroughSlider" :ops="scrollWalkthroughs" style="width:100%;">
                             <div class="bu-is-flex">
@@ -53,8 +53,8 @@
                     </div>
                 </div>
                 <div v-if="guideData.articles && guideData.articles.length > 0" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-start">
-                    <div class="title">{{ i18n('guides.guide.article-title') }}</div>
-                    <div class="description">{{ i18n('guides.guide.article-description') }}</div>
+                    <div class="title">{{ guideConfig.articleTitle }}</div>
+                    <div class="description">{{ guideConfig.articleDescription }}</div>
                     <div class="bu-is-flex bu-is-flex-wrap-wrap" style="width: 100%;">
                         <article-component
                             v-for="(article, index) in guideData.articles"

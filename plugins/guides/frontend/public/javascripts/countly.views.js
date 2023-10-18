@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides countlyGlobal Countly */
+/* global app countlyVue CV countlyCommon Vue countlyGuides countlyCMS countlyGlobal Countly */
 
 (function() {
 
@@ -115,6 +115,7 @@
                 isButtonVisible: false,
                 isDialogVisible: false,
                 guideData: {},
+                guideConfig: {},
                 scrollWalkthroughs: {
                     vuescroll: {
                         sizeStrategy: 'number'
@@ -167,6 +168,9 @@
                     if (walkthroughs.length > 0 || articles.length > 0) {
                         self.isButtonVisible = true;
                         self.guideData = countlyGuides.getEntries()[0];
+                        countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                            self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
+                        });
                     }
                 });
                 sections.pop();
