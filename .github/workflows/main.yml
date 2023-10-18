@@ -256,7 +256,8 @@ jobs:
           bash bin/backup/import_events.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
-          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
           cd ui-tests
           mkdir cypress/fixtures
           echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
