@@ -3099,7 +3099,6 @@ common.sanitizeHTML = (html) => {
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-
                 var attributeValueStart = fullAttribute.indexOf(attributeValue);
                 if (attributeValueStart >= 1) {
                     var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
