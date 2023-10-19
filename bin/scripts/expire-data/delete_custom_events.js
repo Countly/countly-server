@@ -43,6 +43,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 await deleteCountlyEvents(app._id, events);
                 console.log(3 + ") Deleting event times:");
                 await deleteEventTimes(app._id, events);
+                console.log(4 + ") Deleting event keys:");
+                await deleteEventKeys(app._id, events);
                 close();
             }
             catch (err) {
@@ -59,8 +61,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
             var collectionName = drillCommon.getCollectionName(event, appId);
-            await drillDb.collection(collectionName).deleteMany({});
-            console.log("Emptied collection:", collectionName);
+            await drillDb.collection(collectionName).drop();
+            console.log("Dropped collection:", collectionName);
         }
     }
 
@@ -68,8 +70,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
             var collectionName = 'events' + drillCommon.getEventHash(event, appId);
-            await countlyDb.collection(collectionName).deleteMany({});
-            console.log("Emptied collection:", collectionName);
+            await countlyDb.collection(collectionName).drop();
+            console.log("Dropped collection:", collectionName);
         }
     }
 
@@ -80,6 +82,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             await countlyDb.collection(collectionName).deleteMany({"e": {$elemMatch: {"e": event}}});
             console.log("Deleted from collection:", collectionName);
         }
+    }
+
+    async function deleteEventKeys(appId, events) {
+        await countlyDb.collection("events").updateOne({_id: appId}, {$pull: {list: {$in: events}}});
+        console.log("Deleted events:", events);
     }
 
     function close(err) {
