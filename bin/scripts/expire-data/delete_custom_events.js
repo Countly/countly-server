@@ -45,6 +45,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 await deleteEventTimes(app._id, events);
                 console.log(4 + ") Deleting event keys:");
                 await deleteEventKeys(app._id, events);
+                console.log(5 + ") Deleting event groups:");
+                await deleteEventGroups(app._id, events);
                 close();
             }
             catch (err) {
@@ -59,34 +61,45 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     async function deleteDrillEvents(appId, events) {
         for (let i = 0; i < events.length; i++) {
-            const event = events[i];
-            var collectionName = drillCommon.getCollectionName(event, appId);
+            var collectionName = drillCommon.getCollectionName(events[i], appId);
             await drillDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
         }
+        await drillDb.collection('drill_bookmarks').remove({'app_id': appId, 'event_key': {$in: events}});
+        console.log("Cleared drill_bookmarks");
+        await drillDb.collection("drill_meta").remove({'app_id': (appId + ""), "type": "e", "e": {$in: events}});
+        console.log("Cleared drill_meta");
     }
 
     async function deleteCountlyEvents(appId, events) {
         for (let i = 0; i < events.length; i++) {
-            const event = events[i];
-            var collectionName = 'events' + drillCommon.getEventHash(event, appId);
+            var collectionName = 'events' + drillCommon.getEventHash(events[i], appId);
             await countlyDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
         }
     }
 
     async function deleteEventTimes(appId, events) {
-        for (let i = 0; i < events.length; i++) {
-            const event = events[i];
-            var collectionName = 'eventTimes' + appId;
-            await countlyDb.collection(collectionName).deleteMany({"e": {$elemMatch: {"e": event}}});
-            console.log("Deleted from collection:", collectionName);
-        }
+        await countlyDb.collection("eventTimes" + appId).update({}, {"$pull": {"e": {"e": {$in: events}}}}, {"multi": true});
+        console.log("Cleared eventTimes");
+        await countlyDb.collection("timelineStatus").remove({'app_id': (appId + ""), "event": {$in: events}});
+        console.log("Cleared timelineStatus");
     }
 
     async function deleteEventKeys(appId, events) {
-        await countlyDb.collection("events").updateOne({_id: appId}, {$pull: {list: {$in: events}}});
-        console.log("Deleted events:", events);
+        const unsetQuery = {};
+        for (let i = 0; i < events.length; i++) {
+            unsetQuery[`segments.${events[i]}`] = 1;
+            unsetQuery[`map.${events[i]}`] = 1;
+            unsetQuery[`omitted_segments.${events[i]}`] = 1;
+        }
+        await countlyDb.collection("events").updateOne({_id: appId}, {$pull: {list: {$in: events}}, $unset: unsetQuery}, {$pull: {"overview": {eventKey: {$in: events}}}});
+        console.log("Cleared events:", events);
+    }
+
+    async function deleteEventGroups(appId, events) {
+        await countlyDb.collection("event_groups").update({'app_id': (appId + "")}, {"$pull": {"source_events": {$in: events}}}, {"multi": true});
+        console.log("Cleared event_groups");
     }
 
     function close(err) {
