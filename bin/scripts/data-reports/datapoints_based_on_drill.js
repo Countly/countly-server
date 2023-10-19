@@ -11,7 +11,18 @@ var startDate = new Date("2021-03-01T00:00:00");
 var endDate = new Date("2021-04-01T00:00:00");
 
 var plugins = require("../../../plugins/pluginManager");
-var map = require("./db_mapping.json");
+var maps = require("./db_mapping.json");
+var map;
+for (let i = 0; i < maps.length; i++) {
+    if (maps[i].name === "countly_drill") {
+        map = maps[i];
+        break;
+    }
+}
+if (!map) {
+    console.log("No mapping found for countly_drill");
+    process.exit();
+}
 var asyncjs = require("async");
 var remap = {};
 for (var key in map.collections) {
