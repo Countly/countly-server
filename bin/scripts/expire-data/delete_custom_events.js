@@ -43,10 +43,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 await deleteCountlyEvents(app._id, events);
                 console.log(3 + ") Deleting event times:");
                 await deleteEventTimes(app._id, events);
-                console.log(4 + ") Deleting event keys:");
-                await deleteEventKeys(app._id, events);
-                console.log(5 + ") Deleting event groups:");
+                console.log(4 + ") Deleting event groups:");
                 await deleteEventGroups(app._id, events);
+                console.log(5 + ") Deleting event keys:");
+                await deleteEventKeys(app._id, events);
                 close();
             }
             catch (err) {
