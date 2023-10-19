@@ -12,5 +12,10 @@
   "devDependencies": {
     "cypress": "^13.1.0"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@faker-js/faker": "^8.2.0",
+    "base-64": "^1.0.0",
+    "cypress-file-upload": "^5.0.8"
+  }
 }
