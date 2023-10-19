@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides countlyGlobal Countly */
+/* global app countlyVue CV countlyCommon Vue countlyGuides countlyCMS countlyGlobal Countly */
 
 (function() {
 
@@ -115,6 +115,7 @@
                 isButtonVisible: false,
                 isDialogVisible: false,
                 guideData: {},
+                guideConfig: {},
                 scrollWalkthroughs: {
                     vuescroll: {
                         sizeStrategy: 'number'
@@ -167,6 +168,9 @@
                     if (walkthroughs.length > 0 || articles.length > 0) {
                         self.isButtonVisible = true;
                         self.guideData = countlyGuides.getEntries()[0];
+                        countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                            self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
+                        });
                     }
                 });
                 sections.pop();
@@ -391,12 +395,12 @@
         },
         created: function() {
             var self = this;
-            countlyGuides.fetchEntries({ sectionID: { $in: ['/onboarding', '/new', '/suggestions', '/promoted'] } })
+            countlyGuides.fetchEntries({ sectionID: { $in: ["/overview/getting-started", "/overview/whats-new", "/overview/suggestions", "/overview/promoted"] } })
                 .then(function() {
-                    self.onboardingWalkthroughs = countlyGuides.getWalkthroughs('/onboarding').slice(0, 2);
-                    self.newWalkthroughs = countlyGuides.getWalkthroughs('/new').slice(0, 2);
-                    self.suggestionsWalkthroughs = countlyGuides.getWalkthroughs('/suggestions').slice(0, 4);
-                    self.promotedArticles = countlyGuides.getArticles('/promoted').slice(0, 3);
+                    self.onboardingWalkthroughs = countlyGuides.getWalkthroughs('/overview/getting-started').slice(0, 2);
+                    self.newWalkthroughs = countlyGuides.getWalkthroughs('/overview/whats-new').slice(0, 2);
+                    self.suggestionsWalkthroughs = countlyGuides.getWalkthroughs('/overview/suggestions').slice(0, 4);
+                    self.promotedArticles = countlyGuides.getArticles('/overview/promoted').slice(0, 3);
                 })
                 .catch(function() {
                     // console.log(error);
