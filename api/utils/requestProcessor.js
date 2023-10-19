@@ -1946,7 +1946,7 @@ const processRequest = (params) => {
                                 params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
                             }
                             catch (ex) {
-                                common.returnMessage(params, 401, ex.message);
+                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
                             }
                         }
                         if (typeof params.qstring.filter === "string") {
@@ -1954,7 +1954,7 @@ const processRequest = (params) => {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
                             }
                             catch (ex) {
-                                common.returnMessage(params, 401, ex.message);
+                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
                             }
                         }
                         if (typeof params.qstring.projection === "string") {
