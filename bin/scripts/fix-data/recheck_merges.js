@@ -5,6 +5,7 @@
  *  Command: node recheck_merges.js
  */
 
+var DRY_RUN = true;
 
 const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
@@ -13,7 +14,7 @@ const common = require("../../../api/utils/common.js");
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
-    console.log("Connected to databases.");
+    console.log("Connected to databases...");
     common.db = countlyDb;
     common.drillDb = drillDb;
     //get all apps
@@ -25,18 +26,28 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         try {
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
-                console.log("Processing app ", app.name);
-                //get users with merges
-                var collections = await getDrillCollections(app._id); //get all drill collections for this app
-                const usersCursor = countlyDb.collection('app_users' + app._id).find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
+                console.log("Processing app: ", app.name);
+                //get all drill collections for this app
+                var collections = await getDrillCollections(app._id);
+                //start session
+                const session = await countlyDb.client.startSession();
+                const usersCollection = session.client.db("countly").collection('app_users' + app._id);
+                const usersCursor = usersCollection.find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1}).addCursorFlag('noCursorTimeout', true);
+                var refreshTimestamp = new Date();
                 //for each user
                 while (await usersCursor.hasNext()) {
+                    if ((new Date() - refreshTimestamp) / 1000 > 300) {
+                        console.log("Refreshing session");
+                        await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                        refreshTimestamp = new Date();
+                    }
                     const user = await usersCursor.next();
                     //check if old uid still exists in drill collections
                     if (user && user.merged_uid) {
                         await processUser(user.merged_uid, user.uid, collections, app);
                     }
                 }
+                session.endSession();
             }, function(err) {
                 return close(err);
             });
@@ -56,7 +67,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device"];
 
             if (events && events.list) {
-                list = list.concat(events.list);
+                for (var p = 0; p < events.list.length; p++) {
+                    if (list.indexOf(events.list[p]) === -1) {
+                        list.push(events.list[p]);
+                    }
+                }
             }
             for (let i = 0; i < list.length; i++) {
                 var collectionName = drillCommon.getCollectionName(list[i], app_id);
@@ -74,14 +89,16 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
-                const events = await drillDb.collection(collection).find({uid: old_uid}, {_id: 1}).limit(1).toArray();
+                const events = await drillDb.collection(collection).find({uid: old_uid}, {uid: 1, _id: 0}).limit(1).toArray();
                 if (!events || !events.length) {
                     continue;
                 }
                 if (events && events[0]) {
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
                     try {
-                        await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                        if (!DRY_RUN) {
+                            await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                        }
                     }
                     catch (err) {
                         console.log("Error updating collection ", collection, "for app ", app.name, "with old uid ", old_uid, "to new uid ", new_uid, "error: ", err);
@@ -92,7 +109,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
             }
         }
-        if (dataviews) {
+        if (dataviews && !DRY_RUN) {
             await new Promise((resolve, reject) => {
                 dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
                     if (err) {
