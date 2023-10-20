@@ -13,13 +13,19 @@ const dataviews = require('../../../plugins/drill/api/parts/data/dataviews.js');
 const common = require("../../../api/utils/common.js");
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
+const APP_ID = ""; //leave empty to get all apps
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
     common.db = countlyDb;
     common.drillDb = drillDb;
     //get all apps
     try {
-        const apps = await countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray();
+        var query = {};
+        if (APP_ID) {
+            query._id = common.db.ObjectID(APP_ID);
+        }
+        const apps = await countlyDb.collection("apps").find(query, {_id: 1, name: 1}).toArray();
         if (!apps || !apps.length) {
             return close();
         }
