@@ -3,6 +3,7 @@
  */
 
 const got = require('got');
+const FormData = require('form-data');
 
 var initParams = function(uri, options, callback) {
 
@@ -113,20 +114,52 @@ module.exports = function(uri, options, callback) {
 
 };
 
+/**
+ * Uploads a file to the server
+ * @param {string} url - url to upload file to
+ * @param {object} fileData - file data object
+ * @param {string} fileData.fileField - name of the field to upload file as
+ * @param {string} fileData.fileStream - file stream to upload
+ * @param {function} callback - callback function
+ */
+async function uploadFormFile(url, fileData, callback) {
+    const { fileField, fileStream } = fileData;
+
+    const form = new FormData();
+    form.append(fileField, fileStream);
+
+    try {
+        const response = await got.post(url, {
+            body: form
+        });
+        callback(null, response.body);
+    }
+    catch (error) {
+        callback(error);
+    }
+}
+
 // Add a post method to the request object
 module.exports.post = function(uri, options, callback) {
     var params = initParams(uri, options, callback);
     if (params.options && (params.options.url || params.options.uri)) {
-        // Make the request using got
-        got.post(params.options)
-            .then(response => {
-                // Call the callback with the response data
-                params.callback(null, response, response.body);
-            })
-            .catch(error => {
-                // Call the callback with the error
-                params.callback(error);
-            });
+        if (params.options.form) {
+            // If options include a form, use uploadFormFile
+            const { url, form } = params.options;
+            uploadFormFile(url || params.options.uri, form, params.callback);
+        }
+        else {
+            // Make the request using got
+            got.post(params.options)
+                .then(response => {
+                    // Call the callback with the response data
+                    params.callback(null, response, response.body);
+                })
+                .catch(error => {
+                    // Call the callback with the error
+                    params.callback(error);
+                });
+        }
     }
     else {
         // Make the request using got

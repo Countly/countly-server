@@ -41,8 +41,13 @@ class CleanupCustomFieldJob extends job.Job {
         }
 
         pluginManager.loadConfigs(countlyDb, async() => {
-            const maxCustomFieldKeys = pluginManager.getConfig('crashes').max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
-            await cleanupCustomField(countlyDb, maxCustomFieldKeys);
+            const crashConfig = pluginManager.getConfig('crashes');
+            const activateJob = crashConfig.activate_custom_field_cleanup_job;
+            const maxCustomFieldKeys = crashConfig.max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
+
+            if (activateJob) {
+                await cleanupCustomField(countlyDb, maxCustomFieldKeys);
+            }
 
             return endJob();
         });
