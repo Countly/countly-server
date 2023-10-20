@@ -1946,8 +1946,8 @@ const processRequest = (params) => {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
                             }
                             catch (ex) {
-                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
-                                params.qstring.query = {};
+                                common.returnMessage(params, 400, "Failed to parse query. " + ex.message);
+                                return false;
                             }
                         }
                         else if (typeof params.qstring.query === "string") {
@@ -1955,8 +1955,8 @@ const processRequest = (params) => {
                                 params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
                             }
                             catch (ex) {
-                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
-                                params.qstring.query = {};
+                                common.returnMessage(params, 400, "Failed to parse query. " + ex.message);
+                                return false;
                             }
                         }
                         if (typeof params.qstring.projection === "string") {
