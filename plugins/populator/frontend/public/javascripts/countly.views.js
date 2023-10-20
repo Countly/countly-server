@@ -41,9 +41,8 @@
                 this.titleDescription = {header: CV.i18n('populator.create-new-template'), button: CV.i18n('common.create')};
                 this.openDrawer("populatorTemplate", {
                     name: '',
-                    isDefault: false,
-                    up: [{key: "", value: []}],
-                    events: [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}]
+                    events: [],
+                    users: []
                 });
             },
             refresh: function(isRefresh) {
@@ -318,6 +317,134 @@
         }
     });
 
+    // Vue.component("cly-populator-template-drawer", countlyVue.views.create({
+    //     props: {
+    //         controls: {type: Object, default: {}},
+    //         titleDescription: {type: Object, default: {}}
+    //     },
+    //     data: function() {
+    //         return {
+    //             appId: countlyCommon.ACTIVE_APP_ID
+    //         };
+    //     },
+    //     methods: {
+    //         addedTag: function(val) {
+    //             var lastInserted = val[val.length - 1];
+    //             var lastInsertedIndex = val.length - 1;
+
+    //             if (lastInserted.split(",").length > 1) {
+    //                 lastInserted.split(",").forEach(function(tag) {
+    //                     if (tag.length && val.indexOf(tag) < 0) {
+    //                         val.push(tag);
+    //                     }
+    //                 });
+    //                 val.splice(lastInsertedIndex, 1);
+    //             }
+    //         },
+    //         isAddEventDisabled: function(editedObject) {
+    //             return editedObject.events && editedObject.events.length && editedObject.events.slice(-1)[0].eventName === '';
+    //         },
+    //         isAddSegmentationDisabled: function(editedObject, index) {
+    //             return (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0);
+    //         },
+    //         addUserProperty: function(editedObject) {
+    //             if (editedObject.up[0].key === '' && editedObject.up[0].value.length === 0) {
+    //                 Vue.set(editedObject, "up", [{key: "", value: []}]);
+    //             }
+    //             else if (editedObject.up.slice(-1)[0].key === '') {
+    //                 return;
+    //             }
+    //             else {
+    //                 editedObject.up.push({ key: "", value: []});
+    //                 Vue.set(editedObject, "up", editedObject.up);
+    //             }
+    //         },
+    //         addEventProperty: function(editedObject) {
+    //             if (editedObject.events[0].eventName === '') {
+    //                 if (!editedObject.events.length) {
+    //                     Vue.set(editedObject, "events", [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}]);
+    //                 }
+    //             }
+    //             else if (editedObject.events.slice(-1)[0].eventName === '') {
+    //                 return;
+    //             }
+    //             else {
+    //                 editedObject.events.push({eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}});
+    //                 Vue.set(editedObject, "events", editedObject.events);
+    //             }
+    //         },
+    //         addSegmentationProperty: function(editedObject, index) {
+    //             if (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0) {
+    //                 return;
+    //             }
+    //             else {
+    //                 editedObject.events[index].segments.push({ key: "", value: []});
+    //             }
+    //         },
+    //         removeLineProperty: function(editedObject, index, type) {
+    //             type === 'custom' ? editedObject.up.splice(index, 1) : editedObject.events.splice(index, 1);
+    //         },
+    //         removeSegmentationProperty: function(editedObject, index, segmentIndex) {
+    //             editedObject.events[index].segments.splice(segmentIndex, 1);
+    //         },
+    //         onSubmit: function(editedObject) {
+    //             var self = this;
+    //             var isEdit = !!editedObject._id;
+    //             var isDuplicate = editedObject.is_duplicate;
+    //             var preparedUpObject = {};
+    //             var preparedEventObject = {};
+    //             var preparedSegmentationObject = {};
+
+    //             for (var i = 0; i < editedObject.up.length; i++) {
+    //                 preparedUpObject[editedObject.up[i].key] = editedObject.up[i].value;
+    //             }
+
+    //             for (var j = 0; j < editedObject.events.length; j++) {
+    //                 preparedSegmentationObject = {};
+    //                 for (var k = 0; k < editedObject.events[j].segments.length; k++) {
+    //                     preparedSegmentationObject[editedObject.events[j].segments[k].key] = editedObject.events[j].segments[k].value;
+    //                 }
+    //                 preparedEventObject[editedObject.events[j].eventName] = [{}];
+    //                 if (editedObject.events[j].checkedEventProperties.duration) {
+    //                     preparedEventObject[editedObject.events[j].eventName][0].duration = editedObject.events[j].duration.map(Number);
+    //                 }
+    //                 if (editedObject.events[j].checkedEventProperties.sum) {
+    //                     preparedEventObject[editedObject.events[j].eventName][0].sum = editedObject.events[j].sum.map(Number);
+    //                 }
+    //                 if (Object.keys(preparedSegmentationObject)[0] !== '') {
+    //                     preparedEventObject[editedObject.events[j].eventName][0].segments = preparedSegmentationObject;
+    //                 }
+    //                 /*
+    //                 preparedEventObject[editedObject.events[j].eventName] = [
+    //                     {
+    //                         ...(editedObject.events[j].checkedEventProperties.duration && {"duration": editedObject.events[j].duration.map(Number)}), 
+    //                         ...(editedObject.events[j].checkedEventProperties.sum && {"sum" : editedObject.events[j].sum.map(Number)}),
+    //                         ...(Object.keys(preparedSegmentationObject)[0] !== '' && {"segments" : preparedSegmentationObject})
+    //                     }
+    //                 ];
+    //                 */
+    //             }
+
+    //             editedObject.up = preparedUpObject;
+    //             editedObject.events = preparedEventObject;
+    //             if (isEdit && !isDuplicate) {
+    //                 countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
+    //                     if (res.result) {
+    //                         CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
+    //                     }
+    //                     self.$emit('closeHandler', res);
+    //                 });
+    //             }
+    //             else {
+    //                 countlyPopulator.createTemplate(editedObject, function(res) {
+    //                     self.$emit('closeHandler', res);
+    //                 });
+    //             }
+    //         }
+    //     },
+    //     template: countlyVue.T("/populator/templates/template_drawer.html")
+    // }));
+
     Vue.component("cly-populator-template-drawer", countlyVue.views.create({
         props: {
             controls: {type: Object, default: {}},
@@ -325,124 +452,26 @@
         },
         data: function() {
             return {
-                appId: countlyCommon.ACTIVE_APP_ID
+                appId: countlyCommon.ACTIVE_APP_ID,
+                items: [
+                    {header: CV.i18n('populator-template.users'), isActive: true},
+                    {header: CV.i18n('populator-template.events'), isActive: false},
+                    {header: CV.i18n('populator-template.views'), isActive: false},
+                    {header: CV.i18n('populator-template.sequences'), isActive: false},
+                    {header: CV.i18n('populator-template.behavior'), isActive: false },
+                ],
+                users: ['pinar'],
+                events: []
             };
         },
         methods: {
-            addedTag: function(val) {
-                var lastInserted = val[val.length - 1];
-                var lastInsertedIndex = val.length - 1;
-
-                if (lastInserted.split(",").length > 1) {
-                    lastInserted.split(",").forEach(function(tag) {
-                        if (tag.length && val.indexOf(tag) < 0) {
-                            val.push(tag);
-                        }
-                    });
-                    val.splice(lastInsertedIndex, 1);
-                }
-            },
-            isAddEventDisabled: function(editedObject) {
-                return editedObject.events && editedObject.events.length && editedObject.events.slice(-1)[0].eventName === '';
-            },
-            isAddSegmentationDisabled: function(editedObject, index) {
-                return (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0);
-            },
-            addUserProperty: function(editedObject) {
-                if (editedObject.up[0].key === '' && editedObject.up[0].value.length === 0) {
-                    Vue.set(editedObject, "up", [{key: "", value: []}]);
-                }
-                else if (editedObject.up.slice(-1)[0].key === '') {
-                    return;
-                }
-                else {
-                    editedObject.up.push({ key: "", value: []});
-                    Vue.set(editedObject, "up", editedObject.up);
-                }
-            },
-            addEventProperty: function(editedObject) {
-                if (editedObject.events[0].eventName === '') {
-                    if (!editedObject.events.length) {
-                        Vue.set(editedObject, "events", [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}]);
-                    }
-                }
-                else if (editedObject.events.slice(-1)[0].eventName === '') {
-                    return;
-                }
-                else {
-                    editedObject.events.push({eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}});
-                    Vue.set(editedObject, "events", editedObject.events);
-                }
-            },
-            addSegmentationProperty: function(editedObject, index) {
-                if (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0) {
-                    return;
-                }
-                else {
-                    editedObject.events[index].segments.push({ key: "", value: []});
-                }
-            },
-            removeLineProperty: function(editedObject, index, type) {
-                type === 'custom' ? editedObject.up.splice(index, 1) : editedObject.events.splice(index, 1);
-            },
-            removeSegmentationProperty: function(editedObject, index, segmentIndex) {
-                editedObject.events[index].segments.splice(segmentIndex, 1);
-            },
             onSubmit: function(editedObject) {
-                var self = this;
-                var isEdit = !!editedObject._id;
-                var isDuplicate = editedObject.is_duplicate;
-                var preparedUpObject = {};
-                var preparedEventObject = {};
-                var preparedSegmentationObject = {};
-
-                for (var i = 0; i < editedObject.up.length; i++) {
-                    preparedUpObject[editedObject.up[i].key] = editedObject.up[i].value;
-                }
-
-                for (var j = 0; j < editedObject.events.length; j++) {
-                    preparedSegmentationObject = {};
-                    for (var k = 0; k < editedObject.events[j].segments.length; k++) {
-                        preparedSegmentationObject[editedObject.events[j].segments[k].key] = editedObject.events[j].segments[k].value;
-                    }
-                    preparedEventObject[editedObject.events[j].eventName] = [{}];
-                    if (editedObject.events[j].checkedEventProperties.duration) {
-                        preparedEventObject[editedObject.events[j].eventName][0].duration = editedObject.events[j].duration.map(Number);
-                    }
-                    if (editedObject.events[j].checkedEventProperties.sum) {
-                        preparedEventObject[editedObject.events[j].eventName][0].sum = editedObject.events[j].sum.map(Number);
-                    }
-                    if (Object.keys(preparedSegmentationObject)[0] !== '') {
-                        preparedEventObject[editedObject.events[j].eventName][0].segments = preparedSegmentationObject;
-                    }
-                    /*
-                    preparedEventObject[editedObject.events[j].eventName] = [
-                        {
-                            ...(editedObject.events[j].checkedEventProperties.duration && {"duration": editedObject.events[j].duration.map(Number)}), 
-                            ...(editedObject.events[j].checkedEventProperties.sum && {"sum" : editedObject.events[j].sum.map(Number)}),
-                            ...(Object.keys(preparedSegmentationObject)[0] !== '' && {"segments" : preparedSegmentationObject})
-                        }
-                    ];
-                    */
-                }
-
-                editedObject.up = preparedUpObject;
-                editedObject.events = preparedEventObject;
-                if (isEdit && !isDuplicate) {
-                    countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
-                        if (res.result) {
-                            CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
-                        }
-                        self.$emit('closeHandler', res);
-                    });
-                }
-                else {
-                    countlyPopulator.createTemplate(editedObject, function(res) {
-                        self.$emit('closeHandler', res);
-                    });
-                }
+                console.log(editedObject, 'model');
             }
         },
-        template: countlyVue.T("/populator/templates/template_drawer.html")
+        components: {
+
+        },
+        template: countlyVue.T("/populator/templates/template_form.html")
     }));
 })();

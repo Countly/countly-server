@@ -1,6 +1,6 @@
-<cly-drawer ref="drawer" @submit="onSubmit" class="populator-template-drawer" v-bind="$props.controls" name="populatorTemplate" :title="$props.titleDescription.header" :saveButtonLabel="$props.titleDescription.button" :size="6">
+ <!-- <cly-drawer ref="drawer" @submit="onSubmit" class="populator-template-drawer" v-bind="$props.controls" name="populatorTemplate" :title="$props.titleDescription.header" :saveButtonLabel="$props.titleDescription.button" :size="6">
     <template v-slot:default="drawerScope">
-        <cly-form-step id="create-template-step">
+       <cly-form-step id="create-template-step">
             <div class="cly-vue-drawer-step__section">
                 <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
                 <validation-provider name="name" rules="required" v-slot="v">
@@ -38,7 +38,6 @@
                 <div v-if="typeof drawerScope.editedObject.up !== 'undefined'">
                     <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text" v-bind:style="[drawerScope.editedObject.up[drawerScope.editedObject.up.length-1].key === '' ? {'color' : '#81868d !important' , 'cursor' : 'no-drop'} : {'color' : '#0166d6 !important'}]" @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button>
                 </div>
-                <!-- <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text" @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button> -->
                 <h4 class="bu-mb-4">{{ i18n('populator.events') }}</h4>
                 <div class="populator-template-drawer__main-container bu-py-2 bu-px-4 bu-mt-4" v-for="(eventItem, index) in drawerScope.editedObject.events">
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3 bu-mt-2">
@@ -110,6 +109,6 @@
                 <el-button :disabled="isAddEventDisabled(drawerScope.editedObject)" class="bu-mt-4 bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text  el-button--default" @click="addEventProperty(drawerScope.editedObject)">{{ i18n('populator.add-event') }}</el-button>
             </div>
         </div>
-        </cly-form-step>
+        </cly-form-step> 
     </template>
-</cly-drawer>
+</cly-drawer>-->

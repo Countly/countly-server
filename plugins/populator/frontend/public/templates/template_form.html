@@ -1,0 +1,38 @@
+<cly-drawer
+    ref="drawer"
+    @submit="onSubmit"
+    class="populator-template-drawer"
+    v-bind="$props.controls"
+    :hasBackLink="{ value: true, style: 'width: 622px' }"
+    name="populatorTemplate"
+    :title="$props.titleDescription.header"
+    :saveButtonLabel="$props.titleDescription.button"
+    toggle-transition="stdt-fade"
+    :size="12">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="create-template-step">
+            <div class="bu-is-flex" style="justify-content: space-around;">
+                <div class="populator-template__left-container">
+                    <cly-populator-left-container :data="items"></cly-populator-left-container>
+                </div>
+                <div style="width: 702px;">
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
+                        <validation-provider name="name" rules="required" v-slot="v">
+                            <el-input class="bu-is-shadowless" style="margin-bottom: 20px" :class="{'is-error': v.errors.length > 0}" :placeholder="i18n('populator.template-name-placeholder')" v-model="drawerScope.editedObject.name"></el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users"></cly-populator-section>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <cly-populator-section title="Events" type="eventsSection" v-model="drawerScope.editedObject.events" hasSwitch></cly-populator-section>
+                    </div>
+                </div>
+                <div>
+
+                </div>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>

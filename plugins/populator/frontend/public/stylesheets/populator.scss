@@ -245,3 +245,14 @@
         width: 437px;
     }
 }
+
+.populator-template {
+    &__left-container {
+        width: 179px;
+        margin-top: 120px;
+
+    }
+    &__active-bar {
+        width: 3px;
+    }
+}
