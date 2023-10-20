@@ -1145,10 +1145,12 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 dbAppUser: params.app_user,
                 updates: ob.updates
             });
-            plugins.dispatch("/session/duration", {
-                params: params,
-                session_duration: params.qstring.session_duration
-            });
+            if (params.qstring.session_duration) {
+                plugins.dispatch("/session/duration", {
+                    params: params,
+                    session_duration: params.qstring.session_duration
+                });
+            }
         }
         else {
             userProps.lsid = params.request_id;
