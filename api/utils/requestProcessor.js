@@ -1941,20 +1941,22 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
                             return false;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
-                            }
-                            catch (ex) {
-                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
-                            }
-                        }
                         if (typeof params.qstring.filter === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
                             }
                             catch (ex) {
                                 common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
+                                params.qstring.query = {};
+                            }
+                        }
+                        else if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
+                            }
+                            catch (ex) {
+                                common.returnMessage(params, 401, "Failed to parse query. " + ex.message);
+                                params.qstring.query = {};
                             }
                         }
                         if (typeof params.qstring.projection === "string") {
