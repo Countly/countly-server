@@ -195,11 +195,15 @@ usage.processSessionDuration = function(params, callback) {
         var dbDateIds = common.getDateIds(params);
 
         common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+        params.qstring.session_duration = session_duration;
 
-        plugins.dispatch("/session/duration", {
-            params: params,
-            session_duration: session_duration
-        });
+        if (!params.qstring.begin_session) {
+            plugins.dispatch("/session/duration", {
+                params: params,
+                session_duration: session_duration
+            });
+        }
+
         if (callback) {
             callback();
         }
@@ -1140,6 +1144,10 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 params: params,
                 dbAppUser: params.app_user,
                 updates: ob.updates
+            });
+            plugins.dispatch("/session/duration", {
+                params: params,
+                session_duration: params.qstring.session_duration
             });
         }
         else {
