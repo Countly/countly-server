@@ -7,38 +7,53 @@
 
 var DRY_RUN = true;
 
-
 const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
 const dataviews = require('../../../plugins/drill/api/parts/data/dataviews.js');
 const common = require("../../../api/utils/common.js");
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
+const APP_ID = ""; //leave empty to get all apps
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
-    console.log("Connected to databases.");
+    console.log("Connected to databases...");
     common.db = countlyDb;
     common.drillDb = drillDb;
     //get all apps
     try {
-        const apps = await countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray();
+        var query = {};
+        if (APP_ID) {
+            query._id = common.db.ObjectID(APP_ID);
+        }
+        const apps = await countlyDb.collection("apps").find(query, {_id: 1, name: 1}).toArray();
         if (!apps || !apps.length) {
             return close();
         }
         try {
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
-                console.log("Processing app ", app.name);
-                //get users with merges
-                var collections = await getDrillCollections(app._id); //get all drill collections for this app
-                const usersCursor = countlyDb.collection('app_users' + app._id).find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
+                console.log("Processing app: ", app.name);
+                //get all drill collections for this app
+                var collections = await getDrillCollections(app._id);
+                //start session
+                const session = await countlyDb.client.startSession();
+                const usersCollection = session.client.db("countly").collection('app_users' + app._id);
+                const usersCursor = usersCollection.find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1}).addCursorFlag('noCursorTimeout', true);
+                var refreshTimestamp = new Date();
                 //for each user
                 while (await usersCursor.hasNext()) {
+                    if ((new Date() - refreshTimestamp) / 1000 > 300) {
+                        console.log("Refreshing session");
+                        await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                        refreshTimestamp = new Date();
+                    }
                     const user = await usersCursor.next();
                     //check if old uid still exists in drill collections
                     if (user && user.merged_uid) {
                         await processUser(user.merged_uid, user.uid, collections, app);
                     }
                 }
+                session.endSession();
             }, function(err) {
                 return close(err);
             });
