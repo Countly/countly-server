@@ -582,18 +582,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         unset: "destroy"
     });
     app.use((req, res, next) => {
-    // Check for the specified path and query parameter
-        if (req.path.startsWith('/feedback/nps') && req.query.widget_id && req.query.widget_id.length) {
-            return next();
-        }
-        else if (req.path.startsWith('/feedback/survey') && req.query.widget_id && req.query.widget_id.length) {
-            return next();
-        }
-        else if (req.path.startsWith('/feedback/rating') && req.query.widget_id && req.query.widget_id.length) {
-            return next();
+        if (!plugins.callMethod("skipSession", {req: req, res: res, next: next})) {
+            return sessionMiddleware(req, res, next);
         }
         else {
-            return sessionMiddleware(req, res, next);
+            return next();
         }
     });
 
