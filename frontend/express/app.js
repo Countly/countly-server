@@ -565,7 +565,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 
-    app.use(session({
+    app.use(bodyParser.json()); // to support JSON-encoded bodies
+    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
+        extended: true
+    }));
+
+    const sessionMiddleware = session({
         secret: countlyConfig.web.session_secret || 'countlyss',
         name: countlyConfig.web.session_name || 'connect.sid',
         cookie: countlyConfig.cookie,
@@ -575,11 +580,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         rolling: true,
         proxy: true,
         unset: "destroy"
-    }));
-    app.use(bodyParser.json()); // to support JSON-encoded bodies
-    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-        extended: true
-    }));
+    });
+    app.use((req, res, next) => {
+    // Check for the specified path and query parameter
+        if (req.path.startsWith('/feedback/nps') && req.query.widget_id && req.query.widget_id.length) {
+            return next();
+        }
+        else if (req.path.startsWith('/feedback/survey') && req.query.widget_id && req.query.widget_id.length) {
+            return next();
+        }
+        else if (req.path.startsWith('/feedback/rating') && req.query.widget_id && req.query.widget_id.length) {
+            return next();
+        }
+        else {
+            return sessionMiddleware(req, res, next);
+        }
+    });
+
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
