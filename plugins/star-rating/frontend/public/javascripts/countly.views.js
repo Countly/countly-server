@@ -617,7 +617,7 @@
                 var target_pages = row.target_pages === "-" ? [] : row.target_pages.split(", ");
                 if (this.cohortsEnabled) {
                     var exported = row.targeting;
-                    if (!((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
+                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
                         finalizedTargeting = Object.assign({}, {
                             user_segmentation: JSON.stringify(exported.user_segmentation),
                             steps: JSON.stringify(exported.steps)
