@@ -565,7 +565,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 
-    app.use(session({
+    app.use(bodyParser.json()); // to support JSON-encoded bodies
+    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
+        extended: true
+    }));
+
+    const sessionMiddleware = session({
         secret: countlyConfig.web.session_secret || 'countlyss',
         name: countlyConfig.web.session_name || 'connect.sid',
         cookie: countlyConfig.cookie,
@@ -575,11 +580,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         rolling: true,
         proxy: true,
         unset: "destroy"
-    }));
-    app.use(bodyParser.json()); // to support JSON-encoded bodies
-    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-        extended: true
-    }));
+    });
+    app.use((req, res, next) => {
+        if (!plugins.callMethod("skipSession", {req: req, res: res, next: next})) {
+            return sessionMiddleware(req, res, next);
+        }
+        else {
+            return next();
+        }
+    });
+
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
