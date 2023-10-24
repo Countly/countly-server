@@ -182,7 +182,7 @@ a:active { color:inherit; }
   height:17px !important;
 }
 .wrapper {
-  position:relative;padding-top:20px;
+  position:relative;padding-top:80px;
 }
 input.error{
   background: #FFF4CE;
@@ -257,7 +257,7 @@ input.error{
   }
 	#langs { display:none; margin-top:4px; }
 	#langs .group:last-child { margin-right:0; }
-#login-logo { margin-top: 38px; margin-left: 72px; width:165px; height:50px; background-image:url('../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
+#login-logo { margin-top: 38px; margin-left: 72px; width:146px; height:40px; background-image:url('../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
 #forgot-logo { margin:0 auto; width:180px; height:55px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
 #create-account { overflow:auto; }
 	#create-account div { float:left; margin-right:10px; }
