@@ -278,15 +278,11 @@
 
             if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getRemoteFilterValues = function(segmentationKey) {
+                var getFilterValues = function(segmentationKey) {
                     return function() {
-                        return new Promise(function(resolve) {
-                            crashMeta.getBigListMetaData('sg.' + segmentationKey, '', function(vals) {
-                                resolve(vals.map(function(item) {
-                                    var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + item) : item;
-                                    return {label: name, name: name, value: item};
-                                }));
-                            });
+                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
+                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
+                            return {name: name, value: value};
                         });
                     };
                 };
@@ -306,14 +302,14 @@
                     filterProperties.push({
                         id: "app_version",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
+                        type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
+                        type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
                         getValueList: getAppVersions
                     });
@@ -322,28 +318,28 @@
                         name: "OpenGL Version",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        searchRemoteList: getRemoteFilterValues('opengl')
+                        getValueList: getFilterValues("opengl")
                     });
                     filterProperties.push({
                         id: "orientation",
                         name: "Orientation",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        searchRemoteList: getRemoteFilterValues('orientation')
+                        getValueList: getFilterValues("orientation")
                     });
                     filterProperties.push({
                         id: "os",
                         name: "Platform",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        searchRemoteList: getRemoteFilterValues('os')
+                        getValueList: getFilterValues("os")
                     });
                     filterProperties.push({
                         id: "cpu",
                         name: "CPU",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        searchRemoteList: getRemoteFilterValues('cpu')
+                        getValueList: getFilterValues("cpu")
                     });
                 }
             }
@@ -452,11 +448,9 @@
             crashgroupsFilter: {
                 set: function(newValue) {
                     var query = {};
-                    var tmpQuery = {};
 
                     if (newValue.query) {
-                        tmpQuery = countlyCrashes.modifyQueries(newValue.query);
-                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
+                        query = countlyCrashes.modifyExistsQueries(newValue.query);
                     }
 
                     if (newValue.query) {
@@ -538,10 +532,8 @@
             refresh: function() {
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
-                    var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        tmpQuery = countlyCrashes.modifyQueries(this.crashgroupsFilter.query);
-                        query = countlyCrashes.modifyExistsQueries(tmpQuery);
+                        query = countlyCrashes.modifyExistsQueries(this.crashgroupsFilter.query);
                     }
 
                     return Promise.all([
@@ -615,10 +607,8 @@
         },
         beforeCreate: function() {
             var query = {};
-            var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
-                query = countlyCrashes.modifyExistsQueries(tmpQuery);
+                query = countlyCrashes.modifyExistsQueries(this.$route.params.query.query);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
@@ -1371,20 +1361,6 @@
                 {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
             ]
         });
-
-        app.addAppManagementInput("crashes", CV.i18n("crashes.title"),
-            {
-                "crashes.smart_preprocessing": {input: "el-switch", attrs: {}, defaultValue: true},
-                "crashes.smart_regexes": {input: "el-input", attrs: {type: "textarea", rows: 5}},
-                "crashes.grouping_strategy": {
-                    input: "el-select",
-                    attrs: {},
-                    list: [
-                        {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
-                        {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
-                    ]
-                }
-            });
     }
 
     app.route("/crashes", "crashes", function() {

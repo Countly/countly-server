@@ -346,12 +346,10 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin) {
-                    if (!member.permission || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
-                        common.returnMessage(params, 401, 'User does not have right');
-                        reject('User does not have right');
-                        return false;
-                    }
+                if (!member.global_admin && member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
+                    return false;
                 }
 
                 if (member && member.locked) {

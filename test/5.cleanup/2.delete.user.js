@@ -88,6 +88,7 @@ describe('Deleting user', function() {
                     ob.should.have.property(keys[0]);
                     keys.should.have.lengthOf(1);
                     var user = ob[keys[0]];
+                    user.should.have.property('api_key', API_KEY_ADMIN);
                     user.should.have.property('email', testUtils.email);
                     user.should.have.property('full_name', testUtils.name);
                     user.should.have.property('global_admin', true);

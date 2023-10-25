@@ -144,7 +144,7 @@ function escape_html_entities(key, value, more) {
     }
     return value;
 }
-common.getJSON = getJSON;
+
 /**
 * Check if string is a valid json
 * @param {string} val - string that might be json encoded
@@ -2595,7 +2595,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        if (params.qstring.device_id && user.did !== params.qstring.device_id) {
+        if (params.qstring.device_id && typeof user.did === "undefined") {
             if (!update.$set) {
                 update.$set = {};
             }
@@ -2744,10 +2744,7 @@ common.p = f => {
 * @returns {vary} modified value, if it had revivable data
 */
 common.reviver = (key, value) => {
-    if (value === null) {
-        return value;
-    }
-    else if (value.toString().indexOf("__REGEXP ") === 0) {
+    if (value.toString().indexOf("__REGEXP ") === 0) {
         const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
         return new RegExp(m[1], m[2] || "");
     }
@@ -3099,6 +3096,7 @@ common.sanitizeHTML = (html) => {
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
+
                 var attributeValueStart = fullAttribute.indexOf(attributeValue);
                 if (attributeValueStart >= 1) {
                     var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);

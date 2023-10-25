@@ -4,11 +4,19 @@
             <div class="bu-column bu-is-one-third">
                 <div class="dbviewer-tab__sidebar bg-white">
                     <div class="dbviewer-tab__app-selector-dropdown">
-                        <cly-select-x
-                            @change="onAppChange($event)"
-                            v-model="appFilter"
-                            :options="apps">
-                        </cly-select-x>
+                        <el-select v-model="appFilter">
+                            <el-option
+                                key="all"
+                                label="All apps"
+                                value="all">
+                            </el-option>
+                            <el-option
+                                v-for="app in apps"
+                                :key="app.value"
+                                :label="app.label"
+                                :value="app.label">
+                            </el-option>
+                        </el-select>
                     </div>
                     <cly-listbox
                         class="dbviewer-tab__collections-list"
@@ -26,7 +34,7 @@
                     <div class="bu-level-left">
                         <div v-if="db" class="dbviewer-tab__content">
                             <div class="bu-has-text-weight-normal bu-is-size-5">
-                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[db].map[collection]) }}
+                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ collections[db].map[collection] }}
                             </div>
                         </div>
                     </div>

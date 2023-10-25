@@ -283,13 +283,13 @@
     var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
         // eslint-disable-next-line
-        onRequest: function(context) {
+        onRequest: function(context, payload) {
             context.rootState.countlyConsentManager.isLoading = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            if (context.rootState.countlyConsentManager.uid) {
-                data.query = JSON.stringify({ uid: context.rootState.countlyConsentManager.uid });
+            if (payload.uid) {
+                data.query = JSON.stringify({ uid: payload.uid });
             }
             return {
                 type: "POST",

@@ -809,10 +809,6 @@ class APN extends Base {
                             }
                             streamDone();
                         }
-                        else if (!status) {
-                            // most likely a timeout
-                            streamDone();
-                        }
                     });
                     stream.setEncoding('utf-8');
                     stream.setTimeout(10000, () => {

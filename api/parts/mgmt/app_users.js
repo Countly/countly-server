@@ -467,9 +467,6 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                             }
                         }
                     }
-                    else if (typeof oldAppUser[i].toHexString === 'function') {
-                        newAppUserP[i] = newAppUserP[i] || oldAppUser[i];
-                    }
                     else {
                         if (typeof newAppUserP[i] === "undefined") {
                             newAppUserP[i] = {};

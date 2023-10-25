@@ -184,42 +184,42 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
                 log.e(e);
             }
         }
-    }
 
-    if (query.push) {
-        let q;
-        if (query.push.$nin) {
-            q = {
-                $and: query.push.$nin.map(tk => {
-                    return {[tk]: {$exists: false}};
-                })
-            };
-        }
-        if (query.push.$in) {
-            q = {
-                $or: query.push.$in.map(tk => {
+        if (query.push) {
+            let q;
+            if (query.push.$nin) {
+                q = {
+                    $and: query.push.$nin.map(tk => {
+                        return {[tk]: {$exists: false}};
+                    })
+                };
+            }
+            if (query.push.$in) {
+                q = {
+                    $or: query.push.$in.map(tk => {
+                        return {[tk]: {$exists: true}};
+                    })
+                };
+            }
+            if (query.push.$regex) {
+                q = Object.keys(FIELDS_TITLES).filter(k => query.push.$regex.test(FIELDS_TITLES[k])).map(tk => {
                     return {[tk]: {$exists: true}};
-                })
-            };
-        }
-        if (query.push.$regex) {
-            q = Object.keys(FIELDS_TITLES).filter(k => query.push.$regex.test(FIELDS_TITLES[k])).map(tk => {
-                return {[tk]: {$exists: true}};
-            });
-        }
-
-        delete query.push;
-
-        if (q) {
-            if (query.$or) {
-                query.$and = [query.$or, q];
+                });
             }
-            else if (query.$and) {
-                query.$and = [query.$and, q];
-            }
-            else {
-                for (let k in q) {
-                    query[k] = q[k];
+
+            delete query.push;
+
+            if (q) {
+                if (query.$or) {
+                    query.$and = [query.$or, q];
+                }
+                else if (query.$and) {
+                    query.$and = [query.$and, q];
+                }
+                else {
+                    for (let k in q) {
+                        query[k] = q[k];
+                    }
                 }
             }
         }

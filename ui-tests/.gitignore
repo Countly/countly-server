@@ -1,6 +1,0 @@
-node_modules
-cypress/hars
-cypress/videos
-cypress/screenshots
-cypress/fixtures/user.json
-cypress.config.js

@@ -13,7 +13,6 @@ var APP_ID = "";
 //recalculate
 var myTime = Date.now();
 var start = new Date(new Date().getFullYear(), 0, 0);
-var startMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
 
 var tableResponse = {};
 var userObject = {};
@@ -33,7 +32,6 @@ graphResponse.yesterday = {};
 graphResponse["30days"] = {};
 
 var days_this_year;
-var days_this_month;
 
 function pushValues(period, index, map) {
     for (var key in map) {
@@ -243,9 +241,7 @@ describe('Testing views plugin', function() {
     describe('verify empty views tables', function() {
         it('should have 0 views', function(done) {
             days_this_year = Math.floor((myTime - start) / (1000 * 24 * 60 * 60));
-            days_this_month = Math.floor((myTime - startMonth) / (1000 * 24 * 60 * 60));
-            console.log("days gone in this month:" + days_this_month);
-            console.log("days gone in this year:" + days_this_year);
+            console.log("days left in this year:" + days_this_year);
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
@@ -304,12 +300,8 @@ describe('Testing views plugin', function() {
             tableResponse.yesterday.iTotalRecords += 1;
             tableResponse.yesterday.iTotalDisplayRecords += 1;
             pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "view": "testview0"});
-            if (days_this_month < 2) {
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
-            }
-            else {
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
-            }
+
+            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
 
             tableResponse["7days"].iTotalRecords += 1;
             tableResponse["7days"].iTotalDisplayRecords += 1;
@@ -344,13 +336,7 @@ describe('Testing views plugin', function() {
             tableResponse.hour.iTotalRecords += 1;
             tableResponse.hour.iTotalDisplayRecords += 1;
             pushValues("hour", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
-
-            if (days_this_month > 1) {
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
-            }
-            else {
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
-            }
+            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, 'uvalue': 1});
 
             tableResponse.month.iTotalRecords = 1;
             tableResponse.month.iTotalDisplayRecords = 1;

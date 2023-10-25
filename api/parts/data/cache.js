@@ -164,12 +164,12 @@ class CacheWorker {
         this.started = false;
 
         this.ipc = new CentralWorker(CENTRAL, (m, reply) => {
+            log.d('handling %s: %j', reply ? 'reply' : 'broadcast', m);
             let {o, k, g, d} = m || {};
 
             if (!g) {
                 return;
             }
-            log.d('handling %s: %j', reply ? 'reply' : 'broadcast', m);
 
             let store = this.data.read(g);
 
@@ -178,7 +178,7 @@ class CacheWorker {
                 return;
             }
             else if (!store) {
-                log.d('Group store is not initialized');
+                log.e('Group store is not initialized');
                 return;
             }
 
@@ -229,12 +229,6 @@ class CacheWorker {
                     Object.keys(ret).forEach(g => {
                         if (!this.data.read(g)) {
                             this.data.write(g, new DataStore(ret[g].size, ret[g].age, undefined, ret[g].Cls));
-                            if (ret[g].data) {
-                                log.d('got %d data objects in init response', Object.keys(ret[g].data).length);
-                                for (let k in ret[g].data) {
-                                    this.data.read(g).write(k, ret[g].data[k]);
-                                }
-                            }
                         }
                     });
                     this.started = true;
@@ -517,43 +511,20 @@ class CacheMaster {
             this.ipc.send(0, doc);
         });
 
-        this.initialized = {};
-        this.delayed_messages = [];
         this.ipc = new CentralMaster(CENTRAL, ({o, g, k, d}, reply, from) => {
             log.d('handling %s: %j / %j / %j / %j', reply ? 'reply' : 'broadcast', o, g, k, d);
 
             if (o === OP.INIT) {
-                this.initialized[from] = true;
                 let ret = {};
                 this.data.iterate((group, store) => {
-                    let data = {};
-                    store.iterate((key, obj) => {
-                        data[key] = obj instanceof Jsonable ? obj.json : obj;
-                    });
-                    ret[group] = {size: store.size, age: store.age, Cls: store.Cls, data};
-                });
-                setImmediate(() => {
-                    let remove = [];
-                    this.delayed_messages.filter(arr => arr[0] === from).forEach(arr => {
-                        remove.push(arr);
-                        this.ipc.send(arr[0], arr[1]);
-                    });
-                    if (remove.length) {
-                        log.d('sent %d delayed messages after %d worker\'s init', remove.length, from);
-                        remove.forEach(m => {
-                            const i = this.delayed_messages.indexOf(m);
-                            if (i !== -1) {
-                                this.delayed_messages.splice(i, 1);
-                            }
-                        });
-                    }
+                    ret[group] = {size: store.size, age: store.age, Cls: store.Cls};
                 });
                 return ret;
             }
 
             let store = this.data.read(g);
             if (!store) {
-                log.d(`No store for group ${g}`);
+                log.w(`No store for group ${g}`);
                 throw new Error('No such store ' + g);
             }
 
@@ -638,15 +609,7 @@ class CacheMaster {
         init().then(arr => {
             (arr || []).forEach(([k, d]) => {
                 this.data.read(group).write(k, d);
-                const msg = {o: OP.READ, g: group, k, d: d && (d instanceof Jsonable) ? d.json : d};
-                for (const pid in this.ipc.workers) {
-                    if (this.initialized[pid]) {
-                        this.ipc.send(parseInt(pid), msg);
-                    }
-                    else {
-                        this.delayed_messages.push([parseInt(pid), msg]);
-                    }
-                }
+                this.ipc.send(0, {o: OP.READ, g: group, k, d: d && (d instanceof Jsonable) ? d.json : d});
             });
         }, log.e.bind(log, 'Error during initialization of cache group %s', group));
     }

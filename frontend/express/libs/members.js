@@ -918,19 +918,13 @@ membersUtility.settings = function(req, callback) {
             return;
         }
 
-        req.body.full_name = (req.body.full_name + "").trim();
         req.body.username = (req.body.username + "").trim();
-        if (req.body.username === "") {
-            callback(false, "management-users.username-required");
-            return;
-        }
         if (req.body.member_image && req.body.member_image !== "delete") {
             updatedUser.member_image = req.body.member_image;
         }
         if (req.body.member_image === "delete") {
             updatedUser.member_image = "";
         }
-        updatedUser.full_name = req.body.full_name;
         updatedUser.username = req.body.username;
         updatedUser.api_key = req.body.api_key;
         if (req.body.lang) {

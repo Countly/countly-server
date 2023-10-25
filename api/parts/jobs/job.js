@@ -513,7 +513,7 @@ class Job extends EventEmitter {
         }
 
         let existing = await Job.findMany(this.db(), query);
-        if (existing.length === 1 && (existing[0].schedule && existing[0].schedule === this._json.schedule)) {
+        if (existing.length === 1) {
             log.i('No need for replace of %s (%j): existing job %j', this.name, this.data, existing[0]);
             this._json = existing[0];
             return existing[0];

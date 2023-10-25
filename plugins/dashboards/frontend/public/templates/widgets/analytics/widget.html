@@ -56,7 +56,7 @@
                 </cly-datatable-n>
                 <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
             </div>
-            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}" :patch-x-axis="stackedBarOptions.patchXAxis !== undefined ? stackedBarOptions.patchXAxis : true"></cly-chart-bar>
+            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
             <cly-chart-bar v-else-if="data.visualization === 'time-series'" :valFormatter="valFormatter" :option="stackedBarTimeSeriesOptions" :patch-x-axis="false" :no-hourly="true" category="user-analytics" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" height="auto" skin="full"></cly-chart-bar>
             <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
         </template>

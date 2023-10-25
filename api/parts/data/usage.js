@@ -164,7 +164,7 @@ usage.setLocation = function(params) {
  */
 usage.setUserLocation = function(params, loc) {
     params.user.country = plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false ? undefined : loc.country;
-    params.user.region = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true ? loc.region : undefined;
+    params.user.region = loc.region;
     params.user.city = (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ||
         plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false) ? undefined : loc.city;
 };
@@ -195,15 +195,11 @@ usage.processSessionDuration = function(params, callback) {
         var dbDateIds = common.getDateIds(params);
 
         common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
-        params.qstring.session_duration = session_duration;
 
-        if (!params.qstring.begin_session) {
-            plugins.dispatch("/session/duration", {
-                params: params,
-                session_duration: session_duration
-            });
-        }
-
+        plugins.dispatch("/session/duration", {
+            params: params,
+            session_duration: session_duration
+        });
         if (callback) {
             callback();
         }
@@ -1015,7 +1011,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     userProps.cty = data.city;
                 }
 
-                if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
+                if (!userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
                     // only override lat/lon if no recent gps location exists in user document
                     if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
                         userProps.loc = {
@@ -1046,7 +1042,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                         userProps.cty = data.city;
                     }
 
-                    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                    if (!userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
                         // only override lat/lon if no recent gps location exists in user document
                         if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
                             userProps.loc = {
@@ -1145,12 +1141,6 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 dbAppUser: params.app_user,
                 updates: ob.updates
             });
-            if (params.qstring.session_duration) {
-                plugins.dispatch("/session/duration", {
-                    params: params,
-                    session_duration: params.qstring.session_duration
-                });
-            }
         }
         else {
             userProps.lsid = params.request_id;

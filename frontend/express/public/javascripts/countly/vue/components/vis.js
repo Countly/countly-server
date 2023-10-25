@@ -1100,7 +1100,7 @@
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
                                                 <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
-                                                <div class="text-small color-cool-gray-50 note-date">' + moment(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                                <div class="text-small color-cool-gray-50 note-date">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                                 <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
@@ -1118,7 +1118,7 @@
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
                                             <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
-                                            <div class="text-small color-cool-gray-50 note-date">' + moment(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
+                                            <div class="text-small color-cool-gray-50 note-date">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
@@ -2089,8 +2089,7 @@
                                 >\
                                     <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)">{{item.percentage}}%</span>\
-                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length">{{item.percentage}}</span>\
+                                    <span v-if="item.percentage && !isNaN(item.percentage)">{{item.percentage}}%</span>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2199,9 +2198,6 @@
                             }
                         }
                     }
-                    data.forEach((item) => {
-                        item.name = countlyCommon.unescapeHtml(item.name);
-                    });
                     this.legendData = data;
                 }
             }

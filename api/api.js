@@ -258,9 +258,9 @@ plugins.connectToAllDatabases().then(function() {
         common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
         common.cache.start().then(() => {
-            setImmediate(() => {
+            setTimeout(() => {
                 plugins.dispatch('/cache/init', {});
-            });
+            }, 1000);
         }, e => {
             console.log(e);
             process.exit(1);

@@ -323,7 +323,7 @@
                 template += '<div data-dz-thumbnail-bg></div>';
                 template += '</div>';
                 template += '<div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">';
-                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">' + CV.i18n('management-users.drag-and-drop-or') + " " + '<span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">' + CV.i18n('management-users.browser') + ' ' + '</span>' + CV.i18n('management-users.files-to-add-picture') + '</p>';
+                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">' + CV.i18n('management-users.drag-and-drop-or') + '<span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">' + CV.i18n('management-users.browser') + '</span>' + CV.i18n('management-users.files-to-add-picture') + '</p>';
                 template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">' + CV.i18n('management-users.pp-size-warning') + '</p>';
                 template += '</div>';
                 template += '</div>';

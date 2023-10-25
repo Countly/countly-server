@@ -568,8 +568,7 @@
                 },
                 widget: '',
                 rating: {},
-                loading: true,
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                loading: true
             };
         },
         methods: {
@@ -613,19 +612,7 @@
                 this.fetch();
             },
             setWidget: function(row, status) {
-                var finalizedTargeting = null;
-                var target_pages = row.target_pages === "-" ? [] : row.target_pages.split(", ");
-                if (this.cohortsEnabled) {
-                    var exported = row.targeting;
-                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
-                        finalizedTargeting = Object.assign({}, {
-                            user_segmentation: JSON.stringify(exported.user_segmentation),
-                            steps: JSON.stringify(exported.steps)
-                        });
-                    }
-
-                }
-                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status, target_pages: target_pages, targeting: finalizedTargeting }, function() {
+                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
                     CountlyHelpers.notify({
                         type: 'success',
                         message: CV.i18n('feedback.successfully-updated')

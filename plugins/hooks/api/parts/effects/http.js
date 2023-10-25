@@ -65,18 +65,10 @@ class HTTPEffect {
                 //support post formData
                 let parsedJSON = {};
                 try {
-                    var ret = common.getJSON(parsedRequestData);
-                    if (!ret.valid) {
-                        parsedJSON = JSON.parse(jsonEscape(parsedRequestData));
-                        for (var key in parsedJSON) {
-                            parsedJSON[key] = jsonUnEscape(parsedJSON[key]);
-                        }
+                    parsedJSON = JSON.parse(jsonEscape(parsedRequestData));
+                    for (var key in parsedJSON) {
+                        parsedJSON[key] = jsonUnEscape(parsedJSON[key]);
                     }
-                    else {
-                        parsedJSON = ret.data;
-
-                    }
-
                 }
                 catch (e) {
                     log.e('http efffect parse post data err:', e, parsedRequestData);

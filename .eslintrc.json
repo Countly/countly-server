@@ -307,31 +307,7 @@
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020,
-                "sourceType": "module"
-            },
-            "rules": {
-                "no-console": "off",
-                "no-unused-vars": "off",
-                "no-redeclare": "off"
-            }
-        },
-        {
-            "files": [
-                "ui-tests/**/*.js"
-            ],
-            "env": {
-                "es6": true,
-                "node": true,
-                "mocha": true
-            },
-            "globals": {
-                "Cypress": "readonly",
-                "cy": "readonly"
-            },
-            "parserOptions": {
-                "ecmaVersion": 2020,
-                "sourceType": "module"
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off",

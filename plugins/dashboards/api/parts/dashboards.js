@@ -211,9 +211,6 @@ dashboard.mapWidget = function(widget) {
                     linkStyling += 'text-align: ' + widget.text_align + '; ';
                 }
                 linkStyling += 'white-space: normal !important;';
-                if (!/^https?:\/\//i.test(widget.link_path)) {
-                    widget.link_path = '#';
-                }
                 text += `<p style="${linkStyling}" class="bu-p-2">
                             <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
                         </p>`;

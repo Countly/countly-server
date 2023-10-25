@@ -424,27 +424,8 @@ exports.stream = function(params, stream, options) {
     }
 };
 
-/**
- * Check if id is valid ObjectID
- * @param {string} id - id to check
- * @returns {boolean} true if valid
- * */
-function isObjectId(id) {
-    var checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
-    if (typeof id === "undefined" || id === null) {
-        return false;
-    }
-    if ((typeof id !== "undefined" && id !== null) && 'number' !== typeof id && (id.length !== 24)) {
-        return false;
-    }
-    else {
-        // Check specifically for hex correctness
-        if (typeof id === 'string' && id.length === 24) {
-            return checkForHexRegExp.test(id);
-        }
-        return true;
-    }
-}
+
+
 
 /**
 * Export data from database
@@ -490,7 +471,7 @@ exports.fromDatabase = function(options) {
         }
     }
     alternateName += "_exported_on_" + moment().format("DD-MMM-YYYY");
-    options.filename = options.filename || options.params.qstring.filename || alternateName;
+    options.filename = options.filename || alternateName;
 
     if (options.collection.startsWith("app_users")) {
         options.params.qstring.method = "user_details";
@@ -509,9 +490,6 @@ exports.fromDatabase = function(options) {
             query: options.query,
             params: options.params
         }, ()=>{
-            if (options.query._id && isObjectId(options.query._id)) {
-                options.query._id = common.db.ObjectID(options.query._id);
-            }
             var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
             if (options.sort) {
                 cursor.sort(options.sort);

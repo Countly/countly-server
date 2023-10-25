@@ -68,19 +68,13 @@
         computed: {
             contentHtml: {
                 get() {
-                    return countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
+                    if (this.scope.editedObject.contenthtml) {
+                        return countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
+                    }
+                    return this.scope.editedObject.contenthtml;
                 },
                 set(val) {
-                    const tempElement = document.createElement('div');
-                    tempElement.innerHTML = val;
-                    const anchorTags = tempElement.querySelectorAll('a');
-                    anchorTags.forEach((aTag) => {
-                        const href = aTag.getAttribute('href');
-                        if (href && !/^https?:\/\//i.test(href)) {
-                            aTag.setAttribute('href', '#');
-                        }
-                    });
-                    this.scope.editedObject.contenthtml = tempElement.innerHTML;
+                    this.scope.editedObject.contenthtml = val;
                 }
             }
         }
@@ -112,8 +106,8 @@
                     contenthtml: "",
                 };
             },
-            beforeSaveFn: function() {
-            }
+            // beforeSaveFn: function(doc) {
+            // }
         },
         grid: {
             component: WidgetComponent,

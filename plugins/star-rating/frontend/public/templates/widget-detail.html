@@ -6,7 +6,7 @@
           <i class="el-icon-back"></i> {{ i18n('feedback.back-to-rating-widgets') }}
         </div>
         <div class="ratings-widget-detail-view__widget-name">
-          <h3 v-html="widget.popup_header_text" class="ratings-widget-detail-view__widget-name"></h3>
+          <h3 class="ratings-widget-detail-view__widget-name">{{ widget.popup_header_text }}</h3>
         </div>
         <div class="ratings-widget-detail-view__widget-informations bu-mt-4">
           <div :class="[widget.status && 'ratings-widget-detail-view__widget-status-active', !widget.status && 'ratings-widget-detail-view__widget-status-disabled', 'bu-has-text-weight-semibold text-small bu-mt-1']">

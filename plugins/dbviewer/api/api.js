@@ -116,15 +116,6 @@ var spawn = require('child_process').spawn,
                 if (dbs[dbNameOnParam]) {
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne({ _id: params.qstring.document }, function(err, results) {
                         if (!err) {
-                            if (params.qstring.collection === 'members' && results) {
-                                delete results.password;
-                                delete results.api_key;
-                            }
-                            else if (params.qstring.collection === 'auth_tokens' && results) {
-                                if (results._id) {
-                                    results._id = '***redacted***';
-                                }
-                            }
                             common.returnOutput(params, objectIdCheck(results) || {});
                         }
                         else {
@@ -158,8 +149,7 @@ var spawn = require('child_process').spawn,
                 filter = EJSON.parse(filter);
             }
             catch (SyntaxError) {
-                common.returnMessage(params, 400, "Failed to parse query. " + SyntaxError.message);
-                return false;
+                filter = {};
             }
             if (filter._id && isObjectId(filter._id)) {
                 filter._id = common.db.ObjectID(filter._id);
@@ -186,17 +176,6 @@ var spawn = require('child_process').spawn,
                     var total = await cursor.count();
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-
-                            if (params.qstring.collection === 'members' && doc) {
-                                delete doc.password;
-                                delete doc.api_key;
-                            }
-                            else if (params.qstring.collection === 'auth_tokens' && doc) {
-                                if (doc._id) {
-                                    doc._id = '***redacted***';
-                                }
-                            }
-
                             try {
                                 return EJSON.stringify(objectIdCheck(doc));
                             }
@@ -311,18 +290,6 @@ var spawn = require('child_process').spawn,
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
-                var addProjectionAt = 0;
-                if (aggregation[0] && aggregation[0].$match) {
-                    while (aggregation.length > addProjectionAt && aggregation[addProjectionAt].$match) {
-                        addProjectionAt++;
-                    }
-                }
-                if (collection === 'members') {
-                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0}});
-                }
-                else if (collection === 'auth_tokens') {
-                    aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
-                }
                 // check task is already running?
                 taskManager.checkIfRunning({
                     db: dbs[dbNameOnParam],

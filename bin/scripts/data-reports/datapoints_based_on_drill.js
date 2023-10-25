@@ -11,18 +11,7 @@ var startDate = new Date("2021-03-01T00:00:00");
 var endDate = new Date("2021-04-01T00:00:00");
 
 var plugins = require("../../../plugins/pluginManager");
-var maps = require("./db_mapping.json");
-var map;
-for (let i = 0; i < maps.length; i++) {
-    if (maps[i].name === "countly_drill") {
-        map = maps[i];
-        break;
-    }
-}
-if (!map) {
-    console.log("No mapping found for countly_drill");
-    process.exit();
-}
+var map = require("./db_mapping.json");
 var asyncjs = require("async");
 var remap = {};
 for (var key in map.collections) {
@@ -38,7 +27,7 @@ plugins.dbConnection("countly_drill").then(function(db) {
                 db.collection(col.collectionName).find({"cd": {"$gte": startDate, "$lt": endDate}}).count(function(err, count) {
                     if (count) {
                         console.log("Processing", col.collectionName, cnt++, results.length);
-                        data.push([(remap[col.collectionName] || col.collectionName), count]);
+                        data.push([remap[col.collectionName], count]);
                     }
                     done();
                 });
