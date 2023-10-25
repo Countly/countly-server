@@ -49,8 +49,8 @@
             <div id="login-logo"></div>
         </div>
         <img src="/images/pre-login/hi-five.svg" style="display: block; margin: 0 auto;"/>
-        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px" id="header" data-localize="setup.ready"></h1>
-		<div style="height: 40px; font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto; line-height: 21px;" data-localize="setup.byline"></div>
+        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px; margin-bottom: 8px" id="header" data-localize="setup.ready"></h1>
+		<div style="font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto 8px;" data-localize="setup.byline"></div>
         <div id="forgot-form" style="width:304px; margin:auto;">
             <form id="account-form" method="POST" style="width:300px; margin:auto;">
                 <div>
@@ -95,10 +95,9 @@
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
                     <input type="hidden" value="true" name="createDemoApp" id="create-demo-app" />
-                    <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 32px;"/>
+                    <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 24px;"/>
                     <button id="alt-login-button" data-localize="setup.continue-own-app"></button>
                 </div>
-                <div style="height: 160px;"></div>
             </form>
             <% if (typeof inject_template.html != "undefined") { %>
                 <%- inject_template.html %>
