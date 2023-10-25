@@ -252,6 +252,43 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Request to validate feedback input for ratings', function() {
+        it('should success', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            APP_KEY = testUtils.get("APP_KEY");
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+
+            var events = [{
+                "key": "[CLY]_star_rating",
+                "count": 1,
+                "timestamp": 1419432000000,
+                "hour": 10,
+                "dow": 2,
+                "segmentation": {
+                    "contactMe": true,
+                    "email": "someone@gmail.com",
+                    "comment": "It's a test comment.",
+                    "rating": 5,
+                    "app_version": "1.23",
+                    "platform": "iOS",
+                    "widget_id": WIDGET_ID
+                }
+            }];
+
+            request.get('/i/feedback/input?app_key=' + APP_KEY + '&device_id=' + 1 + "&events=" + JSON.stringify(events))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
     describe('Removing widget', function() {
         it('should success', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");

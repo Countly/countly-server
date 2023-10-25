@@ -21,7 +21,8 @@ plugins.setConfigs("crashes", {
     smart_preprocessing: true,
     smart_regexes: "{.*?}\n/.*?/",
     same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS
+    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
+    activate_custom_field_cleanup_job: false,
 });
 
 /**
@@ -586,7 +587,7 @@ plugins.setConfigs("crashes", {
                                     //process custom segments
                                     if (report.custom) {
                                         for (let key in report.custom) {
-                                            let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":");
+                                            let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":").slice(0, 100);
                                             if (safeKey) {
                                                 if (groupInc["custom." + key + "." + safeKey]) {
                                                     groupInc["custom." + key + "." + safeKey]++;
@@ -680,7 +681,7 @@ plugins.setConfigs("crashes", {
                                         common.recordCustomMetric(params, "crashdata", "any**" + report.app_version.replace(/\./g, ":") + "**" + params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
 
                                         var group = {};
-                                        if (!isNew) {
+                                        if (!isNew && crashGroup) {
                                             if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                 group.latest_version = report.app_version;
                                                 group.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
@@ -780,7 +781,7 @@ plugins.setConfigs("crashes", {
                         });
                     });
                 }
-            });
+            }, params.app && params.app.plugins);
         }
     });
 
@@ -1009,8 +1010,9 @@ plugins.setConfigs("crashes", {
                             break;
                         }
                     }
-                    if (params.qstring.filter !== "crash-hidden") {
-                        filter.is_hidden = {$ne: true};
+
+                    if (!('is_hidden' in filter)) {
+                        filter.is_hidden = { $ne: true };
                     }
 
                     plugins.dispatch("/drill/preprocess_query", {

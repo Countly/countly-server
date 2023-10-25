@@ -48,9 +48,10 @@ var trace = {
      *  @param {Array} stack - processed stacktrace
      *  @param {Object} crash - crash object from API
      *  @param {Function} callback - callback where to provide data
+     *  @param {Object} overrideSettings - app settings to override
      */
-    groupStrategy: function(stack, crash, callback) {
-        var groupStrategy = plugins.getConfig("crashes").grouping_strategy;
+    groupStrategy: function(stack, crash, callback, overrideSettings) {
+        var groupStrategy = plugins.getConfig("crashes", overrideSettings || {}, true).grouping_strategy;
         var seed = "";
         if (groupStrategy === "stacktrace") {
             seed = stack.join("\n");
@@ -67,7 +68,7 @@ var trace = {
         }
 
         //seed cleanup
-        if (plugins.getConfig("crashes").smart_preprocessing) {
+        if (plugins.getConfig("crashes", overrideSettings || {}, true).smart_preprocessing) {
             //remove stand alone numbers like ids (MongoServerError: cursor id 8983374575113418154 not found)
             seed = seed.replace(/(?<!\S)\d+(?!\S)/gim, "");
 
@@ -96,7 +97,7 @@ var trace = {
             seed = seed.replace(/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/gim, "");
 
             //remove additional custom provided regexes
-            var regexes = (plugins.getConfig("crashes").smart_regexes || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+            var regexes = (plugins.getConfig("crashes", overrideSettings || {}, true).smart_regexes || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
             for (let i = 0; i < regexes.length; i++) {
                 if (regexes[i] && regexes[i].length) {
                     try {
@@ -115,8 +116,9 @@ var trace = {
     * Process crash
     * @param {object} crash - Crash object
     * @param {function} callback - to be called when processing is done
+    * @param {Object} overrideSettings - app settings to override
     */
-    preprocessCrash: function(crash, callback) {
+    preprocessCrash: function(crash, callback, overrideSettings) {
         if (crash._native_cpp) {
             minidump.processMinidump(crash._error, function(err, data) {
                 if (!err) {
@@ -124,7 +126,7 @@ var trace = {
                     crash._error = data;
                     var stack = trace.processNativeThreads(data);
                     crash._name = stack[0];
-                    trace.groupStrategy(stack, crash, callback);
+                    trace.groupStrategy(stack, crash, callback, overrideSettings);
                 }
                 else {
                     console.log("Can't symbolicate", err);
@@ -132,7 +134,7 @@ var trace = {
                     crash._error = "Unsymbolicated native crash";
                     crash._symbolication_error = err;
                     crash._unprocessed = true;
-                    trace.groupStrategy([crash._error], crash, callback);
+                    trace.groupStrategy([crash._error], crash, callback, overrideSettings);
                 }
             });
         }
@@ -208,7 +210,7 @@ var trace = {
             if (!crash._name) {
                 crash._name = stack[0];
             }
-            trace.groupStrategy(stack, crash, callback);
+            trace.groupStrategy(stack, crash, callback, overrideSettings);
         }
         else {
             crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
@@ -268,7 +270,7 @@ var trace = {
             lines = lines.filter(function(elem, pos) {
                 return lines.indexOf(elem) === pos;
             });
-            trace.groupStrategy(lines, crash, callback);
+            trace.groupStrategy(lines, crash, callback, overrideSettings);
         }
     },
 

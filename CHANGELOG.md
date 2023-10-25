@@ -1,3 +1,180 @@
+## Version 23.06.15
+Fixes:
+- [crashes] Add config for activating custom field cleanup job
+- [data-migration] Fix for upload request
+- [core] Remove sensitive fields from API responses
+- [dashboards] Validating links for note widgets
+- [star-rating] Css changes for ratings comments table
+- [star-rating] Fix for targeting reset on toggle
+- [members] Fix full Name updates in db
+
+Enterprise fixes: 
+- [crash_symbolication] Fix for symbol file upload
+- [data-manager] Fix for disabled input in view transformations
+- [data-manager] Fix for duplicate events being created in event transformation
+
+## Version 23.06.14
+Fixes:
+- [cache] Fixing initialization race conditions (group store is not initialized)
+- [events] Fixed % value for events trends
+- [push] Fixing wrong pusher for automated messages
+
+Enterprise fixes:
+- [active_directory] Fixed bug with azure AD config change not beeing reflected in the backend.
+- [drill] Fixed bug with aggregated data regeneration from granlural data to do not recreate ommited segments.
+- [timeline] Optimisation for clearing out timeline data on call for clearing out older data.
+- [users] Update users filter to use first session (fs)and first seen(fac)
+
+## Version 23.06.13
+Fixes:
+- [core] Correctly cleanup drill meta on segment omission
+- [concurrent-users] Fixed border issue in concurrent users settings
+- [push] Moving token_session processing to master with an object as a debouncy buffer
+- [push] Concurrent processing of several token_session requests at once
+- [views] Fix for views dashboard plugin
+- [star-rating] Fix rating sum error
+- [dashboard] Fix user widget x axis in visualisation
+- [hooks] Fix hook request json payload
+
+Enterprise Fixes: 
+- [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
+- [active-directory] Add postinstall for active directory plugin
+- [okta] Add postinstall for okta plugin
+- [drill] Fixed cd parameter in drill not updating properly
+- [timeline] Added setting to disable recording data in timeline
+
+## Version 23.06.12
+Fixes:
+- [core] Added missing space character to user profile photo description
+- [core] Added script for timeline data cleanup
+- [core] Created script for clearing out records without cd field in drill
+- [core] Created script for rechecking merged users and retrying to finish merging
+- [core] Fixed permission check
+- [core] Fixed workflow for user's document on changed did
+- [core] Update mongo_expireData.js script
+- [hooks] invalid json in hooks is fixed
+- [populator] Fixed Push notification campaign names are blank on detail page when using populator
+- [push] Added ui tests
+- [push] Faster deduplication on scheduling + ghost clearing job
+- [push] Fixing duplicate notifications for the same token
+- [push] Turning deduplication off by default
+
+Enterprise fixes:
+- [ab-testing] add fetch_experiments api
+- [cognito] post install script added to congito install.js
+- [retention] Fixed Cohort breakdown query on retention
+  
+## Version 23.06.11
+Fixes:
+- [crashes] Fix crash visibility filter 
+- [push] Fixing wrong timeout handling for APN
+  
+## Version 23.06.10
+Fixes:
+- [core] Remove trust proxy
+- [push] Fixing rescheduling delayed not-yet-scheduled messages
+- [star-rating] Decoding header texts
+- [views] Fix for unique value recording for segments.
+- [views] Store segmentation in viewdata to correctly record uvc, bounces exits(session post items) for different segments in aggregated data.
+
+Enterprise fixes:
+- [cohorts] Correctly deal with doesn't contain rule on incoming data.
+- [core] Updated tests
+- [data-manager] Fixed dealing with period param on regeneration endpoint
+- [surveys] Decoding feedback title
+- [users] User profile session sorting descending
+- [users] revert default sort in eventTable
+
+## Version 23.06.9
+Fixes:
+- [push] Adding push/notifications endpoint, deprecating push/user endpoint
+- [push] Docs: fixing required fields, adding example
+- [core] If user property is redacted, it should not show list of values in Data manager too
+- [hooks] Fix for firebase url validation
+
+Enterprise fixes:
+- [push] Allowing push token to be filtered from cohorts
+- [drill] Fix table download bug
+- [data-manager] Transformation - Validation for transformation failing on incoming request
+
+## Version 23.06.8
+Fixes:
+- [core] Automatic license management installation script
+- [core] Fixes for meta merging script
+- [core] Adding automation tests to base code
+- [core] Improvements for views to correctly count unique user count for one view if multiple views with the same name are sent in a single request.
+- [crashes] Fix query builder option source
+- [dbviewer] Fixed bug with  the filter being ignored on export if any value is null in the filter.
+
+Enterprise fixes:
+- [cohorts] Fixed pipeline for the top metric calculation to return only top 3 values, not all possible.
+- [cohorts] Fixes for data fetching upon loading cohorts table
+- [data-manager] Fixed a typo in the import schema function
+- [data-manager] Fixes to prevent Duplicate Events due to Transform Merge
+- [drill] Drill meta document conversion to type string on overflow based on document size
+- [funnels] Funnel edit form does not decode funnel name on open
+- [push] Fixing drill query by push token
+- [push] User Profiles querying by push tokens & messages
+- [push] User details rendering of push tokens present in a profile
+
+
+## Version 23.06.7
+Fixes:
+- [consent] Fixes for user consent table
+- [core] Do not track region and location if tracking city data is diabled
+- [core] Fixed bug with selecting app containing special characters in dbviewer
+- [core] Fixed encoding for application list
+- [core] Fixed issue with session analytics showing incorrect returning users count for single day.
+- [crashes] Fix query builder property types
+- [db-viewer] Fixed issues with export if used query contains objectID
+- [db-viewer] Fixed using correct filename in export
+- [graph-notes] Fixed issue with editing graph note
+- [report-manager] Fixed export table issue
+
+Enterprise fixes:
+- [cohorts] Revalidate user property rule like '7days' or '30days' in nightly job.
+
+## Version 23.06.6
+Fixes:
+- [crashes] Limit custom properties key length in crashgroup
+- [core] Fix issue with encoding and decoding for \u0000
+- [core] Decode carriers name in carriers table
+- [apps] display old salt property value too
+- [db-viewer] Add search to DB Viewer apps filter and do alphabetical order
+- [dashboard] Fix error in charts added in time-series type in User Analytics widgets
+- [dashboard] Fix dashboard widgets showing no data incorrectly
+
+Enterprise fixes:
+- [users][drill] Correctly Match events for user timeline in user profiles
+- [data-manager] Fix issue with incorrect period in regeneration of aggregate data
+
+## Version 23.06.5
+Fixes:
+- [core] Fixes for pluginManager callPromisedAppMethod
+- [core] Fixes for user merging
+- [crashes] Add crash group check
+- [report-manager] Fixes for plugin filter selector.
+- [security] Dependency updates
+
+Enterprise fixes: 
+- [cohorts] fix ui bug when adding User Behavior Segmentation, the items don't fit the box.
+- [flows] null check in flows job
+
+## Version 23.06.4
+Fixes:
+- [ratings] Fix bug where selecting previous month returns an error
+- [core] Added option to return output without encoding
+- [core] Added /i/sdk path in request process
+- [core] use api config on api workers
+- [hooks] trigger hooks, if multiple hooks are listening to the same trigger
+- [whitelabeling] localization fixes
+
+Enterprise fixes: 
+- [drill] Fix empty Drill query with empty result produces none empty table
+- [drill] Fix save visualisations
+- [drill] Prevent error with trying set empty string for values upon recording meta biglist data
+- [ab-testing] Fix for sandboxing APIs and add new /o/sdk path support
+
 ## Version 23.06.3
 Fixes:
 - [core] Upgraded node version from 14 to 18 in docker images
@@ -1507,7 +1684,7 @@ Enterprise Improvements:
 * [surveys] allow text customizations
 * [symbolication] do not display very long error names in full
 * [views] correctly postprocess views in Drill
-* [whitelabelring] override logo in email template too
+* [whitelabeling] override logo in email template too
 
 **Development related**
 * [api] count all merges

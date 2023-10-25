@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGraphNotesCommon*/
+/* global countlyVue,CV,countlyCommon, CommonConstructor, $, countlySession,countlyTotalUsers,app, jQuery, countlyGraphNotesCommon*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -191,7 +191,7 @@ var GridComponent = countlyVue.views.create({
                 "u": this.i18n("common.table.total-users"),
                 "r": this.i18n("common.table.returning-users"),
                 "n": this.i18n("common.table.new-users")
-            }
+            },
         };
     },
     computed: {
@@ -251,7 +251,7 @@ var GridComponent = countlyVue.views.create({
             }
             if (this.data.custom_period) {
                 return {
-                    lineOptions: {xAxis: { data: dates}, "series": series}
+                    lineOptions: {xAxis: { data: dates}, "series": series, patchXAxis: false}
                 };
             }
             else if (countlyCommon && countlyCommon.periodObj && countlyCommon.periodObj.daysInPeriod === 1 && countlyCommon.periodObj.isSpecialPeriod === true) {
@@ -260,14 +260,34 @@ var GridComponent = countlyVue.views.create({
                     series[z].data.push(series[z].data[0]);
                 }
                 return {
-                    lineOptions: {xAxis: { data: dates}, "series": series}
+                    lineOptions: {xAxis: { data: dates}, "series": series, patchXAxis: false}
                 };
             }
             else {
+                var xAxisData = [];
+                var period = countlyCommon && countlyCommon.getPeriod();
+
+                var chartsCommon = new CommonConstructor();
+                chartsCommon.setPeriod(period, undefined, true);
+                var tickObj = chartsCommon.getTickObj(undefined, false, true);
+                var ticks = tickObj.ticks;
+                for (var i = 0; i < ticks.length; i++) {
+                    var tick = ticks[i];
+                    var tickIndex = tick[0];
+                    var tickValue = tick[1];
+                    while (xAxisData.length < tickIndex) {
+                        xAxisData.push("");
+                    }
+                    xAxisData.push(tickValue);
+                }
+
                 return {
-                    lineOptions: {"series": series}
+                    lineOptions: {"series": series, xAxis: { data: xAxisData }, patchXAxis: false},
                 };
             }
+        },
+        stackedBarTimeSeriesOptions: function() {
+            return this.timelineGraph.lineOptions;
         },
         stackedBarOptions: function() {
             var data = this.timelineGraph;
@@ -337,6 +357,7 @@ var GridComponent = countlyVue.views.create({
         refresh: function() {
             this.refreshNotes();
         },
+        valFormatter: countlyCommon.getShortNumber,
         onWidgetCommand: function(event) {
             if (event === 'add' || event === 'manage' || event === 'show') {
                 this.graphNotesHandleCommand(event);
