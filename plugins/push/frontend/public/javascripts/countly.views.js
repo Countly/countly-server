@@ -1583,9 +1583,7 @@
                 if (!this.canUserUpdate) {
                     return false;
                 }
-                return status === this.StatusEnum.CREATED
-                || status === this.StatusEnum.SENT
-                || status === this.StatusEnum.STOPPED
+                return status === this.StatusEnum.STOPPED
                 || status === this.StatusEnum.FAILED;
             },
             shouldShowStopUserCommand: function(status) {
@@ -2036,9 +2034,7 @@
                 if (!this.canUserUpdate) {
                     return false;
                 }
-                return status === this.StatusEnum.CREATED
-                || status === this.StatusEnum.SENT
-                || status === this.StatusEnum.STOPPED
+                return status === this.StatusEnum.STOPPED
                 || status === this.StatusEnum.FAILED;
             },
             shouldShowStopUserCommand: function(status) {
