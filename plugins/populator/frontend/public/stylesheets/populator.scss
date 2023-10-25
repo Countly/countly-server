@@ -22,6 +22,10 @@
         color: #D23F00 !important;
     }
 
+    &__btn-delete:hover {
+        background-color: transparent !important;
+    }
+
     &__btn-segmentation {
         font-size: 13px;
         margin-bottom: 32px !important;
@@ -254,5 +258,101 @@
     }
     &__active-bar {
         width: 3px;
+    }
+
+    &__users {
+        &--platform-type {
+            .el-checkbox {
+                margin-right: 0px !important;
+            }
+
+            .el-checkbox__input {
+                line-height: 2.8 !important;
+                vertical-align: sub;
+                margin-left: 6px;
+            }
+
+            .el-checkbox.is-bordered.el-checkbox--medium {
+                height: 50px !important;
+                width: 227px !important;
+            }
+
+            .el-checkbox.is-bordered.el-checkbox--medium .el-checkbox__inner {
+                height: 17px !important;
+                width: 17px !important;
+            }
+        }
+
+        &--user-property {
+            .input {
+                width: 208px;
+            }
+
+            .close-button {
+                cursor: pointer;
+            }
+
+            .btn-another-value {
+                background-color: transparent !important;
+            }
+
+            .btn-another-value:hover {
+                background-color: transparent !important;
+            }
+
+            .btn-another-value-wrapper {
+                width: 84%;
+            }
+
+            .divider {
+                border-top: 1px dashed #F8FAFD;
+            }
+        }
+    }
+}
+
+.populator-number-selector {
+    width: 240px;
+    display: flex;
+    justify-content: space-around;
+    
+    &__each-box-wrapper {
+        width: 100%;
+    }
+
+    &__each {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        border: 1px solid #E2E4E8;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    &__active {
+        background-color: #0166D6;
+        border: 1px solid #0166D6;
+
+        span:first-child {
+            color: #FFFFFF !important;
+        }
+    }
+
+    &__first {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+
+    }
+
+    &__last {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+}
+
+.populator-condition-selector {
+    &__popover {
+        padding: unset !important;
     }
 }

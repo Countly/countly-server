@@ -42,7 +42,8 @@
                 this.openDrawer("populatorTemplate", {
                     name: '',
                     events: [],
-                    users: []
+                    users: [],
+                    platformType: []
                 });
             },
             refresh: function(isRefresh) {
@@ -460,8 +461,13 @@
                     {header: CV.i18n('populator-template.sequences'), isActive: false},
                     {header: CV.i18n('populator-template.behavior'), isActive: false },
                 ],
-                users: ['pinar'],
-                events: []
+                users: [],
+                events: [],
+                uniqueUserItems: [
+                    {value: 100, text: 100},
+                    {value: 500, text: 500},
+                    {value: 1000, text: 1000}
+                ],
             };
         },
         methods: {

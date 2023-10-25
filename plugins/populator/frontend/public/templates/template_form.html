@@ -23,7 +23,22 @@
                         </validation-provider>
                     </div>
                     <div class="cly-vue-drawer-step__section">
-                        <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users"></cly-populator-section>
+                        <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users">
+                            <template v-slot:default>
+                                <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.unique-users")}}</span>
+                                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.unique-users-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                <cly-populator-number-selector class="bu-mb-5 bu-mt-3" :items="uniqueUserItems" v-model="drawerScope.editedObject.uniqueUserCount"></cly-populator-number-selector>
+                                <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.platforms")}}</span>
+                                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.platforms-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                <div class="bu-mt-1 populator-template__users--platform-type">
+                                    <el-checkbox-group v-model="drawerScope.editedObject.platformType" size="medium">
+                                        <el-checkbox label="Mobile" border checked></el-checkbox>
+                                        <el-checkbox label="Web" border></el-checkbox>
+                                        <el-checkbox label="Desktop" border></el-checkbox>
+                                    </el-checkbox-group>
+                                </div>
+                            </template>
+                        </cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section">
                         <cly-populator-section title="Events" type="eventsSection" v-model="drawerScope.editedObject.events" hasSwitch></cly-populator-section>
