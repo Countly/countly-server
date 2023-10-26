@@ -108,7 +108,10 @@
                     "segments": {"Bill Type": ["Electricity", "Internet", "Phone", "Cable"], "Amount Range": ["0-20", "20-100", "100-500", "500+"]},
                     "sum": [100, 1000]
                 }
-            }
+            },
+            "views": ["view1", "view2", "view3"],
+            "sequences": ["sequence1", "sequence2", "sequence3"],
+            "generatedOn": "19 May 2023",
         },
         {
             "_id": "defaultHealthcare",
@@ -163,7 +166,11 @@
                 "Settings Changed": {
                     "segments": {"Setting": ["Route preference", "Vehicle maker", "Vehicle model"]}
                 },
-            }
+            },
+            "users": ["user1", "user2", "user3"],
+            "views": ["view1", "view2", "view3", "view4", "view5", "view6"],
+            "sequences": ["sequence1", "sequence2", "sequence3", "sequence4"],
+            "generatedOn": "25 October 2023",
         },
         {
             "_id": "defaultEcommerce",

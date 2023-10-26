@@ -229,13 +229,18 @@
                 self.templates = [];
                 countlyPopulator.getTemplates(function(templates) {
                     templates.forEach(function(item) {
+                        // Some of these might have become obsolete
                         self.templates.push({
                             _id: item._id,
                             name: item.name,
                             buttonShow: !item.isDefault,
                             isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
                             upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
+                            userCount: (item.users !== undefined ? Object.keys(item.users).length : 0),
                             eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
+                            viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
+                            sequenceCount: (item.sequences !== undefined ? Object.keys(item.sequences).length : 0),
+                            generatedOn: (item.generatedOn !== undefined ? item.generatedOn : '?'),
                             editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
                             up: item.up,
                             events: item.events
