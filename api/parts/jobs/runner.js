@@ -2,6 +2,7 @@ const cluster = require('cluster'),
     common = require('../../utils/common'),
     config = require('../../config'),
     log = common.log('core:runners'),
+    metrics = require('./metrics'),
 
     ERROR_COOLDOWN = config.runners && config.runners.error_cooldown || 60000, // 1min to cooldown on error
     PERIODICITY = config.runners && config.runners.periodicity || 30000, // 1min between "I'm alive" updates
@@ -179,7 +180,7 @@ function discoverLeader() {
  */
 function imAlive(callback) {
     log.d('updating ls');
-    collection.findOneAndUpdate({_id: me._id}, {$set: {ls: Date.now()}}, {returnDocument: 'after'}, (err, doc) => {
+    collection.findOneAndUpdate({_id: me._id}, {$set: {ls: Date.now(), metrics: metrics}}, {returnDocument: 'after'}, (err, doc) => {
         if (err) {
             leader = undefined;
             log.e(err);

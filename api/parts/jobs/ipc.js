@@ -280,7 +280,7 @@ class CentralMaster extends CentralSuper {
                 }
             });
             if (f) {
-                f(worker);
+                f(worker, worker.process.pid);
             }
         });
 
@@ -288,6 +288,9 @@ class CentralMaster extends CentralSuper {
             if (worker.process.pid in this.workers) {
                 log.e('Worker exited: %d', worker.process.pid);
                 delete this.workers[worker.process.pid];
+                if (f) {
+                    f(null, worker.process.pid);
+                }
             }
         });
 

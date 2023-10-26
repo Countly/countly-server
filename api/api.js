@@ -381,5 +381,7 @@ plugins.connectToAllDatabases().then(function() {
         }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
         plugins.loadConfigs(common.db);
+
+        require('./parts/jobs/metrics.js');
     }
 });
