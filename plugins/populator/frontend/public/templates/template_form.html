@@ -11,14 +11,14 @@
     :size="12">
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-template-step">
-            <div class="bu-is-flex" style="justify-content: space-around;">
+            <div class="bu-is-flex bu-is-justify-content-space-around">
                 <div class="populator-template__left-container">
                     <cly-populator-left-container :data="items"></cly-populator-left-container>
                 </div>
                 <div style="width: 702px;">
                     <div class="cly-vue-drawer-step__section">
                         <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
-                        <validation-provider name="name" rules="required" v-slot="v">
+                        <validation-provider name="key" rules="required" v-slot="v">
                             <el-input class="bu-is-shadowless" style="margin-bottom: 20px" :class="{'is-error': v.errors.length > 0}" :placeholder="i18n('populator.template-name-placeholder')" v-model="drawerScope.editedObject.name"></el-input>
                         </validation-provider>
                     </div>
@@ -30,13 +30,15 @@
                                 <cly-populator-number-selector class="bu-mb-5 bu-mt-3" :items="uniqueUserItems" v-model="drawerScope.editedObject.uniqueUserCount"></cly-populator-number-selector>
                                 <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.platforms")}}</span>
                                 <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.platforms-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
-                                <div class="bu-mt-1 populator-template__users--platform-type">
-                                    <el-checkbox-group v-model="drawerScope.editedObject.platformType" size="medium">
-                                        <el-checkbox label="Mobile" border checked></el-checkbox>
-                                        <el-checkbox label="Web" border></el-checkbox>
-                                        <el-checkbox label="Desktop" border></el-checkbox>
-                                    </el-checkbox-group>
-                                </div>
+                                <validation-provider name="platform" rules="required" v-slot="v">
+                                    <div class="bu-mt-1 populator-template__users--platform-type">
+                                        <el-checkbox-group v-model="drawerScope.editedObject.platformType" size="medium" :class="{'is-error': v.errors.length > 0}">
+                                            <el-checkbox label="Mobile" border checked></el-checkbox>
+                                            <el-checkbox label="Web" border></el-checkbox>
+                                            <el-checkbox label="Desktop" border></el-checkbox>
+                                        </el-checkbox-group>
+                                    </div>
+                                </validation-provider>
                             </template>
                         </cly-populator-section>
                     </div>

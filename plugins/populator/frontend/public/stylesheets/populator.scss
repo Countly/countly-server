@@ -281,6 +281,13 @@
                 height: 17px !important;
                 width: 17px !important;
             }
+
+            .is-error {
+                .is-bordered {
+                    border-color: #D23F00;
+                    background-color: #FBECE5;
+                }
+            }
         }
 
         &--user-property {
@@ -307,6 +314,12 @@
             .divider {
                 border-top: 1px dashed #F8FAFD;
             }
+        }
+
+        &--condition {
+           .condition-label {
+                max-width: 150px;
+           }
         }
     }
 }

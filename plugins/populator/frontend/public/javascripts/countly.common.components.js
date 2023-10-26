@@ -79,6 +79,10 @@
                     return [];
                 },
             },
+            disabled: {
+                type: Boolean,
+                default: false
+            }
         },
         data: function() {
             return {
@@ -89,6 +93,7 @@
                 conditionType: 1,
                 selectedValue: '',
                 selectedProperty: '',
+                userPropertyValueItems: []
             };
         },
         methods: {
@@ -98,6 +103,14 @@
             save: function() {
                 this.$emit('input', {selectedKey: this.selectedProperty, selectedValue: this.selectedValue, conditionType: this.conditionType, values: [{key: "", probability: 0}]});
                 this.close();
+            },
+            onAddCondition: function() {
+                this.selectedProperty = this.userProperties[0];
+                this.userPropertyValueItems = this.userPropertyValues;
+                if (this.userPropertyValueItems.length && this.userPropertyValueItems.indexOf('') !== -1) {
+                    const filteredArr = this.userPropertyValueItems.filter((item) => item !== '');
+                    this.userPropertyValueItems = ['Empty/Unset', ...filteredArr];
+                }
             }
         },
         template: '<div>\
@@ -111,30 +124,30 @@
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n(\'populator-template.property\')}}</div>\
                                 <el-select v-model="selectedProperty" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property\')">\
                                     <el-option\
-                                    v-for="item in userProperties"\
-                                    :key="item"\
-                                    :label="item"\
-                                    :value="item">\
+                                        v-for="item in userProperties"\
+                                        :key="item"\
+                                        :label="item"\
+                                        :value="item">\
                                     </el-option>\
                                 </el-select>\
                                 <cly-populator-number-selector class="bu-my-4" v-model="conditionType" :items="items"></cly-populator-number-selector>\
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n(\'populator-template.property-value\')}}</div>\
                                 <el-select v-model="selectedValue" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property-value\')">\
                                     <el-option\
-                                    v-for="item in userPropertyValues"\
-                                    :key="item"\
-                                    :label="item"\
-                                    :value="item">\
+                                        v-for="item in userPropertyValueItems"\
+                                        :key="item"\
+                                        :label="item"\
+                                        :value="item">\
                                     </el-option>\
                                 </el-select>\
                                 <div class="bu-mt-5 bu-is-flex bu-is-justify-content-flex-end">\
                                     <el-button class="el-button el-button--secondary el-button--small" @click="close">{{i18n(\'common.cancel\')}}</el-button>\
-                                    <el-button class="el-button el-button--success el-button--small" @click="save">{{i18n(\'common.add\')}}</el-button>\
+                                    <el-button class="el-button el-button--success el-button--small" :disabled="selectedValue.length ? false : true" @click="save">{{i18n(\'common.add\')}}</el-button>\
                                 </div>\
                             </div>\
                         </template>\
                         <template v-slot:reference>\
-                            <el-button type="text" slot="reference" id="addConditionBtn" class="text-smallish font-weight-bold color-blue-100">\
+                            <el-button :disabled="disabled" type="text" slot="reference" @click="onAddCondition" id="addConditionBtn" class="text-smallish font-weight-bold color-blue-100">\
                                 <i class="fa fa-plus-circle bu-mr-1"></i>{{i18n(\'populator-template.add-condition\')}}\
                             </el-button>\
                         </template>\

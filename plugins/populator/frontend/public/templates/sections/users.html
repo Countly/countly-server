@@ -5,11 +5,13 @@
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-2">
             <div class="bu-mr-2">
               <div>
-                <span class="text-smallish bu-has-text-weight-medium">Key</span>
-                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator.user-prop-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.key')}}</span>
+                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
               </div>
               <div class="bu-mt-2">
-                <el-input class="input" v-model="user.key"></el-input>
+                <validation-provider name="name" rules="required" v-slot="v">
+                    <el-input class="input" v-model="user.key" :class="{'is-error': v.errors.length > 0}"></el-input>
+                </validation-provider>
               </div>
             </div>
             <div class="bu-mr-2">
@@ -44,10 +46,10 @@
             <el-button type="text" class="text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherValue(index)">{{i18n('populator-template.add-another-value')}}</el-button>
         </div>
         <hr class="divider">
-        <div v-if="user.condition">
+        <div v-if="user.condition" class="populator-template__users--condition">
             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline">
                 <div class="bu-mr-5"></div>
-                <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4">{{ user.condition.conditionType === 1 ? i18n('populator-template.condition-is', user.condition.selectedKey, user.condition.selectedValue) : i18n('populator-template.condition-is-not', user.condition.selectedKey, user.condition.selectedValue) }}</div>
+                <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ user.condition.conditionType === 1 ? i18n('populator-template.condition-is', user.condition.selectedKey, user.condition.selectedValue) : i18n('populator-template.condition-is-not', user.condition.selectedKey, user.condition.selectedValue) }}</div>
                 <el-button type="text" @click="onDeleteCondition(index)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template-drawer__btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
             </div>
             <div class="bu-is-flex bu-is-justify-content-flex-end">
@@ -82,7 +84,7 @@
             </div>
         </div>
         <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center" v-if="!user.condition">
-            <cly-populator-condition-selector :user-properties="[user.key]" :user-property-values="user.values.map(item => item.key)" v-model="user.condition"></cly-populator-condition-selector>
+            <cly-populator-condition-selector :disabled="user.key.length ? false : true" :user-properties="[user.key]" :user-property-values="user.values.map(item => item.key)" v-model="user.condition"></cly-populator-condition-selector>
         </div>
     </cly-populator-section-detail>
     <el-button class="populator-template-drawer__btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" @click="onAddUserProperty()">{{ i18n("populator.add-custom-prop") }}</el-button>
