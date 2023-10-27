@@ -28,7 +28,7 @@
                             <div class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>
                             <div class="bu-is-flex bu-is-align-items-center bu-mb-4">
                                 <div class="step-field has-ellipsis">
-                                    <span class="text-smallish bu-is-capitalized" v-tooltip="item.value && (item.key.length + item.value.length) > 15 ? (item.key + ' - ' + item.value) : null"> {{item.key}} {{item.value ? (" - " + item.value) : null}} </span>
+                                    <span class="text-smallish bu-is-capitalized" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}} {{item.key ==="session" ? " " : " - "}} {{item.value}} </span>
                                 </div>
                                 <div class="bu-is-flex bu-is-align-items-center probability-field">
                                     <div>
@@ -87,7 +87,7 @@
                     </el-popover>
             </div>
             <div class="vertical-hr bu-mt-4 bu-mb-2" v-if="sequence.steps && sequence.steps.length > 1"></div>
-            <div class="text-smallish" v-if="sequence.steps && sequence.steps.length > 1"> {{sequence.steps[sequence.steps.length - 1].key}}</div>
+            <div class="text-smallish bu-is-capitalized" v-if="sequence.steps && sequence.steps.length > 1"> {{sequence.steps[sequence.steps.length - 1].key + " " +sequence.steps[sequence.steps.length - 1].value}}</div>
         </cly-populator-section-detail>
     </div>
     <el-button class="populator-template-drawer__btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" :disabled="!isOpen" @click="onAddSequence">{{i18n('populator-template.add-sequence')}}</el-button>

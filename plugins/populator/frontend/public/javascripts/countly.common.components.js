@@ -383,14 +383,14 @@
         },
         methods: {
             onAddSequence: function() {
-                this.sequences.push({steps: [{"key": "Session Start", value: null, "probability": 0}]});
+                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 0}]});
             },
             onRemoveSequence(index) {
                 this.sequences.splice(index, 1);
             },
             onRemoveStep: function(index, stepIndex) {
-                if (this.sequences[index].steps.length === 3 && this.sequences[index].steps.find(x => x.key === "Session End")) {
-                    this.sequences[index].steps = this.sequences[index].steps.filter(x => x.key !== "Session End");
+                if (this.sequences[index].steps.length === 3 && this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
+                    this.sequences[index].steps = this.sequences[index].steps.filter(x => !(x.key === "session" && x.value === "end"));
                 }
                 if (this.sequences[index].steps.length === 1) {
                     CountlyHelpers.notify({
@@ -421,12 +421,12 @@
             onSaveStep: function(index) {
                 this.sequences[index].steps.push({key: this.selectedProperty, value: this.selectedValue, probability: 0});
                 if (this.sequences[index].steps.length > 1) {
-                    if (!this.sequences[index].steps.find(x => x.key !== "Session End")) {
-                        this.sequences[index].steps.push({key: "Session End", value: null, probability: 100});
+                    if (!this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
+                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
                     }
                     else {
-                        this.sequences[index].steps = this.sequences[index].steps.filter(x => x.key !== "Session End");
-                        this.sequences[index].steps.push({key: "Session End", value: null, probability: 100});
+                        this.sequences[index].steps = this.sequences[index].steps.filter(x => !(x.key === "session" && x.value === "end"));
+                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
                     }
                 }
                 this.onClose();
