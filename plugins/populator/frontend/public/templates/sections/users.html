@@ -1,4 +1,4 @@
-<div class="bu-mt-3 populator-template__users">
+<div class="bu-mt-3 populator-template populator-template__users">
     <slot name="default"></slot>
     <div class="text-medium bu-has-text-weight-medium bu-mt-5 bu-mb-3">{{i18n("populator.custom-user-props")}}</div>
     <cly-populator-section-detail class="bu-mb-4 populator-template__users--user-property" :title="i18n('populator-template.property-details')" entity="Property" @remove="() => onRemoveUserProperty(index)" :key="index" v-for="(user, index) in users">
@@ -37,12 +37,12 @@
                 </div>
             </div>
             <div class="bu-mt-2 bu-ml-3">
-                <div class="bu-mt-5" v-for="(value, valueIndex) in user.values">
+                <div class="bu-mt-5 override-buttons" v-for="(value, valueIndex) in user.values">
                     <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveValue(index, valueIndex)"></i>
                 </div>
             </div>
         </div>
-        <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper">
+        <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper override-buttons">
             <el-button type="text" class="text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherValue(index)">{{i18n('populator-template.add-another-value')}}</el-button>
         </div>
         <hr class="divider">
@@ -74,12 +74,12 @@
                     </div>
                 </div>
                 <div class="bu-mt-2 bu-ml-3">
-                    <div class="bu-mt-5" v-for="(value, valueIndex) in user.condition.values">
+                    <div class="bu-mt-5 override-buttons" v-for="(value, valueIndex) in user.condition.values">
                         <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, valueIndex)"></i>
                     </div>
                 </div>
             </div>
-            <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper">
+            <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper override-buttons">
                 <el-button type="text" class="text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherConditionValue(index)">{{i18n('populator-template.add-another-value')}}</el-button>
             </div>
         </div>

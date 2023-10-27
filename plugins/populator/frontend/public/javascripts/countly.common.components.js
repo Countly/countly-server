@@ -331,6 +331,117 @@
                 </div>'
     });
 
+    const sequencesSection = countlyVue.views.create({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: [Object, Array],
+            },
+            sequenceStepPropertyValues: {
+                type: Object,
+                default: function() {
+                    // todo: Dummy data for now, will be deleted after completed the event and view sections
+                    return {
+                        events: [
+                            {name: "Purchase", value: "purchase"},
+                            {name: "Payment", value: "payment"},
+                            {name: "Shopping", value: "shopping"}
+                        ],
+                        views: [
+                            {name: "Home", value: "home"},
+                            {name: "Detail", value: "detail"},
+                            {name: "My Detail Page", value: "myDetailPage"}
+                        ]
+                    };
+                }
+            }
+        },
+        data: function() {
+            return {
+                // Dummy data
+                sequences: [],
+                selectedProperty: '',
+                selectedValue: '',
+                sequenceStepProperties: [
+                    {name: "Event", value: "events"},
+                    {name: "View", value: "views"}
+                ],
+                sequenceStepValues: {}
+            };
+        },
+        watch: {
+            sequences: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
+            }
+        },
+        methods: {
+            onAddSequence: function() {
+                this.sequences.push({steps: [{"key": "Session Start", value: null, "probability": 0}]});
+            },
+            onRemoveSequence(index) {
+                this.sequences.splice(index, 1);
+            },
+            onRemoveStep: function(index, stepIndex) {
+                if (this.sequences[index].steps.length === 3 && this.sequences[index].steps.find(x => x.key === "Session End")) {
+                    this.sequences[index].steps = this.sequences[index].steps.filter(x => x.key !== "Session End");
+                }
+                if (this.sequences[index].steps.length === 1) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.warning-while-removing-condition"),
+                        type: "warning"
+                    });
+                    return;
+                }
+                try {
+                    this.sequences[index].steps.splice(stepIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddStep: function() {
+                this.selectedProperty = '';
+                this.selectedValue = '';
+            },
+            onDragChange: function(/*evt*/) {
+                //
+            },
+            onSaveStep: function(index) {
+                this.sequences[index].steps.push({key: this.selectedProperty, value: this.selectedValue, probability: 0});
+                if (this.sequences[index].steps.length > 1) {
+                    if (!this.sequences[index].steps.find(x => x.key !== "Session End")) {
+                        this.sequences[index].steps.push({key: "Session End", value: null, probability: 100});
+                    }
+                    else {
+                        this.sequences[index].steps = this.sequences[index].steps.filter(x => x.key !== "Session End");
+                        this.sequences[index].steps.push({key: "Session End", value: null, probability: 100});
+                    }
+                }
+                this.onClose();
+            },
+            onClose: function() {
+                document.getElementById('populator-template-step').click();
+            },
+        },
+        created: function() {
+            this.sequences = this.value;
+            this.sequenceStepValues = this.sequenceStepPropertyValues;
+        },
+        template: CV.T("/populator/templates/sections/sequences.html")
+    });
+
     Vue.component("cly-populator-section", countlyVue.components.BaseComponent.extend({
         props: {
             type: {
@@ -354,7 +465,7 @@
         },
         data: function() {
             return {
-                isSectionActive: true,
+                isSectionActive: true, // todo: will be turned to false as a default later 
                 descriptionEnum: {
                     "userSection": "user",
                     "eventsSection": "event",
@@ -371,7 +482,8 @@
         },
         components: {
             userSection,
-            eventsSection
+            eventsSection,
+            sequencesSection
         },
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\

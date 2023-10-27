@@ -295,22 +295,6 @@
                 width: 208px;
             }
 
-            .close-button {
-                cursor: pointer;
-            }
-
-            .btn-another-value {
-                background-color: transparent !important;
-            }
-
-            .btn-another-value:hover {
-                background-color: transparent !important;
-            }
-
-            .btn-another-value-wrapper {
-                width: 84%;
-            }
-
             .divider {
                 border-top: 1px dashed #F8FAFD;
             }
@@ -320,6 +304,52 @@
            .condition-label {
                 max-width: 150px;
            }
+        }
+    }
+
+    &__sequences {
+        .vertical-hr {
+            border-left: 1px dashed #A7AEB8;
+            height: 20px;
+            display: inline-block;
+            margin-left: 43px;
+       }
+        &--container {
+            width: 385px;
+            .probability-header {
+                margin-left: 109px;
+            }
+        }
+        &--draggable-fields {
+           .drag-handler {
+                margin-top: 7px;
+                margin-right: 6px;
+           } 
+           .step-field {
+                width: 125px;
+           }
+           .probability-field {
+                width: 208px;
+                margin-left: 8px;
+           }
+        }
+    }
+
+    .override-buttons {
+        .close-button {
+            cursor: pointer;
+        }
+
+        .btn-another-value {
+            background-color: transparent !important;
+        }
+
+        .btn-another-value:hover {
+            background-color: transparent !important;
+        }
+
+        .btn-another-value-wrapper {
+            width: 84%;
         }
     }
 }
