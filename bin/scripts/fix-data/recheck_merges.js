@@ -51,7 +51,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         await processUser(user.merged_uid, user.uid, collections, app);
                     }
                     //if cursor is closed, recreate it and skip processed users
-                    if (!usersCursor) {
+                    if (usersCursor.isClosed()) {
                         usersCursor = usersCollection.find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1}).skip(processedUsersCount);
                     }
                 }
