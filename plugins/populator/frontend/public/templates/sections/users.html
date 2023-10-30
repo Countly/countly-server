@@ -28,17 +28,19 @@
                     <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
                     <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                 </div>
-                <div class="bu-mt-2" v-for="(value, index) in user.values">
-                    <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
-                        <template slot="suffix">
-                            <span class="text-medium color-cool-gray-50">%</span>
-                        </template>
-                    </el-input>
-                </div>
-            </div>
-            <div class="bu-mt-2 bu-ml-3">
-                <div class="bu-mt-5 override-buttons" v-for="(value, valueIndex) in user.values">
-                    <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveValue(index, valueIndex)"></i>
+                <div>
+                    <div class="bu-is-flex" v-for="(value, valueIndex) in user.values">
+                        <div class="bu-mt-2">
+                            <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
+                                <template slot="suffix">
+                                    <span class="text-medium color-cool-gray-50">%</span>
+                                </template>
+                            </el-input>
+                        </div>
+                        <div class="bu-mt-3 bu-ml-2 override-buttons">
+                            <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveValue(index, valueIndex)"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,17 +67,19 @@
                         <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
                         <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                     </div>
-                    <div class="bu-mt-2" v-for="(value, valueIndex) in user.condition.values">
-                        <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
-                            <template slot="suffix">
-                                <span class="text-medium color-cool-gray-50">%</span>
-                            </template>
-                        </el-input>
-                    </div>
-                </div>
-                <div class="bu-mt-2 bu-ml-3">
-                    <div class="bu-mt-5 override-buttons" v-for="(value, valueIndex) in user.condition.values">
-                        <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, valueIndex)"></i>
+                    <div>
+                        <div class="bu-is-flex" v-for="(value, valueIndex) in user.condition.values">
+                            <div class="bu-mt-2">
+                                <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
+                                    <template slot="suffix">
+                                        <span class="text-medium color-cool-gray-50">%</span>
+                                    </template>
+                                </el-input>
+                            </div>
+                            <div class="bu-mt-3 bu-ml-2 override-buttons">
+                                <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, valueIndex)"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
