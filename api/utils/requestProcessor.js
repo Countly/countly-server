@@ -2917,16 +2917,12 @@ const processRequestData = (params, app, done) => {
         var update = {};
         //check if we already processed app users for this request
         if (params.app_user.last_req !== params.request_hash && ob.updates.length) {
-            ob.updates.push({$set: {last_req: params.request_hash, ingested: false}});
             for (let i = 0; i < ob.updates.length; i++) {
                 update = common.mergeQuery(update, ob.updates[i]);
             }
         }
         var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
-            if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                common.returnMessage(params, 200, 'Success');
-            }
             if (params.qstring.begin_session) {
                 plugins.dispatch("/session/retention", {
                     params: params,
@@ -2956,10 +2952,6 @@ const processRequestData = (params, app, done) => {
                             break;
                         }
                     }
-                }
-                if (!retry && plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                    //acknowledge data ingestion
-                    common.updateAppUser(params, {$set: {ingested: true}});
                 }
                 if (!params.res.finished) {
                     if (retry) {
@@ -3293,7 +3285,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
-                if (params.app_user.last_req === params.request_hash && (!plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.app_user.ingested)) {
+                if (params.app_user.last_req === params.request_hash) {
                     params.cancelRequest = "Duplicate request";
                 }
             }
