@@ -1,3 +1,18 @@
+## Version 23.06.15
+Fixes:
+- [crashes] Add config for activating custom field cleanup job
+- [data-migration] Fix for upload request
+- [core] Remove sensitive fields from API responses
+- [dashboards] Validating links for note widgets
+- [star-rating] Css changes for ratings comments table
+- [star-rating] Fix for targeting reset on toggle
+- [members] Fix full Name updates in db
+
+Enterprise fixes: 
+- [crash_symbolication] Fix for symbol file upload
+- [data-manager] Fix for disabled input in view transformations
+- [data-manager] Fix for duplicate events being created in event transformation
+
 ## Version 23.06.14
 Fixes:
 - [cache] Fixing initialization race conditions (group store is not initialized)
