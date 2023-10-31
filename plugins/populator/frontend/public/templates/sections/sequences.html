@@ -32,11 +32,13 @@
                                 </div>
                                 <div class="bu-is-flex bu-is-align-items-center probability-field">
                                     <div>
-                                        <el-input class="input" v-model="item.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
-                                            <template slot="suffix">
-                                                <span class="text-medium color-cool-gray-50">%</span>
-                                            </template>
-                                        </el-input>
+                                        <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                            <el-input class="input" v-model="item.probability" :class="{'is-error': v.errors.length > 0}">
+                                                <template slot="suffix">
+                                                    <span class="text-medium color-cool-gray-50">%</span>
+                                                </template>
+                                            </el-input>
+                                        </validation-provider>
                                     </div>
                                     <div class="override-buttons bu-ml-3">
                                         <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveStep(index, stepIndex)"></i>

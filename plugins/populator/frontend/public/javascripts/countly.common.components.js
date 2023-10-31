@@ -309,26 +309,73 @@
             }
         },
         methods: {
-            addEvent() {
+            onAddEvent() {
                 this.events.push({
-                    "name": "New Event"
+                    "key": "",
+                    "duration": { isActive: false, minDurationTime: 0, maxDurationTime: 0 },
+                    "sum": { isActive: false, minSumValue: 0, maxSumValue: 0},
+                    "segmentations": []
                 });
             },
-            removeEvent(index) {
+            onRemoveEvent(index) {
                 this.events.splice(index, 1);
+            },
+            onAddEventSegmentation: function(index) {
+                this.events[index].segmentations.push({
+                    "key": "",
+                    "values": [{key: "", probability: 0}],
+                });
+            },
+            onRemoveSegment: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.events[index].segmentations[segmentIndex].values.length === 1) {
+                        this.events[index].segmentations.splice(segmentIndex, 1);
+                        return;
+                    }
+                    this.events[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddAnotherValue: function(index, valueIndex) {
+                this.events[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+            },
+            onAddAnotherConditionValue: function(index, segmentIndex) {
+                this.events[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            },
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.events[index].segmentations[segmentIndex].condition.values.length === 1) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-while-removing-condition"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.events[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onDeleteCondition: function(index, segmentIndex) {
+                this.events[index].segmentations[segmentIndex].condition = undefined;
             }
         },
         created() {
             this.events = this.value;
         },
-        template: '<div>\
-                    <div v-if="isOpen">\
-                        <cly-populator-section-detail title="EVENT DETAILS" entity="Event" @remove="() => removeEvent(index)" :key="index" v-for="(event, index) in events" style="margin-bottom: 16px">\
-                            <input type="text" v-model="events[index].name" />\
-                        </cly-populator-section-detail>\
-                    </div>\
-                    <el-button :disabled="!isOpen" @click="addEvent">+ Add event</el-button>\
-                </div>'
+        template: CV.T("/populator/templates/sections/events.html")
     });
 
     const sequencesSection = countlyVue.views.create({
@@ -490,7 +537,7 @@
                         <el-switch v-if="hasSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
                         <span class="text-big bu-has-text-weight-medium">{{title}}</span>\
                     </div>\
-                    <div class="text-smallish color-cool-gray-50 bu-mb-5">{{description}}</div>\
+                    <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
                     <component :is-open="isSectionActive" v-model="value" @input="(payload) => { $emit(\'input\', payload) }" :is="type">\
                         <template slot="default">\
                             <slot name="default"></slot>\

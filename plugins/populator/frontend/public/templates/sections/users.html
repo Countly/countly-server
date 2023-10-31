@@ -1,7 +1,7 @@
 <div class="bu-mt-3 populator-template populator-template__users">
     <slot name="default"></slot>
-    <div class="text-medium bu-has-text-weight-medium bu-mt-5 bu-mb-3">{{i18n("populator.custom-user-props")}}</div>
-    <cly-populator-section-detail class="bu-mb-4 populator-template__users--user-property" :title="i18n('populator-template.property-details')" entity="Property" @remove="() => onRemoveUserProperty(index)" :key="index" v-for="(user, index) in users">
+    <div class="text-medium bu-has-text-weight-medium bu-mt-5 bu-mb-4">{{i18n("populator.custom-user-props")}}</div>
+    <cly-populator-section-detail class="bu-mb-4 populator-template__users--property-section" :title="i18n('populator-template.property-details')" entity="Property" @remove="() => onRemoveUserProperty(index)" :key="index" v-for="(user, index) in users">
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-2">
             <div class="bu-mr-2">
               <div>
@@ -31,11 +31,13 @@
                 <div>
                     <div class="bu-is-flex" v-for="(value, valueIndex) in user.values">
                         <div class="bu-mt-2">
-                            <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
-                                <template slot="suffix">
-                                    <span class="text-medium color-cool-gray-50">%</span>
-                                </template>
-                            </el-input>
+                            <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
+                                    <template slot="suffix">
+                                        <span class="text-medium color-cool-gray-50">%</span>
+                                    </template>
+                                </el-input>
+                            </validation-provider>
                         </div>
                         <div class="bu-mt-3 bu-ml-2 override-buttons">
                             <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveValue(index, valueIndex)"></i>
@@ -70,11 +72,13 @@
                     <div>
                         <div class="bu-is-flex" v-for="(value, valueIndex) in user.condition.values">
                             <div class="bu-mt-2">
-                                <el-input class="input" v-model="value.probability" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')">
-                                    <template slot="suffix">
-                                        <span class="text-medium color-cool-gray-50">%</span>
-                                    </template>
-                                </el-input>
+                                <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="text-medium color-cool-gray-50">%</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
                             </div>
                             <div class="bu-mt-3 bu-ml-2 override-buttons">
                                 <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, valueIndex)"></i>

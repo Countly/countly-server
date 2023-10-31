@@ -75,7 +75,7 @@
                 font-size: 13px;
                 line-height: 18px;
                 color: #81868D;
-                margin-left: 27px;
+                margin-left: 24px;
             }
         }
 
@@ -260,7 +260,7 @@
         width: 3px;
     }
 
-    &__users {
+    &__users, &__events {
         &--platform-type {
             .el-checkbox {
                 margin-right: 0px !important;
@@ -290,7 +290,7 @@
             }
         }
 
-        &--user-property {
+        &--property-section {
             .input {
                 width: 208px;
             }
@@ -304,6 +304,15 @@
            .condition-label {
                 max-width: 150px;
            }
+        }
+
+        &--segmentation-section {
+            margin-top: 32px;
+
+            .segmentation-buttons {
+                margin-left: 217px;
+                width: 84%;
+            }
         }
     }
 
