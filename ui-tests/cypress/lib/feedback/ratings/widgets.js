@@ -394,7 +394,7 @@ const clickAddCommentCheckbox = () => {
     cy.clickElement(feedbackRatingWidgetsPageElements.ADD_COMMENT_CHECKBOX);
 };
 
-const typeAddComment = (comment) => {
+const typeAddCommentCheckboxLabelText = (comment) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.ADD_COMMENT_INPUT, comment);
 };
 
@@ -402,7 +402,7 @@ const clickContactViaCheckbox = () => {
     cy.clickElement(feedbackRatingWidgetsPageElements.CONTACT_VIA_CHECKBOX);
 };
 
-const typeContactVia = (email) => {
+const typeContactViaCheckboxLabelText = (email) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.CONTACT_VIA_INPUT, email);
 };
 
@@ -951,9 +951,9 @@ module.exports = {
     typeEmojiFourText,
     typeEmojiFiveText,
     clickAddCommentCheckbox,
-    typeAddComment,
+    typeAddCommentCheckboxLabelText,
     clickContactViaCheckbox,
-    typeContactVia,
+    typeContactViaCheckboxLabelText,
     typeButtonCallOut,
     typeThanksMessage,
     selectRatingSymbol,
