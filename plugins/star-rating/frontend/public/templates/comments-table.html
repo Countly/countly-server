@@ -11,8 +11,8 @@
       </el-table-column>
         <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')" min-width="60">
           <template v-slot="rowScope">
-              <span class="text-medium">
-                <span :class="'rating-color rating-comments-color-' + rowScope.row.rating" :data-test-id="'ratings-comment-table-rating-row-' + rowScope.$index"></span> {{ rowScope.row.rating}}
+              <span class="text-medium" :data-test-id="'ratings-comment-table-rating-row-' + rowScope.$index">
+                <span :class="'rating-color rating-comments-color-' + rowScope.row.rating"></span> {{ rowScope.row.rating}}
               </span>
           </template>
       </el-table-column>
