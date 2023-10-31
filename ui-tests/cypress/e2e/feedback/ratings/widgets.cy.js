@@ -1,21 +1,23 @@
 import user from '../../../fixtures/user.json';
 const { generateWidgetFixture } = require('../../../fixtures/generators/widgets');
+const { generateWidgetsRatesFixture } = require('../../../fixtures/generators/widgetsRates');
+
 const navigationHelpers = require('../../../support/navigations');
 const loginHelpers = require('../../../lib/login');
 const widgetsHelpers = require('../../../lib/feedback/ratings/widgets');
 const componentAddFeedbackSteps = require('../../../support/components/addFeedbackSteps');
 const { RATING_SYMBOLS } = require('../../../support/constants');
 const demoWidgetPage = require('../../../lib/feedback/ratings/demoWidgetPage');
-const helper = require('../../../support/helper')
+const helper = require('../../../support/helper');
 
 describe('Create New Widget', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it('Verify default values of page and create a widget with that values and then update the widget data', function () {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.clickNextStepButton();
@@ -136,7 +138,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.clickAddCommentCheckbox();
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
-        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText)
+        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -182,7 +184,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-            widgetsHelpers.clickShowOnlyCheckbox();
+        widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -202,6 +204,8 @@ describe('Create New Widget', () => {
             });
         });
 
+        const widgetRate = generateWidgetsRatesFixture();
+
         demoWidgetPage.verifyDemoPageElementsAndRate({
             question: widget.question,
             emojiOneText: widget.emojiOneText,
@@ -210,10 +214,10 @@ describe('Create New Widget', () => {
             emojiFourText: widget.emojiFourText,
             emojiFiveText: widget.emojiFiveText,
             selectedEmojiItemIndex: 1,
-            isCheckedAddComment: true,
-            commentCheckboxLabelText: widget.comment,
-            isCheckedViaContact: true,
-            viaContactCheckboxLabelText: widget.contactVia,
+            commentCheckboxLabelText: widget.addCommentCheckboxLabelText,
+            comment: widgetRate.comment,
+            contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
+            contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
@@ -261,11 +265,11 @@ describe('Create New Widget', () => {
         });
     });
 
-    it('Create a widget with updated text then stop the widget from details page', function () {
+    it('Create a widget with updated text then stop the widget from details page', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton(),
-            widgetsHelpers.typeQuestion(widget.question);
+        widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.typeEmojiOneText(widget.emojiOneText);
         widgetsHelpers.typeEmojiTwoText(widget.emojiTwoText);
         widgetsHelpers.typeEmojiThreeText(widget.emojiThreeText);
@@ -274,7 +278,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.clickAddCommentCheckbox();
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
-        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText)
+        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -320,7 +324,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-            widgetsHelpers.clickShowOnlyCheckbox();
+        widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -337,6 +341,8 @@ describe('Create New Widget', () => {
                 demoWidgetPage.goToDemoWidgetPage(user.username, user.password, appName, widgetId);
             });
         });
+
+        const widgetRate = generateWidgetsRatesFixture();
 
         demoWidgetPage.verifyDemoPageElementsAndRate({
             question: widget.question,
@@ -392,7 +398,7 @@ describe('Create New Widget', () => {
         });
     });
 
-    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function () {
+    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
@@ -413,7 +419,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.clickAddCommentCheckbox();
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
-        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText)
+        widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.clickNextStepButton();
 
@@ -488,7 +494,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.shouldBeWidgetDeleted(widget.question);
     });
 
-    it('Verify widget details comment and rating tab data', function () {
+    it('Verify widget details comment and rating tab data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         const widget = generateWidgetFixture();
 
@@ -510,11 +516,11 @@ describe('Create New Widget', () => {
             isTargetingAllUsers: true,
             pages: "/",
             isActive: true
-        })
+        });
 
         navigationHelpers.getAppNameFromSidebar().then((appName) => {
             widgetsHelpers.getWidgetIdFromDataTable(0).then((widgetId) => {
-                demoWidgetPage.goToDemoWidgetPage(user.username, user.password, appName, widgetId)
+                demoWidgetPage.goToDemoWidgetPage(user.username, user.password, appName, widgetId);
             });
         });
 
@@ -522,46 +528,46 @@ describe('Create New Widget', () => {
             selectedEmojiItemIndex: widgetRateOne.rating,
             comment: widgetRateOne.comment,
             contactEmail: widgetRateOne.contactEmail
-        })
+        });
 
-        cy.reload()
+        cy.reload();
 
         demoWidgetPage.verifyDemoPageElementsAndRate({
             selectedEmojiItemIndex: widgetRateTwo.rating,
             comment: widgetRateTwo.comment,
             contactEmail: widgetRateTwo.contactEmail
-        })
+        });
 
-        cy.reload()
+        cy.reload();
 
         demoWidgetPage.verifyDemoPageElementsAndRate({
             selectedEmojiItemIndex: widgetRateThree.rating,
             comment: widgetRateThree.comment,
             contactEmail: widgetRateThree.contactEmail
-        })
+        });
 
-        cy.reload()
+        cy.reload();
 
         demoWidgetPage.verifyDemoPageElementsAndRate({
             selectedEmojiItemIndex: widgetRateFour.rating,
             comment: widgetRateFour.comment,
             contactEmail: widgetRateFour.contactEmail
-        })
+        });
 
-        cy.reload()
+        cy.reload();
 
         demoWidgetPage.verifyDemoPageElementsAndRate({
             selectedEmojiItemIndex: widgetRateFive.rating,
             comment: widgetRateFive.comment,
             contactEmail: widgetRateFive.contactEmail
-        })
+        });
 
-        cy.reload()
+        cy.reload();
 
-        navigationHelpers.goToDashboardPage()
-        widgetsHelpers.navigateToWidgetsDetailPage(widget.question)
+        navigationHelpers.goToDashboardPage();
+        widgetsHelpers.navigateToWidgetsDetailPage(widget.question);
 
-        const result = helper.calculatePercentageRatings(...[widgetRateOne.rating, widgetRateTwo.rating, widgetRateThree.rating, widgetRateFour.rating, widgetRateFive.rating])
+        const result = helper.calculatePercentageRatings(...[widgetRateOne.rating, widgetRateTwo.rating, widgetRateThree.rating, widgetRateFour.rating, widgetRateFive.rating]);
 
         widgetsHelpers.verifyWidgetDetailsPageElements({
             ratingsValue: "5",
@@ -577,6 +583,6 @@ describe('Create New Widget', () => {
                 numberOfRatings: [result.counts[0], result.counts[1], result.counts[2], result.counts[3], result.counts[4]],
                 percentages: [result.percentages[0], result.percentages[1], result.percentages[2], result.percentages[3], result.percentages[4]],
             }
-        })
-    })
+        });
+    });
 });

@@ -2,7 +2,8 @@ import {
     feedbackRatingWidgetsPageElements,
     widgetsDataTableElements,
     feedbackRatingWidgetDetailsPageElements,
-    feedbackRatingWidgetDetailsCommentsDataTableElements
+    feedbackRatingWidgetDetailsCommentsDataTableElements,
+    feedbackRatingWidgetDetailsRatingsDataTableElements
 } from "../../../support/elements/feedback/ratings/widgets";
 
 const stepElements = require("../../../support/components/addFeedbackSteps");
@@ -819,58 +820,58 @@ const verifyWidgetDetailsPageElements = ({
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
                 labelText: index + 1,
-            })
+            });
         }
 
         for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_NUMBER_OF_RATINGS,
                 labelText: ratingsTable.numberOfRatings[index],
-            })
+            });
         }
 
         for (var index = 0; index < ratingsTable.percentages.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_PERCENTAGE,
                 labelText: ratingsTable.percentages[index],
-            })
+            });
         }
 
-        cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS)
+        cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
 
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
-        })
+        });
 
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_TIME_LABEL,
             labelText: "Time",
-        })
+        });
 
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_COMMENT_LABEL,
             labelText: "Comment",
-        })
+        });
 
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_EMAIL_LABEL,
             labelText: "E-mail",
-        })
+        });
 
         for (var index = 0; index < commentsTable.ratings.length; index++) {
             var indexOfRatings = commentsTable.ratings.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
                 labelText: commentsTable.ratings[indexOfRatings],
-            })
+            });
         }
 
         for (var index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
                 labelText: commentsTable.times,
-            })
+            });
         }
 
         for (var index = 0; index < commentsTable.comments.length; index++) {
@@ -878,7 +879,7 @@ const verifyWidgetDetailsPageElements = ({
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
                 labelText: commentsTable.comments[indexOfComments],
-            })
+            });
         }
 
         for (var index = 0; index < commentsTable.emails.length; index++) {
@@ -886,10 +887,10 @@ const verifyWidgetDetailsPageElements = ({
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
                 labelText: commentsTable.emails[indexOfEmails],
-            })
+            });
         }
     }
-}
+};
 
 const deleteWidget = () => {
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON);

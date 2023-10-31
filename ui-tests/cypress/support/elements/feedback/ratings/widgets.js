@@ -272,7 +272,7 @@ const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => {
         NEXT_PAGE_ARROW_BUTTON: 'ratings-data-table-next-page-arrow-button',
         LAST_PAGE_ARROW_BUTTON: 'ratings-data-table-last-page-arrow-button'
     };
-}
+};
 
 module.exports = {
     feedbackRatingWidgetsPageElements,
