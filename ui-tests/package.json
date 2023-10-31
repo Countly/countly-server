@@ -10,12 +10,13 @@
     "cy:run:userActivity": "cypress run --spec **/analytics/loyalty/userActivity.cy.js --browser chrome"
   },
   "devDependencies": {
-    "cypress": "^13.1.0"
+    "cypress": "^13.4.0"
   },
   "license": "ISC",
   "dependencies": {
     "@faker-js/faker": "^8.2.0",
     "base-64": "^1.0.0",
-    "cypress-file-upload": "^5.0.8"
+    "cypress-file-upload": "^5.0.8",
+    "moment": "^2.29.4"
   }
 }
