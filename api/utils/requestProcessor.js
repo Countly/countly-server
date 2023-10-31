@@ -3276,11 +3276,15 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }
             params.app_user = user || {};
 
-            let payload = params.href.substr(3) || "";
+            let payload = params.href.substr(params.fullPath.length + 1) || "";
             if (params.req.method.toLowerCase() === 'post') {
                 payload += params.req.body;
             }
-            payload = payload.replace(new RegExp("[?&]?(rr=[^&]+)", "gm"), "");
+            //remove dynamic parameters
+            payload = payload.replace(new RegExp("[?&]?(rr=[^&\n]+)", "gm"), "");
+            payload = payload.replace(new RegExp("[?&]?(checksum=[^&\n]+)", "gm"), "");
+            payload = payload.replace(new RegExp("[?&]?(checksum256=[^&\n]+)", "gm"), "");
+            payload = payload.replace(new RegExp("[?&]?(hc=[^&\n]+)", "gm"), "");
             params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
