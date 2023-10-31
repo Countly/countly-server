@@ -815,7 +815,9 @@ const verifyWidgetDetailsPageElements = ({
         labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS,
         labelText: "Comments",
     });
+
     if (commentsTable.ratings != null && commentsTable.ratings.length > 0) {
+        cy.scrollPageToBottom('.main-view');
         for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
@@ -838,7 +840,8 @@ const verifyWidgetDetailsPageElements = ({
         }
 
         cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
-
+        cy.scrollPageToBottom('.main-view');
+        
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
