@@ -3276,7 +3276,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }
             params.app_user = user || {};
 
-            let payload = params.href.substr(params.fullPath.length + 1) || "";
+            let payload = params.href.substr(3) || "";
             if (params.req.method.toLowerCase() === 'post') {
                 payload += params.req.body;
             }
