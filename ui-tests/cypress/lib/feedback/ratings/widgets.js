@@ -693,12 +693,20 @@ const verifyWidgetDetailsPageElements = ({
     ratingsValue = "0",
     ratingsRate = "0%",
     timesShownValue = "0",
-    rowIndex,
-    rowRatingValue,
-    rowTimeValue,
-    rowCommentValue,
-    rowEmailValue
+    commentsTable,
+    ratingsTable
 }) => {
+    const {
+        ratings,
+        times,
+        comments,
+        emails
+    } = commentsTable;
+
+    const {
+        numberOfRatings,
+        percentages
+    } = ratingsTable;
 
     cy.verifyElement({
         element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK_ICON,
@@ -797,60 +805,91 @@ const verifyWidgetDetailsPageElements = ({
         elementText: timesShownValue
     });
 
-    if (rowIndex != null) {
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_RATINGS,
-            labelText: "Ratings",
-        });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_RATINGS,
+        labelText: "Ratings",
+    });
+
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS,
+        labelText: "Comments",
+    });
+    if (commentsTable.ratings != null && commentsTable.ratings.length > 0) {
+        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
+                labelText: index + 1,
+            })
+        }
+
+        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_NUMBER_OF_RATINGS,
+                labelText: ratingsTable.numberOfRatings[index],
+            })
+        }
+
+        for (var index = 0; index < ratingsTable.percentages.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_PERCENTAGE,
+                labelText: ratingsTable.percentages[index],
+            })
+        }
+
+        cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS)
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS,
-            labelText: "Comments",
-        });
-
-        cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
-
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_RATING_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
-        });
+        })
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_TIME_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_TIME_LABEL,
             labelText: "Time",
-        });
+        })
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_COMMENT_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_COMMENT_LABEL,
             labelText: "Comment",
-        });
+        })
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_EMAIL_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_EMAIL_LABEL,
             labelText: "E-mail",
-        });
+        })
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_RATING,
-            labelText: rowRatingValue,
-        });
+        for (var index = 0; index < commentsTable.ratings.length; index++) {
+            var indexOfRatings = commentsTable.ratings.length - index - 1;
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
+                labelText: commentsTable.ratings[indexOfRatings],
+            })
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_TIME,
-            labelText: rowTimeValue,
-        });
+        for (var index = 0; index < commentsTable.ratings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
+                labelText: commentsTable.times,
+            })
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_COMMENT,
-            labelText: rowCommentValue,
-        });
+        for (var index = 0; index < commentsTable.comments.length; index++) {
+            var indexOfComments = commentsTable.comments.length - index - 1;
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
+                labelText: commentsTable.comments[indexOfComments],
+            })
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_EMAIL,
-            labelText: rowEmailValue,
-        });
+        for (var index = 0; index < commentsTable.emails.length; index++) {
+            var indexOfEmails = commentsTable.emails.length - index - 1;
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
+                labelText: commentsTable.emails[indexOfEmails],
+            })
+        }
     }
-};
+}
 
 const deleteWidget = () => {
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON);
