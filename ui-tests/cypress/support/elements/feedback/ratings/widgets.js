@@ -244,10 +244,41 @@ const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => {
     };
 };
 
+const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => {
+    return {
+        TABLE_ROWS: '.el-table__row',
+        EXPORT_AS_BUTTON: 'ratings-data-table-export-as-button',
+        TABLE_SEARCH_INPUT: 'ratings-data-table-datatable-search-input',
+        COLUMN_NAME_RATING_LABEL: 'ratings-data-table-label-rating',
+        COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-data-table-sortable-icon-rating',
+        COLUMN_NAME_NUMBER_OF_RATINGS_LABEL: 'ratings-data-table-label-number-of-ratings',
+        COLUMN_NAME_NUMBER_OF_RATINGS_SORTABLE_ICON: 'ratings-data-table-sortable-icon-number-of-ratings',
+        COLUMN_NAME_PERCENTAGE_LABEL: 'ratings-data-table-label-percentage',
+        COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'ratings-data-table-sortable-icon-percentage',
+        //Columns' Rows' Datas Elements
+        ROW_RATING: 'ratings-data-table-rating-' + index,
+        ROW_NUMBER_OF_RATINGS: 'ratings-data-table-number-of-rating-' + index,
+        ROW_PERCENTAGE: 'ratings-data-table-percentage-' + index,
+
+        //PAGINATION ELEMENTS
+        ITEMS_PER_PAGE_LABEL: 'ratings-data-table-items-per-page-label',
+        PER_PAGE_COUNT_SELECT: 'ratings-data-table-items-per-page-count-select-input-pseudo-input-label',
+        PER_PAGE_COUNT_SELECT_ICON: 'ratings-data-table-items-per-page-count-select-icon',
+        PER_PAGE_COUNT_LABEL: 'ratings-data-table-items-per-page-count-select',
+        PAGE_NUMBER_SELECT: 'ratings-data-table-page-number-select-input-pseudo-input-label',
+        PAGE_NUMBER_SELECT_ICON: 'ratings-data-table-page-number-select-icon',
+        FIRST_PAGE_ARROW_BUTTON: 'ratings-data-table-first-page-arrow-button',
+        PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-data-table-previous-page-arrow-button',
+        NEXT_PAGE_ARROW_BUTTON: 'ratings-data-table-next-page-arrow-button',
+        LAST_PAGE_ARROW_BUTTON: 'ratings-data-table-last-page-arrow-button'
+    };
+};
+
 module.exports = {
     feedbackRatingWidgetsPageElements,
     feedbackRatingWidgetDetailsPageElements,
     widgetsDataTableElements,
-    feedbackRatingWidgetDetailsCommentsDataTableElements
+    feedbackRatingWidgetDetailsCommentsDataTableElements,
+    feedbackRatingWidgetDetailsRatingsDataTableElements
 };
 

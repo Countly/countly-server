@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 function capitalize(text) {
     text = text.toLowerCase();
     return text[0].toUpperCase() + text.slice(1);
@@ -17,8 +19,33 @@ function hexToRgb(hex) {
     return rgbColor;
 }
 
-module.exports = {
+function calculatePercentageRatings(...ratings) {
+    const counts = [0, 0, 0, 0, 0];
+    const totalRatingCount = ratings.length;
+
+    ratings.forEach(rating => {
+        if (rating >= 1 && rating <= 5) {
+            counts[rating - 1]++;
+        }
+    });
+
+    const percentages = counts.map(count => (count * 100) / totalRatingCount);
+
+    return {
+        totalRatingCount,
+        counts,
+        percentages
+    };
+}
+
+function getCurrentDate() {
+    return moment().format('ddd, DD MMM YYYY');
+}
+
+export default {
     capitalize,
     toSlug,
-    hexToRgb
+    hexToRgb,
+    calculatePercentageRatings,
+    getCurrentDate,
 };

@@ -7,8 +7,8 @@ const generator = () => {
     const emojiThreeText = faker.lorem.words({ min: 1, max: 3 });
     const emojiFourText = faker.lorem.words({ min: 1, max: 3 });
     const emojiFiveText = faker.lorem.words({ min: 1, max: 3 });
-    const comment = faker.lorem.words({ min: 1, max: 3 });
-    const contactVia = faker.lorem.words({ min: 1, max: 3 });
+    const addCommentCheckboxLabelText = faker.lorem.words({ min: 1, max: 3 });
+    const contactViaCheckboxLabelText = faker.lorem.words({ min: 1, max: 3 });
     const buttonCallOut = faker.lorem.words({ min: 1, max: 3 });
     const thanksMessage = faker.lorem.words({ min: 1, max: 3 });
     const mainColor = faker.color.rgb({ format: 'hex', casing: 'upper' });
@@ -23,8 +23,8 @@ const generator = () => {
         emojiThreeText,
         emojiFourText,
         emojiFiveText,
-        comment,
-        contactVia,
+        addCommentCheckboxLabelText,
+        contactViaCheckboxLabelText,
         buttonCallOut,
         thanksMessage,
         mainColor,

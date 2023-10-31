@@ -111,7 +111,6 @@ Cypress.Commands.add("shouldHaveValue", (element, value) => {
     cy.getElement(element).should("have.value", value);
 });
 
-
 Cypress.Commands.add("shouldUrlInclude", (url) => {
     cy.url().should('include', url);
 });
