@@ -39,7 +39,7 @@ function calculatePercentageRatings(...ratings) {
 }
 
 function getCurrentDate() {
-    return moment().format('ddd, DD MMM YYYY');
+    return moment().format('ddd, D MMM YYYY');
 }
 
 export default {
