@@ -41,10 +41,11 @@
                 this.titleDescription = {header: CV.i18n('populator.create-new-template'), button: CV.i18n('common.create')};
                 this.openDrawer("populatorTemplate", {
                     name: '',
-                    events: [],
+                    platformType: [],
                     users: [],
-                    sequences: [],
-                    platformType: []
+                    events: [],
+                    views: [],
+                    sequences: []
                 });
             },
             refresh: function(isRefresh) {

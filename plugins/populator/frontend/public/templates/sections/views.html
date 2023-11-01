@@ -1,48 +1,35 @@
-<div class="populator-template populator-template__events">
-    <cly-populator-section-detail  v-if="isOpen" class="bu-mb-3 populator-template__events--property-section" :title="i18n('populator-template.event-details')" entity="Event" @remove="() => onRemoveEvent(index)" :key="index" v-for="(event, index) in events">
+<div class="populator-template populator-template__views">
+    <cly-populator-section-detail  v-if="isOpen" class="bu-mb-3 populator-template__views--property-section" :title="i18n('populator-template.view-details')" entity="View" @remove="() => onRemoveView(index)" :key="index" v-for="(view, index) in views">
         <div class="bu-mr-2 bu-mt-2">
             <div>
-              <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator.event-key')}}</span>
-              <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.event-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+              <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.view-name')}}</span>
+              <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.view-name-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
             </div>
             <div class="bu-mt-2">
               <validation-provider name="name" rules="required" v-slot="v">
-                  <el-input style="width: 100%;" :placeholder="i18n('populator-template.enter-your-event-key')" class="input" v-model="event.key" :class="{'is-error': v.errors.length > 0}"></el-input>
+                  <el-input style="width: 100%;" :placeholder="i18n('populator-template.enter-your-view-name')" class="input" v-model="view.key" :class="{'is-error': v.errors.length > 0}"></el-input>
               </validation-provider>
             </div>
-            <div class="populator-template__events--segmentation-section">
-                <div class="bu-container populator-template__events--duration-and-sum-container">
+            <div class="populator-template__views--segmentation-section">
+                <div class="bu-container populator-template__views--duration-and-sum-container">
                     <div class="bu-columns bu-p-3">
                         <div class="left-container bu-level-left bu column bu-is-6">
-                            <el-checkbox v-model="event.duration.isActive">
+                            <el-checkbox v-model="view.duration.isActive">
                                 <span class="text-smallish">{{ i18n('populator.duration-help-title') }}</span>
                             </el-checkbox>
                             <span class="duration-text">{{ i18n('populator.duration-help-subtitle') }}</span>
                         </div>
                         <div class="right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
-                            <el-input :disabled="!event.duration.isActive" v-model="event.duration.minDurationTime" class="bu-is-shadowless duration-input"></el-input> 
+                            <el-input :disabled="!view.duration.isActive" v-model="view.duration.minDurationTime" class="bu-is-shadowless duration-input"></el-input> 
                             <span class="bu-p-1">-</span>
-                            <el-input :disabled="!event.duration.isActive" class="bu-is-shadowless duration-input" v-model="event.duration.maxDurationTime"></el-input>
-                        </div>
-                    </div>
-                    <div class="bu-columns bu-p-3">
-                        <div class="left-container bu-level-left bu column bu-is-6">
-                            <el-checkbox v-model="event.sum.isActive">
-                                <span class="text-smallish">{{ i18n('populator.sum-help-title') }}</span>
-                            </el-checkbox>
-                            <span class="duration-text">{{ i18n('populator.sum-help-subtitle') }}</span>
-                        </div>
-                        <div class="right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
-                            <el-input :disabled="!event.sum.isActive" class="bu-is-shadowless duration-input" v-model="event.sum.minSumValue"></el-input> 
-                            <span class="bu-p-1">-</span>
-                            <el-input :disabled="!event.sum.isActive" class="bu-is-shadowless duration-input" v-model="event.sum.maxSumValue"></el-input>
+                            <el-input :disabled="!view.duration.isActive" class="bu-is-shadowless duration-input" v-model="view.duration.maxDurationTime"></el-input>
                         </div>
                     </div>
                 </div>
                 <hr class="divider bu-mt-5">
-                <div class="bu-mt-4" v-if="event.segmentations.length">
-                    <span class="text-small text-uppercase populator-template--text-custom-detail">{{i18n('populator-template.segment-details')}}</span>
-                    <div class="bu-mb-4" v-for="(segment, segmentIndex) in event.segmentations">
+                <div class="bu-mt-4" v-if="view.segmentations.length">
+                    <span class="text-small text-uppercase populator-template-drawer__text-custom-detail">{{i18n('populator-template.segment-details')}}</span>
+                    <div class="bu-mb-4" v-for="(segment, segmentIndex) in view.segmentations">
                         <div>
                             <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
                                 <div class="bu-mr-2">
@@ -93,7 +80,7 @@
                             <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherValue(index, segmentIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
                         </div>
                         <hr class="divider">
-                        <div v-if="segment.condition" class="populator-template__events--condition">
+                        <div v-if="segment.condition" class="populator-template__views--condition">
                             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline">
                                 <div class="bu-mr-5"></div>
                                 <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ segment.condition.conditionType === 1 ? i18n('populator-template.condition-is', segment.condition.selectedKey, segment.condition.selectedValue) : i18n('populator-template.condition-is-not', segment.condition.selectedKey, segment.condition.selectedValue) }}</div>
@@ -141,10 +128,10 @@
                     </div>
                 </div>
                 <div class="bu-my-4 btn-another-value-wrapper override-buttons">
-                    <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddEventSegmentation(index)">{{i18n('populator.add-segmentation')}}</el-button>
+                    <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddViewSegmentation(index)">{{i18n('populator.add-segmentation')}}</el-button>
                 </div>
             </div>
         </div>
     </cly-populator-section-detail>
-    <el-button class="populator-template--btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" @click="onAddEvent()">{{ i18n("populator.add-event") }}</el-button>
+    <el-button class="populator-template-drawer__btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" @click="onAddView()">{{ i18n("populator-template.add-view") }}</el-button>
 </div>

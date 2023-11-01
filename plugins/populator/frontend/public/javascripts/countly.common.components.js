@@ -169,11 +169,11 @@
                 required: false
             }
         },
-        template: '<div class="populator-template-drawer__main-container bu-py-3 bu-px-4">\
+        template: '<div class="populator-template__main-container bu-py-3 bu-px-4">\
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">\
-                        <div class="text-small text-uppercase populator-template-drawer__text-custom-detail">{{title}}</div>\
+                        <div class="text-small text-uppercase populator-template--text-custom-detail">{{title}}</div>\
                         <div>\
-                            <el-button type="text" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template-drawer__btn-delete el-button--text"  @click="$emit(\'remove\')"> Delete {{ entity }} </el-button>\
+                            <el-button type="text" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"  @click="$emit(\'remove\')"> Delete {{ entity }} </el-button>\
                         </div>\
                     </div>\
                     <slot/>\
@@ -378,6 +378,100 @@
         template: CV.T("/populator/templates/sections/events.html")
     });
 
+    const viewsSection = countlyVue.views.create({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: [Object, Array],
+            }
+        },
+        data: function() {
+            return {
+                // Dummy data
+                views: []
+            };
+        },
+        watch: {
+            views: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
+            }
+        },
+        methods: {
+            onAddView() {
+                this.views.push({
+                    "key": "",
+                    "duration": { isActive: false, minDurationTime: 0, maxDurationTime: 0 },
+                    "segmentations": []
+                });
+            },
+            onRemoveView(index) {
+                this.views.splice(index, 1);
+            },
+            onAddViewSegmentation: function(index) {
+                this.views[index].segmentations.push({
+                    "key": "",
+                    "values": [{key: "", probability: 0}],
+                });
+            },
+            onRemoveSegment: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.views[index].segmentations[segmentIndex].values.length === 1) {
+                        this.views[index].segmentations.splice(segmentIndex, 1);
+                        return;
+                    }
+                    this.views[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddAnotherValue: function(index, valueIndex) {
+                this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+            },
+            onAddAnotherConditionValue: function(index, segmentIndex) {
+                this.views[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            },
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.views[index].segmentations[segmentIndex].condition.values.length === 1) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-while-removing-condition"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.views[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onDeleteCondition: function(index, segmentIndex) {
+                this.views[index].segmentations[segmentIndex].condition = undefined;
+            }
+        },
+        created() {
+            this.views = this.value;
+        },
+        template: CV.T("/populator/templates/sections/views.html")
+    });
+
     const sequencesSection = countlyVue.views.create({
         mixins: [countlyVue.mixins.i18n],
         props: {
@@ -530,7 +624,8 @@
         components: {
             userSection,
             eventsSection,
-            sequencesSection
+            sequencesSection,
+            viewsSection
         },
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\

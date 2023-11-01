@@ -54,7 +54,7 @@
             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline">
                 <div class="bu-mr-5"></div>
                 <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ user.condition.conditionType === 1 ? i18n('populator-template.condition-is', user.condition.selectedKey, user.condition.selectedValue) : i18n('populator-template.condition-is-not', user.condition.selectedKey, user.condition.selectedValue) }}</div>
-                <el-button type="text" @click="onDeleteCondition(index)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template-drawer__btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
+                <el-button type="text" @click="onDeleteCondition(index)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
             </div>
             <div class="bu-is-flex bu-is-justify-content-flex-end">
                 <div class="bu-mr-2">

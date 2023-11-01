@@ -1,8 +1,4 @@
 .populator-template-drawer {
-    &__main-container {
-        background: #F8FAFD;
-        border-radius: 6px;
-    }
 
     &__key {
         flex-basis: 160px;
@@ -13,27 +9,9 @@
         flex-grow: 1;
     }
 
-    &__btn-add {
-        margin-bottom: 32px;
-    }
-
-    &__btn-delete {
-        font-weight: 500 !important;
-        color: #D23F00 !important;
-    }
-
-    &__btn-delete:hover {
-        background-color: transparent !important;
-    }
-
     &__btn-segmentation {
         font-size: 13px;
         margin-bottom: 32px !important;
-    }
-
-    &__text-custom-detail {
-        letter-spacing: 0.5px;
-        font-weight: 500 !important;
     }
 
     &__property-container {
@@ -59,40 +37,6 @@
         padding: unset;
         margin-top: 16px;
         height: 20px;
-    }
-    
-    &__event-container {
-        .event-left-container {
-            display: flex;
-            align-items: normal;
-            flex-direction: column;
-            width: 50%;
-
-            .duration-text {
-                font-family: Inter;
-                font-style: normal;
-                font-weight: normal;
-                font-size: 13px;
-                line-height: 18px;
-                color: #81868D;
-                margin-left: 24px;
-            }
-        }
-
-        .event-right-container {
-            margin-left: 40px !important;
-            padding: unset !important;
-            margin-top: -5px !important;
-        }
-
-        .el-checkbox__label {
-            margin-left: 8px !important;
-            padding-left: unset !important;
-        }
-
-        .event-input {
-            width: 80px !important;
-        }
     }
 }
 
@@ -260,7 +204,7 @@
         width: 3px;
     }
 
-    &__users, &__events {
+    &__users, &__events, &__views {
         &--platform-type {
             .el-checkbox {
                 margin-right: 0px !important;
@@ -314,6 +258,40 @@
                 width: 84%;
             }
         }
+
+        &--duration-and-sum-container {
+            .left-container {
+                display: flex;
+                align-items: normal;
+                flex-direction: column;
+                width: 50%;
+    
+                .duration-text {
+                    font-family: Inter;
+                    font-style: normal;
+                    font-weight: normal;
+                    font-size: 13px;
+                    line-height: 18px;
+                    color: #81868D;
+                    margin-left: 24px;
+                }
+            }
+    
+            .right-container {
+                margin-left: 40px !important;
+                padding: unset !important;
+                margin-top: -5px !important;
+            }
+    
+            .el-checkbox__label {
+                margin-left: 8px !important;
+                padding-left: unset !important;
+            }
+    
+            .duration-input {
+                width: 80px !important;
+            }
+        }
     }
 
     &__sequences {
@@ -360,6 +338,29 @@
         .btn-another-value-wrapper {
             width: 84%;
         }
+    }
+
+    &--text-custom-detail {
+        letter-spacing: 0.5px;
+        font-weight: 500 !important;
+    }
+
+    &--btn-delete {
+        font-weight: 500 !important;
+        color: #D23F00 !important;
+    }
+
+    &--btn-delete:hover {
+        background-color: transparent !important;
+    }
+
+    &--btn-add {
+        margin-bottom: 32px;
+    }
+
+    &__main-container {
+        background: #F8FAFD;
+        border-radius: 6px;
     }
 }
 
