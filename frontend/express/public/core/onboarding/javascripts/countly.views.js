@@ -442,12 +442,12 @@
     });
 
     if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin) {
-        if (Backbone.history.fragment !== '/not-responded-consent') {
+        if (Backbone.history.fragment !== '/not-responded-consent' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-responded-consent", true);
         }
     }
     else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
-        if (Backbone.history.fragment !== '/not-subscribed-newsletter') {
+        if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }
     }
