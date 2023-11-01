@@ -380,9 +380,6 @@
                         window.location.reload();
                     }
                 });
-
-                // go home
-                app.navigate('#/', true);
             },
         }
     });
@@ -419,7 +416,8 @@
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
     countlyCMS.fetchEntry('server-quick-start', { populate: true }).then(function(resp) {
-        if (resp.data && resp.data.length) {
+        var isConsentPage = /initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash);
+        if (resp.data && resp.data.length && !isConsentPage) {
             var showForNSessions = resp.data[0].showForNSessions;
 
             if (!_.isEmpty(countlyGlobal.apps) && sessionCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
@@ -444,12 +442,12 @@
     });
 
     if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin) {
-        if (Backbone.history.fragment !== '/not-responded-consent') {
+        if (Backbone.history.fragment !== '/not-responded-consent' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-responded-consent", true);
         }
     }
     else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
-        if (Backbone.history.fragment !== '/not-subscribed-newsletter') {
+        if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }
     }
