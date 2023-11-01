@@ -1,6 +1,6 @@
 //Put script in ./countly/plugins/views/omitViewSegments.js
 /*
-Script deletes data for specific segments in aggregated data. It also can set omitting list in database to ensure that segments are also omitted on incoming data.
+The script deletes data for specific segments in aggregated data. It also can set an omitting list in the database to ensure that segments are also omitted on incoming data.
 */
 
 //to run:
@@ -12,9 +12,9 @@ var crypto = require('crypto');
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var Promise = require("bluebird");
 
-var app_list = []; //leave epty to process all apps or add specific app ids to array.
+var app_list = []; //leave empty to process all apps or add specific app ids to the array.
 var DRY_RUN = false; //set to true to see what will be deleted without actually deleting anything
-var save_list_in_database = true; //If omitting is succesful, should list be saved in views setting. If saved in views setting, it will ensure segment no reappearing on incoming data. It will have effect only if upgraded to version at least 23.06.??
+var save_list_in_database = true; //If omitting is successful, should list be saved in views setting. If saved in views setting, it will ensure segment not reappearing on incoming data. It will have effect only if upgraded to version at least 23.06.16
 
 var omit = ["Cats", "Dogs"];//list with segments to omit
 
