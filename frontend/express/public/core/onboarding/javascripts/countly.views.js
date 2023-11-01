@@ -380,9 +380,6 @@
                         window.location.reload();
                     }
                 });
-
-                // go home
-                app.navigate('#/', true);
             },
         }
     });
