@@ -197,7 +197,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         for (var zz = 0; zz < omit.length; zz++) {
                             unset["segments." + omit[zz]] = "";
                         }
-                        common.db.collection('views').updateOne({"_id": common.db.ObjectID(appId)}, {$set: {omit: omit}}, function(err5) {
+                        common.db.collection('views').updateOne({"_id": common.db.ObjectID(appId)}, {$set: {omit: omit}, "$unset": unset}, function(err5) {
                             if (err5) {
                                 log.e(err5);
                                 common.returnMessage(params, 400, "Updating database failed");
