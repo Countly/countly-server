@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="23.06"
+VER="23.11"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -30,8 +30,10 @@ then
     nodejs "$DIR/scripts/add_indexes.js"
 
     #run upgrade scripts
-    countly config "drill.big_list_limit" 1000
-    nodejs "$SCRIPTS/scripts/script.js"
+    nodejs "$SCRIPTS/scripts/check_app_images.js"
+    nodejs "$SCRIPTS/scripts/remove_unused_apms.js"
+    nodejs "$SCRIPTS/scripts/remove_deleted_recors_from_widgets.js"
+    nodejs "$SCRIPTS/scripts/update_timestamps_in_consent_history.js"
 
 
     if [ "$1" != "combined" ]; then

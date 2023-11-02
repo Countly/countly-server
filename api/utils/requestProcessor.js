@@ -3278,7 +3278,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
             let payload = params.href.substr(3) || "";
             if (params.req.method.toLowerCase() === 'post') {
-                payload += params.req.body;
+                payload += "&" + params.req.body;
             }
             //remove dynamic parameters
             payload = payload.replace(new RegExp("[?&]?(rr=[^&\n]+)", "gm"), "");
