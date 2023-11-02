@@ -161,6 +161,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         catch (err) {
             console.log("Cursor error: ", err);
             console.log("Restarting cursor process...");
+            session.endSession();
             processCursor(app);
         }
     }
