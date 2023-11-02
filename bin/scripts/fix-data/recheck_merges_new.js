@@ -33,29 +33,47 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
                 console.log("Processing app: ", app.name);
+                var usersCursor;
                 //get all drill collections for this app
                 var collections = await getDrillCollections(app._id);
-                //cursor: get users with merges > 0 and merges_rechecked not set or set to false
-                var usersCursor = countlyDb.collection('app_users' + app._id).find(
-                    {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
-                    {_id: 1, uid: 1, merged_uid: 1}
-                );
-                //for each user
-                while (usersCursor && await usersCursor.hasNext()) {
-                    //get next user
-                    const user = await usersCursor.next();
-                    //check if old uid still exists in drill collections
-                    if (user && user.merged_uid) {
-                        await processUser(user.merged_uid, user.uid, collections, app);
+                //start session
+                const session = await countlyDb.client.startSession();
+                //get users collection
+                const usersCollection = session.client.db("countly").collection('app_users' + app._id);
+                try {
+                    usersCursor = generateCursor(usersCollection);
+                    try {
+                        var refreshTimestamp = new Date();
+                        //for each user
+                        while (usersCursor && await usersCursor.hasNext()) {
+                            //refresh session every 5 minutes
+                            if ((new Date() - refreshTimestamp) / 1000 > 300) {
+                                console.log("Refreshing session");
+                                await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                                refreshTimestamp = new Date();
+                            }
+                            //get next user
+                            const user = await usersCursor.next();
+                            //check if old uid still exists in drill collections
+                            if (user && user.merged_uid) {
+                                await processUser(user.merged_uid, user.uid, collections, app);
+                            }
+                            //if cursor is closed, recreate it and skip processed users
+                            if (usersCursor.isClosed()) {
+                                usersCursor = generateCursor(usersCollection);
+                            }
+                            await addRecheckedFlag(app._id, user.uid);
+                        }
+                        session.endSession();
                     }
-                    //if cursor is closed, recreate it and skip processed users
-                    if (usersCursor.isClosed()) {
-                        usersCursor = countlyDb.collection('app_users' + app._id).find(
-                            {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
-                            {_id: 1, uid: 1, merged_uid: 1}
-                        );
+                    catch (err) {
+                        console.log("Cursor error: ", err);
+                        usersCursor = generateCursor(usersCollection);
                     }
-                    await addRecheckedFlag(app._id, user.uid);
+                }
+                catch (err) {
+                    console.log("Could not get cursor for app ", app.name, "error: ", err);
+                    return close(err);
                 }
 
             }, function(err) {
@@ -138,6 +156,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         if (!DRY_RUN) {
             await countlyDb.collection('app_users' + appId).update({uid}, {'$set': {merges_rechecked: true}});
         }
+    }
+
+    function generateCursor(collection) {
+        return collection.find(
+            {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
+            {_id: 1, uid: 1, merged_uid: 1}
+        );
     }
 
     function close(err) {
