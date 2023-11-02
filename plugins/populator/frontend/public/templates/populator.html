@@ -74,46 +74,34 @@
                 :hasExport="false">
                     <template v-slot="scope">
                         <el-table-column prop="name" :label="i18n('populator.template')" sortable>
-                            <template slot-scope="rowScope">
-                                <div>
+                                <div slot-scope="rowScope">
                                     {{ rowScope.row.name }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column prop="userCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-users')" sortable>
-                            <template slot-scope="rowScope">
-                                <div class="bu-has-text-right">
+                                <div slot-scope="rowScope" class="bu-has-text-right">
                                     {{ rowScope.row.userCount }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column prop="eventCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-events')" sortable>
-                            <template slot-scope="rowScope">
-                                <div class="bu-has-text-right">
+                                <div slot-scope="rowScope" class="bu-has-text-right">
                                     {{ rowScope.row.eventCount }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column prop="viewCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-views')" sortable>
-                            <template slot-scope="rowScope">
-                                <div class="bu-has-text-right">
+                                <div slot-scope="rowScope" class="bu-has-text-right">
                                     {{ rowScope.row.viewCount }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column prop="sequenceCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-sequences')" sortable>
-                            <template slot-scope="rowScope">
-                                <div class="bu-has-text-right">
+                                <div slot-scope="rowScope" class="bu-has-text-right">
                                     {{ rowScope.row.sequenceCount }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column prop="generatedOn" :label="i18n('populator.generated-on')" sortable>
-                            <template slot-scope="rowScope">
-                                <div>
+                                <div slot-scope="rowScope">
                                     {{ rowScope.row.generatedOn }}
                                 </div>
-                            </template>
                         </el-table-column>
                         <el-table-column type="options">
                             <template v-slot="col">
