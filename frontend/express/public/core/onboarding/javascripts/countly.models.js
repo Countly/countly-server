@@ -75,17 +75,18 @@
 
         quickstartItems.forEach(function(item) {
             var linkUrl = item.link;
-            if (!linkUrl.startsWith('#')) {
+            if (linkUrl.startsWith('/') && item.linkType === 'internal') {
                 linkUrl = '#' + linkUrl;
             }
             var description = (item.description && item.description !== '-') ? item.description : '';
             var title = item.title;
+            var target = item.linkType === 'external' ? 'target="_blank" rel="noreferrer noopener"' : '';
             var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c"></i>' : '<i class="ion-android-open"></i>';
 
             body += '<div class="bu-mt-4 quickstart-item">' +
             '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
             '<div>' +
-            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium">' +
+            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium" ' + target + '>' +
             title + ' ' + icon +
             '</a>' +
             '<div class="quickstart-item-desc bu-is-size-7">' + description + '</div>' +

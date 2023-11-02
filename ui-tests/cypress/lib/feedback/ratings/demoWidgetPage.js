@@ -1,7 +1,6 @@
 const getApiKey = require('../../../api/getApiKey');
 const getApps = require('../../../api/getApps');
 const helper = require('../../../support/helper');
-const { faker } = require('@faker-js/faker');
 
 const demoPageElements = {
     CLOSE_BUTTON: '#close-btn',
@@ -40,7 +39,7 @@ const goToDemoWidgetPage = (username, password, appName, widgetID) => {
         });
 };
 
-const verifyDemoPageElements = ({
+const verifyDemoPageElementsAndRate = ({
     question,
     emojiOneText,
     emojiTwoText,
@@ -48,14 +47,14 @@ const verifyDemoPageElements = ({
     emojiFourText,
     emojiFiveText,
     selectedEmojiItemIndex = 0,
-    isCheckedAddComment,
     commentCheckboxLabelText,
-    isCheckedViaContact,
-    viaContactCheckboxLabelText,
+    comment,
+    contactViaCheckboxLabelText,
+    contactEmail,
     submitButtonText,
     submitButtonColor,
     submitButtonFontColor,
-    hasPoweredByLogo,
+    hasPoweredByLogo = true,
     thankYouMessageText,
     successIconColor
 }) => {
@@ -64,16 +63,20 @@ const verifyDemoPageElements = ({
         element: demoPageElements.CLOSE_BUTTON,
     });
 
-    cy.verifyElement({
-        element: demoPageElements.QUESTION_LABEL,
-        elementText: question
-    });
+    if (question != null) {
+        cy.verifyElement({
+            element: demoPageElements.QUESTION_LABEL,
+            elementText: question
+        });
+    }
 
-    cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_ONE_ICON, emojiOneText);
-    cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_TWO_ICON, emojiTwoText);
-    cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_THREE_ICON, emojiThreeText);
-    cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_FOUR_ICON, emojiFourText);
-    cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_FIVE_ICON, emojiFiveText);
+    if (emojiOneText != null) {
+        cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_ONE_ICON, emojiOneText);
+        cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_TWO_ICON, emojiTwoText);
+        cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_THREE_ICON, emojiThreeText);
+        cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_FOUR_ICON, emojiFourText);
+        cy.shouldDataOriginalTitleContainText(demoPageElements.EMOJI_FIVE_ICON, emojiFiveText);
+    }
 
     if (selectedEmojiItemIndex === 1) {
         cy.clickElement(demoPageElements.EMOJI_ONE_ICON);
@@ -91,32 +94,34 @@ const verifyDemoPageElements = ({
         cy.clickElement(demoPageElements.EMOJI_FIVE_ICON);
     }
 
-    if (isCheckedAddComment) {
+    if (comment != null) {
         cy.verifyElement({
             labelElement: demoPageElements.ADD_COMMENT_LABEL,
             labelText: commentCheckboxLabelText,
         });
 
         cy.clickElement(demoPageElements.ADD_COMMENT_CHECKBOX);
-        cy.typeInput(demoPageElements.ADD_COMMENT_INPUT, faker.lorem.words({ min: 1, max: 10 }));
+        cy.typeInput(demoPageElements.ADD_COMMENT_INPUT, comment);
     }
 
-    if (isCheckedViaContact) {
+    if (contactEmail != null) {
         cy.verifyElement({
             labelElement: demoPageElements.CONTACT_VIA_LABEL,
-            labelText: viaContactCheckboxLabelText,
+            labelText: contactViaCheckboxLabelText,
         });
 
         cy.clickElement(demoPageElements.CONTACT_VIA_CHECKBOX);
-        cy.typeInput(demoPageElements.CONTACT_VIA_INPUT, faker.internet.email());
+        cy.typeInput(demoPageElements.CONTACT_VIA_INPUT, contactEmail);
     }
 
-    cy.verifyElement({
-        element: demoPageElements.SUBMIT_BUTTON,
-        elementText: submitButtonText,
-        selectedMainColor: submitButtonColor,
-        selectedFontColor: submitButtonFontColor
-    });
+    if (submitButtonText != null) {
+        cy.verifyElement({
+            element: demoPageElements.SUBMIT_BUTTON,
+            elementText: submitButtonText,
+            selectedMainColor: submitButtonColor,
+            selectedFontColor: submitButtonFontColor
+        });
+    }
 
     if (hasPoweredByLogo) {
         cy.verifyElement({
@@ -129,12 +134,20 @@ const verifyDemoPageElements = ({
 
     cy.clickElement(demoPageElements.SUBMIT_BUTTON);
 
-    cy.verifyElement({
-        labelElement: demoPageElements.THANK_YOU_MESSAGE,
-        labelText: thankYouMessageText,
-    });
+    // cy.window().then((win) => {
+    //   win.sessionStorage.setItem('createdDate', helper.getCurrentDate());
+    // });
 
-    cy.getElement(demoPageElements.SUCCESS_ICON).invoke("attr", "style").should("contain", helper.hexToRgb(successIconColor));
+    if (thankYouMessageText != null) {
+        cy.verifyElement({
+            labelElement: demoPageElements.THANK_YOU_MESSAGE,
+            labelText: thankYouMessageText,
+        });
+    }
+
+    if (successIconColor != null) {
+        cy.getElement(demoPageElements.SUCCESS_ICON).invoke("attr", "style").should("contain", helper.hexToRgb(successIconColor));
+    }
 
     if (hasPoweredByLogo) {
         cy.verifyElement({
@@ -148,5 +161,5 @@ const verifyDemoPageElements = ({
 
 module.exports = {
     goToDemoWidgetPage,
-    verifyDemoPageElements
+    verifyDemoPageElementsAndRate
 };

@@ -55,11 +55,12 @@
     .walkthrough {
         position: relative; 
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: space-between;
         border-radius: 10px;
-        width: 100%;
-        height: 250px;
+        height: 200px;
+        box-sizing: border-box;
+        padding: 1rem;
         cursor: pointer;
         &--blue {
             background: linear-gradient(139.69deg, #017AFF 22.95%, rgba(1, 122, 255, 0.5) 96.04%);
@@ -75,30 +76,28 @@
         }
 
         &__title {
-            position: absolute;
             font-size: 23px;
             font-weight: 500;
             line-height: 30px;
             letter-spacing: .003em;
             text-align: left;
             color: #fff;
-            z-index: 9;
             width: 80%;
             word-break: break-word;
             overflow-wrap: break-word;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
         }
-
-        &__icon {
-            position: absolute;
-            width: 50px;
-            opacity: 0.8;
-            z-index: 10;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
+        
+        &__button {
+            display: flex;
+            flex-direction: row;
+            &__icon {
+                width: 16px;
+                margin-right: 5px;
+            }
+            &__text {
+                opacity: 0.8px;
+                color: #fff;
+            }
         }
     }
 }
