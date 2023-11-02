@@ -14,7 +14,6 @@ const common = require("../../../api/utils/common.js");
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
 const APP_ID = ""; //leave empty to get all apps
-const CURSOR_LIMIT = 1000;
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -40,7 +39,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 var usersCursor = countlyDb.collection('app_users' + app._id).find(
                     {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
                     {_id: 1, uid: 1, merged_uid: 1}
-                ).limit(CURSOR_LIMIT);
+                );
                 //for each user
                 while (usersCursor && await usersCursor.hasNext()) {
                     //get next user
@@ -54,7 +53,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         usersCursor = countlyDb.collection('app_users' + app._id).find(
                             {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
                             {_id: 1, uid: 1, merged_uid: 1}
-                        ).limit(CURSOR_LIMIT);
+                        );
                     }
                     await addRecheckedFlag(app._id, user.uid);
                 }
