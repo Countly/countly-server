@@ -34,7 +34,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             asyncjs.eachSeries(apps, async function(app) {
                 console.log("Processing app: ", app.name);
                 await processCursor(app);
-
             }, function(err) {
                 return close(err);
             });
@@ -133,8 +132,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         const usersCollection = session.client.db("countly").collection('app_users' + app._id);
         //create cursor 
         var usersCursor = generateCursor(usersCollection);
+        var refreshTimestamp = new Date();
         try {
-            var refreshTimestamp = new Date();
             //for each user
             while (usersCursor && await usersCursor.hasNext()) {
                 //refresh session every 5 minutes
@@ -145,7 +144,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         refreshTimestamp = new Date();
                     }
                     catch (err) {
-                        console.lgo("Error refreshing session: ", err);
+                        console.log("Error refreshing session: ", err);
+                        break;
                     }
                 }
                 //get next user
@@ -156,7 +156,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 }
                 await addRecheckedFlag(app._id, user.uid);
             }
-            session.endSession();
         }
         catch (err) {
             console.log("Cursor error: ", err);
@@ -164,6 +163,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             session.endSession();
             processCursor(app);
         }
+        session.endSession();
     }
 
     function close(err) {
