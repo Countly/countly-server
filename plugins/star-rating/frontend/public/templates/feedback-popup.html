@@ -313,8 +313,8 @@
         }
         
         for (var key in custom) {
-            if (!event.segmentation[key]) {
-                event.segmentation[key] = custom[key];
+            if (!eventObject.segmentation[key]) {
+                eventObject.segmentation[key] = custom[key];
             }
         }
 
