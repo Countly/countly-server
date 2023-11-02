@@ -38,13 +38,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 var collections = await getDrillCollections(app._id);
                 //cursor: get users with merges > 0 and merges_rechecked not set or set to false
                 var usersCursor = countlyDb.collection('app_users' + app._id).find(
-                    {merges: {$gt: 0}, $or: [{merges_rechecked: {$exists: false}}, {merges_rechecked: {$ne: true}}]},
+                    {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
                     {_id: 1, uid: 1, merged_uid: 1}
                 ).limit(CURSOR_LIMIT);
-                //if the cursor is empty, clear merges_rechecked flag
-                if (!await usersCursor.hasNext()) {
-                    await clearRecheckedFlag(app._id);
-                }
                 //for each user
                 while (usersCursor && await usersCursor.hasNext()) {
                     //get next user
@@ -56,7 +52,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     //if cursor is closed, recreate it and skip processed users
                     if (usersCursor.isClosed()) {
                         usersCursor = countlyDb.collection('app_users' + app._id).find(
-                            {merges: {$gt: 0}, $or: [{merges_rechecked: {$exists: false}}, {merges_rechecked: {$ne: true}}]},
+                            {merges: {$gt: 0}, merges_rechecked: {$ne: true}},
                             {_id: 1, uid: 1, merged_uid: 1}
                         ).limit(CURSOR_LIMIT);
                     }
@@ -142,12 +138,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     async function addRecheckedFlag(appId, uid) {
         if (!DRY_RUN) {
             await countlyDb.collection('app_users' + appId).update({uid}, {'$set': {merges_rechecked: true}});
-        }
-    }
-
-    async function clearRecheckedFlag(appId) {
-        if (!DRY_RUN) {
-            await countlyDb.collection('app_users' + appId).update({merges_rechecked: true}, {'$unset': {merges_rechecked: true}}, {multi: true});
         }
     }
 
