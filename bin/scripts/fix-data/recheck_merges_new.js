@@ -140,18 +140,19 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 //refresh session every 5 minutes
                 if ((new Date() - refreshTimestamp) / 1000 > 300) {
                     console.log("Refreshing session");
-                    await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
-                    refreshTimestamp = new Date();
+                    try {
+                        await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                        refreshTimestamp = new Date();
+                    }
+                    catch (err) {
+                        console.lgo("Error refreshing session: ", err);
+                    }
                 }
                 //get next user
                 const user = await usersCursor.next();
                 //check if old uid still exists in drill collections
                 if (user && user.merged_uid) {
                     await processUser(user.merged_uid, user.uid, drillCollections, app);
-                }
-                //if cursor is closed, recreate it and skip processed users
-                if (usersCursor.isClosed()) {
-                    usersCursor = generateCursor(usersCollection);
                 }
                 await addRecheckedFlag(app._id, user.uid);
             }
