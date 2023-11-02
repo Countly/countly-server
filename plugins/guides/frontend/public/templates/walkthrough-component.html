@@ -1,8 +1,11 @@
 <div class="walkthrough-wrapper bu-column">
     <div :class="['walkthrough', gradientClass]" :id="'walkthrough__'+value.id" @click="openDialog()">
-        <img src="images/icons/play-circle-filled.svg" alt="Icon" class="walkthrough__icon"/>
         <div class="walkthrough__title">
             {{ value.title }}
+        </div>
+        <div class="walkthrough__button">
+            <img src="images/icons/arrow_drop_right.svg" alt="Icon" class="walkthrough__button__icon"/>
+            <div class="walkthrough__button__text">{{ i18n('guides.take-the-tour') }}</div>
         </div>
     </div>
     <el-dialog
