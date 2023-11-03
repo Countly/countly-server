@@ -621,7 +621,7 @@
                     return differences;
                 }
                 else {
-                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url"].forEach(function(currentKey) {
+                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url", "app_domain"].forEach(function(currentKey) {
                         if (editedObject[currentKey] !== selectedApp[currentKey]) {
                             differences.push(currentKey);
                         }

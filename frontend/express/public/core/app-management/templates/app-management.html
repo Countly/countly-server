@@ -153,6 +153,18 @@
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
+                                        <div>
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')">
+                                                {{formScope.editedObject.app_domain}}
+                                            </cly-inline-form-field>
+                                            <cly-inline-form-field v-else :label="i18n('management-applications.app-domain')" prop="app_domain">
+                                                <el-input
+                                                    :disabled="isDisabled()"
+                                                    :placeholder="i18n('management-applications.app-domain')"
+                                                    v-model="formScope.editedObject.app_domain">
+                                                </el-input>
+                                            </cly-inline-form-field>
+                                        </div>
 										<div v-if="!newApp && apps[selectedApp] && apps[selectedApp].redirect_url">
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.redirect_url')" :help="i18n('management-applications.redirect_url.help')">
                                                 {{formScope.editedObject.redirect_url}}
