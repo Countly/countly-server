@@ -153,7 +153,7 @@
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
-                                        <div>
+                                        <div v-if="formScope.editedObject.type === 'web'">
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')">
                                                 {{formScope.editedObject.app_domain}}
                                             </cly-inline-form-field>
