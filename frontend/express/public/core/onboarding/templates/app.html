@@ -1,11 +1,11 @@
 <div>
-    <div class="setup-logo"></div>
-    <div id="initial-setup" class="centered-content">
+    <div class="setup-logo" data-test-id="countly-logo"></div>
+    <div id="initial-setup" data-test-id="initial-setup" class="centered-content">
         <div v-if="!isPopulating" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
-            <div class="bu-is-size-4">
+            <div class="bu-is-size-4" data-test-id="initial-setup-title">
                 {{ isDemoApp ? i18n('initial-setup.add-demo-application-title') : i18n('initial-setup.add-first-application-title') }}
             </div>
-            <div v-if="!isDemoApp" class="setup-byline">{{ i18n('initial-setup.add-first-application-byline') }}</div>
+            <div v-if="!isDemoApp" data-test-id="initial-setup-sub-title" class="setup-byline">{{ i18n('initial-setup.add-first-application-byline') }}</div>
             <cly-form
                 :initial-edited-object="newApp"
                 class="setup-form bu-mt-5"
@@ -17,9 +17,10 @@
                                 <el-input
                                     class="bu-mt-1"
                                     :placeholder="i18n('management-applications.application-name')"
-                                    v-model="formScope.editedObject.name">
+                                    v-model="formScope.editedObject.name"
+                                    test-id="app-name-input">
                                 </el-input>
-                                <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
+                                <span class="el-form-item__error bu-is-size-7" data-test-id= "app-name-error">{{v.errors[0]}}</span>
                             </div>
                         </cly-form-field>
                         <cly-form-field :label="i18n('initial-setup.application-type-label')">
@@ -30,13 +31,14 @@
                                     v-model="formScope.editedObject.type"
                                     :label="type"
                                     class="is-autosized"
+                                    :test-id="`initial-setup-${type}`"
                                     border>
                                     <div class="setup-radio-item">
                                         <div class="setup-radio-icon-bg bu-mr-2">
-                                            <div class="setup-radio-icon" :class="'setup-radio-icon--app-type-' + type"></div>
+                                            <div class="setup-radio-icon" :data-test-id="`initial-setup-${type}-icon`" :class="'setup-radio-icon--app-type-' + type"></div>
                                         </div>
                                         <div>
-                                            <div class="text-medium bu-is-capitalized">{{type}}</div>
+                                            <div class="text-medium bu-is-capitalized" :data-test-id="`initial-setup-${type}-label`">{{type}}</div>
                                             <div class="text-medium">{{i18n('initial-setup.application')}}</div>
                                         </div>
                                     </div>
@@ -48,7 +50,8 @@
                                 :placeholder="i18n('management-applications.time-zone')"
                                 v-model="formScope.editedObject.timezone"
                                 class="cly-is-fullwidth bu-mt-1"
-                                :options="timezones">
+                                :options="timezones"
+                                test-id="select-timezone-dropdown">
                             </cly-select-x>
                         </cly-form-field>
                         <cly-form-field v-if="!isDemoApp" :label="i18n('management-applications.app-key')" :tooltip="i18n('management-applications.app-key.hint')" :name="i18n('management-applications.app-key')" rules="required" v-slot="v">
@@ -69,10 +72,11 @@
                                     v-model="formScope.editedObject.appTemplate"
                                     :label="appTemplate.id"
                                     class="is-autosized"
+                                    :test-id="`app-template-${appTemplate.name.toLowerCase()}`"
                                     border>
                                     <div class="setup-radio-item">
                                         <div class="setup-radio-icon-bg bu-mr-2">
-                                            <div class="setup-radio-icon" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
+                                            <div class="setup-radio-icon" :data-test-id="`app-template-${appTemplate.name.toLowerCase()}-icon`" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
                                         </div>
                                         <div>
                                             <div class="text-medium bu-is-capitalized">{{appTemplate.name}}</div>
@@ -87,7 +91,8 @@
                         @click="formScope.submit()"
                         class="bu-is-block bu-mt-2 bu-mx-auto"
                         size="medium"
-                        type="success">
+                        type="success"
+                        data-test-id="continue-submit-button">
                         {{ buttonText }}
                     </el-button>
                 </template>
@@ -97,17 +102,18 @@
             <video controls class="bu-is-block bu-mx-auto setup-video-container" v-if="videoLink.length">
                 <source :src="videoLink"/>
             </video>
-            <img src="./images/dashboard/onboarding/video-placeholder.svg" class="bu-is-block bu-mx-auto" v-else/>
+            <img src="./images/dashboard/onboarding/video-placeholder.svg" data-test-id="populator-progress-bar-img" class="bu-is-block bu-mx-auto" v-else/>
             <template v-if="!isPopulatorFinished">
-                <cly-progress-bar :percentage="populatorProgress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
-                <div class="setup-byline">Populating data for your app</div>
+                <cly-progress-bar :percentage="populatorProgress" data-test-id="populator-progress" :color="'#0166D6'" :height="16" class="bu-mt-4 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
+                <div class="setup-byline" data-test-id="populator-progress-text">Populating data for your app</div>
             </template>
             <el-button
                 v-else
                 @click="handleContinueClick"
                 class="bu-is-block bu-mt-5 bu-mx-auto bu-px-6"
                 size="medium"
-                type="success">
+                type="success"
+                data-test-id="continue-button">
                 {{i18n('common.continue')}}
             </el-button>
         </div>
