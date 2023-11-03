@@ -17,13 +17,13 @@
         row.nextRunDate = countlyCommon.getDate(row.next);
         row.nextRunTime = countlyCommon.getTime(row.next);
         row.lastRun = countlyCommon.formatTimeAgo(row.finished);
-        row.scheduleLabel = row.schedule;
-        index = row.schedule.indexOf("starting on");
+        row.scheduleLabel = row.schedule || "";
+        index = row.scheduleLabel.indexOf("starting on");
         if (index > (-1)) {
             row.scheduleLabel = row.schedule.substring(0, index).trim();
             row.scheduleDetail = row.schedule.substring(index).trim();
         }
-        if (row.schedule.startsWith("at")) {
+        if (row.schedule && row.schedule.startsWith("at")) {
             index = row.schedule.indexOf("every");
             row.scheduleDetail = row.schedule.substring(0, index).trim();
             row.scheduleLabel = row.schedule.substring(index).trim();
