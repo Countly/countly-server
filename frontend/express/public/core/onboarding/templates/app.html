@@ -59,7 +59,8 @@
                                 <el-input
                                     class="bu-mt-1"
                                     :placeholder="i18n('management-applications.app-key')"
-                                    v-model="formScope.editedObject.key">
+                                    v-model="formScope.editedObject.key"
+                                    test-id="app-key-input">
                                 </el-input>
                                 <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
                             </div>
