@@ -199,6 +199,9 @@
         width: 179px;
         margin-top: 120px;
 
+        .wrapper {
+            position: fixed;
+        }
     }
     &__active-bar {
         width: 3px;
@@ -252,11 +255,6 @@
 
         &--segmentation-section {
             margin-top: 32px;
-
-            .segmentation-buttons {
-                margin-left: 217px;
-                width: 84%;
-            }
         }
 
         &--duration-and-sum-container {
@@ -278,7 +276,7 @@
             }
     
             .right-container {
-                margin-left: 40px !important;
+                margin-left: 57px !important;
                 padding: unset !important;
                 margin-top: -5px !important;
             }
@@ -303,6 +301,8 @@
        }
         &--container {
             width: 385px;
+            margin-top: 7px;
+            margin-left: 16px;
             .probability-header {
                 margin-left: 109px;
             }
@@ -318,6 +318,10 @@
            .probability-field {
                 width: 208px;
                 margin-left: 8px;
+
+                .input, .el-input {
+                    width: 208px;
+                }
            }
         }
     }
@@ -325,6 +329,9 @@
     .override-buttons {
         .close-button {
             cursor: pointer;
+            font-size: 18px;
+            margin-top: 14px;
+            margin-left: 12px;
         }
 
         .btn-another-value {
@@ -335,9 +342,9 @@
             background-color: transparent !important;
         }
 
-        .btn-another-value-wrapper {
+        // .btn-another-value-wrapper {
             width: 84%;
-        }
+        // }
     }
 
     &--text-custom-detail {
@@ -354,13 +361,28 @@
         background-color: transparent !important;
     }
 
-    &--btn-add {
-        margin-bottom: 32px;
-    }
+    // &--btn-add {
+    //     margin-bottom: 32px;
+    // }
 
     &__main-container {
         background: #F8FAFD;
         border-radius: 6px;
+        width: 670px;
+    }
+
+    .cly-vue-drawer-step {
+        &__section {
+            margin-bottom: 16px;
+        }
+    }
+
+    .cly-vue-drawer {
+        &__footer {
+            display: flex;
+            width: 670px;
+            margin-left: calc(50% - 269px);
+        }
     }
 }
 

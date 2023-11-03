@@ -15,12 +15,75 @@
                 default: '#0166D6'
             }
         },
+        data: function() {
+            return {
+                steps: [],
+                sectionThresholds: {
+                    "section-0": 0,
+                    "section-1": 0,
+                    "section-2": 0,
+                    "section-3": 0,
+                    "section-4": 0
+                },
+                fireMouseWheeler: false,
+            };
+        },
+        methods: {
+            scrollToSection(index) {
+                const sectionId = "section-" + index;
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                    this.steps[index].isActive = true;
+                    this.steps.map((item, i) => {
+                        if (i !== index) {
+                            item.isActive = false;
+                        }
+                    });
+                }
+            },
+            handleScroll: function() {
+                if (this.fireMouseWheeler) {
+                    for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
+                        const element = document.getElementById(Object.keys(this.sectionThresholds)[index]);
+                        if (!element) {
+                            return;
+                        }
+
+                        const elementDimension = element.getBoundingClientRect();
+                        const elementTop = elementDimension.top;
+                        const elementHeight = elementDimension.height;
+                        const headerHeight = 79;
+                        if (elementTop + elementHeight - headerHeight > 0) {
+                            this.steps[index].isActive = true;
+                            this.steps.map((item, i) => {
+                                if (i !== index) {
+                                    item.isActive = false;
+                                }
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+        },
+        created: function() {
+            this.steps = this.data;
+            var self = this;
+            this.fireMouseWheeler = true;
+            window.addEventListener("mousewheel", function() {
+                self.handleScroll();
+            }, false);
+        },
+        destroyed: function() {
+            this.fireMouseWheeler = false;
+        },
         template: '<div>\
-                    <div v-for="item in this.data">\
+                    <div v-for="(item, index) in this.steps">\
                         <div class="bu-is-flex bu-mb-4">\
                             <div class="bu-mr-3 populator-template__active-bar" :style="[item.isActive ? {\'background-color\': activeColorCode} : {}]"></div>\
                             <div>\
-                                <div class="text-medium bu-has-text-weight-medium bu-mb-1" :style="[item.isActive ? {\'color\': activeColorCode} : {}]">{{item.header}}</div>\
+                                <div class="text-medium bu-has-text-weight-medium bu-mb-1" @click="scrollToSection(index)" :style="[item.isActive ? {\'color\': activeColorCode} : {\'cursor\': \'pointer\'}]">{{item.header}}</div>\
                                 <div class="text-smallish color-cool-gray-50">{{i18n("populator-template.settings-of-your-users")}}</div>\
                             </div>\
                         </div>\
@@ -464,7 +527,7 @@
             },
             onDeleteCondition: function(index, segmentIndex) {
                 this.views[index].segmentations[segmentIndex].condition = undefined;
-            }
+            },
         },
         created() {
             this.views = this.value;
@@ -524,7 +587,7 @@
         },
         methods: {
             onAddSequence: function() {
-                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 0}]});
+                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 0, "fixed": true}]});
             },
             onRemoveSequence(index) {
                 this.sequences.splice(index, 1);
@@ -556,8 +619,7 @@
                 this.selectedProperty = '';
                 this.selectedValue = '';
             },
-            onDragChange: function(/*evt*/) {
-                //
+            onDragChange: function() {
             },
             onSaveStep: function(index) {
                 this.sequences[index].steps.push({key: this.selectedProperty, value: this.selectedValue, probability: 0});
@@ -575,6 +637,13 @@
             onClose: function() {
                 document.getElementById('populator-template-step').click();
             },
+            checkMove: function(e) {
+                return this.isDraggable(e.draggedContext);
+            },
+            isDraggable: function(context) {
+                const { index, futureIndex } = context;
+                return !(this.sequences[0].steps[index].fixed || this.sequences[0].steps[futureIndex].fixed);
+            }
         },
         created: function() {
             this.sequences = this.value;

@@ -2,7 +2,7 @@
     <div v-if="isOpen">
         <cly-populator-section-detail :title="i18n('populator-template.sequence-incremental', index + 1)" entity="Sequence" @remove="() => onRemoveSequence(index)" class="bu-mb-4" :key="index" v-for="(sequence, index) in sequences">
             <div class="populator-template__sequences--container">
-                <div class="bu-is-flex bu-mb-6">
+                <div class="bu-is-flex bu-mb-2">
                     <div>
                         <span class="text-smallish bu-has-text-weight-medium" id="populator-template-step">{{i18n('populator-template.steps')}}</span>
                     </div>
@@ -16,21 +16,22 @@
                 </div>
                 <div class="populator-template__sequences--draggable-fields">
                     <draggable
-                        handle=".drag-handler"
+                        handle=".draggable"
+                        :move="checkMove"
                         v-model="sequence.steps"
-                        @change="onDragChange"
+                        @change="onDragChange()"
                         >
                     <div
                         class="text-medium cly-vue-listbox__item"
                         :key="stepIndex"
-                        v-for="(item, stepIndex) in sequence.steps">
+                        v-for="(item, stepIndex) in sequence.steps" :class="{ draggable: !item.fixed }">
                         <div class="bu-is-flex" v-if="!(sequence.steps.length > 1 && stepIndex === sequence.steps.length - 1)">
-                            <div class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>
-                            <div class="bu-is-flex bu-is-align-items-center bu-mb-4">
-                                <div class="step-field has-ellipsis">
-                                    <span class="text-smallish bu-is-capitalized" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}} {{item.key ==="session" ? " " : " - "}} {{item.value}} </span>
+                            <div v-if="item.key !== 'session'" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>
+                            <div class="bu-is-flex bu-is-align-items-center bu-mb-2">
+                                <div class="step-field has-ellipsis" :style="[item.key === 'session' ? {'width': '140px'} : {}]">
+                                    <span class="text-smallish bu-is-capitalized" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}}  -  {{item.value}} </span>
                                 </div>
-                                <div class="bu-is-flex bu-is-align-items-center probability-field">
+                                <div class="bu-is-flex probability-field">
                                     <div>
                                         <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
                                             <el-input class="input" v-model="item.probability" :class="{'is-error': v.errors.length > 0}">
@@ -40,18 +41,18 @@
                                             </el-input>
                                         </validation-provider>
                                     </div>
-                                    <div class="override-buttons bu-ml-3">
-                                        <i class="el-icon-close bu-is-size-5 bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveStep(index, stepIndex)"></i>
+                                    <div class="override-buttons">
+                                        <i class="bu-mt-2 el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveStep(index, stepIndex)"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="vertical-hr bu-mb-2" v-if="sequence.steps.length > 1 && stepIndex === 0"></div>
+                        <div class="vertical-hr" v-if="sequence.steps.length > 1 && stepIndex === 0"></div>
                     </div>
                     </draggable>
                 </div>
             </div>
-            <div class="bu-mt-4 override-buttons">
+            <div class="bu-mt-2 bu-ml-4 override-buttons">
                 <el-popover
                         placement="bottom"
                         width="288"
@@ -88,9 +89,11 @@
                         </template>
                     </el-popover>
             </div>
-            <div class="vertical-hr bu-mt-4 bu-mb-2" v-if="sequence.steps && sequence.steps.length > 1"></div>
-            <div class="text-smallish bu-is-capitalized" v-if="sequence.steps && sequence.steps.length > 1"> {{sequence.steps[sequence.steps.length - 1].key + " " +sequence.steps[sequence.steps.length - 1].value}}</div>
+            <div class="bu-ml-4">
+                <div class="vertical-hr bu-mt-4 bu-mb-2" v-if="sequence.steps && sequence.steps.length > 1"></div>
+            </div>
+            <div class="text-smallish bu-is-capitalized bu-ml-4 bu-mb-2" v-if="sequence.steps && sequence.steps.length > 1"> {{sequence.steps[sequence.steps.length - 1].key + " " +sequence.steps[sequence.steps.length - 1].value}}</div>
         </cly-populator-section-detail>
     </div>
-    <el-button class="populator-template-drawer__btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" :disabled="!isOpen" @click="onAddSequence">{{i18n('populator-template.add-sequence')}}</el-button>
+    <el-button class="bu-mb-2 populator-template-drawer__btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" :disabled="!isOpen" @click="onAddSequence">{{i18n('populator-template.add-sequence')}}</el-button>
 </div>
