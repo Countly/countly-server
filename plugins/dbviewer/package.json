@@ -20,7 +20,7 @@
     "database"
   ],
   "dependencies": {
-    "bson": "^4.7.2"
+    "bson": "^6.2.0"
   },
   "private": true
 }
