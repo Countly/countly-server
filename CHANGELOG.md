@@ -1,3 +1,25 @@
+## Version 23.06.16
+Fixes:
+- [cache] Removing noCursorTimeout from cache cursor
+- [core] fix cursor timeout issue
+- [core] fix for Do not set session cookie on widget load
+- [core] uploadformfile was called even if it was not file upload
+- [core][report-manager] fix for If a report is created for the dashboard widget, viewing leads to the dashboard with that widget.
+- [core][views] Omitting views segments
+- [dependencies] Bump @babel/traverse from 7.22.5 to 7.23.2
+- [dependencies] Bump nodemailer from 6.9.6 to 6.9.7
+- [dependencies]Bump countly-sdk-web from 23.6.0 to 23.6.2
+- [permissions] Add feature check in rights
+- [push] Removing past dates from recurring messages details, fixing tests, sorting trigger dates
+- [ratings] fix for toggle issue in ratings
+- [scripts] fix for new recheck_merges script
+
+Enterprise fixes:
+- [ab-testing] fix for ab_opt_out call when keys not supplied
+- [data-manager] fix for Renamed Segment appearing in All Events
+- [retention_segments] fix cohort queries when selected by breakdown
+- [surveys] fix for disable csrf and session for widgets
+
 ## Version 23.06.15
 Fixes:
 - [crashes] Add config for activating custom field cleanup job
