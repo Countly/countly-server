@@ -59,8 +59,8 @@
                     <label id="full_name-error" data-test-id="full-name-error" class="error" for="full_name" style="display: none;" data-localize="setup.error-full-name"></label>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-test-id="email-label" data-localize="login.email-adress"></p>
-                    <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email adress" data-test-id="email-input" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress" data-test-id="email-label"></p>
+                    <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email address" data-test-id="email-input" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
                     <label id="email-error" data-test-id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
                 </div>
                 <div style="display: none">
