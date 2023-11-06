@@ -1,8 +1,8 @@
 <div>
-    <div class="setup-logo"></div>
-    <div id="consent" class="centered-content">
+    <div class="setup-logo" data-test-id="countly-logo"></div>
+    <div id="consent" data-test-id="consent" class="centered-content">
         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">
-            <div class="bu-is-size-4 bu-mb-6">{{ i18n('initial-setup.consent-title') }}</div>
+            <div class="bu-is-size-4 bu-mb-6" data-test-id="page-title">{{ i18n('initial-setup.consent-title') }}</div>
             <cly-form
                 :initial-edited-object="newConsent"
                 class="consent-form"
@@ -11,13 +11,14 @@
                     <cly-form-step :id="'consent'">
                         <cly-form-field v-for="item in consentItems" :key="item._id">
                             <template v-if="item.type !== 'tracking' || !isCountlyHosted">
-                                <div class="consent-blurb bu-mb-5">{{ decodeHtmlEntities(item.description) }}</div>
-                                <div class="consent-question bu-mb-5">{{ item.question }}</div>
+                                <div class="consent-blurb bu-mb-5" :data-test-id="`page-description-${item.type}`">{{ decodeHtmlEntities(item.description) }}</div>
+                                <div class="consent-question bu-mb-5" :data-test-id="`page-question-${item.type}`">{{ item.question }}</div>
                                 <validation-provider tag="div" class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned" :name="'countly_' + item.type" rules="required">
                                     <el-radio
                                         v-model="formScope.editedObject['countly_' + item.type]"
                                         :label="true"
                                         class="is-autosized"
+                                        :test-id="`enable-${item.type}`"
                                         border>
                                         <div class="text-medium">{{ item.optinText }}</div>
                                     </el-radio>
@@ -25,6 +26,7 @@
                                         v-model="formScope.editedObject['countly_' + item.type]"
                                         :label="false"
                                         class="is-autosized"
+                                        :test-id="`dont-enable-${item.type}`"
                                         border>
                                         <div class="text-medium">{{ item.optoutText }}</div>
                                     </el-radio>
@@ -37,7 +39,8 @@
                         @click="formScope.submit()"
                         class="bu-is-block bu-mt-5 bu-mx-auto"
                         size="medium"
-                        type="success">
+                        type="success"
+                        data-test-id="continue-button">
                         {{i18n('common.continue')}}
                     </el-button>
                 </template>
