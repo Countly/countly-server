@@ -23,7 +23,7 @@
                                 <span class="el-form-item__error bu-is-size-7" data-test-id= "app-name-error">{{v.errors[0]}}</span>
                             </div>
                         </cly-form-field>
-                        <cly-form-field :label="i18n('initial-setup.application-type-label')">
+                        <cly-form-field :label="i18n('initial-setup.application-type-label')" test-id="select-application-type-form">
                             <div class="setup-radio setup-radio-grid bu-mt-2">
                                 <el-radio
                                     v-for="type in types"
@@ -45,7 +45,7 @@
                                 </el-radio>
                             </div>
                         </cly-form-field>
-                        <cly-form-field :label="i18n('initial-setup.time-zone-label')" :tooltip="i18n('management-applications.time-zone.hint')">
+                        <cly-form-field :label="i18n('initial-setup.time-zone-label')" test-id='select-timezone-form' :tooltip="i18n('management-applications.time-zone.hint')">
                             <cly-select-x
                                 :placeholder="i18n('management-applications.time-zone')"
                                 v-model="formScope.editedObject.timezone"
@@ -65,7 +65,7 @@
                                 <span class="el-form-item__error bu-is-size-7">{{v.errors[0]}}</span>
                             </div>
                         </cly-form-field>
-                        <cly-form-field v-if="isDemoApp" :label="i18n('initial-setup.application-sample-label')">
+                        <cly-form-field v-if="isDemoApp" test-id='select-demo-type-form' :label="i18n('initial-setup.application-sample-label')">
                             <div class="setup-radio setup-radio-grid bu-mt-2">
                                 <el-radio
                                     v-for="appTemplate in appTemplates"
