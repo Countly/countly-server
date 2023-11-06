@@ -349,6 +349,7 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
+            testId: {required: false, type: String, default:"cli-form-field"},
             subheading: {required: false},
             label: {required: false},
             optional: {
@@ -383,16 +384,16 @@
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
-                            <div class="text-smallish font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
-                            <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
-                            <span v-if="tooltip" class="bu-is-flex-grow-1"></span>\                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
+                            <div class="text-smallish :data-test-id="testId + \'-label\'" font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
+                            <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :data-test-id="testId + \'-tooltip-icon\'" :tooltip="tooltip"></cly-tooltip-icon>\
+                            <span v-if="tooltip" class="bu-is-flex-grow-1" :data-test-id="testId + \'-tooltip\'"></span>\                             <div v-show="optional" class="text-small text-heading color-cool-gray-40" :data-test-id="testId + \'-optional\'">{{i18n("common.optional")}}</div>\
                         </div>\
-                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
+                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1" :data-test-id="testId + \'-subheading\'">\
                             {{subheading}}\
                         </div>\
                         <component :is="wrapperElement" @submit.prevent>\
                             <validation-provider v-if="$attrs.rules" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
-                                <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
+                                <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}" :data-test-id="testId + \'-error\'">\
                                     <slot v-bind="validation"/>\
                                 </div>\
                             </validation-provider>\

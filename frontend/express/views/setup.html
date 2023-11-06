@@ -15,77 +15,77 @@
     <meta name="referrer" content="no-referrer">
     <link rel="stylesheet" href="stylesheets/font-awesome/css/font-awesome.min.css" />
     <link rel="stylesheet" href="stylesheets/vue/clyvue.css" type='text/css'>
-	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
-	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
+    <link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+    <link rel="icon" type="image/png" href="<%- countlyFavicon %>">
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
     <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
         <% } %>
     <% } %>
-	<title><%- countlyTitle %></title>
-	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
+    <title><%- countlyTitle %></title>
+    <script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
     <% if (typeof inject_template.css != 'undefined') { %>
-	<style><%- inject_template.css %></style>
-	<% } %>
+    <style><%- inject_template.css %></style>
+    <% } %>
 </head>
 <body>
     <div class="wrapper">
         <div id="top-container">
-            <div class="top-button" id="select-lang">
-                <div id="active-lang">EN</div>
+            <div class="top-button" id="select-lang" data-test-id="select-lang-button">
+                <div id="active-lang" data-test-id="active-lang">EN</div>
                 <div id="langs">
                     <div class="group">
                     <% for(var i=0, l=(languages.length/2); i<l; i++) {%>
-                        <a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+                        <a data-language-code="<%=languages[i].code%>" class="item" data-test-id="language-<%=languages[i].code%>"><%=languages[i].name%></a>
                     <% } %>
                     </div>
                     <div class="group">
                     <% for(var i=(parseInt(languages.length/2) + 1), l=languages.length; i<l; i++) {%>
-                        <a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+                        <a data-language-code="<%=languages[i].code%>" class="item" data-test-id="language-<%=languages[i].code%>"><%=languages[i].name%></a>
                     <% } %>
                     </div>
                 </div>
             </div>
-            <div id="login-logo"></div>
+            <div id="login-logo" data-test-id="countly-logo"></div>
         </div>
-        <img src="/images/pre-login/hi-five.svg" style="display: block; margin: 0 auto;"/>
-        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px; margin-bottom: 8px" id="header" data-localize="setup.ready"></h1>
-		<div style="font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto 8px;" data-localize="setup.byline"></div>
+        <img src="/images/pre-login/hi-five.svg" style="display: block; margin: 0 auto;" data-test-id="hi-five-image"/>
+        <h1 style="font-weight: 500; text-align: center; line-height: 32px; font-size: 24px; margin-bottom: 8px" id="header" data-test-id="page-title" data-localize="setup.ready"></h1>
+        <div style="font-size: 14px; color: #81868D; text-align: center; width: 578px; margin: 0 auto 8px;" data-test-id="page-sub-title" data-localize="setup.byline"></div>
         <div id="forgot-form" style="width:304px; margin:auto;">
             <form id="account-form" method="POST" style="width:300px; margin:auto;">
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="setup.full-name"></p>
-                    <input autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="text" name="full_name" id="full_name" placeholder="Enter your full name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
-                    <label id="full_name-error" class="error" for="full_name" style="display: none;" data-localize="setup.error-full-name"></label>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-test-id="full-name-label" data-localize="setup.full-name"></p>
+                    <input autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="text" name="full_name" id="full_name" data-test-id="full-name-input" placeholder="Enter your full name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
+                    <label id="full_name-error" data-test-id="full-name-error" class="error" for="full_name" style="display: none;" data-localize="setup.error-full-name"></label>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
-                    <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email address" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
-                    <label id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress" data-test-id="email-label"></p>
+                    <input autocapitalize="off" oninput="this.value = this.value.toLowerCase();" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email address" data-test-id="email-input" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
+                    <label id="email-error" data-test-id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
                 </div>
                 <div style="display: none">
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="setup.username"></p>
-                    <input type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" placeholder="Enter your username" data-localize="placeholder.enter-username"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
-                    <label id="username-error" class="error" for="username" style="display: none;" data-localize="setup.error-username"></label>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-test-id="username-label" data-localize="setup.username"></p>
+                    <input type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" data-test-id="username-input" placeholder="Enter your username" data-localize="placeholder.enter-username"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
+                    <label id="username-error" data-test-id="username-error" class="error" for="username" style="display: none;" data-localize="setup.error-username"></label>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.password"></p>
-                    <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Enter your new password" data-localize="placeholder.new-password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
-                    <div id="password-requirements">
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-test-id="password-label" data-localize="login.password"></p>
+                    <input name="password" id="password" data-test-id="password-input" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Enter your new password" data-localize="placeholder.new-password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                    <div id="password-requirements" data-test-id="password-requirements">
                         <ul>
-                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_min"  data-localize="management-users.password.length" style="display: none"></li>
-                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_char"  data-localize="management-users.password.has-char" style="display: none"></li>
-                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_number" data-localize="management-users.password.has-number" style="display: none"></li>
-                            <span class="dot" style="display: none; background-color: red;"></span><li id="hint-password_symbol"  data-localize="management-users.password.has-special" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;" data-test-id="password-hint-min-dot"></span><li id="hint-password_min" data-test-id="password-hint-min" data-localize="management-users.password.length" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;" data-test-id="password-hint-char-dot"></span><li id="hint-password_char" data-test-id="password-hint-char" data-localize="management-users.password.has-char" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;" data-test-id="password-hint-number-dot"></span><li id="hint-password_number" data-test-id="password-hint-number" data-localize="management-users.password.has-number" style="display: none"></li>
+                            <span class="dot" style="display: none; background-color: red;" data-test-id="password-hint-symbol-dot"></span><li id="hint-password_symbol" data-test-id="password-hint-symbol" data-localize="management-users.password.has-special" style="display: none"></li>
                         </ul>
                     </div>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.confirm-password"></p>
-                    <input name="confirm_password" id="confirm_password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Confirm your new password" data-localize="placeholder.again"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-test-id="confirm-password-label" data-localize="login.confirm-password"></p>
+                    <input name="confirm_password" id="confirm_password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Confirm your new password" data-test-id="confirm-password-input" data-localize="placeholder.again"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                     <div>
-                        <span id="confirm-password-dot" class="dot" style="display: none; background-color: red;"></span>
-                        <div id="confirm-password-error" style="display: none;" data-localize="setup.error-confirm-password"></div>
+                        <span id="confirm-password-dot" data-test-id="confirm-password-dot" class="dot" style="display: none; background-color: red;"></span>
+                        <div id="confirm-password-error" data-test-id="confirm-password-error" style="display: none;" data-localize="setup.error-confirm-password"></div>
                     </div>
                 </div>
                 <% if (typeof inject_template.form != "undefined") { %>
@@ -93,10 +93,10 @@
                 <% } %>
                 <div>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
-                    <input type="hidden" value="en" name="lang" id="form-lang" />
-                    <input type="hidden" value="true" name="createDemoApp" id="create-demo-app" />
-                    <input id="login-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 24px;"/>
-                    <button id="alt-login-button" data-localize="setup.continue-own-app"></button>
+                    <input type="hidden" value="en" name="lang" id="form-lang" data-test-id="form-lang"/>
+                    <input type="hidden" value="true" name="createDemoApp" id="create-demo-app" data-test-id="create-demo-app"/>
+                    <input id="login-button" data-test-id="continue-demo-app-button" value="Create account" type="submit" data-localize="setup.continue-demo-app" style="margin-top: 24px;"/>
+                    <button id="alt-login-button" data-test-id="continue-own-app-button" data-localize="setup.continue-own-app"></button>
                 </div>
             </form>
             <% if (typeof inject_template.html != "undefined") { %>
@@ -104,17 +104,17 @@
             <% } %>
         </div>
     </div>    
-	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/countly/countly.helpers.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.validate.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.js"></script>
 
-	<script>
+    <script>
         var countlyTitle = "<%- countlyTitle %>";
         var params = <%- JSON.stringify(params) %>;
         countlyGlobal.security = <%- JSON.stringify(security) %>;
@@ -302,9 +302,9 @@
                 $('#login-button').click();
             });
         });
-		$(document).ready(function() {
+        $(document).ready(function() {
             $("#password-requirements li").first().text(jQuery.i18n.prop("management-users.password.length", countlyGlobal.security.password_min));
-			if (jQuery.i18n.map["setup.title"]) {
+            if (jQuery.i18n.map["setup.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
             }
             var errorObj = <%- JSON.stringify(error) %>;
@@ -324,34 +324,34 @@
                 $("#error-message").html(errI18n.join("<br/>"));
             }
             
-		});
+        });
 
         $(document).ready(function() {
-			$("*").click(function(event){
-				if ($(".top-button").hasClass("active") && !$(event.target).is(".top-button") && !$(event.target).is("#active-lang")) {
-					$('.top-button').removeClass('active');
-				}
-			});
-		});
-		$(document).ready(function() {
-			$("*").click(function(event){
-				if ($(event.target).is(".top-button") || $(event.target).is("#active-lang") && $(".top-button").hasClass("active")) {
-					$('#active-lang').css('border','1px solid #81868D');
-				}
-				else{
-					$('#active-lang').css('border','');
-				}
-			});
-		});
-		$(document).bind('clyLangChange', function() {
-			if (jQuery.i18n.map["setup.title"]) {
+            $("*").click(function(event){
+                if ($(".top-button").hasClass("active") && !$(event.target).is(".top-button") && !$(event.target).is("#active-lang")) {
+                    $('.top-button').removeClass('active');
+                }
+            });
+        });
+        $(document).ready(function() {
+            $("*").click(function(event){
+                if ($(event.target).is(".top-button") || $(event.target).is("#active-lang") && $(".top-button").hasClass("active")) {
+                    $('#active-lang').css('border','1px solid #81868D');
+                }
+                else{
+                    $('#active-lang').css('border','');
+                }
+            });
+        });
+        $(document).bind('clyLangChange', function() {
+            if (jQuery.i18n.map["setup.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
             }
-		});
-	</script>
-	<% if (typeof inject_template.js != 'undefined') { %>
-	<script><%- inject_template.js %></script>
-	<% } %>
+        });
+    </script>
+    <% if (typeof inject_template.js != 'undefined') { %>
+    <script><%- inject_template.js %></script>
+    <% } %>
      <% if (themeFiles && themeFiles.js) { %>
         <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
     <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
