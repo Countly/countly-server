@@ -387,11 +387,11 @@
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
-                            <div class="text-smallish font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
+                            <div class="text-smallish font-weight-bold bu-mb-1" :data-test-id="testId + \'-header\'" v-if="label">{{label}}</div>\
                             <cly-tooltip-icon :data-test-id="testId + \'-tooltip\'" v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <span v-if="tooltip" class="bu-is-flex-grow-1"></span>\                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
-                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
+                        <div v-if="subheading" :data-test-id="testId + \'-sub-header\'" class="color-cool-gray-50 text-small bu-mb-1">\
                             {{subheading}}\
                         </div>\
                         <component :is="wrapperElement" @submit.prevent>\
