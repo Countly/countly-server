@@ -65,3 +65,17 @@ module.exports.YES_NO_OPTIONS = {
     YES: 'Yes',
     NO: 'No'
 };
+
+module.exports.APP_TYPE = {
+    MOBILE: 'Mobile',
+    WEB: 'Web',
+    DESKTOP: 'Desktop'
+};
+
+module.exports.DATA_TYPE = {
+    BANKING: 'Banking',
+    HEALTHCARE: 'Healthcare',
+    NAVIGATION: 'Navigation',
+    ECOMMERCE: 'Ecommerce',
+    GAMING: 'Gaming'
+};
