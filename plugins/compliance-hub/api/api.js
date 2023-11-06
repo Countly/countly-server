@@ -213,8 +213,9 @@ const FEATURE_NAME = 'compliance_hub';
 
                         params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
                         params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
+                        params.qstring.query.app_id = params.app_id.toString();
 
-                        var cursor = common.db.collection("consent_history").find({"app_id": `${params.qstring.app_id}`}, params.qstring.query, params.qstring.project);
+                        var cursor = common.db.collection("consent_history").find(params.qstring.query, params.qstring.project);
                         cursor.count(function(countErr, count) {
                             if (Object.keys(params.qstring.sort).length) {
                                 cursor.sort(params.qstring.sort);

@@ -14,7 +14,6 @@ function mergeConsentHistoryCollections(collections, db) {
 
         pipeline.push({
             $addFields: {
-                '_id': { $concat: [appId, '_', { $toString: '$_id' }] },
                 'app_id': appId,
             }
         });
@@ -32,6 +31,11 @@ function mergeConsentHistoryCollections(collections, db) {
 
 pluginManager.dbConnection().then(async(countlyDb) => {
     try {
+        countlyDb.collection('consent_history').ensureIndex({device_id: 1}, function() {});
+        countlyDb.collection('consent_history').ensureIndex({uid: 1}, function() {});
+        countlyDb.collection('consent_history').ensureIndex({type: 1}, function() {});
+        countlyDb.collection('consent_history').ensureIndex({ts: 1}, function() {});
+
         let consentCollections = await countlyDb.listCollections().toArray();
         let collectionNames = consentCollections.map(o => o.name);
         const consentHistoryCollections = (collectionNames.filter(x => x.startsWith('consent_history'))).filter(x => !x.endsWith('consent_history'));
@@ -41,14 +45,14 @@ pluginManager.dbConnection().then(async(countlyDb) => {
             if (faileds.length) {
                 throw new Error(faileds.map(x=>x.reason).join('\n'));
             }
-            console.log('Finished merging consent_history collections.');
+            console.log("Finished merging consent_historyAPPID collections. Collections merged to the new consent_history.");
         }
         catch (error) {
-            console.log(`Error merging consent_history collections: ${error}`);
+            console.log(`Error merging consent_historyAPPID collections: ${error}`);
         }
     }
     catch (error) {
-        console.log(`Error merging consent_history collections: ${error}`);
+        console.log(`Error merging consent_historyAPPID collections: ${error}`);
     }
     finally {
         countlyDb.close();
