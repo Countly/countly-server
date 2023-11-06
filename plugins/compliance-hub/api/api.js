@@ -353,13 +353,13 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').deleteMany({"app_id": appId}, function() {});
+        common.db.collection('consent_history').drop(function() {});
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').deleteMany({"app_id": appId}, function() {});
+        common.db.collection('consent_history').drop(function() {});
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
