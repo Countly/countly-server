@@ -349,7 +349,7 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            testId: {required: false, type: String, default:"cli-form-field"},
+            testId: {required: false, type: String, default: "cli-form-field"},
             subheading: {required: false},
             label: {required: false},
             optional: {
