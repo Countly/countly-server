@@ -5,7 +5,7 @@ const typeFullName = fullName => {
 };
 
 const typeEmailAddress = emailAddress => {
-    cy.typeInput(setupPageElements.EMAIL_ADDRESS_INPUT, emailAddress)
+    cy.typeInput(setupPageElements.EMAIL_ADDRESS_INPUT, emailAddress);
 };
 
 const typePassword = password => {
