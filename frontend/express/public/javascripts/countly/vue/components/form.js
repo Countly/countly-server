@@ -364,7 +364,11 @@
                 default: false,
                 required: false
             },
-            tooltip: {type: String, default: null}
+            tooltip: {type: String, default: null},
+            testId: {
+                type: String,
+                default: "cly-form-field-test-id"
+            }
         },
         computed: {
             wrapperElement: function() {
@@ -384,7 +388,7 @@
         template: '<div class="cly-vue-form-field" :class="topClasses">\
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
                             <div class="text-smallish font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
-                            <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
+                            <cly-tooltip-icon :data-test-id="testId + \'-tooltip\'" v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <span v-if="tooltip" class="bu-is-flex-grow-1"></span>\                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
                         <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
