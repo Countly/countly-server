@@ -441,7 +441,7 @@
         }
     });
 
-    if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin) {
+    if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin && !countlyGlobal.plugins.includes('tracker')) {
         if (Backbone.history.fragment !== '/not-responded-consent' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-responded-consent", true);
         }
