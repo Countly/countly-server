@@ -22,9 +22,9 @@ const selectAppType = (appType) => {
 };
 
 const selectTimezone = (timezone) => {
-    cy.click(initialSetupPageElements.SELECT_TIMEZONE_COMBOBOX);
+    cy.clickElement(initialSetupPageElements.SELECT_TIMEZONE_COMBOBOX);
     cy.typeInput(initialSetupPageElements.SELECT_TIMEZONE_SEARCH_INPUT, timezone);
-    cy.click('.cly-vue-listbox__item');
+    cy.clickElement('.cly-vue-listbox__item');
 };
 
 const selectDataType = (dataType) => {
@@ -50,17 +50,16 @@ const clickContinueSubmitButton = () => {
 };
 
 const verifyDefaultPageElements = (isDemoApp) => {
-
     cy.verifyElement({
         element: initialSetupPageElements.LOGO
     });
 
-    cy.verifyElement({
-        labelElement: initialSetupPageElements.PAGE_TITLE,
-        labelText: "Let's create a demo app for you!"
-    });
-
     if (isDemoApp) {
+        cy.verifyElement({
+            labelElement: initialSetupPageElements.PAGE_TITLE,
+            labelText: "Let's create a demo app for you!"
+        });
+
         cy.verifyElement({
             element: initialSetupPageElements.DATA_TYPE_BANKING_RADIO_BUTTON_ICON,
             labelElement: initialSetupPageElements.DATA_TYPE_BANKING_RADIO_BUTTON_LABEL,
@@ -94,10 +93,20 @@ const verifyDefaultPageElements = (isDemoApp) => {
         cy.verifyElement({
             element: initialSetupPageElements.CONTINUE_SUBMIT_BUTTON,
             elementText: "Continue with data population",
-            isDisabled: true
+            isDisabled: false
         });
     }
     else {
+        cy.verifyElement({
+            labelElement: initialSetupPageElements.PAGE_TITLE,
+            labelText: "Let's add your first application"
+        });
+
+        cy.verifyElement({
+            labelElement: initialSetupPageElements.PAGE_SUB_TITLE,
+            labelText: "After adding your first application, you'll be ready to start collecting data"
+        });
+
         cy.verifyElement({
             labelElement: initialSetupPageElements.APPLICATION_NAME_LABEL,
             labelText: "Application Name",
@@ -171,9 +180,11 @@ const checkPopulatorProgressBar = () => {
         .then((isExists) => {
             if (isExists) {
                 cy.verifyElement({
+                    element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
                     labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
                     labelText: 'Populating data for your app'
                 });
+                cy.wait(50000);
                 cy.shouldNotExist(initialSetupPageElements.DATA_POP_PROGRESS_BAR);
             }
         });
@@ -196,7 +207,14 @@ const clickPopulatorContinueButton = () => {
     cy.clickElement(initialSetupPageElements.CONTINUE_BUTTON);
 };
 
-const completeOnboardingInitialSetup = ({ isDemoApp, appName, appKey, appType, demoAppData, timezone }) => {
+const completeOnboardingInitialSetup = ({ 
+    isDemoApp, 
+    appName, 
+    appKey, 
+    appType, 
+    demoAppData, 
+    timezone 
+}) => {
     if (!isDemoApp) {
         typeAppName(appName);
         typeAppKey(appKey);

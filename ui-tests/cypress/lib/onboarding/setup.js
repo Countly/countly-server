@@ -1,18 +1,18 @@
 import setupPageElements from '../../support/elements/onboarding/setup';
 
-const typeFullName = fullName => {
+const typeFullName = (fullName) => {
     cy.typeInput(setupPageElements.FULL_NAME_INPUT, fullName);
 };
 
-const typeEmailAddress = emailAddress => {
+const typeEmailAddress = (emailAddress) => {
     cy.typeInput(setupPageElements.EMAIL_ADDRESS_INPUT, emailAddress);
 };
 
-const typePassword = password => {
+const typePassword = (password) => {
     cy.typeInput(setupPageElements.PASSWORD_INPUT, password);
 };
 
-const typeConfirmPassword = confirmPassword => {
+const typeConfirmPassword = (confirmPassword) => {
     cy.typeInput(setupPageElements.CONFIRM_PASSWORD_INPUT, confirmPassword);
 };
 
@@ -176,12 +176,18 @@ const verifyDefaultPageElements = () => {
     });
 };
 
-const completeOnboardingSetup = (fullName, emailAddress, password, confirmPassword, isDemoApp) => {
+const completeOnboardingSetup = ({
+    fullName, 
+    emailAddress, 
+    password, 
+    confirmPassword, 
+    isDemoApp
+}) => {
     typeFullName(fullName);
     typeEmailAddress(emailAddress);
     typePassword(password);
     typeConfirmPassword(confirmPassword);
-    isDemoApp ? clickContinueWithDemoAppButton() : clickContinueWithOwnAppButton;
+    isDemoApp ? clickContinueWithDemoAppButton() : clickContinueWithOwnAppButton();
 };
 
 module.exports = {

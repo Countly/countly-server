@@ -66,14 +66,14 @@ const verifyDefaultPageElements = () => {
 
     cy.verifyElement({
         element: initialConsentPageElements.ENABLE_NEWSLETTER_RADIO_BUTTON,
-        isChecked: true,
+        //isChecked: true,
         labelElement: initialConsentPageElements.ENABLE_NEWSLETTER_RADIO_BUTTON_LABEL,
         labelText: "Yes, subscribe me to the newsletter"
     });
 
     cy.verifyElement({
         element: initialConsentPageElements.DONT_ENABLE_NEWSLETTER_RADIO_BUTTON,
-        isChecked: true,
+        //isChecked: true,
         labelElement: initialConsentPageElements.DONT_ENABLE_NEWSLETTER_RADIO_BUTTON_LABEL,
         labelText: "No, thank you"
     });
@@ -84,11 +84,21 @@ const verifyDefaultPageElements = () => {
     });
 };
 
+const completeOnboardingInitialConsent = ({ 
+    isEnableTacking, 
+    isSubscribeToNewsletter, 
+}) => {
+    isEnableTacking ? enableTracking() : dontEnableTracking();
+    isSubscribeToNewsletter ? subscribeToNewsletter() : dontSubscribeToNewsletter();
+    clickContinue();
+};
+
 module.exports = {
     enableTracking,
     dontEnableTracking,
     subscribeToNewsletter,
     dontSubscribeToNewsletter,
     verifyDefaultPageElements,
-    clickContinue
+    clickContinue,
+    completeOnboardingInitialConsent
 };

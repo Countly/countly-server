@@ -1,14 +1,13 @@
-import user from '../../../fixtures/user.json';
-const { generateWidgetFixture } = require('../../../fixtures/generators/widgets');
-const { generateWidgetsRatesFixture } = require('../../../fixtures/generators/widgetsRates');
-
-const navigationHelpers = require('../../../support/navigations');
-const loginHelpers = require('../../../lib/login');
-const widgetsHelpers = require('../../../lib/feedback/ratings/widgets');
-const componentAddFeedbackSteps = require('../../../support/components/addFeedbackSteps');
-const { RATING_SYMBOLS } = require('../../../support/constants');
-const demoWidgetPage = require('../../../lib/feedback/ratings/demoWidgetPage');
-const helper = require('../../../support/helper');
+import user from '../../../../fixtures/user.json';
+const { generateWidgetFixture } = require('../../../../fixtures/generators/widgets');
+const { generateWidgetsRatesFixture } = require('../../../../fixtures/generators/widgetsRates');
+const navigationHelpers = require('../../../../support/navigations');
+const loginHelpers = require('../../../../lib/login');
+const widgetsHelpers = require('../../../../lib/feedback/ratings/widgets');
+const componentAddFeedbackSteps = require('../../../../support/components/addFeedbackSteps');
+const { RATING_SYMBOLS } = require('../../../../support/constants');
+const demoWidgetPage = require('../../../../lib/feedback/ratings/demoWidgetPage');
+const helper = require('../../../../support/helper');
 
 describe('Create New Widget', () => {
     beforeEach(function() {
