@@ -177,10 +177,10 @@ const verifyDefaultPageElements = () => {
 };
 
 const completeOnboardingSetup = ({
-    fullName, 
-    emailAddress, 
-    password, 
-    confirmPassword, 
+    fullName,
+    emailAddress,
+    password,
+    confirmPassword,
     isDemoApp
 }) => {
     typeFullName(fullName);

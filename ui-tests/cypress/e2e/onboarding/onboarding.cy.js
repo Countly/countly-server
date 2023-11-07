@@ -1,17 +1,17 @@
-import user from '../../fixtures/user.json'
-const navigationHelpers = require('../../support/navigations')
-const setupHelpers = require('../../lib/onboarding/setup')
-const initialSetupHelpers = require('../../lib/onboarding/initialSetup')
-const initialConsentHelpers = require('../../lib/onboarding/initialConsent')
+import user from '../../fixtures/user.json';
+const navigationHelpers = require('../../support/navigations');
+const setupHelpers = require('../../lib/onboarding/setup');
+const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
+const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
-    beforeEach(function () {
-        navigationHelpers.goToLoginPage()
-    })
+    beforeEach(function() {
+        navigationHelpers.goToLoginPage();
+    });
 
-    it('should be complete onboarding flow with creating demo application', function () {
-        setupHelpers.verifyDefaultPageElements
+    it('should be complete onboarding flow with creating demo application', function() {
+        setupHelpers.verifyDefaultPageElements;
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -22,22 +22,22 @@ describe('Complete Onboarding', () => {
 
         initialSetupHelpers.verifyDefaultPageElements(true);
         initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: true, 
-            appType: APP_TYPE.WEB, 
+            isDemoApp: true,
+            appType: APP_TYPE.WEB,
             demoAppData: DATA_TYPE.ECOMMERCE,
-            timezone: 'Troll' 
-        })
+            timezone: 'Troll'
+        });
 
         initialConsentHelpers.verifyDefaultPageElements();
         initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: false, 
+            isEnableTacking: false,
             isSubscribeToNewsletter: false
-        })
+        });
         navigationHelpers.isNavigatedToDashboard();
-    })
+    });
 
-    it('should be complete onboarding flow with creating own application', function () {
-        setupHelpers.verifyDefaultPageElements
+    it('should be complete onboarding flow with creating own application', function() {
+        setupHelpers.verifyDefaultPageElements;
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -48,19 +48,18 @@ describe('Complete Onboarding', () => {
 
         initialSetupHelpers.verifyDefaultPageElements(false);
         initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: false, 
-            appType: APP_TYPE.WEB,  
+            isDemoApp: false,
+            appType: APP_TYPE.WEB,
             appName: 'My Little App',
             appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            appType: APP_TYPE.DESKTOP,
-            timezone: 'Troll' 
-        })
+            timezone: 'Troll'
+        });
 
         initialConsentHelpers.verifyDefaultPageElements();
         initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: false, 
+            isEnableTacking: false,
             isSubscribeToNewsletter: false
-        })
+        });
         navigationHelpers.isNavigatedToDashboard();
-    })
-})
+    });
+});

@@ -207,13 +207,13 @@ const clickPopulatorContinueButton = () => {
     cy.clickElement(initialSetupPageElements.CONTINUE_BUTTON);
 };
 
-const completeOnboardingInitialSetup = ({ 
-    isDemoApp, 
-    appName, 
-    appKey, 
-    appType, 
-    demoAppData, 
-    timezone 
+const completeOnboardingInitialSetup = ({
+    isDemoApp,
+    appName,
+    appKey,
+    appType,
+    demoAppData,
+    timezone
 }) => {
     if (!isDemoApp) {
         typeAppName(appName);

@@ -84,9 +84,9 @@ const verifyDefaultPageElements = () => {
     });
 };
 
-const completeOnboardingInitialConsent = ({ 
-    isEnableTacking, 
-    isSubscribeToNewsletter, 
+const completeOnboardingInitialConsent = ({
+    isEnableTacking,
+    isSubscribeToNewsletter,
 }) => {
     isEnableTacking ? enableTracking() : dontEnableTracking();
     isSubscribeToNewsletter ? subscribeToNewsletter() : dontSubscribeToNewsletter();
