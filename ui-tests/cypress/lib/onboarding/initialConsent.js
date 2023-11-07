@@ -1,23 +1,23 @@
 import initialConsentPageElements from "../../support/elements/onboarding/initialConsent";
 
 const enableTracking = () => {
-    cy.clickElement(initialConsentPageElements.ENABLE_TRACKING_RADIO_BUTTON)
+    cy.clickElement(initialConsentPageElements.ENABLE_TRACKING_RADIO_BUTTON);
 };
 
 const dontEnableTracking = () => {
-    cy.clickElement(initialConsentPageElements.DONT_ENABLE_TRACKING_RADIO_BUTTON)
+    cy.clickElement(initialConsentPageElements.DONT_ENABLE_TRACKING_RADIO_BUTTON);
 };
 
 const subscribeToNewsletter = () => {
-    cy.clickElement(initialConsentPageElements.ENABLE_NEWSLETTER_RADIO_BUTTON)
+    cy.clickElement(initialConsentPageElements.ENABLE_NEWSLETTER_RADIO_BUTTON);
 };
 
 const dontSubscribeToNewsletter = () => {
-    cy.clickElement(initialConsentPageElements.DONT_ENABLE_NEWSLETTER_RADIO_BUTTON)
+    cy.clickElement(initialConsentPageElements.DONT_ENABLE_NEWSLETTER_RADIO_BUTTON);
 };
 
 const clickContinue = () => {
-    cy.clickElement(initialConsentPageElements.CONTINUE_BUTTON)
+    cy.clickElement(initialConsentPageElements.CONTINUE_BUTTON);
 };
 
 const verifyDefaultPageElements = () => {
@@ -82,7 +82,7 @@ const verifyDefaultPageElements = () => {
         element: initialConsentPageElements.CONTINUE_BUTTON,
         elementText: "Continue",
     });
-}
+};
 
 module.exports = {
     enableTracking,
@@ -91,4 +91,4 @@ module.exports = {
     dontSubscribeToNewsletter,
     verifyDefaultPageElements,
     clickContinue
-}
+};
