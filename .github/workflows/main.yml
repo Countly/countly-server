@@ -329,7 +329,6 @@ jobs:
           cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
           npm install
           sudo countly task dist-all
-          bash bin/backup/import_events.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
           mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
