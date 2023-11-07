@@ -271,7 +271,7 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          npm run cy:run
+          npm run cy:run:dashboard
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
