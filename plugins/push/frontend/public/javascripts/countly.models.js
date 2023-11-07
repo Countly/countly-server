@@ -2124,6 +2124,18 @@
                 if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
                 }
+                if (model.type === TypeEnum.RECURRING && model[TypeEnum.RECURRING].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
+                    result.cohorts = model.cohorts;
+                }
+                if (model.type === TypeEnum.RECURRING && model[TypeEnum.RECURRING].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.type === TypeEnum.MULTIPLE && model[TypeEnum.MULTIPLE].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
+                    result.cohorts = model.cohorts;
+                }
+                if (model.type === TypeEnum.MULTIPLE && model[TypeEnum.MULTIPLE].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
+                    result.geos = model.locations;
+                }
                 return Object.keys(result).length === 0 ? null : result;
             },
             getLocalizationsCount: function(locales) {
