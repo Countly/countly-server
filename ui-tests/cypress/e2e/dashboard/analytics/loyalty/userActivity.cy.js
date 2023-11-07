@@ -1,4 +1,4 @@
-import user from '../../../fixtures/user.json';
+import user from '../../../../fixtures/user.json';
 const loginHelpers = require('../../../../lib/login');
 const navigationHelpers = require('../../../../support/navigations');
 const analyticsLoyaltyUserActivityHelpers = require('../../../../lib/analytics/loyalty/userActivity');
