@@ -41,7 +41,7 @@
             <analytics-menu ref="analytics" v-show="pseudoSelectedMenuOption === 'analytics'"></analytics-menu>
             <management-menu ref="management" v-show="pseudoSelectedMenuOption === 'management'" @management-menu-ready="onManagementMenuReady"></management-menu>
             <component :ref="item.name" v-for="item in components" :is="item.component" v-show="pseudoSelectedMenuOption === item.name" :key="item.name"></component>
-            <div class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version">{{versionInfo}}</div>
+            <a :href="countlySidebarVersionPath"><div class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version"> {{versionInfo}} </div></a>
         </div>
     </transition>
 </div>

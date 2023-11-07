@@ -1601,28 +1601,6 @@
         </div>
     </script>
 
-
-    <script id="version-history-template" type="text/x-handlebars-template">
-		<div class="widget">
-            <div>{{ package-version }}</div>
-			<div>{{mongo-version}}</div>
-            <br>
-			<div class="widget-header">
-				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase fs-title}}</div>
-			</div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table-fs" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-            <br>
-			<div class="widget-header">
-				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase db-title}}</div>
-			</div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table-db" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-    </script>
-
 	<script id="graph-note-create" type="text/x-handlebars-template">
 		<div class="graph-note-create">
 			<div class="title"><span class="note-form-hearder" data-localize="notes.add-note-form-title"></span></div>
@@ -1872,6 +1850,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/version-history/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>

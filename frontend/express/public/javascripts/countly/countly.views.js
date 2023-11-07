@@ -58,83 +58,6 @@ window.DownloadView = countlyView.extend({
     }
 });
 
-window.VersionHistoryView = countlyView.extend({
-    initialize: function() {
-        this.template = Handlebars.compile($("#version-history-template").html());
-    },
-    beforeRender: function() {
-        return $.when(countlyVersionHistoryManager.initialize()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-
-        var tableData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: "", "mongo": ""};
-
-        //provide template data
-        this.templateData = {
-            "db-title": jQuery.i18n.map["version_history.page-title"] + " (DB)",
-            "fs-title": jQuery.i18n.map["version_history.page-title"] + " (FS)",
-            "package-version": jQuery.i18n.map["version_history.package-version"] + ": " + tableData.pkg,
-            "mongo-version": "MongDb version:" + tableData.mongo
-        };
-
-        /**
-         * Processes version history and returns a DataTable config
-         * @param {object} dataObj Version history array 
-         * @returns {object} DataTable configuration
-         */
-        function getTable(dataObj) {
-
-            if (!Array.isArray(dataObj)) {
-                dataObj = [];
-            }
-            if (dataObj.length === 0) {
-                dataObj.push({"version": countlyGlobal.countlyVersion, "updated": Date.now()});
-            }
-            else {
-                dataObj[dataObj.length - 1].version += (" " + jQuery.i18n.map["version_history.current-version"]);
-            }
-
-            return {
-                "aaData": dataObj,
-                "fnRowCallback": function(nRow, aData) {
-                    $(nRow).attr("data-id", aData._id);
-                    //$(nRow).attr("data-name", aData.report_name || aData.name || '-');
-                },
-                "aoColumns": [
-                    {
-                        "mData": function(row) {
-                            return row.version;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["version_history.version"],
-                        "bSortable": false,
-                        "sClass": "break"
-                    },
-                    {
-                        "mData": function(row) {
-                            return new Date(row.updated);
-                        },
-                        "sType": "numeric",
-                        "sTitle": jQuery.i18n.map["version_history.upgraded"],
-                        "bSortable": true,
-                        "sClass": "break"
-                    }
-                ]
-            };
-        }
-
-        if (!isRefresh) {
-            //set data
-            $(this.el).html(this.template(this.templateData));
-
-            this.dtableFs = $('#data-table-fs').dataTable($.extend({"searching": false, "paging": false}, $.fn.dataTable.defaults, getTable(tableData.fs)));
-            this.dtableFs.fnSort([ [1, 'desc'] ]);
-            this.dtableDb = $('#data-table-db').dataTable($.extend({"searching": false, "paging": false}, $.fn.dataTable.defaults, getTable(tableData.db)));
-            this.dtableDb.fnSort([ [1, 'desc'] ]);
-        }
-    }
-});
-
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
     if (countlyGlobal.auth_token) {
@@ -151,7 +74,6 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
 //register views
 app.DownloadView = new DownloadView();
-app.VersionHistoryView = new VersionHistoryView();
 
 
 // app.route("/analytics/events", "events", function() {
