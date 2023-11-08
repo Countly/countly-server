@@ -62,6 +62,12 @@
         box-sizing: border-box;
         padding: 1rem;
         cursor: pointer;
+        opacity: 0.8;
+
+        &:hover {
+            opacity: 1;
+        }
+
         &--blue {
             background: linear-gradient(139.69deg, #017AFF 22.95%, rgba(1, 122, 255, 0.5) 96.04%);
         }
