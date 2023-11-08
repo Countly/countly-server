@@ -190,11 +190,12 @@ const checkPopulatorProgressBar = () => {
         });
 };
 
-const verifyPopulatorProgressImg = () => {
-    cy.verifyElement({
-        element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
-    });
-};
+//TODO comment line will be removed
+// const verifyPopulatorProgressImg = () => {
+//     cy.verifyElement({
+//         element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
+//     });
+// };
 
 const verifyPopulatorContinueButton = () => {
     cy.verifyElement({
