@@ -19,10 +19,10 @@ pluginManager.dbConnection().then((countlyDb) => {
                     done();
                 }
             }
-            countlyDb.collection('consent_history' + app._id).ensureIndex({device_id: 1}, cb);
-            countlyDb.collection('consent_history' + app._id).ensureIndex({uid: 1}, cb);
-            countlyDb.collection('consent_history' + app._id).ensureIndex({type: 1}, cb);
-            countlyDb.collection('consent_history' + app._id).ensureIndex({ts: 1}, cb);
+            countlyDb.collection('consent_history').ensureIndex({device_id: 1}, cb);
+            countlyDb.collection('consent_history').ensureIndex({uid: 1}, cb);
+            countlyDb.collection('consent_history').ensureIndex({type: 1}, cb);
+            countlyDb.collection('consent_history').ensureIndex({ts: 1}, cb);
         }
         async.forEach(apps, upgrade, function() {
             console.log("Compliance hub plugin installation finished");
