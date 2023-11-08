@@ -75,7 +75,6 @@
         {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
         {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
     var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
-    var jsSymbol = '{"version":3,"file":"bundle.js","mappings":"MAqBA,IAAIA,EAAa,CArBjB,WACIC,MAAMC,UAAU,EACpB,EAEA,SAAkBD,EAAQ,KACtBE,mBAAmBF,EACvB,EAEA,WACI,KAAOG,SAAS,IACpB,EAEA,WACIC,QAAQC,IAAIC,YAAY,iBAC5B,EAEA,WACkB,UACNC,SACZ,GAIA,KAEIC,EADiBT,EAAWU,KAAKC,MAAMD,KAAKE,SAAWZ,EAAWa,WAEtE,CAAE,MAAOC,GACLT,QAAQC,IAAIQ,EAChB,C","sources":["webpack:///./app.js"],"sourcesContent":["function referenceError() {\n    param.substring(1);\n}\n\nfunction uRIError(param = \"%\") {\n    decodeURIComponent(param);\n}\n\nfunction rangeError() {\n    (3.54).toFixed(-100);\n}\n\nfunction syntaxError() {\n    console.log(SyntaxError(\"Hello Countly\"));\n}\n\nfunction typeError() {\n    var countly = \"Countly\";\n    countly.reverse();\n}\n\nlet methodList = [referenceError, uRIError, rangeError, syntaxError, typeError];\n\ntry {\n    let funCountly = methodList[Math.floor(Math.random() * methodList.length)];\n    funCountly();\n} catch (error) {\n    console.log(error);\n}\n"],"names":["methodList","param","substring","decodeURIComponent","toFixed","console","log","SyntaxError","reverse","funCountly","Math","floor","random","length","error"],"sourceRoot":""}';
     var jsErrors = [
         {
             error: "Error: URIError\n" +
@@ -481,7 +480,7 @@
         };
 
         this.getError = function() {
-            var errors = "";
+            var errors = [];
             var error = "";
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
@@ -1960,7 +1959,6 @@
                 setTimeout(processUsers, timeout);
             }
             else {
-
                 countlyPopulator.sync(true);
             }
         }
@@ -2059,7 +2057,6 @@
                     }
                     delete req[i].stats;
                 }
-
                 if (req[i].crash && Object.keys(req[i].crash).length) {
                     crashSymbolVersions[req[i].crash._app_version] = true;
                 }
@@ -2093,21 +2090,12 @@
 
         //upload all version at once
         var crashVersions = Object.keys(crashSymbolVersions);
-        var blob = new Blob(
-            [jsSymbol]
-            , { type: 'plain/text' }
-        );
-        var symbol = new File(
-            [blob],
-            "bundle.js.map"
-            , { type: "text/plain" }
-        );
         var form_data = new FormData();
         form_data.append('build', crashVersions);
         form_data.append('platform', 'javascript');
-        form_data.append('symbols', symbol);
         form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
         form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
+        form_data.append('populator', true);
 
         $.ajax({
             url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
