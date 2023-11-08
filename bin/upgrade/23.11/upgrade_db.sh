@@ -22,7 +22,7 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
-        #countly plugin enable license;
+        countly plugin enable guides;
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
