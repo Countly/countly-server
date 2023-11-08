@@ -1,10 +1,9 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
+    <cly-header
+        :title="job_name"
+    >
         <template v-slot:header-top>
             <cly-back-link :title="i18n('plugins.back')"></cly-back-link>
-        </template>
-        <template v-slot:header-left>
-            <h2> {{job_name}} </h2>
         </template>
     </cly-header>
     <cly-main>

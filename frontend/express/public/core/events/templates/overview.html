@@ -1,11 +1,9 @@
 <script type="text/x-template" id="events-overview">
 	<div v-bind:class="[componentId]">
-		<cly-header>
-		  <template v-slot:header-left>
-			<h2 class="cly-vue-overview-events-header"> {{i18n('events.overview.title.new')}} 
-			</h2>
-			<cly-tooltip-icon icon="ion-help-circled" :tooltip="i18n('events.overview.title.new.tooltip')"></cly-tooltip-icon>
-		  </template>
+		<cly-header
+			:title="i18n('events.overview.title.new')"
+			:tooltip="{description: i18n('events.overview.title.new.tooltip')}"
+		>
 		  <template v-slot:header-bottom>
 			<i v-if="eventsOverview.length>0" class="far fa-clock cly-vue-events-header__subheading--widget"></i>
 			<span v-if="eventsOverview.length>0" class="cly-vue-events-header__subheading--text">{{updatedAt}}</span>
@@ -74,13 +72,13 @@
 				</el-button>  
 			</div>
 		  </div>
-		  <cly-section class="cly-vue-events-overview-monitor-events">
+		  <cly-section class="cly-vue-events-overview-monitor-events" v-loading="isMonitorEventsLoading">
 			<div>
 			  <div class="bu-pl-4">
 				<span class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.overview.time.period')}}</span>
 				<cly-date-picker-g class="bu-m-2"></cly-date-picker-g>
 			  </div>
-			<div v-if="monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
+			<div v-if="!isMonitorEventsLoading && monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
 				<div class="cly-vue-events-overview-monitor-events__empty__block" >
 								<cly-empty-view :hasAction="true" :actionFunc="configureOverview">
 									<div slot="icon">
@@ -98,7 +96,7 @@
 								</cly-empty-view>
 				</div>
 			</div>
-			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
+			  <div v-else-if="!isMonitorEventsLoading && monitorEventsData.length" class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
 >
 				<monitor-events-breakdown-horizontal-tile
 				  :trend="item.trend"
@@ -116,6 +114,7 @@
 				  </div>
 				</monitor-events-breakdown-horizontal-tile>
 			  </div>
+			  <div v-else style="height: 100px"></div>
 			</div>
 		  </cly-section>
 		  <overview-drawer :controls="drawers.configureDrawer" :selectedEvents=selectedEvents ></overview-drawer>

@@ -74,6 +74,25 @@
     .el-upload {display: block;}
   }
 
+  .feedback-settings {
+    &__upload{
+    .el-upload {display: block;}
+    img {
+      width: 165px;
+      height: 50px;
+      margin-left: 24px;
+      cursor: default;
+    }
+    }
+    &__colorpicker{
+      .picker-body {overflow: auto;}
+    }
+    &__button{
+      &:active, &:focus, &:hover {background-color: unset !important;border-color: unset !important;}
+    }
+
+  }
+
   .app-management-list {
     max-height:681px;
     max-width:223px;
@@ -119,6 +138,7 @@
     }
     .el-collapse-item__arrow {color: #81868D;}
     .el-collapse-item__header {color: #333C48; padding-left: 24px !important; text-transform: uppercase;} 
+    .el-collapse-item__wrap {overflow: unset;}
   }
   .box-card{
     background-color: #E6F0FB;

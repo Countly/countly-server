@@ -2024,7 +2024,8 @@ fetch.alljobs = async function(metric, params) {
                 schedule: { $first: "$schedule" },
                 next: { $first: "$next" },
                 finished: { $first: "$finished" },
-                total: { $sum: 1 }
+                total: { $sum: 1 },
+                rowId: { $first: "$_id" }
             }
         }
     ];
@@ -2076,6 +2077,7 @@ fetch.jobDetails = async function(metric, params) {
     cursor.close();
     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
 };
+
 
 /**
  * Fetch data for tops

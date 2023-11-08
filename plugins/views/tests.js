@@ -1062,6 +1062,29 @@ describe('Testing views plugin', function() {
         });
     });
 
+    describe('Adding views with UTM segments', function() {
+        it('adding new view', function(done) {
+            tableResponse.hour.iTotalRecords = 1;
+            tableResponse.hour.iTotalDisplayRecords = 1;
+            pushValues("hour", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1, "view": "testview3"});
+
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview3", "visit": 1, "start": 1, "only_saved_param": "saved", "utm_source": "test_source", "utm_medium": "test_medium", "utm_campaign": "test_campaign", "utm_term": "test_term", "utm_content": "test_content", "referrer": "test_referrer"}}]);
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        verifyTotals("hour");
+
+        describe('Verify UTM segments are not recorded in views', function() {
+            verifySegments({ "segments": { "only_saved_param": "saved" }, "domains": []});
+        });
+    });
+
     describe('Test omiting segments', function() {
         describe('sending data', function() {
             it('adding view with some custom segment', function(done) {
@@ -1195,7 +1218,6 @@ describe('Testing views plugin', function() {
         });
 
     });
-
 
     describe('reset app', function() {
         it('should reset data', function(done) {

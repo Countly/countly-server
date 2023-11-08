@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers */
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
@@ -571,6 +571,7 @@
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
+                    enableGuides: CountlyHelpers.isPluginEnabled('guides'),
                     defaultMainMenuOptions: [
                         {
                             name: "app",
@@ -704,6 +705,12 @@
                 selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
+                },
+                helpCenterLink: function() {
+                    return this.enableGuides ? '#/guides' : "https://support.count.ly";
+                },
+                helpCenterTarget: function() {
+                    return this.enableGuides ? '_self' : "_blank";
                 }
             },
             methods: {
@@ -895,6 +902,14 @@
                         });
                     });
                 }, 0);
+            },
+            created: function() {
+                var self = this;
+                if (this.enableGuides) {
+                    countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
+                        self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
+                    });
+                }
             }
         });
 
@@ -909,7 +924,7 @@
             });
         };
 
-        if (Object.keys(countlyGlobal.apps).length) {
+        if (Object.keys(countlyGlobal.apps).length && !/initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash)) {
             app.initSidebar();
         }
     });

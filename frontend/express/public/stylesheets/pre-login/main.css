@@ -161,6 +161,15 @@ a:active { color:inherit; }
 #login-button { line-height:14px !important; font-size:14px; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:500; cursor:pointer; width:300px; margin-top:32px;font-family:Inter; height: 40px; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
+#alt-login-button {
+  border: none;
+  background: none;
+  line-height: 14px;
+  font-size: 14px;
+  color: #017AFF;
+  margin-top: 26px;
+  cursor: pointer;
+}
     #forgot-form #login-button {}
 .back-button{padding: 10px 12px;text-align: center; font-size: 14px;color: #0166D6;margin-top: 24px;font-weight: 500;}
 .back-to-login {
@@ -173,7 +182,7 @@ a:active { color:inherit; }
   height:17px !important;
 }
 .wrapper {
-  position:relative;padding-top:86px;
+  position:relative;padding-top:80px;
 }
 input.error{
   background: #FFF4CE;
@@ -248,7 +257,7 @@ input.error{
   }
 	#langs { display:none; margin-top:4px; }
 	#langs .group:last-child { margin-right:0; }
-#login-logo { margin-top: 38px; margin-left: 72px; width:165px; height:50px; background-image:url('../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
+#login-logo { margin-top: 38px; margin-left: 72px; width:146px; height:40px; background-image:url('../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
 #forgot-logo { margin:0 auto; width:180px; height:55px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
 #create-account { overflow:auto; }
 	#create-account div { float:left; margin-right:10px; }
@@ -270,7 +279,6 @@ body.mobile { padding-top:0; min-height:300px; }
     margin-top:-10px;
 }
 #password-requirements ul {
-    margin-top: 26px;
     padding-left: 0;
     width:300px;
     color: #333C48;

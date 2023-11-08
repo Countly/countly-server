@@ -1,11 +1,9 @@
 <div v-bind:class="[componentId]" class="logger-home cly-vue-logger">
-    <cly-header style="margin-bottom: 24px;">
-        <template v-slot:header-left>
-            <h2 class="cly-vue-logger__title"> {{i18n('logger.title')}}
-            </h2>
-            <span v-tooltip="getTitleTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-        </template>
-        </span>
+    <cly-header 
+        style="margin-bottom: 24px;"
+        :title="i18n('logger.title')"
+        :tooltip="{description: getTitleTooltip()}"
+    >
         <template v-slot:header-bottom>
             <span class='cly-vue-logger__subtitle text-small'>
                 {{collectionInfo}}

@@ -23,7 +23,7 @@
         </div>
     </div>
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
-    <clyd-primary-legend :apps="data.apps" :showApps="(data.visualization !== 'time-series') || (data.visualization === 'time-series' && data.data_type === 'technology')" :custom-period="data.custom_period"></clyd-primary-legend>
+    <clyd-primary-legend :custom-period="data.custom_period"></clyd-primary-legend>
     <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
 		<template v-if="!loading">
             <cly-chart-time v-if="data.visualization === 'time-series' && !data.breakdowns" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :sub-category="data.feature === 'events' ? data.events : []">
@@ -63,4 +63,5 @@
 	</div>
     <drawer :settings="drawerSettingsForWidgets" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
     <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series' && !data.breakdowns"></clyd-secondary-legend>
+    <clyd-widget-apps :apps="data.apps"></clyd-widget-apps>
 </div>

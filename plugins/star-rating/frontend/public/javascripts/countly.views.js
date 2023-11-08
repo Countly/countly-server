@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment, countlyCohorts*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -24,6 +24,7 @@
                 deleteLogo: false,
                 imageSrc: '',
                 logoType: 'default',
+                globalLogo: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -91,6 +92,9 @@
                 if (!submitted.logoType) {
                     submitted.logoType = 'default';
                 }
+                if (!submitted.globalLogo) {
+                    submitted.globalLogo = false;
+                }
 
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
@@ -130,7 +134,14 @@
                 var self = this;
                 var loadImage = new Image();
                 if (this.controls.initialEditedObject.logo) {
-                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+
+                    if (this.controls.initialEditedObject.logo.indexOf("feedback_logo") > -1
+                    ) {
+                        loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
+                    }
+                    else {
+                        loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                    }
                 }
                 loadImage.onload = function() {
                     self.imageSource = loadImage.src;
@@ -170,7 +181,8 @@
     var CommentsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
-            comments: Array
+            comments: Array,
+            loadingState: Boolean
         },
         methods: {
             decode: function(str) {
@@ -184,7 +196,7 @@
             preparedRows: function() {
                 var self = this;
                 return this.comments.map(function(comment) {
-                    comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    comment.cd = countlyCommon.formatTimeAgoText(comment.cd).tooltip;
                     comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     comment.comment = self.decode(comment.comment);
                     return comment;
@@ -347,12 +359,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-data-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-data-table-tab-comments"
                     }
                 ],
                 dynamicTab: 'ratings-table',
@@ -371,8 +385,8 @@
             };
         },
         methods: {
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             matchPlatformVersion: function(documentName) {
                 var regexString = '';
@@ -519,18 +533,21 @@
                         label: "Platform",
                         key: "platform",
                         items: self.platformOptions,
+                        dataTestId: {label: "ratings-filter-parameters-platform-label", dropdown: "ratings-filter-parameters-platform-dropdown"},
                         default: ""
                     },
                     {
                         label: "App Version",
                         key: "version",
                         items: self.versionOptions,
+                        dataTestId: {label: "ratings-filter-parameters-version-label", dropdown: "ratings-filter-parameters-version-dropdown"},
                         default: ""
                     },
                     {
                         label: "Widget",
                         key: "widget",
                         items: self.widgetOptions,
+                        dataTestId: {label: "ratings-filter-parameters-widget-label", dropdown: "ratings-filter-parameters-widget-dropdown"},
                         default: ""
                     }
                 ];
@@ -576,6 +593,37 @@
             createWidget: function() {
             // TODO: move this to model
             // TODO: localizations
+                var trigger_bg_color = '#123456';
+                var trigger_font_color = '#fff';
+                var logoType = 'default';
+                var logo = null;
+                var globalLogo = false;
+                if ((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp) || countlyPlugins.getConfigsData().feedback) {
+                    var feedbackApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp ? countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.feedbackApp : null;
+                    var feedback = countlyPlugins.getConfigsData().feedback;
+                    if (feedbackApp && feedbackApp.main_color) {
+                        trigger_bg_color = feedbackApp.main_color;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback) {
+                        trigger_bg_color = feedback.main_color;
+                    }
+                    if (feedbackApp && feedbackApp.font_color) {
+                        trigger_font_color = feedbackApp.font_color;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback) {
+                        trigger_font_color = feedback.font_color;
+                    }
+                    if (feedbackApp && feedbackApp.feedback_logo) {
+                        logo = '/feedback/preview/' + feedbackApp.feedback_logo;
+                        logoType = 'custom';
+                        globalLogo = true;
+                    }
+                    else if (countlyPlugins.getConfigsData().feedback && countlyPlugins.getConfigsData().feedback.feedback_logo) {
+                        logo = '/feedback/preview/' + feedback.feedback_logo;
+                        logoType = 'custom';
+                        globalLogo = true;
+                    }
+                }
                 this.openDrawer("widget", {
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
@@ -599,18 +647,19 @@
                         steps: null
                     },
                     trigger_button_text: 'Feedback',
-                    trigger_bg_color: '#123456',
-                    trigger_font_color: '#fff',
+                    trigger_bg_color: trigger_bg_color,
+                    trigger_font_color: trigger_font_color,
                     hide_sticker: false,
                     status: true,
-                    logo: null,
+                    logo: logo,
                     target_pages: ["/"],
                     target_page: false,
-                    logoType: 'default'
+                    logoType: logoType,
+                    globalLogo: globalLogo,
                 });
             },
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             setWidget: function(row, status) {
                 var finalizedTargeting = null;
@@ -669,9 +718,11 @@
                     }
                 }
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
-                this.loading = true;
+                if (force) {
+                    this.loading = true;
+                }
                 $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                     .then(function() {
                     // set platform versions for filter
@@ -685,7 +736,7 @@
             }
         },
         created: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -700,13 +751,15 @@
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings',
                         component: RatingsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings',
+                        dataTestId: "ratings-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.widgets'),
                         name: 'widgets',
                         component: WidgetsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets',
+                        dataTestId: "ratings-tab-rating-widgets"
                     }
                 ]
             };
@@ -748,12 +801,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-detail-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-detail-table-tab-comments"
                     }
                 ],
                 feedbackData: [],
@@ -866,6 +921,7 @@
                 });
             },
             editWidget: function() {
+                this.widget.globalLogo = false;
                 if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                     this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
                 }
@@ -905,6 +961,9 @@
                 if (!this.widget.logoType) {
                     this.widget.logoType = 'default';
                 }
+                if (this.widget.logo && this.widget.logo.indexOf("feedback_logo")) {
+                    this.widget.globalLogo = true;
+                }
                 if (!this.widget.targeting) {
                     this.widget.targeting = {
                         user_segmentation: null,
@@ -931,7 +990,7 @@
                             });
                             window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
                         });
-                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
+                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') }, "ratings-detail");
                     break;
                 }
             },
@@ -954,8 +1013,8 @@
                 }
                 return (new RegExp(regexString, 'i')).test(documentName);
             },
-            refresh: function() {
-                this.fetch();
+            refresh: function(force) {
+                this.fetch(force);
             },
             fetch: function(force) {
                 var self = this;
@@ -1093,6 +1152,11 @@
                         }
                     ];
                 }
+            },
+            isLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         }
     });
@@ -1113,19 +1177,22 @@
                 return {
                     uid: '',
                     ratingsData: [],
-                    title: CV.i18n('feedback.ratings')
+                    title: CV.i18n('feedback.ratings'),
+                    isLoading: false
                 };
             },
             methods: {},
             created: function() {
                 this.uid = this.$route.params.uid;
                 var self = this;
+                this.isLoading = true;
                 starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
                     .then(function() {
                         self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
                         self.ratingsData.map(function(rating) {
                             rating.ts = countlyCommon.formatTimeAgo(rating.ts);
                         });
+                        self.isLoading = false;
                     });
             }
         })
@@ -1299,6 +1366,130 @@ app.addPageScript("/drill#", function() {
     }, 0);
 });
 */
+
+    if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback.main_color"]) {
+        app.configurationsView.registerLabel("feedback.main_color", "feedback.main_color-title");
+        app.configurationsView.registerLabel("feedback.font_color", "feedback.font_color-title");
+        app.configurationsView.registerLabel("feedback.feedback_logo", "feedback.logo-title");
+        app.configurationsView.registerInput("feedback.main_color", {input: "cly-colorpicker", helper: "feedback.main_color.description", attrs: {resetValue: '#2FA732'}});
+        app.configurationsView.registerInput("feedback.font_color", {input: "cly-colorpicker", helper: "feedback.font_color.description", attrs: {resetValue: '#2FA732'}});
+        app.configurationsView.registerInput("feedback.feedback_logo", {
+            input: "image",
+            helper: "feedback.logo.description",
+            image_size: "feedback_logo",
+            attrs: {
+                name: "feedback_logo",
+                action: countlyGlobal.path + "/i/feedback/upload",
+                data: {auth_token: countlyGlobal.auth_token}
+            },
+            errorMessage: "",
+            success: function() {
+                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+                if (this.$root && this.$root.$children) {
+                    for (var i = 0; i < this.$root.$children.length; i++) {
+                        if (this.$root.$children[i].configsData) {
+                            this.$root.$children[i].onChange("feedback_logo", "feedback_logo");
+                            break;
+                        }
+                    }
+                }
+            },
+            error: function(err) {
+                var message = jQuery.i18n.map["feedback.error"];
+                if (err && err.message) {
+                    try {
+                        var parts = JSON.parse(err.message);
+                        var m = parts.message || parts.error || parts.result;
+                        message = jQuery.i18n.map[m] || m;
+                    }
+                    catch (ex) {
+                        message = jQuery.i18n.map["feedback.error"];
+                    }
+                }
+                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = message;
+            },
+            data: function() {
+                return {
+                    id: countlyCommon.ACTIVE_APP_ID,
+                };
+            },
+            before: function(file) {
+                var type = file.type;
+                if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                    app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                    return false;
+                }
+                if (file.size > 1.5 * 1024 * 1024) {
+                    app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                    return false;
+                }
+                return true;
+            }
+        });
+    }
+
+    if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
+        var segments = window.location.href.split('/');
+        var manageIndex = segments.indexOf('apps');
+        var feedbackId = countlyCommon.ACTIVE_APP_ID;
+        if (manageIndex !== -1) {
+            feedbackId = segments[manageIndex + 1];
+        }
+        app.addAppManagementInput("feedbackApp", CV.i18n("feedback.title"),
+            {
+                "feedbackApp.main_color": {input: "cly-colorpicker", attrs: {resetValue: '#2FA732'}, defaultValue: ""},
+                "feedbackApp.font_color": {input: "cly-colorpicker", attrs: {resetValue: '#2FA732'}, defaultValue: ""},
+                "feedbackApp.feedback_logo": {
+                    input: "image",
+                    helper: "feedback.logo.description",
+                    image_size: "feedback_logo" + feedbackId,
+                    attrs: {
+                        action: countlyGlobal.path + "/i/feedback/upload",
+                    },
+                    errorMessage: "",
+                    success: function() {
+                        app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+                        if (this.$root && this.$root.$children) {
+                            for (var i = 0; i < this.$root.$children.length; i++) {
+                                if (this.$root.$children[i].appDetails) {
+                                    this.$root.$children[i].onChange("feedbackApp.feedback_logo", "feedback_logo" + feedbackId);
+                                    break;
+                                }
+                            }
+                        }
+                    },
+                    error: function(err) {
+                        var message = jQuery.i18n.map["feedback.error"];
+                        if (err && err.message) {
+                            try {
+                                var parts = JSON.parse(err.message);
+                                var m = parts.message || parts.error || parts.result;
+                                message = jQuery.i18n.map[m] || m;
+                            }
+                            catch (ex) {
+                                message = jQuery.i18n.map["feedback.error"];
+                            }
+                        }
+                        app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = message;
+                    },
+                    before: function(file) {
+                        segments = window.location.href.split('/');
+                        manageIndex = segments.indexOf('apps');
+                        feedbackId = segments[manageIndex + 1] || countlyCommon.ACTIVE_APP_ID;
+                        var type = file.type;
+                        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                            app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                            return false;
+                        }
+                        if (file.size > 1.5 * 1024 * 1024) {
+                            app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            });
+    }
 
     app.addMenu("reach", {code: "feedback", permission: FEATURE_NAME, text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
     app.addSubMenu("feedback", {

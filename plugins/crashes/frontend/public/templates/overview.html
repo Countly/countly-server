@@ -2,13 +2,10 @@
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="crash-groups">
             <span slot="label">{{i18n("crashes.crash-groups")}}</span>
-            <cly-header>
-                <template v-slot:header-left>
-                    <h2>
-                        {{i18n("crashes.crash-groups")}}
-                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-                    </h2>
-                </template>
+            <cly-header
+                :title="i18n('crashes.crash-groups')"
+                :tooltip="{description: i18n('crashes.help-crash-group')}"
+            >
                 <template v-slot:header-right>
                     <cly-auto-refresh-toggle ref="crashesAutoRefreshToggle" feature="crashes" :default-value="true"></cly-auto-refresh-toggle>
                 </template>
@@ -57,13 +54,10 @@
             <span slot="label">
                 {{i18n("crashes.crash-statistics")}}
             </span>
-            <cly-header>
-                <template v-slot:header-left>
-                    <h2>
-                        {{i18n("crashes.crash-statistics")}}
-                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-statistics')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-                    </h2>
-                </template>
+            <cly-header
+                :title="i18n('crashes.crash-statistics')"
+                :tooltip="{description: i18n('crashes.help-crash-statistics')}"
+            >
             </cly-header>
             <cly-main>
                 <cly-section class="crashes-statistics-dashboard">
@@ -131,7 +125,7 @@
                     <div class="text-small text-uppercase bu-mx-3" style="color: #969FAD;">{{i18n("crashes.crash-filters")}}</div>
                     <cly-multi-select v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
                 </div>
-                <div class="crashes-statistics-graph">
+                <div class="crashes-statistics-graph" v-loading="loading">
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>
                         <el-tab-pane name="total-occurrences" style="border-top-left-radius: 4px;">
                             <div class="bu-p-5" slot="label">

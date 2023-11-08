@@ -57,7 +57,7 @@
                 },
                 dataMap: {},
                 sourcesDetailData: {},
-                isLoading: false
+                isLoading: true
             };
         },
         methods: {
@@ -144,17 +144,19 @@
             refresh: function(force) {
                 var self = this;
                 if (force) {
-                    $.when(countlySources.initialize(true))
-                        .then(function() {
-                            self.sourcesData = countlySources.getData();
-                            self.sourcesDetailDataMap();
-
-                            // calculate charts data for total session and new users charts
-                            var chartsData = self.chartsDataPrepare(self.sourcesData);
-                            self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                            self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                        });
+                    this.isLoading = true;
                 }
+                $.when(countlySources.initialize(true))
+                    .then(function() {
+                        self.sourcesData = countlySources.getData();
+                        self.sourcesDetailDataMap();
+
+                        // calculate charts data for total session and new users charts
+                        var chartsData = self.chartsDataPrepare(self.sourcesData);
+                        self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                        self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                        self.isLoading = false;
+                    });
             },
             handleTableRowClick: function(row) {
                 // Only expand row if text inside of it are not highlighted
@@ -183,20 +185,7 @@
             countlyVue.mixins.commonFormatters
         ],
         created: function() {
-            var self = this;
-            this.isLoading = true;
-            $.when(countlySources.initialize(true))
-                .then(function() {
-                    // get fetched sources datas
-                    self.isLoading = false;
-                    self.sourcesData = countlySources.getData();
-                    self.sourcesDetailDataMap();
-
-                    // calculate charts data for total session and new users charts
-                    var chartsData = self.chartsDataPrepare(self.sourcesData);
-                    self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                    self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                });
+            this.refresh(true);
         }
     });
 

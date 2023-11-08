@@ -1526,7 +1526,7 @@ plugins.setConfigs("dashboards", {
                         allApps.push(apps[appId]);
                     }
                     else {
-                        allApps.push({_id: apps[appId]._id, name: apps[appId].name, image: apps[appId].image, type: apps[appId].type});
+                        allApps.push({_id: apps[appId]._id, name: apps[appId].name, image: apps[appId].image, has_image: apps[appId].has_image, type: apps[appId].type, created_at: apps[appId].created_at});
                     }
                 }
 

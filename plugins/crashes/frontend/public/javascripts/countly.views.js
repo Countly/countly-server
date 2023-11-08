@@ -531,11 +531,17 @@
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             },
             isLoading: function() {
-                return this.$store.getters['countlyCrashes/overview/isLoading'];
+                return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
+            loading: function() {
+                return this.$store.getters["countlyCrashes/overview/loading"];
+            }
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
+                if (this.$refs && this.$refs.dataTable && this.$refs.dataTable.externalParams) {
+                    this.$refs.dataTable.externalParams.skipLoading = true;
+                }
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
                     var tmpQuery = {};
@@ -546,7 +552,7 @@
 
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                        this.$store.dispatch("countlyCrashes/overview/refresh", force)
                     ]);
                 }
             },
@@ -624,9 +630,7 @@
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
             }
 
-            return Promise.all([
-                this.$store.dispatch("countlyCrashes/overview/refresh")
-            ]);
+            this.$store.dispatch("countlyCrashes/overview/refresh", true);
         }
     });
 
@@ -1161,7 +1165,7 @@
 
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
-                        countlyCrashSymbols.fetchSymbols(true)
+                        countlyCrashSymbols.fetchSymbols(false)
                             .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
@@ -1337,14 +1341,17 @@
                 return {
                     uid: '',
                     userCrashesData: [],
-                    title: CV.i18n('crashes.unresolved-crashes')
+                    title: CV.i18n('crashes.unresolved-crashes'),
+                    isLoading: false
                 };
             },
-            beforeCreate: function() {
+            created: function() {
                 var self = this;
+                self.isLoading = true;
                 this.uid = this.$route.params.uid;
                 countlyCrashes.userCrashes(this.uid)
                     .then(function(res) {
+                        self.isLoading = false;
                         if (res) {
                             self.userCrashesData = res.aaData.map(function(data) {
                                 return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});

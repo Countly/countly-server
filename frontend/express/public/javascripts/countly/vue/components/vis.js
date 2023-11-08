@@ -643,7 +643,7 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
-                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                    if (params[i].seriesName.toLowerCase() === 'duration' || params[i].seriesName.toLowerCase() === 'avg. duration') {
                                         formatter = countlyCommon.formatSecond;
                                     }
                                     else {
@@ -1890,6 +1890,10 @@
                 default: false,
                 required: false
             },
+            testId: {
+                type: String,
+                default: 'cly-chart-header-test-id',
+            }
         },
         data: function() {
             return {
@@ -1979,9 +1983,9 @@
                             <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
                                 <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
-                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
-                                <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
-                                <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
+                            <cly-more-options :test-id="testId + \'-cly-chart-more-dropdown\'" v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                                <el-dropdown-item :data-test-id="testId + \'-download-button\'" v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
+                                <el-dropdown-item :data-test-id="testId + \'-more-zoom-button\'" v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
                             </cly-more-options>\
                             <zoom-interactive @zoom-reset="onZoomReset" :is-zoom="isZoom" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
@@ -2001,6 +2005,10 @@
             },
             position: {
                 type: String
+            },
+            testId: {
+                type: String,
+                default: "secondary-legend-test-id"
             }
         },
         computed: {
@@ -2046,8 +2054,8 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="testId + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
@@ -2120,6 +2128,10 @@
             seriesType: {
                 type: String,
                 default: ""
+            },
+            testId: {
+                type: String,
+                default: "custom-legend-test-id"
             }
         },
         data: function() {
@@ -2215,6 +2227,7 @@
                         </template>\
                         <template v-if="options.type === \'secondary\'">\
                             <secondary-legend\
+                                :testId="testId"\
                                 :data="legendData"\
                                 :position="options.position"\
                                 :onClick="onLegendClick">\
@@ -2607,6 +2620,11 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: "cly-chart-bar-test-id",
+                required: false
             }
         },
         components: {
@@ -2625,7 +2643,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2643,7 +2661,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2651,6 +2669,7 @@
                             ref="legend"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
+                            :testId="testId"\
                             v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
@@ -3006,6 +3025,10 @@
             showTooltip: {
                 type: Boolean,
                 default: true
+            },
+            blockAutoLoading: {
+                type: Boolean,
+                default: false
             }
         },
         beforeCreate: function() {
@@ -3101,7 +3124,7 @@
         },
         computed: {
             loading: function() {
-                return this.loadingGeojson || this.loadingCities;
+                return !this.blockAutoLoading && (this.loadingGeojson || this.loadingCities);
             },
             inDetail: function() {
                 return this.country !== null;

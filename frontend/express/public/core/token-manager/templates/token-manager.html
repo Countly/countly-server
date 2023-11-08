@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('sidebar.management.token-manager')}} </h2>
-        </template>
+    <cly-header
+        :title="i18n('sidebar.management.token-manager')"
+    >
         <template v-slot:header-right>
             <el-button @click="onCreateClick" type="success" icon="el-icon-circle-plus">{{i18n('token_manager.create-new-token')}}</el-button>
         </template>

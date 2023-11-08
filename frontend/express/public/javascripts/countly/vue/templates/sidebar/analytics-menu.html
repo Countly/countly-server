@@ -27,7 +27,7 @@
                         <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length" :data-test-id="`sidebar-mainmenu-clickable-${menu.name}`">
                             <el-collapse v-model="selectedAnalyticsMenu" accordion
                                 :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]" :data-test-id="`sidebar-mainmenu-sub-${menu.name}`">
-                                <el-collapse-item :title="i18nM(menu.title)" :data-test-id="`sidebar-mainmenu-menutitle-${menu.title}`" :name="menu.name"
+                                <el-collapse-item :title="i18nM(menu.title)" :test-id="`sidebar-mainmenu-menutitle-${menu.title ? menu.title.replace('.', '-') : '-menu-title'}`" :name="menu.name"
                                     :icon="{position: 'right', direction: 'down'}">
                                     <ul>
                                         <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]"
