@@ -180,7 +180,8 @@ const checkPopulatorProgressBar = () => {
         .then((isExists) => {
             if (isExists) {
                 cy.verifyElement({
-                    element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
+                    //TODO 
+                    //element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
                     labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
                     labelText: 'Populating data for your app'
                 });
@@ -190,12 +191,11 @@ const checkPopulatorProgressBar = () => {
         });
 };
 
-//TODO comment line will be removed
-// const verifyPopulatorProgressImg = () => {
-//     cy.verifyElement({
-//         element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
-//     });
-// };
+const verifyPopulatorProgressImg = () => {
+    cy.verifyElement({
+        element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
+    });
+};
 
 const verifyPopulatorContinueButton = () => {
     cy.verifyElement({
