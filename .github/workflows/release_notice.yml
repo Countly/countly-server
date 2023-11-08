@@ -4,7 +4,7 @@ on:
     types: [published]
   workflow_dispatch:
 jobs:
-  build:
+  to_slack:
     runs-on: ubuntu-latest
     steps:
       # To check the github context
@@ -27,3 +27,13 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE }}
+
+  to_discord:
+    runs-on: ubuntu-18.04
+    name: Sends custom message
+    steps:
+      - name: Sending message
+        uses: nhevia/discord-styled-releases@v1.2.3
+        with:
+          webhook_id: ${{ secrets.DISCORD_RELEASE_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_RELEASE_WEBHOOK_TOKEN }}
