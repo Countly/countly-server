@@ -72,6 +72,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     async function processUser(old_uid, new_uid, collections, app) {
         console.log("Processing user ", old_uid, " -> ", new_uid, "for app ", app.name);
+        var hasError = false;
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
@@ -93,9 +94,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             }
             catch (err) {
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
+                hasError = true;
+                break;
             }
         }
-        if (dataviews && !DRY_RUN) {
+        if (!hasError && dataviews && !DRY_RUN) {
             await new Promise((resolve, reject) => {
                 dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
                     if (err) {
