@@ -455,7 +455,7 @@
                     var tmpQuery = {};
 
                     if (newValue.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(newValue.query);
+                        tmpQuery = countlyCrashes.modifyQueries(newValue.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
@@ -546,7 +546,7 @@
                     var query = {};
                     var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(this.crashgroupsFilter.query);
+                        tmpQuery = countlyCrashes.modifyQueries(this.crashgroupsFilter.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
@@ -623,7 +623,7 @@
             var query = {};
             var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                tmpQuery = countlyCrashes.modifyOsVersionQuery(this.$route.params.query.query);
+                tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
                 query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
@@ -1378,6 +1378,20 @@
                 {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
             ]
         });
+
+        app.addAppManagementInput("crashes", CV.i18n("crashes.title"),
+            {
+                "crashes.smart_preprocessing": {input: "el-switch", attrs: {}, defaultValue: true},
+                "crashes.smart_regexes": {input: "el-input", attrs: {type: "textarea", rows: 5}},
+                "crashes.grouping_strategy": {
+                    input: "el-select",
+                    attrs: {},
+                    list: [
+                        {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                        {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+                    ]
+                }
+            });
     }
 
     app.route("/crashes", "crashes", function() {

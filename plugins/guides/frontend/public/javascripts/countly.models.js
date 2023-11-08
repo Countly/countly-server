@@ -13,9 +13,9 @@
 
     var _entries = [];
 
-    countlyGuides.fetchEntries = function(query) {
+    countlyGuides.fetchEntries = function(query, refresh) {
         return new Promise(function(resolve, reject) {
-            countlyCMS.fetchEntry(API_key, true, query)
+            countlyCMS.fetchEntry(API_key, {populate: true, query, refresh})
                 .then(function(data) {
                     let entries = data.data;
                     if (entries && entries.length > 0) {
@@ -35,6 +35,12 @@
 
     countlyGuides.getEntries = function() {
         return _entries;
+    };
+
+    countlyGuides.getEntry = function(sectionID) {
+        return _entries.find(function(entry) {
+            return entry.sectionID === sectionID;
+        });
     };
 
     countlyGuides.getWalkthroughs = function(sectionID) {

@@ -1028,10 +1028,10 @@
             },
             calculateDeliveryDates: function(prev, last) {
                 var nextDeliveryDates = [];
-                if (prev) {
+                if (prev && prev > Date.now()) {
                     nextDeliveryDates.push(this.formatDateTime(prev, 'DD MMMM YYYY'));
                 }
-                if (last) {
+                if (last && last > Date.now() && last !== prev) {
                     nextDeliveryDates.push(this.formatDateTime(last, 'DD MMMM YYYY'));
                 }
                 return nextDeliveryDates.join(', ');

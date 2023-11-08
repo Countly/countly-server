@@ -21,7 +21,8 @@ plugins.setConfigs("crashes", {
     smart_preprocessing: true,
     smart_regexes: "{.*?}\n/.*?/",
     same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS
+    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
+    activate_custom_field_cleanup_job: false,
 });
 
 /**
@@ -780,7 +781,7 @@ plugins.setConfigs("crashes", {
                         });
                     });
                 }
-            });
+            }, params.app && params.app.plugins);
         }
     });
 
@@ -1009,8 +1010,9 @@ plugins.setConfigs("crashes", {
                             break;
                         }
                     }
-                    if (params.qstring.filter !== "crash-hidden") {
-                        filter.is_hidden = {$ne: true};
+
+                    if (!('is_hidden' in filter)) {
+                        filter.is_hidden = { $ne: true };
                     }
 
                     plugins.dispatch("/drill/preprocess_query", {

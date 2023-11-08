@@ -1,3 +1,112 @@
+## Version 23.06.16
+Fixes:
+- [cache] Removing noCursorTimeout from cache cursor
+- [core] fix cursor timeout issue
+- [core] fix for Do not set session cookie on widget load
+- [core] uploadformfile was called even if it was not file upload
+- [core][report-manager] fix for If a report is created for the dashboard widget, viewing leads to the dashboard with that widget.
+- [core][views] Omitting views segments
+- [dependencies] Bump @babel/traverse from 7.22.5 to 7.23.2
+- [dependencies] Bump nodemailer from 6.9.6 to 6.9.7
+- [dependencies]Bump countly-sdk-web from 23.6.0 to 23.6.2
+- [permissions] Add feature check in rights
+- [push] Removing past dates from recurring messages details, fixing tests, sorting trigger dates
+- [ratings] fix for toggle issue in ratings
+- [scripts] fix for new recheck_merges script
+
+Enterprise fixes:
+- [ab-testing] fix for ab_opt_out call when keys not supplied
+- [data-manager] fix for Renamed Segment appearing in All Events
+- [retention_segments] fix cohort queries when selected by breakdown
+- [surveys] fix for disable csrf and session for widgets
+
+## Version 23.06.15
+Fixes:
+- [crashes] Add config for activating custom field cleanup job
+- [data-migration] Fix for upload request
+- [core] Remove sensitive fields from API responses
+- [dashboards] Validating links for note widgets
+- [star-rating] Css changes for ratings comments table
+- [star-rating] Fix for targeting reset on toggle
+- [members] Fix full Name updates in db
+
+Enterprise fixes: 
+- [crash_symbolication] Fix for symbol file upload
+- [data-manager] Fix for disabled input in view transformations
+- [data-manager] Fix for duplicate events being created in event transformation
+
+## Version 23.06.14
+Fixes:
+- [cache] Fixing initialization race conditions (group store is not initialized)
+- [events] Fixed % value for events trends
+- [push] Fixing wrong pusher for automated messages
+
+Enterprise fixes:
+- [active_directory] Fixed bug with azure AD config change not beeing reflected in the backend.
+- [drill] Fixed bug with aggregated data regeneration from granlural data to do not recreate ommited segments.
+- [timeline] Optimisation for clearing out timeline data on call for clearing out older data.
+- [users] Update users filter to use first session (fs)and first seen(fac)
+
+## Version 23.06.13
+Fixes:
+- [core] Correctly cleanup drill meta on segment omission
+- [concurrent-users] Fixed border issue in concurrent users settings
+- [push] Moving token_session processing to master with an object as a debouncy buffer
+- [push] Concurrent processing of several token_session requests at once
+- [views] Fix for views dashboard plugin
+- [star-rating] Fix rating sum error
+- [dashboard] Fix user widget x axis in visualisation
+- [hooks] Fix hook request json payload
+
+Enterprise Fixes: 
+- [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
+- [active-directory] Add postinstall for active directory plugin
+- [okta] Add postinstall for okta plugin
+- [drill] Fixed cd parameter in drill not updating properly
+- [timeline] Added setting to disable recording data in timeline
+
+## Version 23.06.12
+Fixes:
+- [core] Added missing space character to user profile photo description
+- [core] Added script for timeline data cleanup
+- [core] Created script for clearing out records without cd field in drill
+- [core] Created script for rechecking merged users and retrying to finish merging
+- [core] Fixed permission check
+- [core] Fixed workflow for user's document on changed did
+- [core] Update mongo_expireData.js script
+- [hooks] invalid json in hooks is fixed
+- [populator] Fixed Push notification campaign names are blank on detail page when using populator
+- [push] Added ui tests
+- [push] Faster deduplication on scheduling + ghost clearing job
+- [push] Fixing duplicate notifications for the same token
+- [push] Turning deduplication off by default
+
+Enterprise fixes:
+- [ab-testing] add fetch_experiments api
+- [cognito] post install script added to congito install.js
+- [retention] Fixed Cohort breakdown query on retention
+  
+## Version 23.06.11
+Fixes:
+- [crashes] Fix crash visibility filter 
+- [push] Fixing wrong timeout handling for APN
+  
+## Version 23.06.10
+Fixes:
+- [core] Remove trust proxy
+- [push] Fixing rescheduling delayed not-yet-scheduled messages
+- [star-rating] Decoding header texts
+- [views] Fix for unique value recording for segments.
+- [views] Store segmentation in viewdata to correctly record uvc, bounces exits(session post items) for different segments in aggregated data.
+
+Enterprise fixes:
+- [cohorts] Correctly deal with doesn't contain rule on incoming data.
+- [core] Updated tests
+- [data-manager] Fixed dealing with period param on regeneration endpoint
+- [surveys] Decoding feedback title
+- [users] User profile session sorting descending
+- [users] revert default sort in eventTable
+
 ## Version 23.06.9
 Fixes:
 - [push] Adding push/notifications endpoint, deprecating push/user endpoint

@@ -173,6 +173,14 @@
     &--red  &__blink{
         background-color: #D23F00;
     }
+    &--gray {
+        background-color: #F5F5F5;
+        color: #BDBDBD;
+        padding: 0px 6px;
+    }
+    &--gray  &__blink{
+        background-color: #BDBDBD;
+    }
     &__blink {
         position: relative;
         top: -1px;

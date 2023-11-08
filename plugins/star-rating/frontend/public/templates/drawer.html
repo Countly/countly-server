@@ -63,7 +63,7 @@
 						</div>
 						<div class="ratings-drawer__thanks-popup" v-if="drawerScope.currentStepId !== 'step3'">
               <div class="ratings-drawer__tp-icon bu-mt-4" data-test-id="ratings-drawer-thankyoupopup-icon">
-                <span class="el-icon-success" :style="{'color': drawerScope.editedObject.trigger_bg_color}"></span>
+                <span class="el-icon-success" data-test-id="ratings-drawer-thankyoupopup-color-icon" :style="{'color': drawerScope.editedObject.trigger_bg_color}"></span>
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4" data-test-id="ratings-drawer-thankyoupopup-message-text">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer" data-test-id="ratings-drawer-thankyoupopup-poweredby-label">
@@ -73,12 +73,14 @@
             </div>
 					</div>
           <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
-						<div class="bu-is-size-7 ratings-drawer__stage-label">
+						<div data-test-id="ratings-drawer-trigger-button-preview-label" class="bu-is-size-7 ratings-drawer__stage-label">
 							{{ i18n('feedback.trigger-button-preview') }}
 						</div>
 						<div class="ratings-drawer__trigger-button">
               <img class="ratings-drawer__tb-background" src="star-rating/images/star-rating/browser.svg"/>
-              <div :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color }" :class="['ratings-drawer__tb-sticker', 'ratings-drawer__tb-' + drawerScope.editedObject.trigger_position + '-' + drawerScope.editedObject.trigger_size]">{{ drawerScope.editedObject.trigger_button_text }}</div>
+              <div data-test-id="ratings-drawer-trigger-button" :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color }" :class="['ratings-drawer__tb-sticker', 'ratings-drawer__tb-' + drawerScope.editedObject.trigger_position + '-' + drawerScope.editedObject.trigger_size]">
+                <span data-test-id="ratings-drawer-trigger-button-label">{{ drawerScope.editedObject.trigger_button_text }}</span>
+              </div>
             </div>
           </div>
 				</div>
@@ -234,7 +236,7 @@
               {{i18n('feedback.main-color')}}
             </div>
             <cly-colorpicker
-              data-test-id="ratings-drawer-appearance-main-color-dropdown"
+              test-id="ratings-drawer-appearance-main-color-dropdown"
               reset-value='#FFFFFF'
               v-model="drawerScope.editedObject.trigger_bg_color"
               placement="right">
@@ -245,7 +247,7 @@
               {{i18n('feedback.font-color')}}
             </div>
             <cly-colorpicker
-              data-test-id="ratings-drawer-appearance-font-color-dropdown"
+              test-id="ratings-drawer-appearance-font-color-dropdown"
               reset-value='#FFFFFF'
               v-model="drawerScope.editedObject.trigger_font_color"
               placement="right">
@@ -275,6 +277,7 @@
           </div>
           <div class="bu-is-flex text-center ratings-drawer__sticker-size">
             <el-radio
+              :test-id="'ratings-drawer-position-on-the-page-' + item.value"
 							v-model="drawerScope.editedObject.trigger_position"
               class="is-bordered is-autosized bu-is-justify-content-center"
 							:label="item.value"

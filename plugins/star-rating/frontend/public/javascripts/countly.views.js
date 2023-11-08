@@ -140,7 +140,7 @@
                         loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
                     }
                     else {
-                        loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                        loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
                     }
                 }
                 loadImage.onload = function() {
@@ -359,12 +359,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-data-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-data-table-tab-comments"
                     }
                 ],
                 dynamicTab: 'ratings-table',
@@ -531,18 +533,21 @@
                         label: "Platform",
                         key: "platform",
                         items: self.platformOptions,
+                        dataTestId: {label: "ratings-filter-parameters-platform-label", dropdown: "ratings-filter-parameters-platform-dropdown"},
                         default: ""
                     },
                     {
                         label: "App Version",
                         key: "version",
                         items: self.versionOptions,
+                        dataTestId: {label: "ratings-filter-parameters-version-label", dropdown: "ratings-filter-parameters-version-dropdown"},
                         default: ""
                     },
                     {
                         label: "Widget",
                         key: "widget",
                         items: self.widgetOptions,
+                        dataTestId: {label: "ratings-filter-parameters-widget-label", dropdown: "ratings-filter-parameters-widget-dropdown"},
                         default: ""
                     }
                 ];
@@ -580,7 +585,8 @@
                 },
                 widget: '',
                 rating: {},
-                loading: true
+                loading: true,
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
         },
         methods: {
@@ -612,7 +618,7 @@
                         logoType = 'custom';
                         globalLogo = true;
                     }
-                    else if (countlyPlugins.getConfigsData().feedback) {
+                    else if (countlyPlugins.getConfigsData().feedback && countlyPlugins.getConfigsData().feedback.feedback_logo) {
                         logo = '/feedback/preview/' + feedback.feedback_logo;
                         logoType = 'custom';
                         globalLogo = true;
@@ -656,7 +662,19 @@
                 this.fetch(force);
             },
             setWidget: function(row, status) {
-                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
+                var finalizedTargeting = null;
+                var target_pages = row.target_pages === "-" ? [] : row.target_pages.split(", ");
+                if (this.cohortsEnabled) {
+                    var exported = row.targeting;
+                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
+                        finalizedTargeting = Object.assign({}, {
+                            user_segmentation: JSON.stringify(exported.user_segmentation),
+                            steps: JSON.stringify(exported.steps)
+                        });
+                    }
+
+                }
+                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status, target_pages: target_pages, targeting: finalizedTargeting }, function() {
                     CountlyHelpers.notify({
                         type: 'success',
                         message: CV.i18n('feedback.successfully-updated')
@@ -733,13 +751,15 @@
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings',
                         component: RatingsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings',
+                        dataTestId: "ratings-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.widgets'),
                         name: 'widgets',
                         component: WidgetsTab,
-                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets'
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets',
+                        dataTestId: "ratings-tab-rating-widgets"
                     }
                 ]
             };
@@ -781,12 +801,14 @@
                     {
                         title: CV.i18n('feedback.ratings'),
                         name: 'ratings-table',
-                        component: RatingsTable
+                        component: RatingsTable,
+                        dataTestId: "ratings-detail-table-tab-ratings"
                     },
                     {
                         title: CV.i18n('feedback.comments'),
                         name: 'comments-table',
-                        component: CommentsTable
+                        component: CommentsTable,
+                        dataTestId: "ratings-detail-table-tab-comments"
                     }
                 ],
                 feedbackData: [],
@@ -968,7 +990,7 @@
                             });
                             window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
                         });
-                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
+                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') }, "ratings-detail");
                     break;
                 }
             },

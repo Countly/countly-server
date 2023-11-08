@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
-	<cly-header v-if="widgets.length>0 && !loading">
+	<cly-header v-if="!loading">
       <template v-slot:header-left>
         <h2 data-test-id="ratings-widgets-header-title">{{ i18n('feedback.widgets') }}</h2>
         &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>

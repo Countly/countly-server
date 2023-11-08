@@ -176,7 +176,7 @@ plugins.register("/permissions/features", function(ob) {
         }
         if (params.qstring.rr) {
             if (typeof dbAppUser.rr === "undefined") {
-                common.setCustomMetric(params, "sdks", params.app_id, ["q"], params.qstring.rr);
+                common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.rr, 10));
             }
             else {
                 common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.rr, 10) - parseInt(dbAppUser.rr, 10));
