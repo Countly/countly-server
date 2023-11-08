@@ -76,6 +76,6 @@ module.exports.DATA_TYPE = {
     BANKING: 'Banking',
     HEALTHCARE: 'Healthcare',
     NAVIGATION: 'Navigation',
-    ECOMMERCE: 'Ecommerce',
+    ECOMMERCE: 'eCommerce',
     GAMING: 'Gaming'
 };
