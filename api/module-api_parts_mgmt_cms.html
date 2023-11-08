@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>jobs/appExpire.js - Documentation</title>
+    <title>api/parts/mgmt/cms - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,142 +37,878 @@
 
 <div id="main">
     
-    <h1 class="page-title">jobs/appExpire.js</h1>
+    <h1 class="page-title">api/parts/mgmt/cms</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>'use strict';
+</header>
 
-const job = require('../parts/jobs/job.js'),
-    async = require('async'),
-    plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:appExpire'),
-    common = require('../utils/common.js'),
-    crypto = require('crypto');
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>This module is meant for handling CMS API requests.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
 
 
-/** Class for the user mergind job **/
-class AppExpireJob extends job.Job {
-    /**
-     * Run the job
-     * @param {Db} database connection
-     * @param {done} done callback
-     */
-    run(database, done) {
-        log.d('Removing expired data ...');
-        const drillDatabase = common.drillDb;
 
-        /**
-         * clear expired data
-         * @param {object} app - app db document
-         * @param {object} callback - when procssing finished
-         **/
-        function clearExpiredData(app, callback) {
-            // convert day value to second
-            const EXPIRE_AFTER = parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
-            const INDEX_NAME = "cd_1";
 
-            let collections = [];
-            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey"];
-            let fromPlugins = plugins.getExpireList();
+            
+                <div class="description usertext"><p>This module is meant for handling CMS API requests.</p></div>
+            
 
-            // predefined drill events
-            events.forEach(function(event) {
-                collections.push("drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex'));
-            });
-            // collection list that exported from plugins
-            fromPlugins.forEach(function(collection) {
-                collections.push(collection + app._id);
-            });
+            
+        
+        </div>
+    
 
-            database.collection("events").findOne({'_id': database.ObjectID(app._id)}, { list: 1 }, function(err, eventData) {
-                if (eventData &amp;&amp; eventData.list) {
-                    for (let i = 0; i &lt; eventData.list.length; i++) {
-                        collections.push("drill_events" + crypto.createHash('sha1').update(eventData.list[i] + app._id).digest('hex'));
-                    }
-                }
-                /**
-                * Iterate event cleaning process
-                * @param {string} collection - target collection name
-                * @param {function} next - iteration callback
-                * */
-                function eventIterator(collection, next) {
-                    log.d("processing", collection);
-                    drillDatabase.collection(collection).indexes(function(drillIndexErr, indexes) {
-                        if (!drillIndexErr &amp;&amp; indexes) {
-                            let hasIndex = false;
-                            let dropIndex = false;
-                            for (let j = 0; j &lt; indexes.length; j++) {
-                                if (indexes[j].name === INDEX_NAME) {
-                                    if (indexes[j].expireAfterSeconds === EXPIRE_AFTER) {
-                                        //print("skipping", c)
-                                        hasIndex = true;
-                                    }
-                                    //has index but incorrect expire time, need to be reindexed
-                                    else {
-                                        dropIndex = true;
-                                    }
-                                    break;
-                                }
-                            }
-                            if (EXPIRE_AFTER === 0 || dropIndex) {
-                                log.d("dropping index", collection);
-                                drillDatabase.collection(collection).dropIndex(INDEX_NAME, function() {
-                                    if (EXPIRE_AFTER === 0) {
-                                        next();
-                                    }
-                                    else {
-                                        log.d("creating index", collection);
-                                        drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
-                                            next();
-                                        });
-                                    }
-                                });
-                            }
-                            else if (!hasIndex) {
-                                log.d("creating index", collection);
-                                drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
-                                    next();
-                                });
-                            }
-                            else {
-                                next();
-                            }
-                        }
-                        else {
-                            next();
-                        }
-                    });
-                }
-                async.eachSeries(collections, eventIterator, function() {
-                    callback();
-                });
-            });
-        }
+    
 
-        database.collection('apps').find({}, { _id: 1, plugins: 1 }).toArray(function(appsErr, apps) {
-            if (!appsErr &amp;&amp; apps &amp;&amp; apps.length) {
-                async.eachSeries(apps, clearExpiredData, function() {
-                    log.d('Clearing data finished ...');
-                    done();
-                });
-            }
-            else {
-                done(appsErr);
-            }
-        });
-    }
-}
+    
 
-module.exports = AppExpireJob;</code></pre>
-        </article>
-    </section>
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".clearCache"><span class="type-signature type-signature-static">(static) </span>clearCache<span class="signature">(params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Clear cache for all API IDs</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line230">line 230</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getEntries"><span class="type-signature type-signature-static">(static) </span>getEntries<span class="signature">(params)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get entries for a given API ID</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line158">line 158</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~fetchFromCMS"><span class="type-signature type-signature-inner">(inner) </span>fetchFromCMS<span class="signature">(params, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get entries for a given API ID from Countly CMS</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line23">line 23</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~syncCMSDataToDB"><span class="type-signature type-signature-inner">(inner) </span>syncCMSDataToDB<span class="signature">(params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get entries for a given API ID from Countly CMS</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line130">line 130</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~transformAndStoreData"><span class="type-signature type-signature-inner">(inner) </span>transformAndStoreData<span class="signature">(params, data, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Transform and store CMS entries in DB</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_cms.js.html">parts/mgmt/cms.js</a>, <a href="parts_mgmt_cms.js.html#line78">line 78</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data array</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
@@ -184,7 +920,7 @@ module.exports = AppExpireJob;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Wed Nov 08 2023 18:07:04 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Wed Nov 08 2023 18:07:05 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

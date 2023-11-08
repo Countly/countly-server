@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>jobs/appExpire.js - Documentation</title>
+    <title>parts/mgmt/cms.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">jobs/appExpire.js</h1>
+    <h1 class="page-title">parts/mgmt/cms.js</h1>
     
 
     
@@ -47,130 +47,251 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>'use strict';
+            <pre class="prettyprint source linenums"><code>/**
+* This module is meant for handling CMS API requests.
+* @module api/parts/mgmt/cms
+*/
 
-const job = require('../parts/jobs/job.js'),
-    async = require('async'),
-    plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:appExpire'),
-    common = require('../utils/common.js'),
-    crypto = require('crypto');
+/** @lends module:api/parts/mgmt/cms */
+var cmsApi = {},
+    common = require('./../../utils/common.js'),
+    config = require('./../../config.js'),
+    current_processes = {};
+
+const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-video", "server-quick-start", "server-guide-config"],
+    UPDATE_INTERVAL = 2, // hours
+    token = "17fa74a2b4b1524e57e8790250f89f44f364fe567f13f4dbef02ef583e70dcdb700f87a6122212bb01ca6a14a8d4b85dc314296f71681988993c013ed2f6305b57b251af723830ea2aa180fc689af1052dd74bc3f4b9b35e5674d4214a8c79695face42057424f0494631679922a3bdaeb780b522bb025dfaea8d7d56a857dba",
+    baseURL = "https://cms.count.ly/api/";
 
 
-/** Class for the user mergind job **/
-class AppExpireJob extends job.Job {
+/**
+* Get entries for a given API ID from Countly CMS
+* @param {params} params - params object
+* @param {function} callback - callback function
+**/
+function fetchFromCMS(params, callback) {
+    const url = baseURL + params.qstring._id;
+    const pageSize = 100;
+    var results = [];
+
     /**
-     * Run the job
-     * @param {Db} database connection
-     * @param {done} done callback
-     */
-    run(database, done) {
-        log.d('Removing expired data ...');
-        const drillDatabase = common.drillDb;
+    * Get a single page of data
+    * @param {number} pageNumber - page number
+    **/
+    function fetchPage(pageNumber) {
+        var pageUrl = `${url}?pagination[page]=${pageNumber}&amp;pagination[pageSize]=${pageSize}`;
 
-        /**
-         * clear expired data
-         * @param {object} app - app db document
-         * @param {object} callback - when procssing finished
-         **/
-        function clearExpiredData(app, callback) {
-            // convert day value to second
-            const EXPIRE_AFTER = parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
-            const INDEX_NAME = "cd_1";
+        if (params.qstring.populate) {
+            pageUrl += `&amp;populate=*`;
+        }
 
-            let collections = [];
-            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey"];
-            let fromPlugins = plugins.getExpireList();
-
-            // predefined drill events
-            events.forEach(function(event) {
-                collections.push("drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex'));
-            });
-            // collection list that exported from plugins
-            fromPlugins.forEach(function(collection) {
-                collections.push(collection + app._id);
-            });
-
-            database.collection("events").findOne({'_id': database.ObjectID(app._id)}, { list: 1 }, function(err, eventData) {
-                if (eventData &amp;&amp; eventData.list) {
-                    for (let i = 0; i &lt; eventData.list.length; i++) {
-                        collections.push("drill_events" + crypto.createHash('sha1').update(eventData.list[i] + app._id).digest('hex'));
-                    }
+        fetch(pageUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => response.json())
+            .then(responseData => {
+                const {data, meta} = responseData;
+                if (data &amp;&amp; (data.length > 0 || data.id)) {
+                    // Add data to results
+                    results = results.concat(data);
                 }
-                /**
-                * Iterate event cleaning process
-                * @param {string} collection - target collection name
-                * @param {function} next - iteration callback
-                * */
-                function eventIterator(collection, next) {
-                    log.d("processing", collection);
-                    drillDatabase.collection(collection).indexes(function(drillIndexErr, indexes) {
-                        if (!drillIndexErr &amp;&amp; indexes) {
-                            let hasIndex = false;
-                            let dropIndex = false;
-                            for (let j = 0; j &lt; indexes.length; j++) {
-                                if (indexes[j].name === INDEX_NAME) {
-                                    if (indexes[j].expireAfterSeconds === EXPIRE_AFTER) {
-                                        //print("skipping", c)
-                                        hasIndex = true;
-                                    }
-                                    //has index but incorrect expire time, need to be reindexed
-                                    else {
-                                        dropIndex = true;
-                                    }
-                                    break;
-                                }
-                            }
-                            if (EXPIRE_AFTER === 0 || dropIndex) {
-                                log.d("dropping index", collection);
-                                drillDatabase.collection(collection).dropIndex(INDEX_NAME, function() {
-                                    if (EXPIRE_AFTER === 0) {
-                                        next();
-                                    }
-                                    else {
-                                        log.d("creating index", collection);
-                                        drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
-                                            next();
-                                        });
-                                    }
-                                });
-                            }
-                            else if (!hasIndex) {
-                                log.d("creating index", collection);
-                                drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
-                                    next();
-                                });
-                            }
-                            else {
-                                next();
-                            }
-                        }
-                        else {
-                            next();
-                        }
-                    });
+
+                if (meta &amp;&amp; meta.pagination &amp;&amp; meta.pagination.page &lt; meta.pagination.pageCount) {
+                    // Fetch next page
+                    fetchPage(meta.pagination.page + 1);
                 }
-                async.eachSeries(collections, eventIterator, function() {
-                    callback();
-                });
+                else {
+                    // All pages fetched or no pagination metadata, invoke callback
+                    callback(null, results);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                callback(error, null);
+            });
+    }
+
+    fetchPage(1);
+}
+
+/**
+* Transform and store CMS entries in DB
+* @param {params} params - params object
+* @param {array} data - data array
+* @param {function} callback - callback function
+**/
+function transformAndStoreData(params, data, callback) {
+    const lu = Date.now();
+    if (!data || data.length === 0) {
+        //Add meta entry
+        common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
+            callback(null);
+        });
+    }
+    else {
+        var transformedData = [];
+        for (let i = 0; i &lt; data.length; i++) {
+            transformedData.push(Object.assign({_id: `${params.qstring._id}_${data[i].id}`, lu}, data[i].attributes));
+        }
+
+        var bulk = common.db.collection("cms_cache").initializeUnorderedBulkOp();
+        for (let i = 0; i &lt; transformedData.length; i++) {
+            bulk.find({
+                "_id": transformedData[i]._id
+            }).upsert().updateOne({
+                "$set": transformedData[i]
             });
         }
 
-        database.collection('apps').find({}, { _id: 1, plugins: 1 }).toArray(function(appsErr, apps) {
-            if (!appsErr &amp;&amp; apps &amp;&amp; apps.length) {
-                async.eachSeries(apps, clearExpiredData, function() {
-                    log.d('Clearing data finished ...');
-                    done();
-                });
+        // Add meta entry
+        bulk.find({
+            "_id": `${params.qstring._id}_meta`
+        }).upsert().replaceOne({
+            "_id": `${params.qstring._id}_meta`,
+            "lu": lu
+        });
+
+        // Execute bulk operations to update/insert new entries
+        bulk.execute(function(err) {
+            if (err) {
+                callback(err);
             }
-            else {
-                done(appsErr);
+
+            // Delete old entries
+            common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}, 'lu': {'$lt': lu}}, function(err1) {
+                if (err1) {
+                    callback(err1);
+                }
+                callback(null);
+            });
+        });
+    }
+}
+
+/**
+* Get entries for a given API ID from Countly CMS
+* @param {params} params - params object
+**/
+function syncCMSDataToDB(params) {
+    // Check if there is a process running
+    if (!current_processes.id || (current_processes.id &amp;&amp; current_processes.id >= new Date(Date.now() - 5 * 60 * 1000))) {
+        // Set current process
+        current_processes.id = Date.now();
+        fetchFromCMS(params, function(err, results) {
+            if (err) {
+                common.returnMessage(params, 500, 'An error occured while fetching entries from CMS: ' + err);
+                return false;
+            }
+            if (results) {
+                transformAndStoreData(params, results, function(err1) {
+                    delete current_processes.id;
+                    if (err1) {
+                        common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
+                        return false;
+                    }
+                });
             }
         });
     }
 }
 
-module.exports = AppExpireJob;</code></pre>
+/**
+* Get entries for a given API ID
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+cmsApi.getEntries = function(params) {
+
+    if (!params.qstring._id || AVAILABLE_API_IDS.indexOf(params.qstring._id) === -1) {
+        common.returnMessage(params, 400, 'Missing or incorrect API _id parameter');
+        return false;
+    }
+
+    var query = { '_id': { '$regex': `^${params.qstring._id}` } };
+
+    try {
+        params.qstring.query = JSON.parse(params.qstring.query);
+    }
+    catch (ex) {
+        params.qstring.query = null;
+    }
+
+    if (params.qstring.query) {
+        query = {
+            $and: [
+                { '_id': { '$regex': `^${params.qstring._id}` } },
+                {
+                    $or: [
+                        { '_id': `${params.qstring._id}_meta` },
+                    ]
+                }
+            ]
+        };
+        for (var cond in params.qstring.query) {
+            var condition = {};
+            condition[cond] = params.qstring.query[cond];
+            query.$and[1].$or.push(condition);
+        }
+        params.qstring.query = query;
+    }
+
+    common.db.collection('cms_cache').find(query).toArray(function(err, entries) {
+        if (err) {
+            common.returnMessage(params, 500, 'An error occured while fetching CMS entries from DB: ' + err);
+            return false;
+        }
+        let results = {data: entries || []};
+        if (params.qstring.refresh || !entries || entries.length === 0) {
+            //No entries, fetch them
+            results.updating = true;
+            syncCMSDataToDB(params);
+        }
+        else {
+            const updateInterval = UPDATE_INTERVAL * 60 * 60 * 1000;
+            const timeDifference = Date.now() - entries[0].lu;
+            if ((entries.length === 1 &amp;&amp; entries[0]._id === `${params.qstring._id}_meta`) || (entries.length > 1 &amp;&amp; timeDifference >= updateInterval)) {
+                //Only meta entry or multiple entries, check if it's time to update
+                if (timeDifference >= updateInterval) {
+                    results.updating = true;
+                    syncCMSDataToDB(params);
+                }
+            }
+        }
+
+        results.data = results.data.filter((item) => !item._id.endsWith('meta'));
+        if (params.qstring._id === 'server-guide-config' &amp;&amp; results.data &amp;&amp; results.data[0]) {
+            results.data[0].enableGuides = results.data[0].enableGuides || config.enableGuides;
+        }
+
+        common.returnOutput(params, results);
+        return true;
+    });
+};
+
+/**
+* Clear cache for all API IDs
+* @param {params} params - params object
+**/
+cmsApi.clearCache = function(params) {
+    var query = {};
+    if (params.qstring._id) {
+        query = {'_id': {'$regex': `^${params.qstring._id}`}};
+    }
+    common.db.collection('cms_cache').deleteMany(query, function(err) {
+        if (err) {
+            common.returnMessage(params, 500, 'An error occured while clearing CMS cache: ' + err);
+        }
+        else {
+            common.returnMessage(params, 200, "CMS cache cleared");
+        }
+    });
+};
+
+module.exports = cmsApi;</code></pre>
         </article>
     </section>
 
