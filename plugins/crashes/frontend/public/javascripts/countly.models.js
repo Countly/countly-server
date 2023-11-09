@@ -228,11 +228,11 @@ function transformAppVersion(inpVersion) {
                     }
                     else {
                         if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
-                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                            propValue = ((dashboard.cr_s[prop] - dashboard[name][prop]) / dashboard.cr_s[prop] * 100);
                         }
                         else {
                             // Use real total session if cr_s value is too low
-                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                            propValue = ((realTotalSession - dashboard[name][prop]) / realTotalSession * 100);
                         }
                     }
 
