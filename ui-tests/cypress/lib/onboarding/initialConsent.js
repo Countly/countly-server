@@ -21,6 +21,9 @@ const clickContinue = () => {
 };
 
 const verifyDefaultPageElements = () => {
+
+    cy.checkPaceRunning();
+
     cy.verifyElement({
         element: initialConsentPageElements.LOGO,
     });
