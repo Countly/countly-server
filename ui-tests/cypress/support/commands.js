@@ -237,6 +237,10 @@ Cypress.Commands.add('verifyElement', ({
     }
 });
 
+Cypress.Commands.add('dropMongoDatabase', () => {
+    cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
+  });
+
 Cypress.Commands.add('getElement', (selector, parent = null) => {
 
     if (!selector.includes('[data-test-id=')) {

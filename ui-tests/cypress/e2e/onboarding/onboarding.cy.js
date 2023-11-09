@@ -10,6 +10,10 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToLoginPage();
     });
 
+    afterEach(function() {
+        cy.dropMongoDatabase();
+    });
+
     it('should be complete onboarding flow with creating demo application', function() {
         setupHelpers.verifyDefaultPageElements;
         setupHelpers.completeOnboardingSetup({
