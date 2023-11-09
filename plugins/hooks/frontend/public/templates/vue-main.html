@@ -1,7 +1,7 @@
 <div id="hooks-view" v-bind:class="[componentId]">
    <cly-header
     :title="i18n('hooks.plugin-title')"
-    :tooltip="{description: i18n('hooks.plugin-title-desc'), position: 'top-center'}}"
+    :tooltip="{description: i18n('hooks.plugin-title-desc'), position: 'top-center'}"
    >
      <template v-slot:header-right>
       <el-button type="success" icon="el-icon-circle-plus" v-if="canUserCreate" v-on:click="createHook()">{{i18n('hooks.new-hook')}}</el-button>
