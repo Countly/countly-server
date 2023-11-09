@@ -127,46 +127,59 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
 
     async function processCursor(app) {
-        //get all drill collections for this app
-        var drillCollections = await getDrillCollections(app._id);
-        //start session
-        const session = await countlyDb.client.startSession();
-        //get users collection
-        const usersCollection = session.client.db("countly").collection('app_users' + app._id);
-        //create cursor 
-        var usersCursor = generateCursor(usersCollection);
-        var refreshTimestamp = new Date();
+        var session;
         try {
-            //for each user
-            while (usersCursor && await usersCursor.hasNext()) {
-                //refresh session every 5 minutes
-                if ((new Date() - refreshTimestamp) / 1000 > 300) {
-                    console.log("Refreshing session");
-                    try {
-                        await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
-                        refreshTimestamp = new Date();
+            //start session
+            session = await countlyDb.client.startSession();
+            //get all drill collections for this app
+            var drillCollections = await getDrillCollections(app._id);
+            //get users collection
+            const usersCollection = session.client.db("countly").collection('app_users' + app._id);
+            //create cursor 
+            var usersCursor = generateCursor(usersCollection);
+            var refreshTimestamp = new Date();
+            try {
+                //for each user
+                while (usersCursor && await usersCursor.hasNext()) {
+                    //refresh session every 5 minutes
+                    if ((new Date() - refreshTimestamp) / 1000 > 300) {
+                        console.log("Refreshing session");
+                        try {
+                            await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                            refreshTimestamp = new Date();
+                        }
+                        catch (err) {
+                            console.log("Error refreshing session: ", err);
+                            break;
+                        }
                     }
-                    catch (err) {
-                        console.log("Error refreshing session: ", err);
-                        break;
+                    //get next user
+                    const user = await usersCursor.next();
+                    //check if old uid still exists in drill collections
+                    if (user && user.merged_uid) {
+                        await processUser(user.merged_uid, user.uid, drillCollections, app);
                     }
+                    await addRecheckedFlag(app._id, user.uid);
                 }
-                //get next user
-                const user = await usersCursor.next();
-                //check if old uid still exists in drill collections
-                if (user && user.merged_uid) {
-                    await processUser(user.merged_uid, user.uid, drillCollections, app);
-                }
-                await addRecheckedFlag(app._id, user.uid);
+            }
+            catch (cursorError) {
+                console.log("Cursor error: ", cursorError);
+                console.log("Restarting cursor process...");
+                usersCursor.close();
+                processCursor(app);
             }
         }
-        catch (err) {
-            console.log("Cursor error: ", err);
-            console.log("Restarting cursor process...");
-            session.endSession();
+        catch (sessionError) {
+            console.log("Session error: ", sessionError);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("Restarting session...");
             processCursor(app);
         }
-        session.endSession();
+        finally {
+            if (session) {
+                session.endSession();
+            }
+        }
     }
 
     function close(err) {
