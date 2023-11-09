@@ -40,6 +40,32 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
+    it('should be complete onboarding flow with creating demo application and enable tracking and subscribe to newsletter', function() {
+        setupHelpers.verifyDefaultPageElements;
+        setupHelpers.completeOnboardingSetup({
+            fullName: user.username,
+            emailAddress: user.email,
+            password: user.password,
+            confirmPassword: user.password,
+            isDemoApp: true
+        });
+
+        initialSetupHelpers.verifyDefaultPageElements(true);
+        initialSetupHelpers.completeOnboardingInitialSetup({
+            isDemoApp: true,
+            appType: APP_TYPE.MOBILE,
+            demoAppData: DATA_TYPE.GAMING,
+            timezone: 'Istanbul'
+        });
+
+        initialConsentHelpers.verifyDefaultPageElements();
+        initialConsentHelpers.completeOnboardingInitialConsent({
+            isEnableTacking: false,
+            isSubscribeToNewsletter: false
+        });
+        navigationHelpers.isNavigatedToDashboard();
+    });
+
     it('should be complete onboarding flow with creating own application', function() {
         setupHelpers.verifyDefaultPageElements;
         setupHelpers.completeOnboardingSetup({
@@ -53,16 +79,39 @@ describe('Complete Onboarding', () => {
         initialSetupHelpers.verifyDefaultPageElements(false);
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: false,
-            appType: APP_TYPE.WEB,
-            appName: 'My Little App',
+            appType: APP_TYPE.MOBILE,
+            appName: 'My Mobile App',
             appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            timezone: 'Troll'
+            timezone: 'Harare'
         });
 
         initialConsentHelpers.verifyDefaultPageElements();
         initialConsentHelpers.completeOnboardingInitialConsent({
             isEnableTacking: false,
             isSubscribeToNewsletter: false
+        });
+        navigationHelpers.isNavigatedToDashboard();
+    });
+
+    it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
+        setupHelpers.completeOnboardingSetup({
+            fullName: user.username,
+            emailAddress: user.email,
+            password: user.password,
+            confirmPassword: user.password,
+            isDemoApp: false
+        });
+
+        initialSetupHelpers.completeOnboardingInitialSetup({
+            isDemoApp: false,
+            appType: APP_TYPE.DESKTOP,
+            appName: 'My Desktop App',
+            timezone: 'Andorra'
+        });
+
+        initialConsentHelpers.completeOnboardingInitialConsent({
+            isEnableTacking: true,
+            isSubscribeToNewsletter: true
         });
         navigationHelpers.isNavigatedToDashboard();
     });

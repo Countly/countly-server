@@ -218,7 +218,9 @@ const completeOnboardingInitialSetup = ({
 }) => {
     if (!isDemoApp) {
         typeAppName(appName);
-        typeAppKey(appKey);
+        if (appKey != null) {
+            typeAppKey(appKey);
+        }
     }
     else {
         selectDataType(demoAppData);
