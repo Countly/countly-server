@@ -405,11 +405,18 @@
         }));
     });
 
+    var hasNewsLetter = typeof countlyGlobal.newsletter === "undefined" ? true : countlyGlobal.newsletter;
+
     app.route('/not-subscribed-newsletter', 'not-subscribed-newsletter', function() {
-        this.renderWhenReady(new CV.views.BackboneWrapper({
-            component: newsletterView,
-            vuex: [{ clyModel: countlyOnboarding }],
-        }));
+        if (!hasNewsLetter) {
+            app.navigate("/", true);
+        }
+        else {
+            this.renderWhenReady(new CV.views.BackboneWrapper({
+                component: newsletterView,
+                vuex: [{ clyModel: countlyOnboarding }],
+            }));
+        }
     });
 
     var sessionCount = countlyGlobal.member.session_count || 0;
@@ -446,7 +453,7 @@
             app.navigate("/not-responded-consent", true);
         }
     }
-    else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
+    else if (hasNewsLetter && (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }
