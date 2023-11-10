@@ -229,7 +229,6 @@
                 self.templates = [];
                 countlyPopulator.getTemplates(function(templates) {
                     templates.forEach(function(item) {
-                        // Some of these might have become obsolete
                         self.templates.push({
                             _id: item._id,
                             name: item.name,
