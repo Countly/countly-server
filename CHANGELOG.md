@@ -1,27 +1,27 @@
 ## Version 23.11
-Fixes:
+Features:
 - [apps] App initial as default app image
-- [compliance-hub] Use milisecond timestamp when recording consents
+- [compliance-hub] Use millisecond timestamp when recording consent
 - [consent] Ask for countly tracking and newsletter subscription
 - [guides] new plugin explaining Countly sections with videos and other content
 - [hooks] Add validation error messages when creating hooks
 - [jobs] Add validation error messages when creating hooks
-- [license] check license at render instead of login
-- [onboarding] new onboarding flow when setting up server
+- [license] Check license at render instead of login
+- [onboarding] new onboarding flow when setting up a server
 - [quickstart] Menu to show some actions new users could take
 - [sdks] Add health checks with debug information
 - [sdks] Add queue size metrics
 - [sdks] Add request metrics
-- [server-stats] Record break down of internal events of datapoints
+- [server-stats] Record breakdown of internal events of data points
 - [settings] Trim incoming data based on API setting
 - [UI] Loading state fixes to distinguish from no data state
 - [views] Make table column widths adjustable
 
-Enterprise fixes:
+Enterprise features:
 - [auth-plugins] Allow hiding/showing login form
-- [block] Show last time filtering rule was triggered
+- [block] Show the last time the filtering rule was triggered
 - [cohorts] Filtering by User Property segmentation in Cohorts using OR operator
-- [concurrent_users] Switched users sampling to job so it will run only once per cluster
+- [concurrent_users] Switched user sampling to the job so it will run only once per cluster
 - [crash_symbolication] Add instance id to symbolication requests
 - [data-manager] Allow exporting the event schema as a data populator template
 - [drill] Automatically disable estimation correction on slow servers
@@ -29,9 +29,9 @@ Enterprise fixes:
 - [drill] Make table column widths adjustable
 - [drill] Table widget for dashboards
 - [drill] Track how many duration updates did the session have in the document
-- [drill] Update user properties on session updates, so session always gets the latest user properties that changed during session
-- [drill] Use data snapshots to provide consistent data view between graph, table and export
-- [ingestion] Fixed some concurrency issues when updating duration for views or sessions
+- [drill] Update user properties on session updates, so the session always gets the latest user properties that changed during the session
+- [drill] Use data snapshots to provide consistent data view between graph, table, and export
+- [ingestion] Fixed some concurrency issues when updating the duration for views or sessions
 - [surveys] Add ability for providing custom segment
 - [surveys] Added global/app/widget level settings
 - [surveys] Fixed export table
