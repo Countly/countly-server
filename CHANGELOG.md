@@ -1,3 +1,45 @@
+## Version 23.11
+Fixes:
+- [apps] App initial as default app image
+- [compliance-hub] Use milisecond timestamp when recording consents
+- [consent] Ask for countly tracking and newsletter subscription
+- [guides] new plugin explaining Countly sections with videos and other content
+- [hooks] Add validation error messages when creating hooks
+- [jobs] Add validation error messages when creating hooks
+- [license] check license at render instead of login
+- [onboarding] new onboarding flow when setting up server
+- [quickstart] Menu to show some actions new users could take
+- [sdks] Add health checks with debug information
+- [sdks] Add queue size metrics
+- [sdks] Add request metrics
+- [server-stats] Record break down of internal events of datapoints
+- [settings] Trim incoming data based on API setting
+- [UI] Loading state fixes to distinguish from no data state
+- [views] Make table column widths adjustable
+
+Enterprise fixes:
+- [auth-plugins] Allow hiding/showing login form
+- [block] Show last time filtering rule was triggered
+- [cohorts] Filtering by User Property segmentation in Cohorts using OR operator
+- [concurrent_users] Switched users sampling to job so it will run only once per cluster
+- [crash_symbolication] Add instance id to symbolication requests
+- [data-manager] Allow exporting the event schema as a data populator template
+- [drill] Automatically disable estimation correction on slow servers
+- [drill] Delete dashboard widgets if a related Drill query is deleted
+- [drill] Make table column widths adjustable
+- [drill] Table widget for dashboards
+- [drill] Track how many duration updates did the session have in the document
+- [drill] Update user properties on session updates, so session always gets the latest user properties that changed during session
+- [drill] Use data snapshots to provide consistent data view between graph, table and export
+- [ingestion] Fixed some concurrency issues when updating duration for views or sessions
+- [surveys] Add ability for providing custom segment
+- [surveys] Added global/app/widget level settings
+- [surveys] Fixed export table
+- [users] Make table column widths adjustable
+- [users] new debug dialog for users merging both options
+- [views] Record UTM and Source as segments on drill
+- [white-labeling] Add emailing settings
+
 ## Version 23.06.16
 Fixes:
 - [cache] Removing noCursorTimeout from cache cursor
