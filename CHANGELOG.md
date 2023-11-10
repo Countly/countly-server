@@ -5,7 +5,7 @@ Features:
 - [consent] Ask for countly tracking and newsletter subscription
 - [guides] new plugin explaining Countly sections with videos and other content
 - [hooks] Add validation error messages when creating hooks
-- [jobs] Add validation error messages when creating hooks
+- [jobs] Add the ability to pause jobs
 - [license] Check license at render instead of login
 - [onboarding] new onboarding flow when setting up a server
 - [quickstart] Menu to show some actions new users could take
