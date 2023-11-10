@@ -1,4 +1,4 @@
-/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue */
+/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue, moment */
 (function() {
     var FEATURE_NAME = 'populator';
 
@@ -240,7 +240,7 @@
                             eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
                             viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
                             sequenceCount: (item.sequences !== undefined ? Object.keys(item.sequences).length : 0),
-                            generatedOn: (item.generatedOn !== undefined ? countlyCommon.getDate(item.generatedOn).slice(4) : '?'),
+                            generatedOn: (item.generatedOn !== undefined ? moment(new Date(item.generatedOn * 1000)).format("Do MMM YY") : '?'),
                             // editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
                             // up: item.up,
                             // events: item.events
