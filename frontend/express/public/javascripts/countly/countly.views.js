@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, VersionHistoryView, Backbone, jQuery, $*/
+/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
 
 window.DashboardView = countlyView.extend({
     renderCommon: function() {
@@ -89,10 +89,6 @@ app.route('/exportedData/tableExport/:task_id', 'userExportTask', function(task_
     this.DownloadView.task_id = task_id;
     this.DownloadView.path = "/export/download/";
     this.renderWhenReady(this.DownloadView);
-});
-
-app.route('/versions', 'version_history', function() {
-    this.renderWhenReady(this.VersionHistoryView);
 });
 
 app.addAppSwitchCallback(function() {
