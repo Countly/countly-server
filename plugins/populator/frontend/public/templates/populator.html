@@ -9,10 +9,9 @@
             <cly-main>
                 <cly-dynamic-tabs v-model="currentPopulateTab" skin="secondary" :tabs="populateTabs"></cly-dynamic-tabs>
                 <div>
-                    <cly-section v-if="currentPopulateTab === 'pop-temp'" class="bu-mt-5 populator-wrapper__main-page-form">
-                        <!-- bu-is-paddingsless doesn't work, not sure if I need it anyway but still -->
+                    <cly-section v-if="currentPopulateTab === 'pop-with-temp'" class="bu-mt-5 populator-wrapper__main-page-form">
                         <cly-sub-section class="bu-columns bu-is-vcentered">
-                            <div class="bu-column bu-is-2 is-vcentered">
+                            <div class="bu-column bu-is-2">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.data-template') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
                             </div>
@@ -46,7 +45,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.save-template-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column bu-is-narrow">
-                                <el-input class="populator-wrapper__save-field" v-model="saveEnvironmentname" :placeholder="i18n('populator.save-as-environment')"></el-input>
+                                <el-input class="populator-wrapper__save-field" v-model="saveEnvironmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
@@ -54,7 +53,7 @@
                         </cly-sub-section>
                     </cly-section>
 
-                    <cly-section v-else-if="currentPopulateTab === 'pop-env'" class="bu-mt-5 populator-wrapper__main-page-form">
+                    <cly-section v-else-if="currentPopulateTab === 'pop-with-env'" class="bu-mt-5 populator-wrapper__main-page-form">
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.environment') }}</span>
