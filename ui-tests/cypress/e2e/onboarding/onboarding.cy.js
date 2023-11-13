@@ -3,6 +3,7 @@ const navigationHelpers = require('../../support/navigations');
 const setupHelpers = require('../../lib/onboarding/setup');
 const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
+const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover')
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
@@ -38,6 +39,7 @@ describe('Complete Onboarding', () => {
             isSubscribeToNewsletter: false
         });
         navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
     it('should be complete onboarding flow with creating demo application and enable tracking and subscribe to newsletter', function() {
@@ -64,6 +66,7 @@ describe('Complete Onboarding', () => {
             isSubscribeToNewsletter: false
         });
         navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
     it('should be complete onboarding flow with creating own application', function() {
@@ -91,6 +94,7 @@ describe('Complete Onboarding', () => {
             isSubscribeToNewsletter: false
         });
         navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
     it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
@@ -114,5 +118,6 @@ describe('Complete Onboarding', () => {
             isSubscribeToNewsletter: true
         });
         navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 });
