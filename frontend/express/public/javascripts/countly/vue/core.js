@@ -784,8 +784,8 @@
     };
 
     var QuickstartPopoverView = {
-        template: '<div class="quickstart-popover-wrapper">\
-            <div class="quickstart-popover-positioner">\
+        template: '<div class="quickstart-popover-wrapper" data-test-id="quickstart-popover-wrapper">\
+            <div class="quickstart-popover-positioner" data-test-id="quickstart-popover-positioner">\
             <el-popover\
                 v-for="content in quickstartContent"\
                 popper-class="quickstart-popover-popover"\
