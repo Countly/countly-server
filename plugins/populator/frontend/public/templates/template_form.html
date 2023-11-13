@@ -17,7 +17,7 @@
                         <cly-populator-left-container :data="items"></cly-populator-left-container>
                     </div>
                 </div>
-                <div style="width: 702px;">
+                <div style="width: 702px;margin-right:155px;">
                     <div class="cly-vue-drawer-step__section">
                         <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
                         <validation-provider name="key" rules="required" v-slot="v">
@@ -53,9 +53,9 @@
                     <div class="cly-vue-drawer-step__section" id="section-3">
                         <cly-populator-section title="Sequences" type="sequencesSection" v-model="drawerScope.editedObject.sequences" hasSwitch></cly-populator-section>
                     </div>
-                </div>
-                <div>
-
+                    <div class="cly-vue-drawer-step__section" id="section-4">
+                        <cly-populator-section title="Behavior" type="behaviorSection" :parent-data="prepareData(drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch></cly-populator-section>
+                    </div>
                 </div>
             </div>
         </cly-form-step>

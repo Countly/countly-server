@@ -39,13 +39,15 @@
             },
             newTemplate: function() {
                 this.titleDescription = {header: CV.i18n('populator.create-new-template'), button: CV.i18n('common.create')};
+                // todo: Get this initial state from model instead of hardcoding it
                 this.openDrawer("populatorTemplate", {
                     name: '',
                     platformType: [],
                     users: [],
                     events: [],
                     views: [],
-                    sequences: []
+                    sequences: [],
+                    behavior: {}
                 });
             },
             refresh: function(isRefresh) {
@@ -475,6 +477,21 @@
         methods: {
             onSubmit: function(editedObject) {
                 console.log(editedObject, 'model');
+            },
+            prepareData(users, sequences) {
+                var preparedData = {users: []};
+                if (users && users.length) {
+                    users.forEach(function(item) {
+                        preparedData.users.push({keys: item.key, values: item.values});
+                    });
+                }
+                if (sequences && sequences.length) {
+                    if (!preparedData.sequences) {
+                        preparedData.sequences = [];
+                    }
+                    preparedData.sequences = sequences;
+                }
+                return preparedData;
             }
         },
         components: {
