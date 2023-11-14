@@ -181,7 +181,7 @@
                 let sectionID = '/' + sections.join('/');
                 countlyGuides.fetchEntries({ sectionID }).then(function() {
                     let entry = countlyGuides.getEntry(sectionID);
-                    if (entry.walkthroughs.length > 0 || entry.articles.length > 0) {
+                    if (entry && (entry.walkthroughs.length > 0 || entry.articles.length > 0)) {
                         self.isButtonVisible = true;
                         self.guideData = entry;
                         countlyCMS.fetchEntry("server-guide-config").then(function(config) {
