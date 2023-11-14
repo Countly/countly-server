@@ -3,33 +3,91 @@
         <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')" class="populator-wrapper">
             <cly-header
                 :title="i18n('populator.plugin-title')"
+                :tooltip="{description: i18n('description')}"
             >
             </cly-header>
             <cly-main>
+                <cly-dynamic-tabs v-model="currentPopulateTab" skin="secondary" :tabs="populateTabs"></cly-dynamic-tabs>
                 <div>
-                    <cly-notification :closable="false" :text="description"></cly-notification>
+                    <cly-section v-if="currentPopulateTab === 'pop-with-temp'" class="bu-mt-5 populator-wrapper__main-page-form">
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.data-template') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <el-select v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
+                                </el-select>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <el-switch v-model="isOpen" @click="toggleSwitch"></el-switch>
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.save-template') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.save-template-tooltip')"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <el-input class="populator-wrapper__save-field" v-model="saveEnvironmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-level-right">
+                            <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                        </cly-sub-section>
+                    </cly-section>
+
+                    <cly-section v-else-if="currentPopulateTab === 'pop-with-env'" class="bu-mt-5 populator-wrapper__main-page-form">
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.environment') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <el-select v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
+                                </el-select>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2">
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column bu-is-narrow">
+                                <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
+                            </div>
+                        </cly-sub-section>
+                        <cly-sub-section class="bu-level-right">
+                            <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                        </cly-sub-section>
+                    </cly-section>
                 </div>
-                <cly-section class="bu-mt-5">
-                    <cly-sub-section>
-                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.app-template') }}</span>
-                        <cly-tooltip-icon class="bu-ml-1" title="tooltip"></cly-tooltip-icon>
-                        <el-select class="bu-ml-2" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
-                            <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
-                        </el-select>
-                    </cly-sub-section>
-                    <cly-sub-section>
-                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
-                        <cly-tooltip-icon class="bu-ml-1" title="tooltip"></cly-tooltip-icon>
-                        <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
-                    </cly-sub-section>
-                    <cly-sub-section>
-                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.maxtime') }}</span>
-                        <el-input class="populator-wrapper__max-time" onkeyup="this.value=this.value.replace(/[^\d]/,'')" v-model="maxTime"></el-input>
-                    </cly-sub-section>
-                    <cly-sub-section class="bu-level-right">
-                        <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
-                    </cly-sub-section>
-                </cly-section>
+
                 <cly-confirm-dialog class="populator-wrapper__start-dialog" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
                     <template slot-scope="scope">
                         <div v-html="dialog.text"></div>

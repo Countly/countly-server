@@ -20,6 +20,16 @@
                 description: CV.i18n('populator.warning3'),
                 titleDescription: {header: '', button: ''},
 
+                currentPopulateTab: 'pop-with-temp',
+                saveEnvironmentName: '',
+                isOpen: 'false',
+                numberOfRuns: [
+                    {value: 10, text: 10},
+                    {value: 50, text: 50},
+                    {value: 100, text: 100},
+                ],
+                selectedRunCount: {},
+
                 //event properties
                 eventName: '',
                 eventKey: '',
@@ -31,7 +41,26 @@
                 isLoading: false,
             };
         },
+        computed: {
+            populateTabs: function() {
+                return [
+                    {
+                        title: this.i18n('populator.pop-with-temp'),
+                        name: "pop-with-temp",
+                        // component: ClicksTable
+                    },
+                    {
+                        title: this.i18n('populator.pop-with-env'),
+                        name: "pop-with-env",
+                        // component: ScrollsTable
+                    }
+                ];
+            },
+        },
         methods: {
+            toggleSwitch: function() {
+                this.isOpen = !this.isOpen;
+            },
             refreshTable: function(res) {
                 if (res.result) {
                     this.refresh(true);
