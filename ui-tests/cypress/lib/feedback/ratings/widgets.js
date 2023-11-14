@@ -863,10 +863,9 @@ const verifyWidgetDetailsPageElements = ({
         });
 
         for (var index = 0; index < commentsTable.ratings.length; index++) {
-            var indexOfRatings = commentsTable.ratings.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
-                labelText: commentsTable.ratings[indexOfRatings],
+                labelText: commentsTable.ratings[index],
             });
         }
 
@@ -878,18 +877,16 @@ const verifyWidgetDetailsPageElements = ({
         }
 
         for (var index = 0; index < commentsTable.comments.length; index++) {
-            var indexOfComments = commentsTable.comments.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
-                labelText: commentsTable.comments[indexOfComments],
+                labelText: commentsTable.comments[index],
             });
         }
 
         for (var index = 0; index < commentsTable.emails.length; index++) {
-            var indexOfEmails = commentsTable.emails.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
-                labelText: commentsTable.emails[indexOfEmails],
+                labelText: commentsTable.emails[index],
             });
         }
     }
