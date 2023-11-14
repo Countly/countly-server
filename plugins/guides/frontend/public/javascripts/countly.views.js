@@ -222,6 +222,7 @@
             },
             fetchAndDisplayWidget: function() {
                 var domain = countlyGlobal.countly_domain;
+                var self = this;
                 try {
                     var urlObj = new URL(domain);
                     domain = urlObj.hostname;
@@ -239,16 +240,17 @@
                         //console.log(err);
                         return;
                     }
-                    var i = countlyPresentableFeedback.length - 1;
-                    var countlyFeedbackWidget = countlyPresentableFeedback[0];
-                    while (i--) {
-                        if (countlyPresentableFeedback[i].type === 'survey') {
-                            countlyFeedbackWidget = countlyPresentableFeedback[i];
-                            break;
-                        }
+                    const widgetType = "survey";
+                    const countlyFeedbackWidget = countlyPresentableFeedback.find(function(widget) {
+                        return widget.type === widgetType;
+                    });
+                    if (!countlyFeedbackWidget) {
+                        //console.error(`[Countly] No ${widgetType} widget found`);
+                        return;
                     }
-                    var selectorId = "feedback-survey";
-                    COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId);
+                    const selectorId = "feedback-survey";
+                    const segmentation = {guide: self.guideData.sectionID || ""};
+                    COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId, null, segmentation);
                 });
             },
         },
