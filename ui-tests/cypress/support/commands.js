@@ -167,6 +167,7 @@ Cypress.Commands.add('verifyElement', ({
     tooltipElement,
     tooltipText,
     element,
+    isElementVisible = true,
     elementText,
     elementPlaceHolder,
     hrefContainUrl,
@@ -176,9 +177,11 @@ Cypress.Commands.add('verifyElement', ({
     unVisibleElement,
     selectedIconColor,
     selectedMainColor,
-    selectedFontColor
+    selectedFontColor,
+    attr,
+    attrText
 }) => {
-    if (labelElement != null) {
+    if (labelElement != null && isElementVisible === true) {
         cy.shouldBeVisible(labelElement);
     }
 
@@ -194,7 +197,7 @@ Cypress.Commands.add('verifyElement', ({
         cy.shouldTooltipContainText(tooltipElement, tooltipText);
     }
 
-    if (element != null) {
+    if (element != null && isElementVisible === true) {
         cy.shouldBeVisible(element);
     }
 
@@ -235,6 +238,14 @@ Cypress.Commands.add('verifyElement', ({
     if (selectedMainColor != null) {
         cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedMainColor));
     }
+
+    if (attr != null && attrText != null) {
+        cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
+    }
+});
+
+Cypress.Commands.add('dropMongoDatabase', () => {
+    cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
 });
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {
