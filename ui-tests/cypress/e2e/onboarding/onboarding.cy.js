@@ -3,7 +3,7 @@ const navigationHelpers = require('../../support/navigations');
 const setupHelpers = require('../../lib/onboarding/setup');
 const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
-const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover')
+const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
