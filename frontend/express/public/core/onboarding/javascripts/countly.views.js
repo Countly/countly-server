@@ -52,6 +52,14 @@
 
                 return introVideos.videoLinkForCE;
             },
+            buttonText: function() {
+                if (this.isDemoApp) {
+                    return CV.i18n('initial-setup.continue-data-population');
+                }
+                else {
+                    return CV.i18n('initial-setup.create-application');
+                }
+            },
         },
         created: function() {
             delete countlyGlobal.licenseError;
@@ -298,6 +306,84 @@
         }
     });
 
+    var notRespondedConsentView = CV.views.create({
+        template: CV.T('/core/onboarding/templates/consent.html'),
+        data: function() {
+            return {
+                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
+                newConsent: {
+                    countly_tracking: null,
+                },
+            };
+        },
+        mounted: function() {
+            this.$store.dispatch('countlyOnboarding/fetchConsentItems');
+        },
+        computed: {
+            consentItems: function() {
+                return this.$store.getters['countlyOnboarding/consentItems']
+                    .filter(function(item) {
+                        return item.type === 'tracking';
+                    });
+            },
+        },
+        methods: {
+            decodeHtmlEntities: function(inp) {
+                var el = document.createElement('p');
+                el.innerHTML = inp;
+
+                var result = el.textContent || el.innerText;
+                el = null;
+
+                return result;
+            },
+            handleSubmit: function(doc) {
+                var configs = {
+                    frontend: doc,
+                };
+
+                countlyPlugins.updateConfigs(configs);
+                var domain = countlyGlobal.countly_domain || window.location.origin;
+
+                try {
+                    // try to extract hostname from full domain url
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
+
+                var statsUrl = 'https://stats.count.ly/i';
+
+                try {
+                    var uObj = new URL(countlyGlobal.frontend_server);
+                    uObj.pathname = '/i';
+                    statsUrl = uObj.href;
+                }
+                catch (_) {
+                    // do nothing, statsUrl will be used as is
+                }
+
+                CV.$.ajax({
+                    type: 'GET',
+                    url: statsUrl,
+                    data: {
+                        consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
+                        app_key: countlyGlobal.frontend_app,
+                        device_id: Countly.device_id || domain,
+                    },
+                    dataType: 'json',
+                    complete: function() {
+                        // go home
+                        window.location.href = '#/home';
+                        window.location.reload();
+                    }
+                });
+            },
+        }
+    });
+
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: appSetupView,
@@ -312,21 +398,29 @@
         }));
     });
 
-    app.route('/newsletter', 'newsletter', function() {
+    app.route('/not-responded-consent', 'not-responded-consent', function() {
+        this.renderWhenReady(new CV.views.BackboneWrapper({
+            component: notRespondedConsentView,
+            vuex: [{ clyModel: countlyOnboarding }],
+        }));
+    });
+
+    app.route('/not-subscribed-newsletter', 'not-subscribed-newsletter', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: newsletterView,
             vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
 
-    var loginCount = countlyGlobal.member.login_count || 0;
+    var sessionCount = countlyGlobal.member.session_count || 0;
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
-    countlyCMS.fetchEntry('server-quick-start', true).then(function(resp) {
-        if (resp.data && resp.data.length) {
+    countlyCMS.fetchEntry('server-quick-start', { populate: true }).then(function(resp) {
+        var isConsentPage = /initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash);
+        if (resp.data && resp.data.length && !isConsentPage) {
             var showForNSessions = resp.data[0].showForNSessions;
 
-            if (!_.isEmpty(countlyGlobal.apps) && loginCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
+            if (!_.isEmpty(countlyGlobal.apps) && sessionCount <= showForNSessions && Array.isArray(resp.data[0].links)) {
                 var quickstartHeadingTitle = resp.data[0].title;
                 var quickstartItems = resp.data[0].links.filter(function(item) {
                     if (item.forUserType === 'all') {
@@ -347,9 +441,14 @@
         }
     });
 
-    if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
-        if (Backbone.history.fragment !== '/newsletter') {
-            app.navigate("/newsletter", true);
+    if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin && !countlyGlobal.plugins.includes('tracker')) {
+        if (Backbone.history.fragment !== '/not-responded-consent' && !/initial-setup|initial-consent/.test(window.location.hash)) {
+            app.navigate("/not-responded-consent", true);
+        }
+    }
+    else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
+        if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
+            app.navigate("/not-subscribed-newsletter", true);
         }
     }
     else if (!countlyGlobal.member.subscribe_newsletter && (countlyGlobal.member.login_count !== 3 && moment().dayOfYear() % 90 !== 0)) {

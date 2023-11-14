@@ -4,7 +4,7 @@
 
     countlyCMS.fetchEntry('server-consents');
     countlyCMS.fetchEntry('server-intro-video');
-    countlyCMS.fetchEntry('server-quick-start', true);
+    countlyCMS.fetchEntry('server-quick-start', { populate: true });
 
     countlyOnboarding.generateAPIKey = function() {
         var length = 40;
@@ -70,25 +70,25 @@
 
     countlyOnboarding.generateQuickstartContent = function(quickstartItems, quickstartHeadingTitle) {
         var headingTitle = quickstartHeadingTitle || CV.i18n('initial-setup.quickstart-title');
-        var heading = '<div class="bu-has-text-weight-medium">' + headingTitle + '</div>';
+        var heading = '<div class="bu-has-text-weight-medium" data-test-id="quickstart-title">' + headingTitle + '</div>';
         var body = '';
 
         quickstartItems.forEach(function(item) {
             var linkUrl = item.link;
-            if (!linkUrl.startsWith('#')) {
+            if (linkUrl.startsWith('/') && item.linkType === 'internal') {
                 linkUrl = '#' + linkUrl;
             }
             var description = (item.description && item.description !== '-') ? item.description : '';
             var title = item.title;
-            var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c"></i>' : '<i class="ion-android-open"></i>';
-
-            body += '<div class="bu-mt-4 quickstart-item">' +
-            '<div class="bu-mr-2"><img src="./images/dashboard/onboarding/light-bulb.svg" /></div>' +
+            var target = item.linkType === 'external' ? 'target="_blank" rel="noreferrer noopener"' : '';
+            var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c" data-test-id="quickstart-item-arrow-' + item.title.toLowerCase().replace(/\s/g, "-") + '"></i>' : '<i class="ion-android-open" data-test-id="quickstart-item-ios-android-open-' + item.title.toLowerCase().replace(/\s/g, "-") + '"></i>';
+            body += '<div class="bu-mt-4 quickstart-item" data-test-id="quickstart-item-' + item.title.toLowerCase().replace(/\s/g, "-") + '">' +
+            '<div class="bu-mr-2" data-test-id="quickstart-item-icon-' + item.title.toLowerCase().replace(/\s/g, "-") + '"><img src="./images/dashboard/onboarding/light-bulb.svg" data-test-id="quickstart-item-svg-' + item.title.toLowerCase().replace(/\s/g, "-") + '"/></div>' +
             '<div>' +
-            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium">' +
+            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium" data-test-id="quickstart-item-link-' + item.title.toLowerCase().replace(/\s/g, "-") + '"' + target + '>' +
             title + ' ' + icon +
             '</a>' +
-            '<div class="quickstart-item-desc bu-is-size-7">' + description + '</div>' +
+            '<div class="quickstart-item-desc bu-is-size-7" data-test-id="quickstart-item-desc-' + item.title.toLowerCase().replace(/\s/g, "-") + '">' + description + '</div>' +
             '</div>' +
             '</div>';
         });

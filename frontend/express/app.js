@@ -118,7 +118,7 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_tracking: false,
+    countly_tracking: null,
 });
 
 plugins.setUserConfigs("frontend", {
@@ -566,7 +566,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 
-    app.use(session({
+    app.use(bodyParser.json()); // to support JSON-encoded bodies
+    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
+        extended: true
+    }));
+
+    const sessionMiddleware = session({
         secret: countlyConfig.web.session_secret || 'countlyss',
         name: countlyConfig.web.session_name || 'connect.sid',
         cookie: countlyConfig.cookie,
@@ -576,11 +581,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         rolling: true,
         proxy: true,
         unset: "destroy"
-    }));
-    app.use(bodyParser.json()); // to support JSON-encoded bodies
-    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-        extended: true
-    }));
+    });
+    app.use((req, res, next) => {
+        if (!plugins.callMethod("skipSession", {req: req, res: res, next: next})) {
+            return sessionMiddleware(req, res, next);
+        }
+        else {
+            return next();
+        }
+    });
+
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
@@ -1049,113 +1059,131 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         else {
             countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
                 if (member) {
-                    req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
-                    var adminOfApps = [],
-                        userOfApps = [],
-                        countlyGlobalApps = {},
-                        countlyGlobalAdminApps = {};
+                    plugins.callPromisedAppMethod('checkMemberLicense', { req, member }).then(licenseCheck => {
+                        common.licenseAssign(req, licenseCheck);
+                        req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
+                        var adminOfApps = [],
+                            userOfApps = [],
+                            countlyGlobalApps = {},
+                            countlyGlobalAdminApps = {};
 
-                    if (member.global_admin) {
-                        countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
-                            adminOfApps = apps;
-                            userOfApps = apps;
+                        if (Number.isInteger(member.session_count)) {
+                            member.session_count += 1;
+                        }
+                        else {
+                            member.session_count = 1;
+                        }
 
-                            for (let i = 0; i < apps.length; i++) {
-                                if (apps[i].checksum_salt) {
-                                    apps[i].salt = apps[i].salt || apps[i].checksum_salt;
-                                }
-                                apps[i].type = apps[i].type || "mobile";
-                                countlyGlobalApps[apps[i]._id] = apps[i];
-                                countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
-                            }
-                            countlyGlobalAdminApps = countlyGlobalApps;
-                            renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                        });
-                    }
-                    else {
-                        var adminOfAppIds = [],
-                            userOfAppIds = [];
+                        countlyDb.collection('members').update(
+                            { _id: common.db.ObjectID(member._id) },
+                            { $inc: { session_count: 1 } },
+                        );
 
-                        /*
-                        We keep this section for backward compatibility.
-                        This block will run if member has legacy permission properties like user_of, admin_of.
-                        */
-                        if (typeof member.permission === "undefined") {
-                            if (member.admin_of.length === 1 && member.admin_of[0] === "") {
-                                member.admin_of = [];
-                            }
+                        if (member.global_admin) {
+                            countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
+                                adminOfApps = apps;
+                                userOfApps = apps;
 
-                            for (let i = 0; i < member.admin_of.length; i++) {
-                                if (member.admin_of[i] === "") {
-                                    continue;
-                                }
-                                adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
-                            }
-
-                            for (let i = 0; i < member.user_of.length; i++) {
-                                if (member.user_of[i] === "") {
-                                    continue;
-                                }
-                                userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
-                            }
-
-                            countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
-                                for (let i = 0; i < admin_of.length; i++) {
-                                    countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
-                                    countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
-                                }
-
-                                countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
-                                    adminOfApps = admin_of;
-                                    userOfApps = user_of;
-
-                                    for (let i = 0; i < user_of.length; i++) {
-                                        countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                        countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                        countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                for (let i = 0; i < apps.length; i++) {
+                                    if (apps[i].checksum_salt) {
+                                        apps[i].salt = apps[i].salt || apps[i].checksum_salt;
                                     }
-
-                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                                });
+                                    apps[i].type = apps[i].type || "mobile";
+                                    countlyGlobalApps[apps[i]._id] = apps[i];
+                                    countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                                }
+                                countlyGlobalAdminApps = countlyGlobalApps;
+                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                             });
                         }
                         else {
-                            var writableAppIds = member.permission._.a;
-                            var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
-                            var preparedReadableIds = [];
-                            var preparedWritableIds = [];
+                            var adminOfAppIds = [],
+                                userOfAppIds = [];
 
-                            for (let i = 0; i < readableAppIds.length; i++) {
-                                if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
-                                    preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                            /*
+                        We keep this section for backward compatibility.
+                        This block will run if member has legacy permission properties like user_of, admin_of.
+                        */
+                            if (typeof member.permission === "undefined") {
+                                if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                                    member.admin_of = [];
                                 }
-                            }
 
-                            for (let i = 0; i < writableAppIds.length; i++) {
-                                preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
-                            }
-
-                            countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
-                                countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
-                                    adminOfApps = writableApps;
-                                    userOfApps = readableApps.concat(writableApps);
-
-                                    for (let i = 0; i < userOfApps.length; i++) {
-                                        countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
-                                        countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
-                                        countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
-
-                                        if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
-                                            countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
-                                            countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
-                                            countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
-                                        }
+                                for (let i = 0; i < member.admin_of.length; i++) {
+                                    if (member.admin_of[i] === "") {
+                                        continue;
                                     }
-                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
+                                }
+
+                                for (let i = 0; i < member.user_of.length; i++) {
+                                    if (member.user_of[i] === "") {
+                                        continue;
+                                    }
+                                    userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
+                                    for (let i = 0; i < admin_of.length; i++) {
+                                        countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                        countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                                    }
+
+                                    countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                        adminOfApps = admin_of;
+                                        userOfApps = user_of;
+
+                                        for (let i = 0; i < user_of.length; i++) {
+                                            countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                            countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                            countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                        }
+
+                                        renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
                                 });
-                            });
+                            }
+                            else {
+                                var writableAppIds = member.permission._.a;
+                                var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                var preparedReadableIds = [];
+                                var preparedWritableIds = [];
+
+                                for (let i = 0; i < readableAppIds.length; i++) {
+                                    if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                        preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                    }
+                                }
+
+                                for (let i = 0; i < writableAppIds.length; i++) {
+                                    preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
+                                    countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
+                                        adminOfApps = writableApps;
+                                        userOfApps = readableApps.concat(writableApps);
+
+                                        for (let i = 0; i < userOfApps.length; i++) {
+                                            countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
+                                            countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                            countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
+
+                                            if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
+                                                countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
+                                                countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                                countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
+                                            }
+                                        }
+                                        renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
+                                });
+                            }
                         }
-                    }
+                    },
+                    e => {
+                        log.e('Error while checking member login', e);
+                    });
                 }
                 else {
                     membersUtility.clearReqAndRes(req, res);

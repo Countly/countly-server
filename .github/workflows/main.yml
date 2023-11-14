@@ -207,7 +207,7 @@ jobs:
           npm install
           node bin/scripts/test.connection.js
           npx grunt mochaTest
-  ui-test:
+  ui-test-dashboard:
     runs-on: ubuntu-latest
 
     services:
@@ -256,9 +256,9 @@ jobs:
           bash bin/backup/import_events.sh
           bash bin/scripts/countly.prepare.ce.tests.sh
           countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
-          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}"}});'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
+          mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
           cd ui-tests
-          mkdir cypress/fixtures
           echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
           sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
           cp cypress.config.sample.js cypress.config.js
@@ -271,7 +271,7 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          npm run cy:run
+          npm run cy:run:dashboard
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
@@ -279,7 +279,80 @@ jobs:
         working-directory: /opt/countly/ui-tests/cypress
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos hars
+          mkdir -p screenshots videos
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
+          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
+  
+  ui-test-onboarding:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:latest
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Chrome
+        shell: bash
+        run: |
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+
+      - name: Prepare environment
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
+          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+          npm install
+          sudo countly task dist-all
+          bash bin/scripts/countly.prepare.ce.tests.sh
+          cd ui-tests
+          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
+          cp cypress.config.sample.js cypress.config.js
+          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+
+      - name: Run UI tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          cd ui-tests
+          npm install
+          npm run cy:run:onboarding
+
+      - name: Upload UI tests artifacts
+        if: ${{ failure() }}
+        shell: bash
+        working-directory: /opt/countly/ui-tests/cypress
+        run: |
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
+          mkdir -p screenshots videos
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
 
   notify:

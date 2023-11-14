@@ -971,7 +971,7 @@ class StreamedCollection {
             let [col, last] = await createCollection(this.db, this.name, 1e7);
 
             this.col = col;
-            this.stream = col.find({_id: {$gt: last}}, {tailable: true, awaitData: true, noCursorTimeout: true, numberOfRetries: -1}).stream();
+            this.stream = col.find({_id: {$gt: last}}, {tailable: true, awaitData: true, numberOfRetries: -1}).stream();
 
             this.stream.on('data', doc => {
                 if (this.inserts.indexOf(doc._id.toString()) !== -1) {

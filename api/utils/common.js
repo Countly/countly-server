@@ -3174,7 +3174,6 @@ common.sanitizeHTML = (html) => {
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-
                 var attributeValueStart = fullAttribute.indexOf(attributeValue);
                 if (attributeValueStart >= 1) {
                     var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
@@ -3645,7 +3644,7 @@ class DataTable {
 common.DataTable = DataTable;
 
 /**
- * Assign license check results to request (and session if present)
+ * Sync license check results to request (and session if present)
  * 
  * @param {object} req request
  * @param {object|undefined} check check results
@@ -3657,11 +3656,19 @@ common.licenseAssign = function(req, check) {
             req.session.licenseError = req.licenseError;
         }
     }
+    else {
+        delete req.licenseError;
+        delete req.session.licenseError;
+    }
     if (check && check.notify && check.notify.length) {
         req.licenseNotification = JSON.stringify(check.notify);
         if (req.session) {
             req.session.licenseNotification = req.licenseNotification;
         }
+    }
+    else {
+        delete req.licenseNotification;
+        delete req.session.licenseNotification;
     }
 };
 

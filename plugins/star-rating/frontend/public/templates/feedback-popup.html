@@ -299,6 +299,25 @@
             dow: dow
         };
 
+        try {
+            custom = JSON.parse(custom) ;
+            if (custom && custom.sg) {
+            custom = custom.sg;
+            }
+            else {
+                custom = {};
+            }
+        }
+        catch (error) {
+            custom = {};
+        }
+        
+        for (var key in custom) {
+            if (!eventObject.segmentation[key]) {
+                eventObject.segmentation[key] = custom[key];
+            }
+        }
+
         document.getElementById('countly-feedback-comment-textarea').value = "";
         document.getElementById('countly-feedback-contact-me-email').value = "";
 
@@ -394,7 +413,7 @@
             }
             $.ajax({
                 "type": "GET",
-                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version + '&custom=' + encodeURIComponent(custom),
+                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
                 "success": function(response) {
                     document.getElementsByClassName("success-modal-content")[0].style.display = "flex";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";

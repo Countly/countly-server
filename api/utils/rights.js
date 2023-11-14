@@ -714,10 +714,12 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                         else {
                             isFeatureAllowedInReadPermissionObject = false;
-                            for (var i = 0; i < feature.length; i++) {
-                                if (isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature[i]]))) {
-                                    isFeatureAllowedInReadPermissionObject = true;
-                                    break;
+                            if (feature) {
+                                for (var i = 0; i < feature.length; i++) {
+                                    if (isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature[i]]))) {
+                                        isFeatureAllowedInReadPermissionObject = true;
+                                        break;
+                                    }
                                 }
                             }
                         }

@@ -75,6 +75,50 @@
         {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
         {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
     var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+    var jsErrors = [
+        {
+            error: "Error: URIError\n" +
+            "    URI malformed\n" +
+            "    at decodeURIComponent (<anonymous>)\n" +
+            "    at o (bundle.js:1:61)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: 'Error: URIError'
+        },
+        {
+            error: "Error: RangeError\n" +
+            "    toFixed() digits argument must be between 0 and 100\n" +
+            "    at Number.toFixed (<anonymous>)\n" +
+            "    at o (bundle.js:1:100)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: RangeError"
+        },
+        {
+            error: "Error: SyntaxError\n" +
+                "    Hello Countly (at bundle.js:1:138)\n" +
+                "    at o (bundle.js:1:138)\n" +
+                "    at bundle.js:1:247\n" +
+                "    at bundle.js:1:276",
+            name: "Error: SyntaxError"
+        },
+        {
+            error: "Error: TypeError\n" +
+            '    "Countly".reverse is not a function\n' +
+            "    at o (bundle.js:1:190)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: TypeError"
+        },
+        {
+            error: "Error: ReferenceError\n" +
+            "    param is not defined\n" +
+            "    at o (bundle.js:1:25)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: ReferenceError"
+        }
+    ];
     var defaultTemplates = [
         {
             "_id": "defaultBanking",
@@ -440,9 +484,7 @@
             var error = "";
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-                var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
-                return err.stack + "";
+                return jsErrors[Math.floor(Math.random() * jsErrors.length)].error;
             }
             else if (this.platform === "Android") {
                 errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
@@ -1002,7 +1044,7 @@
             });
         };
     }
-
+    var crashSymbolVersions = {};
     var bulk = [];
     var campaingClicks = [];
     var startTs = 1356998400;
@@ -2015,6 +2057,9 @@
                     }
                     delete req[i].stats;
                 }
+                if (req[i].crash && Object.keys(req[i].crash).length) {
+                    crashSymbolVersions[req[i].crash._app_version] = true;
+                }
             }
             $.ajax({
                 type: "POST",
@@ -2042,6 +2087,26 @@
     };
 
     countlyPopulator.ensureJobs = function() {
+
+        //upload all version at once
+        var crashVersions = Object.keys(crashSymbolVersions);
+        var form_data = new FormData();
+        form_data.append('build', crashVersions);
+        form_data.append('platform', 'javascript');
+        form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
+        form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
+        form_data.append('populator', true);
+
+        $.ajax({
+            url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
+            data: form_data,
+            processData: false,
+            contentType: false,
+            type: "POST",
+            success: function() {},
+            error: function() {}
+        });
+
         messages.forEach(function(m) {
             m.apps = [countlyCommon.ACTIVE_APP_ID];
         });
