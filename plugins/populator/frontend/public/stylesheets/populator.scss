@@ -351,6 +351,51 @@
         }
     }
 
+    &__behavior {
+        &--main-container {
+            .session-running-header {
+                margin-top: 20px;
+            }
+        }
+        &--session-input-container {
+            width: 140px !important;
+        }
+        &--general-conditions {
+            .condition-label {
+                width: 165px;
+            }
+            .close-button {
+                margin-top: 7px !important
+            }
+        }
+        &--sequences-container {
+            .sequence-text {
+                width: 162px;
+            }
+            .sequence-probability {
+                width: 208px;
+            }
+        }
+        &--sequence-conditions {
+            .condition-label {
+                margin-right: 79px;
+                width: 165px;
+            }
+            .delete-condition {
+                margin-left: 78px;
+            }
+            .condition-values {
+                margin-right: 90px;
+            }
+            .sequence-condition-label {
+                width: 150px;
+            }
+            .sequence-condition-probability {
+                width: 208px;
+            }
+        }
+    }
+
     .override-buttons {
         .close-button {
             cursor: pointer;
@@ -406,8 +451,12 @@
         &__footer {
             display: flex;
             width: 670px;
-            margin-left: calc(50% - 269px);
+            margin-left: calc(50% - 266px);
         }
+    }
+
+    .divider {
+        border-top: 1px dashed #F8FAFD;
     }
 }
 
