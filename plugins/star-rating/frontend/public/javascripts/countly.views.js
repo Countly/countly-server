@@ -185,7 +185,12 @@
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
             comments: Array,
-            loadingState: Boolean
+            loadingState: Boolean,
+            filter: {
+                type: Object,
+                default: {},
+                required: false
+            }
         },
         methods: {
             decode: function(str) {
@@ -207,10 +212,29 @@
             }
         },
         data: function() {
+            var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("commentsTable", {
                 columns: ['comment', 'cd', 'email', 'rating'],
                 onRequest: function() {
                     const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
+                    var filter = self.filter;
+                    if (filter) {
+                        if (filter.rating && filter.rating !== "") {
+                            data.rating = filter.rating;
+                        }
+                        if (filter.version && filter.version !== "") {
+                            data.version = filter.version.replace(":", ".");
+                        }
+                        if (filter.platform && filter.platform !== "") {
+                            data.platform = filter.platform;
+                        }
+                        if (filter.widget && filter.widget !== "") {
+                            data.widget_id = filter.widget;
+                        }
+                        if (filter.uid && filter.uid !== "") {
+                            data.uid = filter.uid;
+                        }
+                    }
                     return {
                         type: "GET",
                         url: countlyCommon.API_URL + "/o/feedback/data",
