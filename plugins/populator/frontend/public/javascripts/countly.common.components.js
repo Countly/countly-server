@@ -15,12 +15,75 @@
                 default: '#0166D6'
             }
         },
+        data: function() {
+            return {
+                steps: [],
+                sectionThresholds: {
+                    "section-0": 0,
+                    "section-1": 0,
+                    "section-2": 0,
+                    "section-3": 0,
+                    "section-4": 0
+                },
+                fireMouseWheeler: false,
+            };
+        },
+        methods: {
+            scrollToSection(index) {
+                const sectionId = "section-" + index;
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                    this.steps[index].isActive = true;
+                    this.steps.map((item, i) => {
+                        if (i !== index) {
+                            item.isActive = false;
+                        }
+                    });
+                }
+            },
+            handleScroll: function() {
+                if (this.fireMouseWheeler) {
+                    for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
+                        const element = document.getElementById(Object.keys(this.sectionThresholds)[index]);
+                        if (!element) {
+                            return;
+                        }
+
+                        const elementDimension = element.getBoundingClientRect();
+                        const elementTop = elementDimension.top;
+                        const elementHeight = elementDimension.height;
+                        const headerHeight = 79;
+                        if (elementTop + elementHeight - headerHeight > 0) {
+                            this.steps[index].isActive = true;
+                            this.steps.map((item, i) => {
+                                if (i !== index) {
+                                    item.isActive = false;
+                                }
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+        },
+        created: function() {
+            this.steps = this.data;
+            var self = this;
+            this.fireMouseWheeler = true;
+            window.addEventListener("mousewheel", function() {
+                self.handleScroll();
+            }, false);
+        },
+        destroyed: function() {
+            this.fireMouseWheeler = false;
+        },
         template: '<div>\
-                    <div v-for="item in this.data">\
+                    <div v-for="(item, index) in this.steps">\
                         <div class="bu-is-flex bu-mb-4">\
                             <div class="bu-mr-3 populator-template__active-bar" :style="[item.isActive ? {\'background-color\': activeColorCode} : {}]"></div>\
                             <div>\
-                                <div class="text-medium bu-has-text-weight-medium bu-mb-1" :style="[item.isActive ? {\'color\': activeColorCode} : {}]">{{item.header}}</div>\
+                                <div class="text-medium bu-has-text-weight-medium bu-mb-1" @click="scrollToSection(index)" :style="[item.isActive ? {\'color\': activeColorCode} : {\'cursor\': \'pointer\'}]">{{item.header}}</div>\
                                 <div class="text-smallish color-cool-gray-50">{{i18n("populator-template.settings-of-your-users")}}</div>\
                             </div>\
                         </div>\
@@ -67,6 +130,12 @@
     Vue.component("cly-populator-condition-selector", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
+            value: {
+                type: [Object, Array],
+                default: function() {
+                    return {};
+                }
+            },
             userProperties: {
                 type: Array,
                 default: function() {
@@ -82,6 +151,11 @@
             disabled: {
                 type: Boolean,
                 default: false
+            },
+            type: {
+                type: String,
+                default: '',
+                required: false
             }
         },
         data: function() {
@@ -96,21 +170,51 @@
                 userPropertyValueItems: []
             };
         },
+        watch: {
+            userPropertyValues: {
+                handler: function(newValue) {
+                    this.userPropertyValueItems = newValue;
+                    this.userPropertyValueItems = this.userPropertyValueItems.map(item => (item === '' ? null : item));
+                    if (this.userPropertyValueItems.length && this.userPropertyValueItems.indexOf(null) !== -1) {
+                        const filteredArr = this.userPropertyValueItems.filter((item) => item !== null);
+                        this.userPropertyValueItems = ['Empty/Unset', ...filteredArr];
+                    }
+                },
+                deep: true
+            }
+        },
         methods: {
             close: function() {
                 document.getElementById('addConditionBtn').click();
             },
             save: function() {
-                this.$emit('input', {selectedKey: this.selectedProperty, selectedValue: this.selectedValue, conditionType: this.conditionType, values: [{key: "", probability: 0}]});
+                if (this.value && typeof this.value.length !== "undefined") { // if it is an array
+                    this.$emit("save-condition", this.type, this.selectedProperty, this.selectedValue, this.conditionType);
+                }
+                else {
+                    this.$emit('input', {
+                        selectedKey: this.selectedProperty,
+                        selectedValue: this.selectedValue,
+                        conditionType: this.conditionType,
+                        values: [{key: "", probability: 0}]
+                    });
+                }
                 this.close();
             },
             onAddCondition: function() {
-                this.selectedProperty = this.userProperties[0];
-                this.userPropertyValueItems = this.userPropertyValues;
-                if (this.userPropertyValueItems.length && this.userPropertyValueItems.indexOf('') !== -1) {
-                    const filteredArr = this.userPropertyValueItems.filter((item) => item !== '');
-                    this.userPropertyValueItems = ['Empty/Unset', ...filteredArr];
+                if (this.userProperties.length === 1) {
+                    this.selectedProperty = this.userProperties[0];
                 }
+                else {
+                    this.selectedProperty = '';
+                }
+                if (this.value && typeof this.value.length !== "undefined") { // if it is an array
+                    this.$emit('selected-key-change', this.selectedProperty);
+                }
+                this.selectedValue = '';
+            },
+            onSelectedKeyChange: function() {
+                this.$emit('selected-key-change', this.selectedProperty);
             }
         },
         template: '<div>\
@@ -122,7 +226,7 @@
                         <template v-slot:default>\
                             <div class="bu-p-5">\
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n(\'populator-template.property\')}}</div>\
-                                <el-select v-model="selectedProperty" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property\')">\
+                                <el-select v-model="selectedProperty" @change="onSelectedKeyChange" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property\')">\
                                     <el-option\
                                         v-for="item in userProperties"\
                                         :key="item"\
@@ -169,11 +273,11 @@
                 required: false
             }
         },
-        template: '<div class="populator-template-drawer__main-container bu-py-3 bu-px-4">\
+        template: '<div class="populator-template__main-container bu-py-3 bu-px-4">\
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">\
-                        <div class="text-small text-uppercase populator-template-drawer__text-custom-detail">{{title}}</div>\
+                        <div class="text-small text-uppercase populator-template--text-custom-detail">{{title}}</div>\
                         <div>\
-                            <el-button type="text" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template-drawer__btn-delete el-button--text"  @click="$emit(\'remove\')"> Delete {{ entity }} </el-button>\
+                            <el-button type="text" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"  @click="$emit(\'remove\')"> <span v-if="entity"> Delete {{ entity }} </span> </el-button>\
                         </div>\
                     </div>\
                     <slot/>\
@@ -309,26 +413,409 @@
             }
         },
         methods: {
-            addEvent() {
+            onAddEvent() {
                 this.events.push({
-                    "name": "New Event"
+                    "key": "",
+                    "duration": { isActive: false, minDurationTime: 0, maxDurationTime: 0 },
+                    "sum": { isActive: false, minSumValue: 0, maxSumValue: 0},
+                    "segmentations": []
                 });
             },
-            removeEvent(index) {
+            onRemoveEvent(index) {
                 this.events.splice(index, 1);
+            },
+            onAddEventSegmentation: function(index) {
+                this.events[index].segmentations.push({
+                    "key": "",
+                    "values": [{key: "", probability: 0}],
+                });
+            },
+            onRemoveSegment: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.events[index].segmentations[segmentIndex].values.length === 1) {
+                        this.events[index].segmentations.splice(segmentIndex, 1);
+                        return;
+                    }
+                    this.events[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddAnotherValue: function(index, valueIndex) {
+                this.events[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+            },
+            onAddAnotherConditionValue: function(index, segmentIndex) {
+                this.events[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            },
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.events[index].segmentations[segmentIndex].condition.values.length === 1) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-while-removing-condition"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.events[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onDeleteCondition: function(index, segmentIndex) {
+                this.events[index].segmentations[segmentIndex].condition = undefined;
             }
         },
         created() {
             this.events = this.value;
         },
-        template: '<div>\
-                    <div v-if="isOpen">\
-                        <cly-populator-section-detail title="EVENT DETAILS" entity="Event" @remove="() => removeEvent(index)" :key="index" v-for="(event, index) in events" style="margin-bottom: 16px">\
-                            <input type="text" v-model="events[index].name" />\
-                        </cly-populator-section-detail>\
-                    </div>\
-                    <el-button :disabled="!isOpen" @click="addEvent">+ Add event</el-button>\
-                </div>'
+        template: CV.T("/populator/templates/sections/events.html")
+    });
+
+    const viewsSection = countlyVue.views.create({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: [Object, Array],
+            }
+        },
+        data: function() {
+            return {
+                views: []
+            };
+        },
+        watch: {
+            views: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
+            }
+        },
+        methods: {
+            onAddView: function() {
+                this.views.push({
+                    "key": "",
+                    "duration": { isActive: false, minDurationTime: 0, maxDurationTime: 0 },
+                    "segmentations": []
+                });
+            },
+            onRemoveView: function(index) {
+                this.views.splice(index, 1);
+            },
+            onAddViewSegmentation: function(index) {
+                this.views[index].segmentations.push({
+                    "key": "",
+                    "values": [{key: "", probability: 0}],
+                });
+            },
+            onRemoveSegment: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.views[index].segmentations[segmentIndex].values.length === 1) {
+                        this.views[index].segmentations.splice(segmentIndex, 1);
+                        return;
+                    }
+                    this.views[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddAnotherValue: function(index, valueIndex) {
+                this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+            },
+            onAddAnotherConditionValue: function(index, segmentIndex) {
+                this.views[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            },
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+                try {
+                    if (this.views[index].segmentations[segmentIndex].condition.values.length === 1) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-while-removing-condition"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.views[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onDeleteCondition: function(index, segmentIndex) {
+                this.views[index].segmentations[segmentIndex].condition = undefined;
+            },
+        },
+        created() {
+            this.views = this.value;
+        },
+        template: CV.T("/populator/templates/sections/views.html")
+    });
+
+    const sequencesSection = countlyVue.views.create({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: [Object, Array],
+            },
+            sequenceStepPropertyValues: {
+                type: Object,
+                default: function() {
+                    // todo: Dummy data for now, will be deleted after completed the event and view sections
+                    return {
+                        events: [
+                            {name: "Purchase", value: "purchase"},
+                            {name: "Payment", value: "payment"},
+                            {name: "Shopping", value: "shopping"}
+                        ],
+                        views: [
+                            {name: "Home", value: "home"},
+                            {name: "Detail", value: "detail"},
+                            {name: "My Detail Page", value: "myDetailPage"}
+                        ]
+                    };
+                }
+            }
+        },
+        data: function() {
+            return {
+                // Dummy data
+                sequences: [],
+                selectedProperty: '',
+                selectedValue: '',
+                sequenceStepProperties: [
+                    {name: "Event", value: "events"},
+                    {name: "View", value: "views"}
+                ],
+                sequenceStepValues: {}
+            };
+        },
+        watch: {
+            sequences: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
+            }
+        },
+        methods: {
+            onAddSequence: function() {
+                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 0, "fixed": true}]});
+            },
+            onRemoveSequence(index) {
+                this.sequences.splice(index, 1);
+            },
+            onRemoveStep: function(index, stepIndex) {
+                if (this.sequences[index].steps.length === 3 && this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
+                    this.sequences[index].steps = this.sequences[index].steps.filter(x => !(x.key === "session" && x.value === "end"));
+                }
+                if (this.sequences[index].steps.length === 1) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.warning-while-removing-condition"),
+                        type: "warning"
+                    });
+                    return;
+                }
+                try {
+                    this.sequences[index].steps.splice(stepIndex, 1);
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            onAddStep: function() {
+                this.selectedProperty = '';
+                this.selectedValue = '';
+            },
+            onDragChange: function() {
+            },
+            onSaveStep: function(index) {
+                this.sequences[index].steps.push({key: this.selectedProperty, value: this.selectedValue, probability: 0});
+                if (this.sequences[index].steps.length > 1) {
+                    if (!this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
+                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
+                    }
+                    else {
+                        this.sequences[index].steps = this.sequences[index].steps.filter(x => !(x.key === "session" && x.value === "end"));
+                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
+                    }
+                }
+                this.onClose();
+            },
+            onClose: function() {
+                document.getElementById('populator-template-step').click();
+            },
+            checkMove: function(e) {
+                return this.isDraggable(e.draggedContext);
+            },
+            isDraggable: function(context) {
+                const { index, futureIndex } = context;
+                return !(this.sequences[0].steps[index].fixed || this.sequences[0].steps[futureIndex].fixed);
+            }
+        },
+        created: function() {
+            this.sequences = this.value;
+            this.sequenceStepValues = this.sequenceStepPropertyValues;
+        },
+        template: CV.T("/populator/templates/sections/sequences.html")
+    });
+
+    const behaviorSection = countlyVue.views.create({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: [Object, Array],
+            },
+            parentData: {
+                type: [Object, Array],
+            }
+        },
+        watch: {
+            behavior: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
+            },
+            "parentData": { // todo: we need check if "up" & "sequences" updated, if so, change the state
+                deep: true,
+                handler: function(newValue) {
+                    this.behavior.sequences = [];
+                    const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
+                    const usersUndefinedOrEmpty = typeof newValue.users === 'undefined' || newValue.users.length === 0;
+
+                    if (sequencesUndefinedOrEmpty || usersUndefinedOrEmpty) {
+                        this.$parent.disableSwitch = true;
+                        this.$parent.isSectionActive = false;
+                        this.behavior.runningSession = [0, 0];
+                        this.behavior.generalConditions = [];
+                        this.behavior.sequenceConditions = [];
+                    }
+                    else {
+                        this.$parent.disableSwitch = false;
+                    }
+                    if (newValue.sequences && newValue.sequences.length) {
+                        for (let i = 0; i < newValue.sequences.length; i++) {
+                            this.behavior.sequences.push({key: 'Sequence_' + (i + 1), probability: 0});
+                        }
+                        if (newValue.sequences.length > 1) {
+                            this.behavior.sequences.push({key: 'random', probability: 0});
+                        }
+                    }
+                },
+            }
+        },
+        data: function() {
+            return {
+                behavior: {},
+                behaviourSectionEnum: {
+                    GENERAL: "general",
+                    SEQUENCE: "sequence"
+                },
+                userPropertyValues: [],
+            };
+        },
+        methods: {
+            onConditionSelectedKeyChange: function(selectedConditionProp) {
+                const item = this.parentData.users.find(user => user.keys === selectedConditionProp);
+                if (item) {
+                    this.userPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            },
+            onRemoveConditionValue: function(type, index) {
+                if (type === this.behaviourSectionEnum.GENERAL) {
+                    this.behavior.generalConditions.splice(index, 1);
+                }
+                // else if (type === this.behaviourSectionEnum.SEQUENCE) { // in case of implemented later
+                //     this.behavior.sequenceConditions.splice(index, 1);
+                // }
+                else {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-removing-value"),
+                        type: "error"
+                    });
+                }
+            },
+            saveCondition: function(type, selectedProperty, selectedValue, conditionType) {
+                if (type === this.behaviourSectionEnum.GENERAL) {
+                    this.behavior.generalConditions.push({
+                        selectedKey: selectedProperty,
+                        selectedValue: selectedValue,
+                        conditionType: conditionType,
+                        values: [{key: 0, probability: 0}]
+                    });
+                }
+                else if (type === this.behaviourSectionEnum.SEQUENCE) {
+                    this.behavior.sequenceConditions.push({
+                        selectedKey: selectedProperty,
+                        selectedValue: selectedValue,
+                        conditionType: conditionType,
+                        values: JSON.parse(JSON.stringify(this.behavior.sequences)) // deep cloning to prevent the reference
+                    });
+                }
+                else {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-adding-condition"),
+                        type: "error"
+                    });
+                }
+            },
+            onDeleteCondition: function(index) {
+                this.behavior.sequenceConditions.splice(index, 1);
+            }
+        },
+        created: function() {
+            if (this.value && Object.keys(this.value).length) {
+                this.behavior = this.value;
+            }
+            else {
+                this.behavior = {
+                    "runningSession": [0, 0],
+                    "generalConditions": [],
+                    "sequences": [],
+                    "sequenceConditions": []
+                };
+            }
+        },
+        template: CV.T("/populator/templates/sections/behavior.html")
     });
 
     Vue.component("cly-populator-section", countlyVue.components.BaseComponent.extend({
@@ -350,11 +837,15 @@
             },
             value: {
                 type: [Object, Array],
+            },
+            parentData: {
+                type: [Object, Array],
+
             }
         },
         data: function() {
             return {
-                isSectionActive: true,
+                isSectionActive: true, // todo: will be turned to false as a default later 
                 descriptionEnum: {
                     "userSection": "user",
                     "eventsSection": "event",
@@ -363,7 +854,9 @@
                     "behaviorSection": "behavior",
                 },
                 description: '',
-                userProperties: []
+                userProperties: [],
+                disableSwitch: false,
+                disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message')
             };
         },
         created: function() {
@@ -371,15 +864,18 @@
         },
         components: {
             userSection,
-            eventsSection
+            eventsSection,
+            sequencesSection,
+            viewsSection,
+            behaviorSection
         },
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\
-                        <el-switch v-if="hasSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
+                        <el-switch v-if="hasSwitch" v-tooltip="disableSwitch ? disableSwitchMessage : null" :disabled="disableSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
                         <span class="text-big bu-has-text-weight-medium">{{title}}</span>\
                     </div>\
-                    <div class="text-smallish color-cool-gray-50 bu-mb-5">{{description}}</div>\
-                    <component :is-open="isSectionActive" v-model="value" @input="(payload) => { $emit(\'input\', payload) }" :is="type">\
+                    <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
+                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type">\
                         <template slot="default">\
                             <slot name="default"></slot>\
                         </template>\
