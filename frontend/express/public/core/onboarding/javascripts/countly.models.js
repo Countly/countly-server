@@ -81,14 +81,14 @@
             var description = (item.description && item.description !== '-') ? item.description : '';
             var title = item.title;
             var target = item.linkType === 'external' ? 'target="_blank" rel="noreferrer noopener"' : '';
-            var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c" data-test-id="quickstart-item-arrow-'+item.title.toLowerCase().replace(/\s/g, "-")+'"></i>' : '<i class="ion-android-open" data-test-id="quickstart-item-ios-android-open-'+item.title.toLowerCase().replace(/\s/g, "-")+'"></i>';
-            body += '<div class="bu-mt-4 quickstart-item" data-test-id="quickstart-item-'+item.title.toLowerCase().replace(/\s/g, "-")+'">' +
-            '<div class="bu-mr-2" data-test-id="quickstart-item-icon-'+item.title.toLowerCase().replace(/\s/g, "-")+'"><img src="./images/dashboard/onboarding/light-bulb.svg" data-test-id="quickstart-item-svg-'+item.title.toLowerCase().replace(/\s/g, "-")+'"/></div>' +
+            var icon = item.linkType === 'internal' ? '<i class="ion-arrow-right-c" data-test-id="quickstart-item-arrow-' + item.title.toLowerCase().replace(/\s/g, "-") + '"></i>' : '<i class="ion-android-open" data-test-id="quickstart-item-ios-android-open-' + item.title.toLowerCase().replace(/\s/g, "-") + '"></i>';
+            body += '<div class="bu-mt-4 quickstart-item" data-test-id="quickstart-item-' + item.title.toLowerCase().replace(/\s/g, "-") + '">' +
+            '<div class="bu-mr-2" data-test-id="quickstart-item-icon-' + item.title.toLowerCase().replace(/\s/g, "-") + '"><img src="./images/dashboard/onboarding/light-bulb.svg" data-test-id="quickstart-item-svg-' + item.title.toLowerCase().replace(/\s/g, "-") + '"/></div>' +
             '<div>' +
-            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium" data-test-id="quickstart-item-link-'+item.title.toLowerCase().replace(/\s/g, "-")+'"' + target + '>' +
+            '<a href="' + linkUrl + '" class="quickstart-link bu-is-block bu-has-text-weight-medium" data-test-id="quickstart-item-link-' + item.title.toLowerCase().replace(/\s/g, "-") + '"' + target + '>' +
             title + ' ' + icon +
             '</a>' +
-            '<div class="quickstart-item-desc bu-is-size-7" data-test-id="quickstart-item-desc-'+item.title.toLowerCase().replace(/\s/g, "-")+'">' + description + '</div>' +
+            '<div class="quickstart-item-desc bu-is-size-7" data-test-id="quickstart-item-desc-' + item.title.toLowerCase().replace(/\s/g, "-") + '">' + description + '</div>' +
             '</div>' +
             '</div>';
         });

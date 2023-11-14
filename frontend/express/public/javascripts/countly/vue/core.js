@@ -795,7 +795,7 @@
                 :width="content.width"\
                 :key="content.id"\
                 :title="content.title">\
-                <i class="ion-close bu-is-size-7 quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
+                <i class="ion-close bu-is-size-7 quickstart-popover-close" data-test-id="quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
                 <div v-html="content.message"></div>\
             </el-popover>\
             </div>\
