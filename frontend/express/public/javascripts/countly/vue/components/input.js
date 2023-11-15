@@ -1146,7 +1146,7 @@
                                         <div class="bu-is-flex">\
                                             <div class="box"></div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
-                                                <div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\
+                                                <div><span class="text-medium">{{item.label}} <cly-asterisk v-if="item.isEstimate" :tooltip="item.estimateTooltip"></cly-asterisk></span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\
                                                 <div class="bu-is-flex bu-is-align-items-center number">\
                                                     <h2>{{item.number}}</h2>\
                                                     <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2">\

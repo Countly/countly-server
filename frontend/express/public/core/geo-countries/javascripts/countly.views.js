@@ -338,7 +338,7 @@ var CountriesHomeWidget = countlyVue.views.create({
             totals.n = totals.n || {};
             return [
                 {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change || "NaN"},
-                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change || "NaN"},
+                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change || "NaN", isEstimate: totals.u.isEstimate, estimateTooltip: CV.i18n("users.total-users-estimate-tooltip")},
                 {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change || "NaN"}
             ];
         },
