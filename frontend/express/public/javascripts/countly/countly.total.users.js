@@ -5,7 +5,8 @@
     var _activeAppId = 0,
         _initialized = {},
         _period = null,
-        _totalUserObjects = {};
+        _totalUserObjects = {},
+        _isEstimate = {};
 
     //Public Methods
     countlyTotalUsers.initialize = function(forMetric) {
@@ -38,8 +39,9 @@
                 },
                 dataType: "json",
                 success: function(json) {
-                    setCalculatedObj(forMetric, json);
-                    setRefreshObj(forMetric, json);
+                    setCalculatedObj(forMetric, json.totalUsersObj);
+                    setRefreshObj(forMetric, json.totalUsersObj);
+                    setIsEstimate(forMetric, json.isEstimate);
                 }
             });
         }
@@ -56,7 +58,8 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        setCalculatedObj(forMetric, json);
+                        setCalculatedObj(forMetric, json.totalUsersObj);
+                        setIsEstimate(forMetric, json.isEstimate);
                     }
                 }),
                 $.ajax({
@@ -70,7 +73,7 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        setRefreshObj(forMetric, json);
+                        setRefreshObj(forMetric, json.totalUsersObj);
                     }
                 })
             ).then(function() {
@@ -93,7 +96,8 @@
             },
             dataType: "json",
             success: function(todaysJson) {
-                refreshData(forMetric, todaysJson);
+                refreshData(forMetric, todaysJson.totalUsersObj);
+                //setIsEstimate(forMetric, todaysJson.isEstimate);
             }
         });
     };
@@ -122,6 +126,10 @@
         return countlyCommon.periodObj.periodContainsToday;
     };
 
+    countlyTotalUsers.isEstimate = function(forMetric) {
+        return _isEstimate[_activeAppId] && _isEstimate[_activeAppId][forMetric] && _isEstimate[_activeAppId][forMetric][_period];
+    };
+
     /**Sets init status for forMetric in below format
      * { "APP_KEY": { "countries": { "60days": true } } }
      * We don't directly use _totalUserObjects for init check because it is init after AJAX and might take time
@@ -147,6 +155,21 @@
         return _initialized[_activeAppId] &&
                 _initialized[_activeAppId][forMetric] &&
                 _initialized[_activeAppId][forMetric][_period];
+    }
+
+    /** Sets isEstimate status for forMetric in below format
+     * { "APP_KEY": { "countries": { "60days": true } } }
+     * @param {string} forMetric   - metric for which set init status
+     * @param {boolean} isEstimate - is estimate
+    */
+    function setIsEstimate(forMetric, isEstimate) {
+        if (!_isEstimate[_activeAppId]) {
+            _isEstimate[_activeAppId] = {};
+        }
+        if (!_isEstimate[_activeAppId][forMetric]) {
+            _isEstimate[_activeAppId][forMetric] = {};
+        }
+        _isEstimate[_activeAppId][forMetric][_period] = isEstimate;
     }
 
     /** Adds data for forMetric to _totalUserObjects object in below format

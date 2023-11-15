@@ -3585,7 +3585,7 @@
             if (estOverrideMetric && countlyTotalUsers.isUsable()) {
                 for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
-                        dataArr[unique[i]].isEstimate = false;
+                        dataArr[unique[i]].isEstimate = countlyTotalUsers.isEstimate(estOverrideMetric[unique[i]]);
                     }
                 }
             }
