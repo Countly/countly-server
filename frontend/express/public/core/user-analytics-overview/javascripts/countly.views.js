@@ -266,10 +266,11 @@ var GridComponent = countlyVue.views.create({
             else {
                 var xAxisData = [];
                 var period = countlyCommon && countlyCommon.getPeriod();
+                var tickPeriod = period === 'month' ? 'monthly' : '';
 
                 var chartsCommon = new CommonConstructor();
                 chartsCommon.setPeriod(period, undefined, true);
-                var tickObj = chartsCommon.getTickObj(undefined, false, true);
+                var tickObj = chartsCommon.getTickObj(tickPeriod, false, true);
                 var ticks = tickObj.ticks;
                 for (var i = 0; i < ticks.length; i++) {
                     var tick = ticks[i];
