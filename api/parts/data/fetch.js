@@ -1349,8 +1349,8 @@ fetch.getTimeObjForEvents = function(collection, params, options, callback) {
 * @param {params} params - params object with app_id and date
 */
 fetch.fetchTotalUsersObj = function(metric, params) {
-    fetch.getTotalUsersObj(metric, params, function(output) {
-        common.returnOutput(params, output);
+    fetch.getTotalUsersObj(metric, params, function(totalUsersObj, isEstimate) {
+        common.returnOutput(params, {totalUsersObj, isEstimate: !!isEstimate});
     });
 };
 
@@ -1451,10 +1451,10 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             if (groupBy === "users") {
                 options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     if (!error && appUsersDbResult) {
-                        callback([{ "_id": "users", "u": appUsersDbResult }]);
+                        callback([{ "_id": "users", "u": appUsersDbResult }], true);
                     }
                     else {
-                        callback([]);
+                        callback([], true);
                     }
                 });
             }
@@ -1513,17 +1513,20 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     }
                                 }
                             }
-                            callback(appUsersDbResult || {});
+                            callback(appUsersDbResult || {}, true);
                         });
                     }
                     else {
-                        callback(appUsersDbResult || {});
+                        callback(appUsersDbResult || {}, true);
                     }
                 });
             }
         }
+        else if (ob.result.length > 0) {
+            callback(ob.result, false);
+        }
         else {
-            callback(ob.result);
+            callback(ob.result, true);
         }
     });
 };
