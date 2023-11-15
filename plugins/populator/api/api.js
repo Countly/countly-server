@@ -16,13 +16,33 @@ const templateProperties = {
         required: false,
         type: "String"
     },
-    up: {
+    users: {
         required: false,
-        type: "String"
+        type: "Array"
     },
     events: {
         required: false,
-        type: "String"
+        type: "Array"
+    },
+    views: {
+        required: false,
+        type: "Array"
+    },
+    sequences: {
+        required: false,
+        type: "Array"
+    },
+    behavior: {
+        required: false,
+        type: "Object"
+    },
+    uniqueUserCount: {
+        required: true,
+        type: "Number"
+    },
+    platformType: {
+        required: true,
+        type: "Array"
     }
 };
 
@@ -36,37 +56,24 @@ const FEATURE_NAME = 'populator';
 
     const createTemplate = function(ob) {
         const obParams = ob.params;
-
         const validatedArgs = common.validateArgs(obParams.qstring, templateProperties, true);
+
         if (!validatedArgs.result) {
             common.returnMessage(obParams, 400, "Invalid params: " + validatedArgs.errors.join());
             return false;
         }
-
         const template = validatedArgs.obj;
-
-        if (template.up) {
+        if (template.behavior && template.behavior.sequences && !template.behavior.sequences.length) {
             try {
-                template.up = JSON.parse(template.up);
+                template.behavior = {};
             }
             catch (e) {
-                common.returnMessage(obParams, 400, "Invalid type for up.");
-                return false;
-            }
-        }
-
-        if (template.events) {
-            try {
-                template.events = JSON.parse(template.events);
-            }
-            catch (e) {
-                common.returnMessage(obParams, 400, "Invalid type for events.");
+                common.returnMessage(obParams, 400, "Invalid type for behavior!");
                 return false;
             }
         }
 
         template.isDefault = template.isDefault === 'true' ? true : false;
-
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
                 if (!insertTemplateErr) {
@@ -130,26 +137,6 @@ const FEATURE_NAME = 'populator';
             }
 
             const newTemplate = validatedArgs.obj;
-
-            if (newTemplate.up) {
-                try {
-                    newTemplate.up = JSON.parse(newTemplate.up);
-                }
-                catch (e) {
-                    common.returnMessage(obParams, 400, "Invalid type for up.");
-                    return false;
-                }
-            }
-
-            if (newTemplate.events) {
-                try {
-                    newTemplate.events = JSON.parse(newTemplate.events);
-                }
-                catch (e) {
-                    common.returnMessage(obParams, 400, "Invalid type for events.");
-                    return false;
-                }
-            }
 
             newTemplate.lastEditedBy = params.member.full_name;
             newTemplate.isDefault = newTemplate.isDefault === 'true' ? true : false;

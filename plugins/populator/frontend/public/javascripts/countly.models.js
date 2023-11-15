@@ -2253,10 +2253,15 @@
     };
 
     countlyPopulator.createTemplate = function(template, callback) {
+        template.app_id = countlyCommon.ACTIVE_APP_ID;
+
         $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/populator/templates/create",
-            data: serializeTemplate(template),
+            // data: serializeTemplate(template),
+            data: JSON.stringify(template),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
             success: callback || function() {},
             error: function() {
                 CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-create-template"], type: "error"});
@@ -2278,7 +2283,10 @@
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
-                data: serializeTemplate(newTemplate),
+                // data: serializeTemplate(newTemplate),
+                data: JSON.stringify(newTemplate),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
                 success: callback || function() {},
                 error: function(err) {
                     CountlyHelpers.notify({

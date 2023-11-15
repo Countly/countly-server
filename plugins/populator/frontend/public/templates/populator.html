@@ -131,7 +131,8 @@
                             <el-table-column prop="editedBy" :label="i18n('populator.edited-by')" sortable></el-table-column>
                             <el-table-column type="options">
                                 <template v-slot="col">
-                                    <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)">
+                                     <!-- <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)"> -->
+                                    <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="handleDrawerActions($event, col.row)">
                                         <el-dropdown-item command="edit" v-if="col.row.buttonShow && canUserUpdate">{{ i18n('populator.edit') }}</el-dropdown-item>
                                         <el-dropdown-item command="delete" v-if="col.row.buttonShow && canUserDelete">{{ i18n('populator.delete') }}</el-dropdown-item>
                                         <el-dropdown-item v-if="canUserCreate" command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
