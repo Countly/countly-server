@@ -35,7 +35,7 @@
                                 <validation-provider name="platform" rules="required" v-slot="v">
                                     <div class="bu-mt-1 populator-template__users--platform-type">
                                         <el-checkbox-group v-model="drawerScope.editedObject.platformType" size="medium" :class="{'is-error': v.errors.length > 0}">
-                                            <el-checkbox label="Mobile" border checked></el-checkbox>
+                                            <el-checkbox label="Mobile" border></el-checkbox>
                                             <el-checkbox label="Web" border></el-checkbox>
                                             <el-checkbox label="Desktop" border></el-checkbox>
                                         </el-checkbox-group>
@@ -51,10 +51,10 @@
                         <cly-populator-section title="Views" type="viewsSection" v-model="drawerScope.editedObject.views" hasSwitch></cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-3">
-                        <cly-populator-section title="Sequences" type="sequencesSection" v-model="drawerScope.editedObject.sequences" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Sequences" type="sequencesSection" :parent-data="prepareData('sequences', drawerScope.editedObject.events, drawerScope.editedObject.views)" v-model="drawerScope.editedObject.sequences" hasSwitch></cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-4">
-                        <cly-populator-section title="Behavior" type="behaviorSection" :parent-data="prepareData(drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Behavior" type="behaviorSection" :parent-data="prepareData('behavior', drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch></cly-populator-section>
                     </div>
                 </div>
             </div>

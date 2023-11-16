@@ -19,7 +19,6 @@
                 finishedGenerateModal: {showDialog: false},
                 description: CV.i18n('populator.warning3'),
                 titleDescription: {header: '', button: ''},
-
                 currentPopulateTab: 'pop-with-temp',
                 saveEnvironmentName: '',
                 isOpen: 'false',
@@ -29,7 +28,6 @@
                     {value: 100, text: 100},
                 ],
                 selectedRunCount: {},
-
                 //event properties
                 eventName: '',
                 eventKey: '',
@@ -71,7 +69,8 @@
                 // todo: Get this initial state from model instead of hardcoding it
                 this.openDrawer("populatorTemplate", {
                     name: '',
-                    platformType: [],
+                    uniqueUserCount: 100,
+                    platformType: ["Mobile"],
                     users: [],
                     events: [],
                     views: [],
@@ -84,95 +83,135 @@
                     this.getTemplateList(false);
                 }
             },
-            changeTemplate: function(command, template) {
-                var eventVariants;
-                if (typeof template.events !== 'undefined') {
-                    Object.keys(template && template.events || {}).forEach(function(key) {
-                        eventVariants = template.events[key];
-                        if (!Array.isArray(eventVariants)) {
-                            eventVariants = [eventVariants];
-                            template.events[key] = eventVariants;
-                        }
-                    });
-                }
-
-                if (command === "edit" || command === "duplicate") {
+            handleDrawerActions: function(command, template) {
+                switch (command) {
+                case "edit":
                     this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.save')};
-
-                    var preparedDrawerUpObject = [{key: "", value: []}];
-                    var preparedDrawerEventObject = [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}];
-                    var preparedSegmentObject = [];
-
-                    if (command === "duplicate") {
-                        template.is_duplicate = true;
-                        this.titleDescription = {header: CV.i18n('populator.drawer-title-duplicate'), button: CV.i18n('populator.duplicate')};
-                    }
-
-                    for (var key in template.up) {
-                        preparedDrawerUpObject.push({ key: key, value: template.up[key]});
-                    }
-
-                    for (var i = 0; i < template.eventCount; i++) {
-                        var durationExist = typeof Object.values(template.events)[i][0].duration !== "undefined";
-                        var sumExist = typeof Object.values(template.events)[i][0].sum !== "undefined";
-                        var segmentExist = typeof Object.values(template.events)[i][0].segments !== "undefined";
-                        preparedSegmentObject = [];
-
-                        var drawerEventObject = {
-                            eventName: Object.keys(template.events)[i],
-                            checkedEventProperties: { duration: durationExist, "sum": sumExist },
-                        };
-
-                        if (durationExist) {
-                            drawerEventObject.duration = Object.values(template.events)[i][0].duration;
-                        }
-                        else {
-                            drawerEventObject.duration = [null, null];
-                        }
-                        if (sumExist) {
-                            drawerEventObject.sum = Object.values(template.events)[i][0].sum;
-                        }
-                        else {
-                            drawerEventObject.sum = [null, null];
-                        }
-                        if (segmentExist) {
-                            for (var item in Object.values(template.events)[i][0].segments) {
-                                preparedSegmentObject.push({key: item, value: Object.values(template.events)[i][0].segments[item]});
-                            }
-                            drawerEventObject.segments = preparedSegmentObject;
-                        }
-                        else {
-                            drawerEventObject.segments = [{key: "", value: []}];
-                        }
-
-                        preparedDrawerEventObject.push(drawerEventObject);
-                    }
-
-                    if (preparedDrawerUpObject.length > 1 && preparedDrawerUpObject[0].key === "") {
-                        preparedDrawerUpObject = preparedDrawerUpObject.slice(1);
-                    }
-                    template.up = preparedDrawerUpObject;
-
-                    if (preparedDrawerEventObject.length > 1 && preparedDrawerEventObject[0].eventName === "") {
-                        preparedDrawerEventObject = preparedDrawerEventObject.slice(1);
-                    }
-                    template.events = preparedDrawerEventObject;
-
                     this.openDrawer("populatorTemplate", template);
-                }
-                else if (command === "delete") {
+                    break;
+                case "duplicate":
+                    template.is_duplicate = true;
+                    this.titleDescription = {header: CV.i18n('populator.drawer-title-duplicate'), button: CV.i18n('populator.duplicate')};
+                    this.openDrawer("populatorTemplate", template);
+                    break;
+                case "delete":
+                    // todo: add confirmation here.
                     var self = this;
                     countlyPopulator.removeTemplate(template._id, function(res) {
                         if (res.result) {
-                            CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n('populator-success-delete-template'), sticky: true, clearAll: true});
+                            CountlyHelpers.notify({
+                                type: "ok",
+                                title: CV.i18n("common.success"),
+                                message: CV.i18n('populator-success-delete-template'),
+                                sticky: true,
+                                clearAll: true
+                            });
                             self.refresh(true);
                         }
                         else {
-                            CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: CV.i18n('populator.failed-to-remove-template', template._id), sticky: false, clearAll: true});
+                            CountlyHelpers.notify({
+                                type: "error",
+                                title: CV.i18n("common.error"),
+                                message: CV.i18n('populator.failed-to-remove-template', template._id),
+                                sticky: false,
+                                clearAll: true
+                            });
                         }
                     });
+                    break;
+                default:
+                    break;
                 }
             },
+            // changeTemplate: function(command, template) {
+            //     var eventVariants;
+            //     if (typeof template.events !== 'undefined') {
+            //         Object.keys(template && template.events || {}).forEach(function(key) {
+            //             eventVariants = template.events[key];
+            //             if (!Array.isArray(eventVariants)) {
+            //                 eventVariants = [eventVariants];
+            //                 template.events[key] = eventVariants;
+            //             }
+            //         });
+            //     }
+
+            //     if (command === "edit" || command === "duplicate") {
+            //         this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.save')};
+
+            //         var preparedDrawerUpObject = [{key: "", value: []}];
+            //         var preparedDrawerEventObject = [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}];
+            //         var preparedSegmentObject = [];
+
+            //         if (command === "duplicate") {
+            //             template.is_duplicate = true;
+            //             this.titleDescription = {header: CV.i18n('populator.drawer-title-duplicate'), button: CV.i18n('populator.duplicate')};
+            //         }
+
+            //         for (var key in template.up) {
+            //             preparedDrawerUpObject.push({ key: key, value: template.up[key]});
+            //         }
+
+            //         for (var i = 0; i < template.eventCount; i++) {
+            //             var durationExist = typeof Object.values(template.events)[i][0].duration !== "undefined";
+            //             var sumExist = typeof Object.values(template.events)[i][0].sum !== "undefined";
+            //             var segmentExist = typeof Object.values(template.events)[i][0].segments !== "undefined";
+            //             preparedSegmentObject = [];
+
+            //             var drawerEventObject = {
+            //                 eventName: Object.keys(template.events)[i],
+            //                 checkedEventProperties: { duration: durationExist, "sum": sumExist },
+            //             };
+
+            //             if (durationExist) {
+            //                 drawerEventObject.duration = Object.values(template.events)[i][0].duration;
+            //             }
+            //             else {
+            //                 drawerEventObject.duration = [null, null];
+            //             }
+            //             if (sumExist) {
+            //                 drawerEventObject.sum = Object.values(template.events)[i][0].sum;
+            //             }
+            //             else {
+            //                 drawerEventObject.sum = [null, null];
+            //             }
+            //             if (segmentExist) {
+            //                 for (var item in Object.values(template.events)[i][0].segments) {
+            //                     preparedSegmentObject.push({key: item, value: Object.values(template.events)[i][0].segments[item]});
+            //                 }
+            //                 drawerEventObject.segments = preparedSegmentObject;
+            //             }
+            //             else {
+            //                 drawerEventObject.segments = [{key: "", value: []}];
+            //             }
+
+            //             preparedDrawerEventObject.push(drawerEventObject);
+            //         }
+
+            //         if (preparedDrawerUpObject.length > 1 && preparedDrawerUpObject[0].key === "") {
+            //             preparedDrawerUpObject = preparedDrawerUpObject.slice(1);
+            //         }
+            //         template.up = preparedDrawerUpObject;
+
+            //         if (preparedDrawerEventObject.length > 1 && preparedDrawerEventObject[0].eventName === "") {
+            //             preparedDrawerEventObject = preparedDrawerEventObject.slice(1);
+            //         }
+            //         template.events = preparedDrawerEventObject;
+
+            //         this.openDrawer("populatorTemplate", template);
+            //     }
+            //     else if (command === "delete") {
+            //         var self = this;
+            //         countlyPopulator.removeTemplate(template._id, function(res) {
+            //             if (res.result) {
+            //                 CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n('populator-success-delete-template'), sticky: true, clearAll: true});
+            //                 self.refresh(true);
+            //             }
+            //             else {
+            //                 CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: CV.i18n('populator.failed-to-remove-template', template._id), sticky: false, clearAll: true});
+            //             }
+            //         });
+            //     }
+            // },
             submitConfirmDialog: function() {
                 this.startPopulate();
                 this.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
@@ -273,6 +312,19 @@
                             viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
                             sequenceCount: (item.sequences !== undefined ? Object.keys(item.sequences).length : 0),
                             generatedOn: (item.generatedOn !== undefined ? moment(new Date(item.generatedOn * 1000)).format("Do MMM YY") : '?'),
+                            uniqueUserCount: item.uniqueUserCount,
+                            platformType: item.platformType || [],
+                            users: item.users || [],
+                            events: item.events || [],
+                            views: item.views || [],
+                            sequences: item.sequences || [],
+                            behavior: item.behavior,
+                            isDefault: item.isDefault,
+                            buttonShow: !item.isDefault
+                            // buttonShow: !item.isDefault,
+                            // isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
+                            // upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
+                            // eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
                             // editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
                             // up: item.up,
                             // events: item.events
@@ -509,27 +561,62 @@
         },
         methods: {
             onSubmit: function(editedObject) {
-                console.log(editedObject, 'model');
-            },
-            prepareData(users, sequences) {
-                var preparedData = {users: []};
-                if (users && users.length) {
-                    users.forEach(function(item) {
-                        preparedData.users.push({keys: item.key, values: item.values});
+                var self = this;
+                const isEdit = !!editedObject._id;
+                const isDuplicate = editedObject.is_duplicate;
+                if (isEdit && !isDuplicate) {
+                    countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
+                        if (res.result) {
+                            CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
+                        }
+                        self.$emit('closeHandler', res);
                     });
                 }
-                if (sequences && sequences.length) {
-                    if (!preparedData.sequences) {
-                        preparedData.sequences = [];
-                    }
-                    preparedData.sequences = sequences;
+                else {
+                    countlyPopulator.createTemplate(editedObject, function(res) {
+                        self.$emit('closeHandler', res);
+                    });
                 }
-                return preparedData;
+            },
+            prepareData: function(type, data1, data2) {
+                if (type === 'behavior') {
+                    const users = data1;
+                    const sequences = data2;
+                    const preparedData = {users: []};
+                    if (users && users.length) {
+                        users.forEach(function(item) {
+                            preparedData.users.push({keys: item.key, values: item.values});
+                        });
+                    }
+                    if (sequences && sequences.length) {
+                        if (!preparedData.sequences) {
+                            preparedData.sequences = [];
+                        }
+                        preparedData.sequences = sequences;
+                    }
+                    return preparedData;
+                }
+                else if (type === "sequences") {
+                    const events = data1;
+                    const views = data2;
+                    const preparedData = {events: [], views: []};
+                    if (events && events.length) {
+                        events.forEach(function(item) {
+                            preparedData.events.push({name: item.key, value: item.key.toLowerCase()});
+                        });
+                    }
+                    if (views && views.length) {
+                        views.forEach(function(item) {
+                            preparedData.views.push({name: item.key, value: item.key.toLowerCase()});
+                        });
+                    }
+                    return preparedData;
+                }
             }
         },
         components: {
 
         },
-        template: countlyVue.T("/populator/templates/template_form.html")
+        template: countlyVue.T("/populator/templates/template_form.html"),
     }));
 })();

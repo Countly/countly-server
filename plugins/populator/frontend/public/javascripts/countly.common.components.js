@@ -94,6 +94,10 @@
     Vue.component("cly-populator-number-selector", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
+            value: {
+                type: Number,
+                default: 100
+            },
             items: {
                 type: Array,
                 default: function() {
@@ -107,7 +111,7 @@
         },
         data: function() {
             return {
-                selectedValue: this.items[0].value || 0
+                selectedValue: 0
             };
         },
         methods: {
@@ -115,6 +119,9 @@
                 this.selectedValue = val;
                 this.$emit('input', this.selectedValue);
             }
+        },
+        created: function() {
+            this.selectedValue = this.value || 0;
         },
         template: '<div>\
                         <div class="bu-is-flex populator-number-selector">\
@@ -585,24 +592,27 @@
             value: {
                 type: [Object, Array],
             },
-            sequenceStepPropertyValues: {
-                type: Object,
-                default: function() {
-                    // todo: Dummy data for now, will be deleted after completed the event and view sections
-                    return {
-                        events: [
-                            {name: "Purchase", value: "purchase"},
-                            {name: "Payment", value: "payment"},
-                            {name: "Shopping", value: "shopping"}
-                        ],
-                        views: [
-                            {name: "Home", value: "home"},
-                            {name: "Detail", value: "detail"},
-                            {name: "My Detail Page", value: "myDetailPage"}
-                        ]
-                    };
-                }
+            parentData: {
+                type: [Object, Array],
             }
+            // sequenceStepPropertyValues: {
+            //     type: Object,
+            //     default: function() {
+            //         // todo: Dummy data for now, will be deleted after completed the event and view sections
+            //         return {
+            //             events: [
+            //                 {name: "Purchase", value: "purchase"},
+            //                 {name: "Payment", value: "payment"},
+            //                 {name: "Shopping", value: "shopping"}
+            //             ],
+            //             views: [
+            //                 {name: "Home", value: "home"},
+            //                 {name: "Detail", value: "detail"},
+            //                 {name: "My Detail Page", value: "myDetailPage"}
+            //             ]
+            //         };
+            //     }
+            // }
         },
         data: function() {
             return {
@@ -618,6 +628,12 @@
             };
         },
         watch: {
+            "parentData": {
+                deep: true,
+                handler: function(newValue) {
+                    this.sequenceStepValues = newValue;
+                }
+            },
             sequences: {
                 handler: function(newValue) {
                     this.$emit('input', newValue);
@@ -687,7 +703,9 @@
         },
         created: function() {
             this.sequences = this.value;
-            this.sequenceStepValues = this.sequenceStepPropertyValues;
+            this.sequenceStepValues = this.parentData;
+
+            // this.sequenceStepValues = this.sequenceStepPropertyValues;
         },
         template: CV.T("/populator/templates/sections/sequences.html")
     });
@@ -716,7 +734,7 @@
             "parentData": { // todo: we need check if "up" & "sequences" updated, if so, change the state
                 deep: true,
                 handler: function(newValue) {
-                    this.behavior.sequences = [];
+                    // this.behavior.sequences = [];
                     const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
                     const usersUndefinedOrEmpty = typeof newValue.users === 'undefined' || newValue.users.length === 0;
 
@@ -730,11 +748,15 @@
                     else {
                         this.$parent.disableSwitch = false;
                     }
-                    if (newValue.sequences && newValue.sequences.length) {
+                    if (newValue.sequences && newValue.sequences.length && newValue.sequences.length !== this.behavior.sequences.filter(obj => obj.key !== 'random').length) {
+                        //todo: this needs to be getting improved
+                        this.behavior.sequences = [];
+                        // this.behavior.sequences.push({key: 'Sequence_' + newValue.sequences.length, probability: 0});
                         for (let i = 0; i < newValue.sequences.length; i++) {
                             this.behavior.sequences.push({key: 'Sequence_' + (i + 1), probability: 0});
                         }
                         if (newValue.sequences.length > 1) {
+                            // this.behavior.sequences = this.behavior.sequences.filter(obj => obj.key !== 'random');
                             this.behavior.sequences.push({key: 'random', probability: 0});
                         }
                     }
