@@ -75,7 +75,7 @@
     <cly-section>
       <cly-chart-bar test-id="ratings-detail-chart" v-loading="isLoading" :force-loading="isLoading" class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
     </cly-section>
-    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" :loadingState="isLoading" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" :loadingState="isLoading" :filter="activeFilter" skin="secondary" v-model="dynamicTab" :tabs="tabs">
       <template v-slot:tables="scope">
           <span>{{scope.tab.title}}</span>
       </template>
