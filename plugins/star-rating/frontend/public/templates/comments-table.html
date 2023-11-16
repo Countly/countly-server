@@ -1,6 +1,6 @@
 <cly-datatable-n test-id="ratings-comments-table" :rows="preparedRows" :persist-key="commentsTablePersistKey" width="100%">
   <template v-slot="scope">
-      <el-table-column prop="comment" :label="i18n('feedback.comment')" min-width="260">
+      <el-table-column prop="comment" :label="i18n('feedback.comment')" min-width="270">
         <template v-slot="rowScope">
           <div class="has-ellipsis" v-tooltip="{content:rowScope.row.comment,placement:'auto'}">
             <span class="text-medium" :data-test-id="'ratings-comment-table-comment-row-' + rowScope.$index">
