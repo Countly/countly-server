@@ -166,14 +166,14 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 console.log("Cursor error: ", cursorError);
                 console.log("Restarting cursor process...");
                 usersCursor.close();
-                processCursor(app);
+                await processCursor(app);
             }
         }
         catch (sessionError) {
             console.log("Session error: ", sessionError);
             await new Promise(resolve => setTimeout(resolve, 1000));
             console.log("Restarting session...");
-            processCursor(app);
+            await processCursor(app);
         }
         finally {
             if (session) {
