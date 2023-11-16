@@ -98,6 +98,13 @@
         }    
     }
 
+    .main-page-container {
+        max-width: 232px!important;
+    }
+    .main-page-inputs {
+        width: 100%;
+    }
+
     &__save-field {
         width: 232px;
         height: 32px;

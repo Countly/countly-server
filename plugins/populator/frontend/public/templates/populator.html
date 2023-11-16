@@ -15,8 +15,8 @@
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.data-template') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
                             </div>
-                            <div class="bu-column bu-is-narrow">
-                                <el-select v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                            <div class="bu-column main-page-container">
+                                <el-select class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
                                     <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
                                 </el-select>
                             </div>
@@ -25,8 +25,8 @@
                             <div class="bu-column bu-is-2">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
                             </div>
-                            <div class="bu-column bu-is-narrow">
-                                <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
+                            <div class="bu-column main-page-container">
+                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs"></cly-date-picker-g>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
@@ -34,7 +34,7 @@
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')"></cly-tooltip-icon>
                             </div>
-                            <div class="bu-column bu-is-narrow">
+                            <div class="bu-column main-page-container">
                                 <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
                             </div>
                         </cly-sub-section>
@@ -44,8 +44,8 @@
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.save-template') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.save-template-tooltip')"></cly-tooltip-icon>
                             </div>
-                            <div class="bu-column bu-is-narrow">
-                                <el-input class="populator-wrapper__save-field" v-model="saveEnvironmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
+                            <div class="bu-column main-page-container">
+                                <el-input class="populator-wrapper__save-field main-page-inputs" v-model="saveEnvironmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
@@ -59,8 +59,8 @@
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.environment') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
-                            <div class="bu-column bu-is-narrow">
-                                <el-select v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                            <div class="bu-column main-page-container">
+                                <el-select class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
                                     <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
                                 </el-select>
                             </div>
@@ -69,8 +69,8 @@
                             <div class="bu-column bu-is-2">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
                             </div>
-                            <div class="bu-column bu-is-narrow">
-                                <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
+                            <div class="bu-column main-page-container">
+                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs"></cly-date-picker-g>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
@@ -78,7 +78,7 @@
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                             </div>
-                            <div class="bu-column bu-is-narrow">
+                            <div class="bu-column main-page-container">
                                 <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
                             </div>
                         </cly-sub-section>
