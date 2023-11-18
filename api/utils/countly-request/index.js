@@ -4,6 +4,8 @@
 
 const got = require('got');
 const FormData = require('form-data');
+const plugins = require('../../../plugins/pluginManager.js');
+const {HttpsProxyAgent, HttpProxyAgent} = require('hpagent');
 
 var initParams = function(uri, options, callback) {
 
@@ -30,6 +32,42 @@ var initParams = function(uri, options, callback) {
 
     params.callback = callback || params.callback;
 
+    var config = plugins.getConfig("security");
+
+    if (config && config.proxy_hostname) {
+        if (!params.options) {
+            params.options = {}; // Create options object if it's undefined
+        }
+
+        const proxyType = config.proxy_type || "https";
+        const proxyUrlBase = `${proxyType}://${config.proxy_hostname}:${config.proxy_port}`;
+
+        let proxyUrl = proxyUrlBase;
+
+        if (config.proxy_username && config.proxy_password) {
+            proxyUrl = `${proxyType}://${config.proxy_username}:${config.proxy_password}@${config.proxy_hostname}:${config.proxy_port}`;
+        }
+
+        const agentOptions = {
+            keepAlive: true,
+            keepAliveMsecs: 1000,
+            maxSockets: 256,
+            maxFreeSockets: 256,
+            scheduling: 'lifo',
+            proxy: proxyUrl,
+        };
+
+        if (proxyType === "https") {
+            params.options.agent = {
+                https: new HttpsProxyAgent(agentOptions)
+            };
+        }
+        else {
+            params.options.agent = {
+                http: new HttpProxyAgent(agentOptions)
+            };
+        }
+    }
 
     return params;
 };

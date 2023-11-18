@@ -110,7 +110,12 @@ plugins.connectToAllDatabases().then(function() {
         dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
         api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
-        dashboard_rate_limit_requests: 500
+        dashboard_rate_limit_requests: 500,
+        proxy_hostname: "",
+        proxy_port: "",
+        proxy_username: "",
+        proxy_password: "",
+        proxy_type: "https"
     });
 
     /**
