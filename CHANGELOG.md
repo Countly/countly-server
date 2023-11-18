@@ -3,24 +3,30 @@ Features:
 - [apps] App initial as default app image
 - [compliance-hub] Use millisecond timestamp when recording consent
 - [consent] Ask for countly tracking and newsletter subscription
-- [guides] new plugin explaining Countly sections with videos and other content
+- [core] Add config for setting maximum upload file size
+- [data_migration] Fixed problem with export
+- [guides] New plugin explaining Countly sections with videos and other content
 - [hooks] Add validation error messages when creating hooks
 - [jobs] Add the ability to pause jobs
 - [license] Check license at render instead of login
-- [onboarding] new onboarding flow when setting up a server
+- [onboarding] New onboarding flow when setting up a server
 - [quickstart] Menu to show some actions new users could take
 - [sdks] Add health checks with debug information
 - [sdks] Add queue size metrics
 - [sdks] Add request metrics
 - [server-stats] Record breakdown of internal events of data points
 - [settings] Trim incoming data based on API setting
+- [star-rating] Make comments table serverside 
 - [UI] Loading state fixes to distinguish from no data state
 - [views] Make table column widths adjustable
 
 Enterprise features:
+- [ab-testing] Add user selected minimum improvement rate for the automatic stop option
+- [ab-testing] Add experiment health-check logs for effective sample size and MCMC convergence
 - [auth-plugins] Allow hiding/showing login form
 - [block] Show the last time the filtering rule was triggered
 - [cohorts] Filtering by User Property segmentation in Cohorts using OR operator
+- [cohorts] Improved cohorts nightly job to reduce memory usage
 - [concurrent_users] Switched user sampling to the job so it will run only once per cluster
 - [crash_symbolication] Add instance id to symbolication requests
 - [data-manager] Allow exporting the event schema as a data populator template
@@ -36,7 +42,7 @@ Enterprise features:
 - [surveys] Added global/app/widget level settings
 - [surveys] Fixed export table
 - [users] Make table column widths adjustable
-- [users] new debug dialog for users merging both options
+- [users] New debug dialog for users merging both options
 - [views] Record UTM and Source as segments on drill
 - [white-labeling] Add emailing settings
 
