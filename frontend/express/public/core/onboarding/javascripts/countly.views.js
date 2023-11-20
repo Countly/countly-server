@@ -301,7 +301,8 @@
                 }
 
                 // go home
-                app.navigate('#/', true);
+                window.location.href = '#/home';
+                window.location.reload();
             },
         }
     });
@@ -409,7 +410,8 @@
 
     app.route('/not-subscribed-newsletter', 'not-subscribed-newsletter', function() {
         if (!hasNewsLetter) {
-            app.navigate("/", true);
+            window.location.href = '#/home';
+            window.location.reload();
         }
         else {
             this.renderWhenReady(new CV.views.BackboneWrapper({
