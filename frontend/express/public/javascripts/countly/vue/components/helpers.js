@@ -200,7 +200,9 @@
             numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'},
             boxType: {type: Number, default: -1},
             tooltip: {type: String, default: ''},
-            testId: {type: String, default: "cly-metric-card-test-id"}
+            testId: {type: String, default: "cly-metric-card-test-id"},
+            isEstimate: {type: Boolean, default: false},
+            estimateTooltip: {type: String, default: ''}
         },
         computed: {
             formattedNumber: function() {
@@ -261,7 +263,7 @@
                             <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot> <cly-asterisk v-if="isEstimate" :tooltip="estimateTooltip"></cly-asterisk>\ </span>\
                                     <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
