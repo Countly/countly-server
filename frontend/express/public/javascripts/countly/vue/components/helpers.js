@@ -1160,4 +1160,18 @@
             }
         }
     }));
+
+    Vue.component("cly-asterisk", countlyVue.components.BaseComponent.extend({
+        props: {
+            tooltip: {type: String, default: ""},
+            textSize: {type: Number, default: 14}
+        },
+        computed: {
+            fontSize: function() {
+                return "font-size:" + (this.textSize / 2) + "px";
+            }
+        },
+        template: `<i class="fa fa-asterisk cly-asterisk" :style="fontSize" v-tooltip="tooltip"></i>`
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

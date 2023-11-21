@@ -150,3 +150,10 @@
 .cly-is-fullwidth {
     width: 100%;
 }
+
+.cly-asterisk {
+    vertical-align: text-top;
+    &:hover { 
+        color:#6BB96E; 
+    }
+}
