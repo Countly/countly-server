@@ -5,6 +5,7 @@ request = request.agent(testUtils.url);
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
+var crypto = require('crypto');
 //var DEVICE_ID = "1234567890";
 
 //add data
@@ -20,6 +21,7 @@ var userObject = {};
 var viewsListed = [];
 
 var graphResponse = {};
+var db;
 
 tableResponse.hour = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
 tableResponse.yesterday = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
@@ -249,6 +251,7 @@ describe('Testing views plugin', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
+            db = testUtils.client.db("countly");
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
                 .expect(200)
@@ -1057,13 +1060,164 @@ describe('Testing views plugin', function() {
             verifyTotals("month");
             verifyTotals("7days");
         });
-
-
-
-
     });
 
+    describe('Adding views with UTM segments', function() {
+        it('adding new view', function(done) {
+            tableResponse.hour.iTotalRecords = 1;
+            tableResponse.hour.iTotalDisplayRecords = 1;
+            pushValues("hour", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1, "view": "testview3"});
 
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview3", "visit": 1, "start": 1, "only_saved_param": "saved", "utm_source": "test_source", "utm_medium": "test_medium", "utm_campaign": "test_campaign", "utm_term": "test_term", "utm_content": "test_content", "referrer": "test_referrer"}}]);
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        verifyTotals("hour");
+
+        describe('Verify UTM segments are not recorded in views', function() {
+            verifySegments({ "segments": { "only_saved_param": "saved" }, "domains": []});
+        });
+    });
+
+    describe('Test omiting segments', function() {
+        describe('sending data', function() {
+            it('adding view with some custom segment', function(done) {
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testOmit", "visit": 1, "start": 1, "omitMe": "someValue"}}]);
+                request
+                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "userOmit" + '&timestamp=' + myTime + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+
+            });
+        });
+        describe("verifying data", function() {
+            verifySegments({"segments": {"omitMe": ["someValue"]}, "domains": []});
+            it('checking database structures', function(done) {
+                db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, res) {
+                    if (err) {
+                        done(err);
+                    }
+                    else {
+                        //res.should.have.property("omit", ["omitMe"]);
+                        //check if there is collection with any doc for this segmentation
+                        var colName2 = "app_viewdata" + crypto.createHash('sha1').update("omitMe" + APP_ID).digest('hex');
+                        db.collection(colName2).findOne({}, function(err, res) {
+                            if (res) {
+                                done();
+                            }
+                            else {
+                                done("mising data in collection");
+                            }
+                        });
+                    }
+
+                });
+            });
+        });
+        describe('testing omiting endpoint', function() {
+            it('Testing omit endpoint without APP_ID', function(done) {
+                request
+                    .get('/i/views?method=omit_segments&api_key=' + API_KEY_ADMIN + "&omit_list=" + JSON.stringify(["omitMe"]))
+                    .expect(400)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        else {
+                            done();
+                        }
+                    });
+            });
+        });
+        describe('testing valid omit request', function() {
+            it('omiting segment', function(done) {
+                request
+                    .get('/i/views?method=omit_segments&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + "&omit_list=" + JSON.stringify(["omitMe"]))
+                    .expect(200)
+                    .end(function(err, res) {
+                        console.log(err);
+                        console.log(res.text);
+                        if (err) {
+                            return done(err);
+                        }
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.property('result', 'Success');
+                        setTimeout(done, 500 * testUtils.testScalingFactor);
+                    });
+            });
+        });
+
+        describe("checking if structures are correct", function() {
+            verifySegments({"segments": {}, "domains": []});
+            it('checking database structures', function(done) {
+                db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, res) {
+                    if (err) {
+                        done(err);
+                    }
+                    else {
+                        res.should.have.property("omit", ["omitMe"]);
+                        //check if there is collection with any doc for this segmentation
+                        var colName2 = "app_viewdata" + crypto.createHash('sha1').update("omitMe" + APP_ID).digest('hex');
+                        db.collection(colName2).findOne({}, function(err, res) {
+                            if (res) {
+                                done("data is still in collection. Although it should be cleared out.");
+                            }
+                            else {
+                                done();
+                            }
+                        });
+                    }
+
+                });
+            });
+        });
+
+        describe('test if incoming data is omited', function() {
+            it('adding view with some custom segment', function(done) {
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testOmit", "visit": 1, "start": 1, "omitMe": "someValue"}}]);
+                request
+                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "userOmit2" + '&timestamp=' + myTime + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+
+            });
+        });
+        describe("checking if structures are correct", function() {
+            verifySegments({"segments": {}, "domains": []});
+            it('checking database structures', function(done) {
+                db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, res) {
+                    if (err) {
+                        done(err);
+                    }
+                    else {
+                        res.should.have.property("omit", ["omitMe"]);
+                        //check if there is collection with any doc for this segmentation
+                        var colName2 = "app_viewdata" + crypto.createHash('sha1').update("omitMe" + APP_ID).digest('hex');
+                        db.collection(colName2).findOne({}, function(err, res) {
+                            if (res) {
+                                done("data is in collection. Although it should be cleared out.");
+                            }
+                            else {
+                                done();
+                            }
+                        });
+                    }
+
+                });
+            });
+        });
+
+    });
 
     describe('reset app', function() {
         it('should reset data', function(done) {

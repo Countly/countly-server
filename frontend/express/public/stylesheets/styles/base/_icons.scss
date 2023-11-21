@@ -26,7 +26,6 @@
     background-size: 100%;
 }
 
-
 .cly-icon- {
     &zoom {
         background-image: url("../../../images/icons/zoom-icon.svg");
@@ -90,4 +89,34 @@
 .el-button-group>.el-select:first-child .el-button {
     display: flex;
     align-items: center;
+}
+
+.cly-countly-icon-solid {
+	width: 20px;
+	height: 20px;
+	background-image: url("../../../images/icons/countly-icon-solid.svg");
+}
+
+.cly-countly-icon-outline {
+	width: 20px;
+	height: 20px;
+	background-image: url("../../../images/icons/countly-icon-outline.svg");
+}
+
+.cly-countly-icon-outline-{
+	&trash-16px {
+		background-position: 99px 963px;
+	}
+    	&code-16px {
+		background-position: 99px 674px;
+	}
+    	&external-link-16px {
+		background-position: 419px 674px;
+	}
+    	&download-16px {
+		background-position: 299px 819px;
+	}
+    	&x-16px {
+		background-position: 139px 1107px;
+	}
 }

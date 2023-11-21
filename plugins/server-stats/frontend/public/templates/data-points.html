@@ -1,12 +1,11 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
+    <cly-header
+		:title="title"
+		:tooltip="!app_id && {description, placement: 'top-center'}"
+	>
 		<template v-slot:header-top >
 			<cly-back-link v-if="subPage" link="#/manage/data-points" :title ="i18n('common.back')"></cly-back-link>
 		</template>
-        <template v-slot:header-left>
-            <h2> {{title}}</h2>
-            <span v-if="!app_id" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-3" v-tooltip.top-center="description"></span>
-        </template>
     </cly-header>
 	<cly-main>
 		<div v-if="!subPage" class="bu-level-left">

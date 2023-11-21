@@ -1,9 +1,8 @@
 <div :class="[componentId]">
-  <cly-header>
-      <template v-slot:header-left>
-          <h2>{{i18n('sources.title')}}</h2>
-          <cly-tooltip-icon :tooltip="i18n('sources.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-      </template>
+  <cly-header
+    :title="i18n('sources.title')"
+    :tooltip="{description: i18n('sources.description')}"
+  >
       <template v-slot:header-right>
         <cly-more-options v-if="topDropdown" size="small">
           <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">

@@ -1147,7 +1147,7 @@ module.exports = function(my_db) {
             apps = apps.sort();
             var app_names = [];
             //clear out duplicates
-            for (let i = 1; i < apps.lenght - 1; i++) {
+            for (let i = 1; i < apps.length - 1; i++) {
                 if (apps[i - 1] === apps[i]) {
                     apps.splice(i, 1); i--;
                 }

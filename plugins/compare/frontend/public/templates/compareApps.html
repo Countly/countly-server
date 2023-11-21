@@ -1,10 +1,12 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
+  <cly-header>
     <cly-back-link slot="header-top" :title="i18n('compare.back')"></cly-back-link>
-        <template v-slot:header-bottom>  
-    <h2> {{i18n('compare.apps.title')}} 
-    </h2>
-  </template> 
+    <template v-slot:header-bottom>
+      <div class="bu-is-flex bu-is-align-items-center">
+        <h2 class="bu-mr-2"> {{i18n('compare.apps.title')}} </h2>
+        <cly-guide></cly-guide>
+      </div>
+    </template> 
   </cly-header>
   <cly-main>
     <div class="bu-mb-4 cly-vue-compare-apps">

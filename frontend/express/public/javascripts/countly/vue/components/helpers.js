@@ -199,7 +199,8 @@
             color: {type: [String, Function, Array], default: ''},
             numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'},
             boxType: {type: Number, default: -1},
-            tooltip: {type: String, default: ''}
+            tooltip: {type: String, default: ''},
+            testId: {type: String, default: "cly-metric-card-test-id"}
         },
         computed: {
             formattedNumber: function() {
@@ -260,12 +261,12 @@
                             <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
-                                    <cly-tooltip-icon v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
+                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
-                                    <h2><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
+                                    <h2 :data-test-id="testId + \'-metric-card-number\'"><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-metric-card-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -504,6 +505,7 @@
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
+                    :test-id="testId"\
                     pop-class="cly-event-select"\
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
@@ -524,7 +526,7 @@
                             :value="selectScope.activeTabId"\
                             @input="selectScope.updateTab"\
                             size="small">\
-                            <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
+                            <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
                         </el-radio-group>\
                     </template>\
                 </cly-select-x>',
@@ -541,6 +543,7 @@
             title: { type: String, require: false},
             selectedApp: {type: String, required: false, default: ''},
             disabled: {type: Boolean, default: false},
+            testId: {type: String, default: "event-select-test-id"}
         },
         data: function() {
             return {
@@ -893,15 +896,15 @@
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
-                                '<img :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
-                                '<slot><span class="alert-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
+                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable"  class="bu-mt-2" >\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
-                                    '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
+                                    '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                                 '<div v-else @click="closeModal" class="bu-mr-2 bu-ml-6">\n' +
-                                    '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
+                                    '<slot name="close"><i data-test-id="cly-notification-modal-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                             '<div v-else class="bu-ml-5">\n' +
@@ -984,18 +987,18 @@
         template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
-                                <img class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
+                                <img :data-test-id="testId + \'-empty-view-icon\'" class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
                             <slot name="title">\
-                                <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+                                <h3 :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-html="subTitle"></span></div>\
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasCreateRight && hasAction">\
-                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
+                                <div :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
@@ -1008,7 +1011,8 @@
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
             hasAction: {default: false, type: Boolean},
-            hasCreateRight: { default: true, type: Boolean }
+            hasCreateRight: { default: true, type: Boolean },
+            testId: {type: String, default: "cly-empty-view"}
         },
         data: function() {
             return {};
@@ -1030,7 +1034,8 @@
                         'bu-py-6': true
                     };
                 }
-            }
+            },
+            testId: {type: String, default: "cly-empty-view"}
         },
         data: function() {
             return {};
@@ -1045,15 +1050,15 @@
         template: ' <div :style="topStyle" :class="[\'bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center\', classes]" style="height: 100%;opacity: 0.6">\
                         <slot name="icon">\
                             <div>\
-                                <img :src="image"/>\
+                                <img :data-test-id="testId + \'-empty-logo\'" :src="image"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2">\
                             <slot name="title">\
-                                <h4 class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
+                                <h4 :data-test-id="testId + \'-empty-title\'" class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
+                                <div :data-test-id="testId + \'-empty-subtitle\'" class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',

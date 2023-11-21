@@ -43,27 +43,55 @@ var convertOptionsToGot = function(options) {
 
     var requestOptions = {};
 
-    //define for got and request differences
+    // Define for got and request differences
     var keyMap = {
         "qs": "searchParams",
-        "strictSSL": "rejectUnauthorized",
+        "strictSSL": "https.rejectUnauthorized",
         "gzip": "decompress",
         "jar": "cookieJar",
         "baseUrl": "prefixUrl",
         "uri": "url"
     };
 
+    /***
+     * Assigns a value to a nested object property
+     * @param {object} obj - The object to assign the value to
+     * @param {string} keyPath - The path to the property to assign the value to
+     * @param {*} value - The value to assign
+     */
+    function assignDeep(obj, keyPath, value) {
+        var keys = keyPath.split('.');
+        var lastKey = keys.pop();
+        var nestedObj = obj;
+
+        keys.forEach(function(key) {
+            if (!nestedObj[key] || typeof nestedObj[key] !== 'object') {
+                nestedObj[key] = {};
+            }
+            nestedObj = nestedObj[key];
+        });
+
+        nestedObj[lastKey] = value;
+    }
+
     for (let key in options) {
         if (!Object.prototype.hasOwnProperty.call(requestOptions, key) && keyMap[key]) {
-            requestOptions[keyMap[key]] = options[key];
+            var mappedKey = keyMap[key];
+            if (mappedKey.includes('.')) {
+                assignDeep(requestOptions, mappedKey, options[key]);
+            }
+            else {
+                requestOptions[mappedKey] = options[key];
+            }
         }
         else {
             requestOptions[key] = options[key];
         }
     }
 
-    //backward compatability. in got json is not boolean. it is the object.
-    //request body and json are mutally exclusive. if request.json and body exists one of them must be deleted
+    // Backward compatibility: in got, json is not a boolean, it is an object.
+    // Request body and json are mutually exclusive.
+    // If request.json and body exist, one of them must be deleted.
     if (requestOptions.json && typeof requestOptions.json === 'boolean' && requestOptions.body) {
         requestOptions.json = requestOptions.body;
         delete requestOptions.json;
@@ -72,11 +100,11 @@ var convertOptionsToGot = function(options) {
     if (requestOptions.prefixUrl && options.uri && requestOptions.url) {
         requestOptions.uri = options.uri;
         delete requestOptions.url;
-
     }
 
     return requestOptions;
 };
+
 
 module.exports = function(uri, options, callback) {
 
@@ -143,7 +171,7 @@ async function uploadFormFile(url, fileData, callback) {
 module.exports.post = function(uri, options, callback) {
     var params = initParams(uri, options, callback);
     if (params.options && (params.options.url || params.options.uri)) {
-        if (params.options.form) {
+        if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
             // If options include a form, use uploadFormFile
             const { url, form } = params.options;
             uploadFormFile(url || params.options.uri, form, params.callback);
@@ -178,3 +206,5 @@ module.exports.post = function(uri, options, callback) {
 module.exports.get = function(uri, options, callback) {
     module.exports(uri, options, callback);
 };
+
+module.exports.convertOptionsToGot = convertOptionsToGot;

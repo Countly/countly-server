@@ -712,6 +712,7 @@
     * @param {object} moreData - more data to display
     * @param {string} moreData.image - image id
     * @param {string} moreData.title - alert title
+    * @param {string} testId - test id for ui tests
     * @example
     * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
     *    if (!result) {
@@ -721,7 +722,7 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
+    CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData, testId = 'cly-confirm-test-id') {
         if (countlyGlobal.ssr) {
             return;
         }
@@ -753,7 +754,8 @@
                 cancelLabel: cancelLabel,
                 title: moreData && moreData.title,
                 image: moreData && moreData.image,
-                callback: callback
+                callback: callback,
+                testId: testId
             };
 
             var currentStore = window.countlyVue.vuex.getGlobalStore();
@@ -800,6 +802,31 @@
                 message: msg,
                 title: (moreData && moreData.title) || "",
                 width: (moreData && moreData.width) || "400px",
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
+    };
+
+    /**
+    * Display modal popup that shows quickstart guide
+    * @param {string} content - modal popup content
+    * @example
+    * CountlyHelpers.showQuickstartDialog();
+    */
+    CountlyHelpers.showQuickstartPopover = function(content) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
+        if (window.countlyVue && window.countlyVue.vuex) {
+            var payload = {
+                intent: "quickstart",
+                message: content,
+                width: "314",
             };
 
             var currentStore = window.countlyVue.vuex.getGlobalStore();

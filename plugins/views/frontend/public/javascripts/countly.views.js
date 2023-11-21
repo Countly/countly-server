@@ -202,6 +202,7 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 isGraphLoading: true,
+                isTableLoading: false,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -238,6 +239,7 @@
                 var self = this;
                 if (force) {
                     self.isGraphLoading = true;
+                    self.isTableLoading = true;
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
@@ -252,7 +254,9 @@
                     self.validateTotalViewCount();
                 });
 
-                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue});
+                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
+                    self.isTableLoading = false;
+                });
             },
             validateTotalViewCount: function() {
                 this.totalViewCount = this.$store.state.countlyViews.totalViewsCount;
@@ -333,6 +337,8 @@
             },
             segmentChosen: function(val) {
                 var self = this;
+                this.isGraphLoading = true;
+                this.isTableLoading = true;
                 if (val.segment && val.segment !== "all" && val.segmentKey && val.segmentKey !== "all") {
                     this.$store.dispatch('countlyViews/onSetSelectedSegment', val.segment);
                     this.$store.dispatch('countlyViews/onSetSelectedSegmentValue', val.segmentKey);
@@ -343,6 +349,8 @@
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
+                    self.isGraphLoading = false;
+                    self.isTableLoading = false;
                 });
                 this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue});
             },

@@ -1,9 +1,8 @@
 <div :class="[componentId]">
-  <cly-header>
-      <template v-slot:header-left>
-          <h2>{{i18n('keywords.title')}}</h2>
-          <cly-tooltip-icon :tooltip="i18n('keywords.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-      </template>
+  <cly-header
+    :title="i18n('keywords.title')"
+    :tooltip="{description: i18n('keywords.description')}"
+  >
   </cly-header>
   <cly-main name="searchTerms">
       <div class="acquisition-keywords-view__date-picker-container">

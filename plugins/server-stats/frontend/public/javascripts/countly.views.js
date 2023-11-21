@@ -9,7 +9,7 @@ var DataPointsView = countlyVue.views.create({
             description: CV.i18n('server-stats.data-points-description'),
             app_id: this.$route.params.appid,
             subPage: false,
-            isLoading: false,
+            isLoading: true,
             externalLinks: [],
             dataPointsRows: [],
             topDropdown: [],
