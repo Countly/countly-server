@@ -96,7 +96,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
                     "value": countlyCommon.formatNumber(sessionData.usage["total-users"].total),
                     "trend": (sessionData.usage["total-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.total-users-desc"),
-                    "percentage": sessionData.usage["total-users"].change
+                    "percentage": sessionData.usage["total-users"].change,
+                    "isEstimate": sessionData.usage["total-users"].isEstimate,
+                    "estimateTooltip": CV.i18n("users.total-users-estimate-tooltip")
                 },
                 {
                     "name": jQuery.i18n.map["common.table.new-users"],
