@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
+/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, countlyTaskManager, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
 
 window.DashboardView = countlyView.extend({
     renderCommon: function() {
