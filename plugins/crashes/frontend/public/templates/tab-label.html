@@ -2,6 +2,7 @@
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
         <div class="text-medium">
             <span>{{title}}</span>
+            <cly-asterisk v-if="data.isEstimate" :tooltip="i18n('users.total-users-estimate-tooltip')"></cly-asterisk>
             <span v-if="tooltip" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" v-tooltip.top-center="tooltip"></span>
         </div>
     </div>
