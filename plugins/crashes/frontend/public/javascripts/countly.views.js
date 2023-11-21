@@ -1278,7 +1278,8 @@
                         "value": value,
                         "info": getUs[k].info,
                         "trend": data[getUs[k].prop].trend,
-                        "change": data[getUs[k].prop].change
+                        "change": data[getUs[k].prop].change,
+                        "isEstimate": data[getUs[k].prop].isEstimate || false,
                     });
                 }
 

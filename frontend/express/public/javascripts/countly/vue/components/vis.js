@@ -2084,6 +2084,7 @@
                             <div class="cly-vue-chart-legend__first-row">\
                                 <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
                                 <div class="cly-vue-chart-legend__p-title">{{item.label || item.name}}</div>\
+                                <cly-asterisk v-if="item.isEstimate" :tooltip="item.estimateTooltip"></cly-asterisk>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
                                 </div>\
