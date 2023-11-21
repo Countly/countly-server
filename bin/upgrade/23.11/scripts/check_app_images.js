@@ -1,9 +1,9 @@
 const pluginManager = require("../../../../plugins/pluginManager.js");
 const countlyFs = require('../../../../api/utils/countlyFs.js');
 
-pluginManager.dbConnection("countly").then(async function(countlyDb) {
-    console.log("Connected to Countly database...");
-
+Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_fs")]).then(async function([countlyDb, _countlyFs]) {
+    console.log("Connected to Countly database and file system...");
+    countlyFs.setHandler(_countlyFs);
     try {
         //GET APPS
         const apps = await countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray();
@@ -35,6 +35,7 @@ pluginManager.dbConnection("countly").then(async function(countlyDb) {
 
     function close() {
         countlyDb.close();
+        _countlyFs.close();
         console.log("Done.");
     }
 });
