@@ -118,8 +118,13 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_tracking: null,
 });
+
+if (!plugins.isPluginEnabled('tracker')) {
+    plugins.setConfigs('frontend', {
+        countly_tracking: null,
+    });
+}
 
 plugins.setUserConfigs("frontend", {
     production: false,
@@ -891,7 +896,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            countly_tracking = plugins.getConfig('frontend').countly_tracking,
+            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
