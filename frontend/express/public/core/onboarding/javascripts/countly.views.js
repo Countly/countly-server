@@ -1,4 +1,4 @@
-/*globals _,app,Backbone,Countly,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins,moment,store*/
+/*globals _,app,Backbone,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins,moment,store*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -239,7 +239,7 @@
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
                         app_key: countlyGlobal.frontend_app,
-                        device_id: Countly.device_id || domain,
+                        device_id: (window.Countly && window.Countly.device_id) || domain,
                     },
                     dataType: 'json',
                     complete: function() {
@@ -372,7 +372,7 @@
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
                         app_key: countlyGlobal.frontend_app,
-                        device_id: Countly.device_id || domain,
+                        device_id: (window.Countly && window.Countly.device_id) || domain,
                     },
                     dataType: 'json',
                     complete: function() {
