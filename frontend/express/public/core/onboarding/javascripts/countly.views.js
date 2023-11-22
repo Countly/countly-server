@@ -343,6 +343,10 @@
                     frontend: doc,
                 };
 
+                if (this.consentItems.length === 0) {
+                    configs.frontend.countly_tracking = false;
+                }
+
                 countlyPlugins.updateConfigs(configs);
                 var domain = countlyGlobal.countly_domain || window.location.origin;
 
