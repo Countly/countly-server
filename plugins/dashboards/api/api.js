@@ -427,6 +427,7 @@ plugins.setConfigs("dashboards", {
      */
     plugins.register("/o/dashboards/all", function(ob) {
         var params = ob.params;
+        let just_schema = params.qstring.just_schema;
 
         validateUser(params, function() {
             var member = params.member,
@@ -453,8 +454,11 @@ plugins.setConfigs("dashboards", {
                     ]
                 };
             }
-
-            common.db.collection("dashboards").find(filterCond).toArray(function(err, dashboards) {
+            let projection = {};
+            if (just_schema) {
+                projection = {_id: 1, name: 1, owner_id: 1, created_at: 1};
+            }
+            common.db.collection("dashboards").find(filterCond, projection).toArray(function(err, dashboards) {
                 if (err || !dashboards || !dashboards.length) {
                     return common.returnOutput(params, []);
                 }
