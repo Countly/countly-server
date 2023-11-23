@@ -200,8 +200,9 @@ cmsApi.getEntries = function(params) {
             syncCMSDataToDB(params);
         }
         else {
+            const metaEntry = entries.find((item) => item._id.endsWith('meta'));
             const updateInterval = UPDATE_INTERVAL * 60 * 60 * 1000;
-            const timeDifference = Date.now() - entries[0].lu;
+            const timeDifference = Date.now() - (metaEntry.lu || entries[0].lu);
 
             // Update if the update interval has passed
             if (timeDifference >= updateInterval) {
@@ -210,7 +211,6 @@ cmsApi.getEntries = function(params) {
             }
             // Update if the refresh flag is set and the meta entry does not contain an error
             else if (params.qstring.refresh) {
-                let metaEntry = entries.find((item) => item._id.endsWith('meta'));
                 if (metaEntry && !metaEntry.error) {
                     results.updating = true;
                     syncCMSDataToDB(params);
