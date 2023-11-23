@@ -2,12 +2,16 @@
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
         <div class="text-medium">
             <span>{{title}}</span>
-            <cly-asterisk v-if="data.isEstimate" :tooltip="i18n('users.total-users-estimate-tooltip')"></cly-asterisk>
             <span v-if="tooltip" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" v-tooltip.top-center="tooltip"></span>
         </div>
     </div>
     <div class="bu-is-flex bu-is-align-items-center">
-        <h2>{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}</h2>
+        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate">
+            ~{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
+        </h2>
+        <h2 v-else>
+            {{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
+        </h2>
         <div v-if="colorClass == 'up'" :class="'cly-trend-up ' + negatedClass">
             <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{data && data.change}}</span>
         </div>

@@ -263,11 +263,12 @@
                             <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot> <cly-asterisk v-if="isEstimate" :tooltip="estimateTooltip"></cly-asterisk>\ </span>\
+                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
                                     <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
-                                    <h2 :data-test-id="testId + \'-metric-card-number\'"><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <h2 :data-test-id="testId + \'-metric-card-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <h2 :data-test-id="testId + \'-metric-card-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
                                     <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-metric-card-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
@@ -1161,19 +1162,6 @@
                 this.autoRefresh = this.defaultValue;
             }
         }
-    }));
-
-    Vue.component("cly-asterisk", countlyVue.components.BaseComponent.extend({
-        props: {
-            tooltip: {type: String, default: ""},
-            textSize: {type: Number, default: 14}
-        },
-        computed: {
-            fontSize: function() {
-                return "font-size:" + (this.textSize / 2) + "px";
-            }
-        },
-        template: `<i class="fa fa-asterisk cly-asterisk" :style="fontSize" v-tooltip="tooltip"></i>`
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -62,7 +62,7 @@
                     value: countlyCommon.formatNumber(dto.usage['unique-sessions'].total),
                     tooltip: CV.i18n("common.unique-sessions-description"),
                     isEstimate: dto.usage['unique-sessions'].isEstimate,
-                    estimateTooltip: CV.i18n("users.total-users-estimate-tooltip")
+                    estimateTooltip: CV.i18n("common.estimation")
                 }
             ];
         },

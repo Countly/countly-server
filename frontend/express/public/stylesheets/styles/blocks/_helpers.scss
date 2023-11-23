@@ -151,9 +151,10 @@
     width: 100%;
 }
 
-.cly-asterisk {
-    vertical-align: text-top;
+.is-estimate {
     &:hover { 
-        color:#6BB96E; 
+        color:#0166D6; 
+        text-decoration: underline;
+        text-decoration-style: dotted;
     }
 }
