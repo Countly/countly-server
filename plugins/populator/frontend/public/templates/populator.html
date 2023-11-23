@@ -131,9 +131,9 @@
                 searchPlaceholder="Search in Templates"
                 :hasExport="false">
                     <template v-slot="scope">
-                        <el-table-column prop="name" :label="i18n('populator.template')" sortable>
+                        <el-table-column prop="name" :label="i18n('populator.template')" type="clickable" sortable>
                                 <div slot-scope="rowScope">
-                                    {{ rowScope.row.name }}
+                                    <a href="https://google.com">{{ unescapeHtml(rowScope.row.name) }}</a>
                                 </div>
                         </el-table-column>
                         <el-table-column prop="userCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-users')" sortable>

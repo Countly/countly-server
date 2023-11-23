@@ -306,7 +306,6 @@
                             name: item.name,
                             buttonShow: !item.isDefault,
                             isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
-                            // upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
                             userCount: (item.users !== undefined ? Object.keys(item.users).length : 0),
                             eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
                             viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
@@ -319,15 +318,10 @@
                             views: item.views || [],
                             sequences: item.sequences || [],
                             behavior: item.behavior,
-                            isDefault: item.isDefault,
-                            buttonShow: !item.isDefault
-                            // buttonShow: !item.isDefault,
-                            // isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
+                            // up: item.up || [],
                             // upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
                             // eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
                             // editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
-                            // up: item.up,
-                            // events: item.events
                         });
                     });
                     self.isLoading = false;
