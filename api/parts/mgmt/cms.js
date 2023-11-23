@@ -6,14 +6,16 @@
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
     common = require('./../../utils/common.js'),
-    config = require('./../../config.js'),
-    current_processes = {};
+    config = require('./../../config.js');
+
+var current_processes = {},
+    log = common.log('core:cms');
+
 
 const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-video", "server-quick-start", "server-guide-config"],
     UPDATE_INTERVAL = 2, // hours
-    token = "17fa74a2b4b1524e57e8790250f89f44f364fe567f13f4dbef02ef583e70dcdb700f87a6122212bb01ca6a14a8d4b85dc314296f71681988993c013ed2f6305b57b251af723830ea2aa180fc689af1052dd74bc3f4b9b35e5674d4214a8c79695face42057424f0494631679922a3bdaeb780b522bb025dfaea8d7d56a857dba",
-    baseURL = "https://cms.count.ly/api/";
-
+    TOKEN = "17fa74a2b4b1524e57e8790250f89f44f364fe567f13f4dbef02ef583e70dcdb700f87a6122212bb01ca6a14a8d4b85dc314296f71681988993c013ed2f6305b57b251af723830ea2aa180fc689af1052dd74bc3f4b9b35e5674d4214a8c79695face42057424f0494631679922a3bdaeb780b522bb025dfaea8d7d56a857dba",
+    BASE_URL = "https://cms.count.ly/api/";
 
 /**
 * Get entries for a given API ID from Countly CMS
@@ -21,7 +23,7 @@ const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-vid
 * @param {function} callback - callback function
 **/
 function fetchFromCMS(params, callback) {
-    const url = baseURL + params.qstring._id;
+    const url = BASE_URL + params.qstring._id;
     const pageSize = 100;
     var results = [];
 
@@ -40,7 +42,7 @@ function fetchFromCMS(params, callback) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + TOKEN
             }
         })
             .then(response => response.json())
@@ -61,7 +63,7 @@ function fetchFromCMS(params, callback) {
                 }
             })
             .catch(error => {
-                console.log(error);
+                log.e(error);
                 callback(error, null);
             });
     }
@@ -72,14 +74,16 @@ function fetchFromCMS(params, callback) {
 /**
 * Transform and store CMS entries in DB
 * @param {params} params - params object
+* @param {object} err - error object
 * @param {array} data - data array
 * @param {function} callback - callback function
 **/
-function transformAndStoreData(params, data, callback) {
+function transformAndStoreData(params, err, data, callback) {
     const lu = Date.now();
-    if (!data || data.length === 0) {
+
+    if (err || !data || data.length === 0) {
         //Add meta entry
-        common.db.collection('cms_cache').insertOne({_id: `${params.qstring._id}_meta`, lu}, function() {
+        common.db.collection('cms_cache').updateOne({_id: `${params.qstring._id}_meta`}, { $set: {_id: `${params.qstring._id}_meta`, lu, error: !!err}}, { upsert: true }, function() {
             callback(null);
         });
     }
@@ -107,15 +111,15 @@ function transformAndStoreData(params, data, callback) {
         });
 
         // Execute bulk operations to update/insert new entries
-        bulk.execute(function(err) {
-            if (err) {
-                callback(err);
+        bulk.execute(function(err1) {
+            if (err1) {
+                callback(err1);
             }
 
             // Delete old entries
-            common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}, 'lu': {'$lt': lu}}, function(err1) {
-                if (err1) {
-                    callback(err1);
+            common.db.collection('cms_cache').deleteMany({'_id': {'$regex': `^${params.qstring._id}`}, 'lu': {'$lt': lu}}, function(err2) {
+                if (err2) {
+                    callback(err2);
                 }
                 callback(null);
             });
@@ -133,19 +137,12 @@ function syncCMSDataToDB(params) {
         // Set current process
         current_processes.id = Date.now();
         fetchFromCMS(params, function(err, results) {
-            if (err) {
-                common.returnMessage(params, 500, 'An error occured while fetching entries from CMS: ' + err);
-                return false;
-            }
-            if (results) {
-                transformAndStoreData(params, results, function(err1) {
-                    delete current_processes.id;
-                    if (err1) {
-                        common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
-                        return false;
-                    }
-                });
-            }
+            transformAndStoreData(params, err, results, function(err1) {
+                delete current_processes.id;
+                if (err1) {
+                    log.e('An error occured while storing entries in DB: ' + err1);
+                }
+            });
         });
     }
 }
@@ -196,24 +193,35 @@ cmsApi.getEntries = function(params) {
             return false;
         }
         let results = {data: entries || []};
-        if (params.qstring.refresh || !entries || entries.length === 0) {
-            //No entries, fetch them
+
+        if (!entries || entries.length === 0) {
+            // Force update
             results.updating = true;
             syncCMSDataToDB(params);
         }
         else {
             const updateInterval = UPDATE_INTERVAL * 60 * 60 * 1000;
             const timeDifference = Date.now() - entries[0].lu;
-            if ((entries.length === 1 && entries[0]._id === `${params.qstring._id}_meta`) || (entries.length > 1 && timeDifference >= updateInterval)) {
-                //Only meta entry or multiple entries, check if it's time to update
-                if (timeDifference >= updateInterval) {
+
+            // Update if the update interval has passed
+            if (timeDifference >= updateInterval) {
+                results.updating = true;
+                syncCMSDataToDB(params);
+            }
+            // Update if the refresh flag is set and the meta entry does not contain an error
+            else if (params.qstring.refresh) {
+                let metaEntry = entries.find((item) => item._id.endsWith('meta'));
+                if (metaEntry && !metaEntry.error) {
                     results.updating = true;
                     syncCMSDataToDB(params);
                 }
             }
         }
 
+        // Remove meta entry
         results.data = results.data.filter((item) => !item._id.endsWith('meta'));
+
+        // Special case for server-guide-config
         if (params.qstring._id === 'server-guide-config' && results.data && results.data[0]) {
             results.data[0].enableGuides = results.data[0].enableGuides || config.enableGuides;
         }
