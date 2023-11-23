@@ -306,10 +306,12 @@
                             name: item.name,
                             buttonShow: !item.isDefault,
                             isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
+                            // Could also use uniqueUserCount property instead?
                             userCount: (item.users !== undefined ? Object.keys(item.users).length : 0),
                             eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
                             viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
                             sequenceCount: (item.sequences !== undefined ? Object.keys(item.sequences).length : 0),
+                            // generatedOn is missing as a property
                             generatedOn: (item.generatedOn !== undefined ? moment(new Date(item.generatedOn * 1000)).format("Do MMM YY") : '?'),
                             uniqueUserCount: item.uniqueUserCount,
                             platformType: item.platformType || [],
@@ -318,10 +320,7 @@
                             views: item.views || [],
                             sequences: item.sequences || [],
                             behavior: item.behavior,
-                            // up: item.up || [],
-                            // upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
-                            // eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
-                            // editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
+                            lastEditedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
                         });
                     });
                     self.isLoading = false;
