@@ -200,7 +200,7 @@ cmsApi.getEntries = function(params) {
             syncCMSDataToDB(params);
         }
         else {
-            const metaEntry = entries.find((item) => item._id.endsWith('meta'));
+            const metaEntry = entries.find((item) => item._id.endsWith('meta')) || {};
             const updateInterval = UPDATE_INTERVAL * 60 * 60 * 1000;
             const timeDifference = Date.now() - (metaEntry.lu || entries[0].lu);
 
