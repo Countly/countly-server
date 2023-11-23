@@ -6,8 +6,11 @@
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
     common = require('./../../utils/common.js'),
-    config = require('./../../config.js'),
-    current_processes = {};
+    config = require('./../../config.js');
+
+var current_processes = {},
+    log = common.log('core:cms');
+
 
 const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-video", "server-quick-start", "server-guide-config"],
     UPDATE_INTERVAL = 2, // hours
@@ -60,7 +63,7 @@ function fetchFromCMS(params, callback) {
                 }
             })
             .catch(error => {
-                console.log(error);
+                log.e(error);
                 callback(error, null);
             });
     }
@@ -137,7 +140,7 @@ function syncCMSDataToDB(params) {
             transformAndStoreData(params, err, results, function(err1) {
                 delete current_processes.id;
                 if (err1) {
-                    console.log(params, 500, 'An error occured while storing entries in DB: ' + err1);
+                    log.e('An error occured while storing entries in DB: ' + err1);
                 }
             });
         });
