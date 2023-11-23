@@ -137,8 +137,7 @@ function syncCMSDataToDB(params) {
             transformAndStoreData(params, err, results, function(err1) {
                 delete current_processes.id;
                 if (err1) {
-                    common.returnMessage(params, 500, 'An error occured while storing entries in DB: ' + err1);
-                    return false;
+                    console.log(params, 500, 'An error occured while storing entries in DB: ' + err1);
                 }
             });
         });
