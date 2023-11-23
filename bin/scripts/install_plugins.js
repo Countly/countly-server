@@ -4,15 +4,16 @@ var plugins = manager.getPlugins();
 require('../../api/utils/log').setLevel('db:write', 'mute');
 
 if (plugins.length > 0) {
-    manager.connectToAllDatabases().then(async () => {
+    manager.connectToAllDatabases().then(async() => {
         if (!manager.getConfig("api").offline_mode) {
-            await asyncjs.eachSeries(plugins, function (plugin, done) {
-                manager.installPlugin(plugin, function () {
+            await asyncjs.eachSeries(plugins, function(plugin, done) {
+                manager.installPlugin(plugin, function() {
                     done();
                 });
             });
-        } else {
-            console.log("Server is in offline mode, not installing any plugins.")
+        }
+        else {
+            console.log("Server is in offline mode, not installing any plugins.");
         }
 
         //processing plugin files for production mode
@@ -21,5 +22,5 @@ if (plugins.length > 0) {
             console.log("Exiting");
             process.exit(0);
         });
-    })
+    });
 }
