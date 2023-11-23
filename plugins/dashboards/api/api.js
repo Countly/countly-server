@@ -463,64 +463,82 @@ plugins.setConfigs("dashboards", {
                     return common.returnOutput(params, []);
                 }
 
-                async.forEach(dashboards, function(dashboard, done) {
-                    async.parallel([
-                        hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
-                        fetchMembersData.bind(null, [dashboard.owner_id], [])
-                    ], function(perr, result) {
-                        if (perr) {
-                            return done(perr);
-                        }
-
-                        var hasEditAccess = result[0];
-                        var widgetsMeta = result[1] || [];
-                        var ownerData = result[2];
-
-                        if (dashboard.owner_id === memberId || member.global_admin) {
-                            dashboard.is_owner = true;
-                        }
-
-                        if (hasEditAccess) {
-                            dashboard.is_editable = true;
-                        }
-
-                        if (ownerData && ownerData.length) {
-                            dashboard.owner = ownerData[0];
-                        }
-
-                        if (!dashboard.share_with) {
-                            if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
-                                dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
-                                dashboard.shared_email_view && dashboard.shared_email_view.length ||
-                                dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
-                                dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
-                                dashboard.share_with = "selected-users";
+                if (!just_schema) {
+                    async.forEach(dashboards, function(dashboard, done) {
+                        async.parallel([
+                            hasEditAccessToDashboard.bind(null, member, dashboard),
+                            fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
+                            fetchMembersData.bind(null, [dashboard.owner_id], [])
+                        ], function(perr, result) {
+                            if (perr) {
+                                return done(perr);
                             }
-                            else {
-                                dashboard.share_with = "none";
-                            }
-                        }
 
+                            var hasEditAccess = result[0];
+                            var widgetsMeta = result[1] || [];
+                            var ownerData = result[2];
+
+                            if (dashboard.owner_id === memberId || member.global_admin) {
+                                dashboard.is_owner = true;
+                            }
+
+                            if (hasEditAccess) {
+                                dashboard.is_editable = true;
+                            }
+
+                            if (ownerData && ownerData.length) {
+                                dashboard.owner = ownerData[0];
+                            }
+
+                            if (!dashboard.share_with) {
+                                if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
+                                    dashboard.shared_with_view && dashboard.shared_with_view.length ||
+                                    dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                    dashboard.shared_email_view && dashboard.shared_email_view.length ||
+                                    dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
+                                    dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
+                                    dashboard.share_with = "selected-users";
+                                }
+                                else {
+                                    dashboard.share_with = "none";
+                                }
+                            }
+
+                            delete dashboard.shared_with_edit;
+                            delete dashboard.shared_with_view;
+                            delete dashboard.shared_email_view;
+                            delete dashboard.shared_email_edit;
+                            delete dashboard.shared_user_groups_edit;
+                            delete dashboard.shared_user_groups_view;
+
+                            dashboard.widgets = widgetsMeta[0] || [];
+                            dashboard.apps = widgetsMeta[1] || [];
+
+                            done();
+                        });
+                    }, function(e) {
+                        if (e) {
+                            return common.returnOutput(params, []);
+                        }
+                        common.returnOutput(params, dashboards);
+                    });
+                }
+                else {
+                    async.forEach(dashboards, function(dashboard, done) {
                         delete dashboard.shared_with_edit;
                         delete dashboard.shared_with_view;
                         delete dashboard.shared_email_view;
                         delete dashboard.shared_email_edit;
                         delete dashboard.shared_user_groups_edit;
                         delete dashboard.shared_user_groups_view;
-
-                        dashboard.widgets = widgetsMeta[0] || [];
-                        dashboard.apps = widgetsMeta[1] || [];
-
                         done();
+                    }, function(e) {
+                        if (e) {
+                            return common.returnOutput(params, []);
+                        }
+                        common.returnOutput(params, dashboards);
                     });
-                }, function(e) {
-                    if (e) {
-                        return common.returnOutput(params, []);
-                    }
-                    common.returnOutput(params, dashboards);
-                });
+                }
             });
         });
 
