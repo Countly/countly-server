@@ -7,6 +7,16 @@ var CMS_BASE_URL = "https://cms.count.ly/";
 
 (function(countlyCMS, $) {
 
+    var transformCMSResponse = function(response, params) {
+        var result = [];
+
+        response.forEach(function(item) {
+            result.push(Object.assign({_id: params.entryID + '_' + item.id, lu: Date.now()}, item.attributes));
+        });
+
+        return result;
+    };
+
     countlyCMS.requestFromCMS = function(params) {
         var pageSize = 100;
         var url = new URL('/api/' + params.entryID, CMS_BASE_URL);
@@ -51,6 +61,28 @@ var CMS_BASE_URL = "https://cms.count.ly/";
         };
 
         return requestPage(1);
+    };
+
+    countlyCMS.newFetchEntry = function(entryID, options) {
+        var params = {};
+        params.entryID = entryID;
+
+        if (options.populate) {
+            params.populate = options.populate;
+        }
+        if (options.query) {
+            params.query = JSON.stringify(options.query);
+        }
+
+        return new Promise(function(resolve, reject) {
+            countlyCMS.requestFromCMS(params)
+                .then(function(resp) {
+                    resolve({data: transformCMSResponse(resp, params)});
+                })
+                .catch(function(err) {
+                    reject(err);
+                });
+        });
     };
 
     countlyCMS.fetchEntry = function(entryID, options) {
