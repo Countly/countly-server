@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery */
+/* global countlyCommon, countlyGlobal, jQuery */
 
 // frontend client for fetching data from cms.count.ly
 
@@ -61,6 +61,30 @@ var CMS_BASE_URL = "https://cms.count.ly/";
         };
 
         return requestPage(1);
+    };
+
+    countlyCMS.saveEntries = function(entryID, entries) {
+        var formData = new FormData();
+        formData.append('app_id', countlyCommon.ACTIVE_APP_ID);
+        formData.append('api_key', countlyGlobal.member.api_key);
+        formData.append('_id', entryID);
+        formData.append('entries', JSON.stringify(entries));
+
+        return new Promise(function(resolve, reject) {
+            $.ajax({
+                url: countlyCommon.API_PARTS.data.w + "/cms/save_entries",
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    resolve(response);
+                },
+                error: function(xhr) {
+                    reject(xhr.responseJSON);
+                },
+            });
+        });
     };
 
     countlyCMS.newFetchEntry = function(entryID, options) {

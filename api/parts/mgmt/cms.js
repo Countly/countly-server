@@ -89,8 +89,17 @@ function transformAndStoreData(params, err, data, callback) {
     }
     else {
         var transformedData = [];
-        for (let i = 0; i < data.length; i++) {
-            transformedData.push(Object.assign({_id: `${params.qstring._id}_${data[i].id}`, lu}, data[i].attributes));
+
+        if (params.dataTransformed) {
+            transformedData = data;
+            transformedData.forEach(item => {
+                item.lu = lu;
+            });
+        }
+        else {
+            for (let i = 0; i < data.length; i++) {
+                transformedData.push(Object.assign({_id: `${params.qstring._id}_${data[i].id}`, lu}, data[i].attributes));
+            }
         }
 
         var bulk = common.db.collection("cms_cache").initializeUnorderedBulkOp();
@@ -146,6 +155,22 @@ function syncCMSDataToDB(params) {
         });
     }
 }
+
+cmsApi.saveEntries = function(params) {
+    transformAndStoreData(
+        Object.assign({dataTransformed: true}, params),
+        null,
+        JSON.parse(params.qstring.entries),
+        function(err1) {
+            if (err1) {
+                log.e('An error occured while storing entries in DB: ' + err1);
+                common.returnMessage(params, 500, `Error occured when saving entries to DB: ${err1}`);
+            }
+            else {
+                common.returnMessage(params, 200, 'Entries saved');
+            }
+        });
+};
 
 /**
 * Get entries for a given API ID
