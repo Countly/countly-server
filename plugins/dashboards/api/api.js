@@ -523,22 +523,6 @@ plugins.setConfigs("dashboards", {
                         common.returnOutput(params, dashboards);
                     });
                 }
-                else {
-                    async.forEach(dashboards, function(dashboard, done) {
-                        delete dashboard.shared_with_edit;
-                        delete dashboard.shared_with_view;
-                        delete dashboard.shared_email_view;
-                        delete dashboard.shared_email_edit;
-                        delete dashboard.shared_user_groups_edit;
-                        delete dashboard.shared_user_groups_view;
-                        done();
-                    }, function(e) {
-                        if (e) {
-                            return common.returnOutput(params, []);
-                        }
-                        common.returnOutput(params, dashboards);
-                    });
-                }
             });
         });
 
