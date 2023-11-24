@@ -1,3 +1,16 @@
+## Version 23.11.1
+Fixes:
+- [scripts] Fix for Check app images scripts
+- [onboarding] Fix onboarding loop for offline only installs
+- [cms] Stop cms calls after failure
+- [cms] Calculate timedifference against meta entry
+- [heatmaps] Update deprecated methods in heatmaps.js
+  
+Enterprise Fixes:
+- [drill] Fix the correct type prefix for widget names
+- [surveys] Fix the survey api to include previous month
+- [attribution] Fix encoding on campaign links
+
 ## Version 23.11
 Features:
 - [apps] App initial as default app image
