@@ -89,6 +89,21 @@
 		<template  v-slot:default="drawerScope">
 			<cly-form-step id="step1" :name="i18n('feedback.settings')">
         <div class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading bu-mb-1">
+              {{i18n('surveys.drawer.internal.name')}}
+            </div>
+            <div class="text-smallish color-cool-gray-50 bu-mb-1">
+              {{i18n('feedback.internalName.description')}}
+            </div>
+            <validation-provider name="internalName" rules="required" v-slot="v">
+              <el-input
+                :class="{'is-error': v.errors.length > 0}"
+                v-model="drawerScope.editedObject.internalName"
+                :placeholder="i18n('feedback.internalName.placeholder')">
+              </el-input>
+            </validation-provider>
+          </div>
+        <div class="cly-vue-drawer-step__section">
           <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-question-label">
             {{i18n('feedback.question')}}
           </div>
