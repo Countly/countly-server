@@ -211,7 +211,8 @@
                 tableModes: [
                     {"key": "all", "label": CV.i18n('common.all')},
                     {"key": "selected", "label": CV.i18n('views.selected-views')}
-                ]
+                ],
+                isSpecialPeriod: countlyCommon.periodObj.isSpecialPeriod,
             };
         },
         mounted: function() {
@@ -477,6 +478,9 @@
                     return countlyCommon.formatSecond(value);
                 }
                 return countlyCommon.getShortNumber(value);
+            },
+            dateChanged: function() {
+                this.isSpecialPeriod = countlyCommon.periodObj.isSpecialPeriod;
             }
 
 
