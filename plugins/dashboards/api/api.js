@@ -523,6 +523,20 @@ plugins.setConfigs("dashboards", {
                         common.returnOutput(params, dashboards);
                     });
                 }
+                else {
+                    async.forEach(dashboards, function(dashboard, done) {
+                        if (dashboard.owner_id === memberId || member.global_admin) {
+                            dashboard.is_owner = true;
+                        }
+                        dashboard.share_with = "none";
+                        done();
+                    }, function(e) {
+                        if (e) {
+                            return common.returnOutput(params, []);
+                        }
+                        common.returnOutput(params, dashboards);
+                    });
+                }
             });
         });
 
