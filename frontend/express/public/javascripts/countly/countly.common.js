@@ -169,6 +169,22 @@
 
             store.set("countly_date", period);
         };
+        /* Returns strings representing dates, not timestamps*/
+        countlyCommon.getPeriodAsDateStrings = function() {
+            var array = [];
+            if (Array.isArray(_period)) {
+                if (countlyCommon.periodObj.currentPeriodArr && countlyCommon.periodObj.currentPeriodArr.length > 0) {
+                    var splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
+                    splitted = countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");
+                }
+                return JSON.stringify(array);
+            }
+            else {
+                return countlyCommon.getPeriodForAjax();
+            }
+        };
 
         /**
         * Get currently selected period
