@@ -22,7 +22,7 @@ var CMS_BASE_URL = "https://cms.count.ly/";
         var url = new URL('/api/' + params.entryID, CMS_BASE_URL);
         var results = [];
 
-        var requestPage = function(pageNumber) {
+        var doRequest = function(pageNumber) {
             url.searchParams.append('pagination[page]', pageNumber);
             url.searchParams.append('pagination[pageSize]', pageSize);
 
@@ -37,26 +37,32 @@ var CMS_BASE_URL = "https://cms.count.ly/";
                         'Authorization': 'Bearer ' + CMS_TKN,
                     },
                     success: function(response) {
-                        var data = response.data;
-                        var meta = response.meta;
-
-                        if (data && data.length > 0 || data.id) {
-                            results = results.concat(data);
-                        }
-
-                        if (meta && meta.pagination && meta.pagination.page < meta.pagination.pageCount) {
-                            // Fetch next page
-                            requestPage(meta.pagination.page + 1);
-                        }
-                        else {
-                            // All pages fetched or no pagination metadata, resolve
-                            resolve(results);
-                        }
+                        resolve(response);
                     },
                     error: function(xhr) {
                         reject(xhr.responseJSON);
                     },
                 });
+            });
+        };
+
+        var requestPage = function(pageNumber) {
+            return doRequest(pageNumber).then(function(response) {
+                var data = response.data;
+                var meta = response.meta;
+
+                if (data && data.length > 0 || data.id) {
+                    results = results.concat(data);
+                }
+
+                if (meta && meta.pagination && meta.pagination.page < meta.pagination.pageCount) {
+                    // Fetch next page
+                    return requestPage(meta.pagination.page + 1);
+                }
+                else {
+                    // All pages fetched or no pagination metadata, resolve
+                    return Promise.resolve(results);
+                }
             });
         };
 
