@@ -174,10 +174,11 @@ cmsApi.saveEntries = function(params) {
 
 /**
 * Get entries for a given API ID
+* Will request from CMS if entries are stale or not found
 * @param {params} params - params object
 * @returns {boolean} true
 **/
-cmsApi.getEntries = function(params) {
+cmsApi.getEntriesWithUpdate = function(params) {
 
     if (!params.qstring._id || AVAILABLE_API_IDS.indexOf(params.qstring._id) === -1) {
         common.returnMessage(params, 400, 'Missing or incorrect API _id parameter');
@@ -242,6 +243,66 @@ cmsApi.getEntries = function(params) {
                 }
             }
         }
+
+        // Remove meta entry
+        results.data = results.data.filter((item) => !item._id.endsWith('meta'));
+
+        // Special case for server-guide-config
+        if (params.qstring._id === 'server-guide-config' && results.data && results.data[0]) {
+            results.data[0].enableGuides = results.data[0].enableGuides || config.enableGuides;
+        }
+
+        common.returnOutput(params, results);
+        return true;
+    });
+};
+
+/**
+* Get entries for a given API ID
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+cmsApi.getEntries = function(params) {
+
+    if (!params.qstring._id || AVAILABLE_API_IDS.indexOf(params.qstring._id) === -1) {
+        common.returnMessage(params, 400, 'Missing or incorrect API _id parameter');
+        return false;
+    }
+
+    var query = { '_id': { '$regex': `^${params.qstring._id}` } };
+
+    try {
+        params.qstring.query = JSON.parse(params.qstring.query);
+    }
+    catch (ex) {
+        params.qstring.query = null;
+    }
+
+    if (params.qstring.query) {
+        query = {
+            $and: [
+                { '_id': { '$regex': `^${params.qstring._id}` } },
+                {
+                    $or: [
+                        { '_id': `${params.qstring._id}_meta` },
+                    ]
+                }
+            ]
+        };
+        for (var cond in params.qstring.query) {
+            var condition = {};
+            condition[cond] = params.qstring.query[cond];
+            query.$and[1].$or.push(condition);
+        }
+        params.qstring.query = query;
+    }
+
+    common.db.collection('cms_cache').find(query).toArray(function(err, entries) {
+        if (err) {
+            common.returnMessage(params, 500, 'An error occured while fetching CMS entries from DB: ' + err);
+            return false;
+        }
+        let results = {data: entries || []};
 
         // Remove meta entry
         results.data = results.data.filter((item) => !item._id.endsWith('meta'));
