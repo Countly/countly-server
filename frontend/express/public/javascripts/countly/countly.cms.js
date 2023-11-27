@@ -4,6 +4,7 @@
 
 var CMS_TKN = "17fa74a2b4b1524e57e8790250f89f44f364fe567f13f4dbef02ef583e70dcdb700f87a6122212bb01ca6a14a8d4b85dc314296f71681988993c013ed2f6305b57b251af723830ea2aa180fc689af1052dd74bc3f4b9b35e5674d4214a8c79695face42057424f0494631679922a3bdaeb780b522bb025dfaea8d7d56a857dba";
 var CMS_BASE_URL = "https://cms.count.ly/";
+var UPDATE_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
 
 (function(countlyCMS, $) {
 
@@ -11,15 +12,24 @@ var CMS_BASE_URL = "https://cms.count.ly/";
         var result = [];
 
         response.forEach(function(item) {
-            result.push(Object.assign({_id: params.entryID + '_' + item.id, lu: Date.now()}, item.attributes));
+            result.push(Object.assign({_id: params._id + '_' + item.id, lu: Date.now()}, item.attributes));
         });
 
         return result;
     };
 
+    var entryNeedsUpdate = function(entry) {
+        if ('lu' in entry) {
+            var diff = Date.now() - entry.lu;
+            return diff >= UPDATE_INTERVAL;
+        }
+
+        return true;
+    };
+
     countlyCMS.requestFromCMS = function(params) {
         var pageSize = 100;
-        var url = new URL('/api/' + params.entryID, CMS_BASE_URL);
+        var url = new URL('/api/' + params._id, CMS_BASE_URL);
         var results = [];
 
         var doRequest = function(pageNumber) {
@@ -93,9 +103,40 @@ var CMS_BASE_URL = "https://cms.count.ly/";
         });
     };
 
+    countlyCMS.requestFromBackend = function(params) {
+        return new Promise(function(resolve, reject) {
+            $.ajax({
+                url: countlyCommon.API_PARTS.data.r + "/cms/entries",
+                data: params,
+                success: function(response) {
+                    resolve(response);
+                },
+                error: function(xhr) {
+                    reject(xhr.responseJSON);
+                },
+            });
+        });
+    };
+
+    countlyCMS.requestFromCMSAndSave = function(params) {
+        return new Promise(function(resolve, reject) {
+            countlyCMS.requestFromCMS(params)
+                .then(function(response) {
+                    var transformedResponse = transformCMSResponse(response, params);
+
+                    countlyCMS.saveEntries(params._id, transformedResponse);
+
+                    resolve({data: transformedResponse});
+                })
+                .catch(function(err) {
+                    reject(err);
+                });
+        });
+    };
+
     countlyCMS.newFetchEntry = function(entryID, options) {
         var params = {};
-        params.entryID = entryID;
+        params._id = entryID;
 
         if (options.populate) {
             params.populate = options.populate;
@@ -104,15 +145,38 @@ var CMS_BASE_URL = "https://cms.count.ly/";
             params.query = JSON.stringify(options.query);
         }
 
-        return new Promise(function(resolve, reject) {
-            countlyCMS.requestFromCMS(params)
-                .then(function(resp) {
-                    resolve({data: transformCMSResponse(resp, params)});
-                })
-                .catch(function(err) {
-                    reject(err);
-                });
-        });
+        if (options.CMSFirst) {
+            // Request from cms first
+            return countlyCMS.requestFromCMSAndSave(params);
+        }
+        else {
+            // Request from backend first
+            return new Promise(function(resolve, reject) {
+                countlyCMS.requestFromBackend(params)
+                    .then(function(response) {
+                        // data found in backend
+                        if (response.data && response.data.length > 0) {
+                            // if data from backend is stale, get new data
+                            if (entryNeedsUpdate(response.data[0]) || options.refresh) {
+                                return countlyCMS.requestFromCMSAndSave(params);
+                            }
+                            else {
+                                resolve(response);
+                            }
+                        }
+                        else {
+                            // data not found in backend, get from cms
+                            return countlyCMS.requestFromCMSAndSave(params);
+                        }
+                    })
+                    .then(function(response) {
+                        resolve(response);
+                    })
+                    .catch(function(err) {
+                        reject(err);
+                    });
+            });
+        }
     };
 
     countlyCMS.fetchEntry = function(entryID, options) {
