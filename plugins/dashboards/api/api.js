@@ -528,7 +528,6 @@ plugins.setConfigs("dashboards", {
                         if (dashboard.owner_id === memberId || member.global_admin) {
                             dashboard.is_owner = true;
                         }
-                        dashboard.share_with = "none";
                         done();
                     }, function(e) {
                         if (e) {
