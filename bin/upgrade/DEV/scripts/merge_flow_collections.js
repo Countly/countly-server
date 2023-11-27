@@ -7,7 +7,7 @@
 
 const pluginManager = require('../../../../plugins/pluginManager');
 
-function mergeFlowsCollections(type, collections, db) {
+async function mergeFlowsCollections(type, collections, db) {
     let targetCollectionName = '';
     let processes = [];
     if (type === 'flowSchema') {
@@ -29,7 +29,7 @@ function mergeFlowsCollections(type, collections, db) {
         pipeline.push({
             $addFields: {
                 '_id': { $concat: [appId, '_', { $toString: '$_id' }] },
-                'appId': appId,
+                'app_id': appId,
             },
         });
         pipeline.push({
@@ -39,9 +39,15 @@ function mergeFlowsCollections(type, collections, db) {
             }
         });
 
-        processes.push(db.collection(collectionName).aggregate(pipeline).toArray());  
+        try {
+            await db.collection(collectionName).aggregate(pipeline).toArray();
+            console.log(`Finished merging ${type} collection: ${collectionName}`);
+        }
+        catch (error) {
+            console.log(`Error merging ${type} collection ${collectionName}: ${error}`);
+            throw error;
+        }
     }
-    return Promise.allSettled(processes);
 }
 
 pluginManager.dbConnection().then(async(countlyDb) => {
@@ -50,28 +56,22 @@ pluginManager.dbConnection().then(async(countlyDb) => {
         let collectionNames = allCollections.map(o => o.name);
         const flowSchemaCollections = collectionNames.filter(x => x.startsWith('flowSchema'));
         const flowDataCollections = collectionNames.filter(x => x.startsWith('flowData'));
+
         try {
-            const result = await mergeFlowsCollections('flowSchema', flowSchemaCollections, countlyDb);
-            const faileds = result.filter(x=>x.status === 'rejected');
-            if (faileds.length) {
-                throw new Error(faileds.map(x=>x.reason).join('\n'));
-            }
+            await mergeFlowsCollections('flowSchema', flowSchemaCollections, countlyDb);
             console.log('Finished merging flowSchema collections.');
         }
         catch (error) {
             console.log(`Error merging flowSchema collections: ${error}`);
         }
+
         try {
-            const result = await mergeFlowsCollections('flowData', flowDataCollections, countlyDb);
-            const faileds = result.filter(x=>x.status === 'rejected');
-            if (faileds.length) {
-                throw new Error(faileds.map(x=>x.reason).join('\n'));
-            }
+            await mergeFlowsCollections('flowData', flowDataCollections, countlyDb);
             console.log('Finished merging flowData collections.');
         }
         catch (error) {
-            console.log(`Error merging flowData collections: ${error}`);  
-        } 
+            console.log(`Error merging flowData collections: ${error}`);
+        }
     }
     catch (error) {
         console.log(`Error merging flow collections: ${error}`);
