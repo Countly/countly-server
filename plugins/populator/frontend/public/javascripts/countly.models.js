@@ -111,7 +111,7 @@
             },
             "views": ["view1", "view2", "view3"],
             "sequences": ["sequence1", "sequence2", "sequence3"],
-            "generatedOn": Math.round((Date.now().valueOf() || 0) / 1000),
+            "generatedOn": Math.round((Date.now().valueOf() || 0)),
         },
         {
             "_id": "defaultHealthcare",
@@ -170,7 +170,7 @@
             "users": ["user1", "user2", "user3"],
             "views": ["view1", "view2", "view3", "view4", "view5", "view6"],
             "sequences": ["sequence1", "sequence2", "sequence3", "sequence4"],
-            "generatedOn": Math.round((Date.now().valueOf() || 0) / 1000),
+            "generatedOn": Math.round((Date.now().valueOf() || 0)),
         },
         {
             "_id": "defaultEcommerce",
