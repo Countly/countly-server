@@ -524,16 +524,11 @@ plugins.setConfigs("dashboards", {
                     });
                 }
                 else {
-                    try {
-                        dashboards.forEach((dashboard) => {
-                            if (dashboard.owner_id === memberId || member.global_admin) {
-                                dashboard.is_owner = true;
-                            }
-                        });
-                    }
-                    catch (error) {
-                        return common.returnOutput(params, []);
-                    }
+                    dashboards.forEach((dashboard) => {
+                        if (dashboard.owner_id === memberId || member.global_admin) {
+                            dashboard.is_owner = true;
+                        }
+                    });
                     common.returnOutput(params, dashboards);
                 }
             });
