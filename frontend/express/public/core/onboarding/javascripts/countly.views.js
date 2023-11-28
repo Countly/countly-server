@@ -428,7 +428,7 @@
     var sessionCount = countlyGlobal.member.session_count || 0;
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
-    countlyCMS.fetchEntry('server-quick-start', { populate: true }).then(function(resp) {
+    countlyCMS.fetchEntry('server-quick-start', { populate: true, CMSFirst: true }).then(function(resp) {
         var isConsentPage = /initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash);
         if (resp.data && resp.data.length && !isConsentPage) {
             var showForNSessions = resp.data[0].showForNSessions;
