@@ -275,6 +275,7 @@
                         </div>\
                     </div>'
     }));
+
     Vue.component("cly-metric-breakdown", countlyVue.components.create({
         template: countlyVue.T('/javascripts/countly/vue/templates/breakdown.html'),
         mixins: [
