@@ -1724,7 +1724,7 @@
         },
         beforeMount: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/getAll").then(function() {
+            this.$store.dispatch("countlyDashboards/getAll", {just_schema: true}).then(function() {
                 self.identifySelected();
             });
         }
@@ -1743,7 +1743,7 @@
         pluginName: "dashboards",
         beforeCreate: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/getAll").then(function(res) {
+            this.$store.dispatch("countlyDashboards/getAll", {just_schema: true}).then(function(res) {
                 if (res) {
                     var dashboards = [];
 
