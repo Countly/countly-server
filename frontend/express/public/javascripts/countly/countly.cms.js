@@ -143,14 +143,16 @@ var UPDATE_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
         var params = {};
         params._id = entryID;
 
-        if (options.populate) {
-            params.populate = options.populate;
-        }
-        if (options.query) {
-            params.query = JSON.stringify(options.query);
+        if (options) {
+            if (options.populate) {
+                params.populate = options.populate;
+            }
+            if (options.query) {
+                params.query = JSON.stringify(options.query);
+            }
         }
 
-        if (options.CMSFirst) {
+        if (options && options.CMSFirst) {
             // Request from cms first
             return countlyCMS.requestFromCMSAndSave(params);
         }
