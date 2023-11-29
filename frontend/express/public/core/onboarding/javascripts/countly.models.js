@@ -2,10 +2,6 @@
 
 (function(countlyOnboarding) {
 
-    countlyCMS.fetchEntry('server-consents');
-    countlyCMS.fetchEntry('server-intro-video');
-    countlyCMS.fetchEntry('server-quick-start', { populate: true });
-
     countlyOnboarding.generateAPIKey = function() {
         var length = 40;
         var text = [];
@@ -155,7 +151,7 @@
                 });
             },
             fetchIntroVideos: function(context) {
-                countlyCMS.fetchEntry('server-intro-video').then(function(resp) {
+                countlyCMS.fetchEntry('server-intro-video', { CMSFirst: true }).then(function(resp) {
                     context.commit('setIntroVideos', {
                         videoLinkForCE: resp.data[0].videoLinkForCE || '',
                         videoLinkForEE: resp.data[0].videoLinkForEE || '',
@@ -163,7 +159,7 @@
                 });
             },
             fetchConsentItems: function(context) {
-                countlyCMS.fetchEntry('server-consents').then(function(resp) {
+                countlyCMS.fetchEntry('server-consents', { CMSFirst: true }).then(function(resp) {
                     context.commit('setConsentItems', resp.data);
                 });
             },
