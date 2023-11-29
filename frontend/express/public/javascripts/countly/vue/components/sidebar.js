@@ -907,7 +907,7 @@
             created: function() {
                 var self = this;
                 if (this.enableGuides) {
-                    countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
+                    countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
                 }
