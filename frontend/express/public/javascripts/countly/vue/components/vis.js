@@ -901,6 +901,11 @@
                 type: String,
                 required: false,
                 default: "weekly"
+            },
+            testId: {
+                type: String,
+                required: false,
+                default: "test-id"
             }
         },
         data: function() {
@@ -1739,6 +1744,10 @@
                 type: String,
                 default: 'line'
             },
+            testId: {
+                required: false,
+                default: 'test-id'
+            }
         },
         mixins: [
             countlyVue.mixins.i18n
@@ -1759,11 +1768,11 @@
                 }
             }
         },
-        template: '<div class="chart-type-toggle-wrapper">\
-                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select">\
-                            <div class="chart-type-toggle-wrapper__title"><span class="text-smaller font-weight-bold bu-is-uppercase">{{i18n("common.chart-type")}}</span></div>\
-                            <el-option value="line" label="Line"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type">Line Chart</span></el-option>\
-                            <el-option value="bar" label="Bar"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type">Bar</span></el-option>\
+        template: '<div class="chart-type-toggle-wrapper" :data-test-id="testId + \'-chart-type-toggle-wrapper\'">\
+                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select" :test-id="testId">\
+                            <div class="chart-type-toggle-wrapper__title" :data-test-id="testId + \'-chart-type-toggle-wrapper-title\'"><span class="text-smaller font-weight-bold bu-is-uppercase" :data-test-id="testId + \'-chart-type-label\'">{{i18n("common.chart-type")}}</span></div>\
+                            <el-option value="line" label="Line" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line\'"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line-text\'">Line Chart</span></el-option>\
+                            <el-option value="bar" label="Bar" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar\'"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar-text\'">Bar</span></el-option>\
                         </el-select>\
                     </div>'
     });
@@ -1973,7 +1982,7 @@
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                                <chart-toggle :test-id="testId" :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
@@ -2577,7 +2586,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\

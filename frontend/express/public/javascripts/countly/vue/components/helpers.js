@@ -260,22 +260,21 @@
         },
         template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses" :style="metricStyles">\
                         <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between has-ellipsis">\
-                            <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
+                            <cly-progress-donut class="bu-pr-4 bu-is-flex" :test-id="label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase()" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
-                                    <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
+                                    <span :data-test-id="testId + \'-\' + label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase() + \'-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <cly-tooltip-icon :data-test-id="testId + \'-\' + label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase() + \'-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
-                                    <h2 :data-test-id="testId + \'-metric-card-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <h2 :data-test-id="testId + \'-metric-card-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-metric-card-description\'" class="text-medium">{{description}}</span></slot></div>\
+                                    <h2 :data-test-id="testId + \'-\' + label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase() + \'-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <h2 :data-test-id="testId + \'-\' + label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase() + \'-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-\' + label.replace(\' / \', \'-\').replace(\' \', \'-\').toLowerCase() + \'-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
                     </div>'
     }));
-
     Vue.component("cly-metric-breakdown", countlyVue.components.create({
         template: countlyVue.T('/javascripts/countly/vue/templates/breakdown.html'),
         mixins: [

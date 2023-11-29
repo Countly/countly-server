@@ -1,24 +1,24 @@
 <div v-bind:class="[componentId]">
-<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
-	<div class="bu-columns bu-is-multiline bu-is-gapless technology-dashboard-widget technology-analytics-wrapper"  v-loading="isLoading">
-		<div class="bu-column bu-is-6 " :key="idx" v-for="(item, idx) in dataBlocks">
-			<cly-section :class="(idx === 0 || idx === 1)? 'bu-pb-2' : 'bu-pt-2 bu-pb-2'">
-					<div class="bu-level-left bu-p-5">
-						<span class="text-medium text-uppercase">{{item.title}}</span>
-						<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
-					</div>
-					<div class="topData bu-pl-3 bu-pr-3 bu-pb-5">
-						<div :key="idx2" v-for="(item2, idx2) in item.data" >
-							<div class="version-graph-block bu-p-3">
-								<div class="bu-columns version-graph-title">
-									<div class="bu-column">{{item2.name}}</div>
-									<div class="bu-column">{{formatNumber(item2.value)}} {{item2.value > 1 ? 'Users' : 'User'}}<span class="divider"> | </span>{{item2.percent}}% </div>
+	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
+		<div class="bu-columns bu-is-multiline bu-is-gapless technology-dashboard-widget technology-analytics-wrapper"  v-loading="isLoading">
+			<div class="bu-column bu-is-6 " :key="idx" v-for="(item, idx) in dataBlocks">
+				<cly-section :class="(idx === 0 || idx === 1)? 'bu-pb-2' : 'bu-pt-2 bu-pb-2'">
+						<div class="bu-level-left bu-p-5">
+							<span class="text-medium text-uppercase" :data-test-id="`cly-section-label-${item.title.toLowerCase().replace(/\s/g, '-')}`">{{item.title}}</span>
+							<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip" :data-test-id="`cly-section-tooltip-${item.title.toLowerCase().replace(/\s/g, '-')}`" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+						</div>
+						<div class="topData bu-pl-3 bu-pr-3 bu-pb-5">
+							<div :key="idx2" v-for="(item2, idx2) in item.data" >
+								<div class="version-graph-block bu-p-3">
+									<div class="bu-columns version-graph-title">
+										<div class="bu-column">{{item2.name}}</div>
+										<div class="bu-column">{{formatNumber(item2.value)}} {{item2.value > 1 ? 'Users' : 'User'}}<span class="divider"> | </span>{{item2.percent}}% </div>
+									</div>
+									<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 								</div>
-								<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 							</div>
 						</div>
-					</div>
-			</cly-section>
+				</cly-section>
+			</div>
 		</div>
 	</div>
-</div>

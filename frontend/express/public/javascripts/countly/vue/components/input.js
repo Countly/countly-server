@@ -1142,22 +1142,22 @@
         template: '<div class="cly-vue-radio-block" v-bind:class="topClasses" style="height: 100%; overflow: auto; border-right: 1px solid #ececec">\n' +
                              '<div :class="wrapperClasses" style="height: 100%">\n' +
                                 '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :style="buttonStyles" >\n' +
-                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;">\
-                                        <div class="bu-is-flex">\
-                                            <div class="box"></div>\
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;" :data-test-id="`cly-radio-button-box-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
+                                        <div class="bu-is-flex" :data-test-id="`cly-radio-box-container-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
+                                            <div class="box" :data-test-id="`cly-radio-box-${item.label.replace(\' \', \'-\').toLowerCase()}`"></div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                                 <div>\
-                                                    <span class="text-medium">{{item.label}}</span>\
-                                                    <span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span>\
+                                                    <span class="text-medium" :data-test-id="`cly-radio-label-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.label}}</span>\
+                                                    <span v-if="item.description" :data-test-id="`cly-radio-description-${item.label.replace(\' \', \'-\').toLowerCase()}`" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span>\
                                                 </div>\
                                                 <div class="bu-is-flex bu-is-align-items-center number">\
-                                                    <h2 v-if="item.isEstimate" class="is-estimate" v-tooltip="item.estimateTooltip">~{{item.number}}</h2>\
+                                                    <h2 v-if="item.isEstimate" class="is-estimate" v-tooltip="item.estimateTooltip" :data-test-id="`cly-radio-number-${item.label.replace(\' \', \'-\').toLowerCase()}`">~{{item.number}}</h2>\
                                                     <h2 v-else>{{item.number}}</h2>\
-                                                    <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2">\
-                                                        <i class="cly-trend-up-icon ion-android-arrow-up"></i><span>{{item.trendValue}}</span>\
+                                                    <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
+                                                        <i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="`cly-radio-trend-up-icon-${item.label.replace(\' \', \'-\').toLowerCase()}`"></i><span>{{item.trendValue}}</span>\
                                                     </div>\
-                                                    <div v-if="item.trend == \'d\'" class="cly-trend-down bu-ml-2">\
-                                                        <i class="cly-trend-down-icon ion-android-arrow-down"></i><span>{{item.trendValue}}</span>\
+                                                    <div v-if="item.trend == \'d\'" class="cly-trend-down bu-ml-2" :data-test-id="`cly-radio-trend-down-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
+                                                        <i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="`cly-radio-trend-down-icon-${item.label.replace(\' \', \'-\').toLowerCase()}`"></i><span :data-test-id="`cly-radio-trend-value-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.trendValue}}</span>\
                                                     </div>\
                                                 </div>\
                                             </div>\

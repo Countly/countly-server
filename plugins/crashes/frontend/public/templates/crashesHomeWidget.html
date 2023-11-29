@@ -8,7 +8,7 @@
 					<template v-slot:number>{{item.value}}</template>
 					<span v-if="item.trend=='d'" slot="description" :class="['cly-trend-down', item.reverse ? 'negated' : '']"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{item.change}}</span>
 					<span v-else-if="item.trend=='u'" slot="description" :class="['cly-trend-up', item.reverse ? 'negated' : '']"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{item.change}}</span>
-					<span v-else slot="description" class="cly-trend-neutral"><i class="cly-trend-up-icon cly-trend-neutral-icon ion-minus-round"></i>{{item.change}}</span>
+					<span v-else slot="description" class="cly-trend-neutral" :data-test-id="'cly-trend-neutral-' + item.name.replace(' / ', '-').replace(' ', '-').toLowerCase()"><i class="cly-trend-up-icon cly-trend-neutral-icon ion-minus-round" :data-test-id="'cly-trend-neutral-icon-' + item.name.replace(' / ', '-').replace(' ', '-').toLowerCase()"></i>{{item.change}}</span>
 				</cly-metric-card>
 		</cly-metric-cards>
 	</cly-section>
