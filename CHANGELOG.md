@@ -1,3 +1,16 @@
+## Version 23.11.2
+Fixes:
+- [push] Fixed bug to allow querying by push message name
+- [server-stats] Improved logic for date picker to show graph correctly in different timezones based on selected dates.
+- [core] Always Calculate city and country and store in user object based on passed coordinates, not only on session start
+- [cms] Moved data fetching for guides/startup/walkthroughs to frontend
+ -[core] Added script to export anonymized drill data
+ 
+Enterprise Fixes:
+- [drill] Rewriting drill query before running it on the database to look also for numeric values for a passed list of values (["1"] => ["1",1]) (Helps to better search for data if values are saved in both ways - as numbers and also as strings)
+- [drill] Make sure duration is parsed before sending it for database update.
+- [users] Fixes for breakdown filter.
+
 ## Version 23.11.1
 Fixes:
 - [scripts] Fix for Check app images scripts
