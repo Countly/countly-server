@@ -11,15 +11,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: countly-ingress
-  namespace: countly
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.global-static-ip-name: "static-ip-name"
 spec:
-  ingressClassName: nginx
   tls:
   - hosts:
-    - <required domain name>                     # example.count.ly
+    - <required domaine name>                     # example.count.ly
     secretName: countly-tls
   rules:
-  - host: <required domain name>                 # example.count.ly
+  - host: <required domaine name>                 # example.count.ly
     http:
       paths:
       - path: /i
@@ -51,13 +52,6 @@ spec:
             port:
               number: 3001
       - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: countly-frontend
-            port:
-              number: 6001
-      - path: /images/
         pathType: Prefix
         backend:
           service:
