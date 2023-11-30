@@ -10,7 +10,7 @@ const common = require('../../../api/utils/common.js');
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
 const APPS = []; //leave array empty to process all apps;
-var dry_run = false;
+var dry_run = true;
 var query_drill = {"ts": {"$gte": 1698829052000}};
 
 
@@ -22,7 +22,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     common.drillDb = drillDb;
 
     var query = {};
-    if (APPS.length > 0) {š
+    if (APPS.length > 0) {
         APPS.forEach(function(id, index) {
             APPS[index] = ObjectId(id);
         });
@@ -72,8 +72,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         console.log(JSON.stringify(updates));
                     }
                     else {
-						console.log("updating");
-                        await drillDb.collection(collectionName).bulkWrite(updates,{"ordered":false});
+                        console.log("updating");
+                        await drillDb.collection(collectionName).bulkWrite(updates, {"ordered": false});
                     }
                     updates = [];
                 }
@@ -84,7 +84,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.log(JSON.stringify(updates));
                 }
                 else {
-                    await drillDb.collection(collectionName).bulkWrite(updates,{"ordered":false});
+                    await drillDb.collection(collectionName).bulkWrite(updates, {"ordered": false});
                 }
                 updates = [];
             }
