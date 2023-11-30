@@ -1,3 +1,14 @@
+## Version 23.11.3
+Fixes:
+- [core] Script for fixing drill properties
+ 
+Enterprise Fixes:
+- [drill] Update custom properties only on session end/begin and duration. (Do not process on user_details )
+- [drill] Fixed query for generating snapshot to do not error on unexpected object values
+- [drill] Fixed custom property updating on incoming data for cases when property update is done with special operations like $push, $addToSet
+- [drill] Sanitize keys in bulk writing process
+
+
 ## Version 23.11.2
 Fixes:
 - [push] Fixed bug to allow querying by push message name
