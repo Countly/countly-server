@@ -13,14 +13,14 @@ metadata:
   name: countly-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.global-static-ip-name: "static-ip-name"
+    kubernetes.io/ingress.global-static-ip-name: "k8s-ingress-ip-name"
 spec:
   tls:
   - hosts:
-    - <required domaine name>                     # example.count.ly
+    - YOUR_HOSTNAME                     # countly.example.com
     secretName: countly-tls
   rules:
-  - host: <required domaine name>                 # example.count.ly
+  - host: YOUR_HOSTNAME                 # countly.example.com
     http:
       paths:
       - path: /i

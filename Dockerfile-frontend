@@ -19,10 +19,10 @@ ENV COUNTLY_CONTAINER="frontend" \
 
 WORKDIR /opt/countly
 COPY . .
-
+iputils-ping procps net-tools telnet
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y iputils-ping iproute2 procps net-tools telnet apt-transport-https procps curl wget git python2 make gcc g++ unzip && \
+	apt-get install -y iputils-ping net-tools telnet apt-transport-https procps curl wget git python2 make gcc g++ unzip && \
 	ln -s /usr/bin/python2.7 /usr/bin/python
 
 RUN apt-get update && \

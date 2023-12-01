@@ -16,10 +16,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - <required domain name>                     # example.count.ly
+    - YOUR_HOSTNAME                     # countly.example.com
     secretName: countly-tls
   rules:
-  - host: <required domain name>                 # example.count.ly
+  - host: YOUR_HOSTNAME                 # countly.example.com
     http:
       paths:
       - path: /i
