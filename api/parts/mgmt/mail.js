@@ -27,6 +27,31 @@ else {
     });
 }
 
+/**
+ * 
+ * @returns {string} email and company name
+ */
+function getPluginConfig() {
+    let email = null;
+    let company = null;
+    const pluginList = plugins.getPlugins(true);
+    if (pluginList.indexOf('white-labeling') > -1) {
+        try {
+            const pluginsConfig = plugins.getConfig("white-labeling");
+            const {emailFrom, emailCompany} = pluginsConfig;
+            email = emailFrom && emailFrom.length > 0 ? emailFrom : null;
+            company = emailCompany && emailCompany.length > 0 ? emailCompany : null;
+            if (email && email.length && company && company.length) {
+                return company + " <" + email + ">";
+            }
+        }
+        catch (error) {
+            console.log('Error getting plugins config', error);
+        }
+    }
+    return null;
+}
+
 /*
  Use the below transport to send mails through Gmail
 
@@ -63,7 +88,8 @@ else {
 * @param {function} callback - function to call when its done
 **/
 mail.sendMail = function(message, callback) {
-    message.from = config.mail && config.mail.strings && config.mail.strings.from || message.from || "Countly";
+    const whiteLabelingConfig = getPluginConfig();
+    message.from = whiteLabelingConfig || config.mail && config.mail.strings && config.mail.strings.from || message.from || "Countly";
     mail.smtpTransport.sendMail(message, function(error) {
         if (error) {
             console.log('Error sending email');
@@ -83,9 +109,10 @@ mail.sendMail = function(message, callback) {
 * @param {function} callback - function to call when its done
 **/
 mail.sendMessage = function(to, subject, message, callback) {
+    const whiteLabelingConfig = getPluginConfig();
     mail.sendMail({
         to: to,
-        from: config.mail && config.mail.strings && config.mail.strings.from || "Countly",
+        from: whiteLabelingConfig || config.mail && config.mail.strings && config.mail.strings.from || "Countly",
         subject: subject || "",
         html: message || ""
     }, callback);

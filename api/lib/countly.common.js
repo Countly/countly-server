@@ -688,7 +688,7 @@ function getPeriodObject(prmPeriod) {
     let zeroIDs = new Set(),
         monthIDs = new Set();
 
-    for (let index in periodObject.currentPeriodArr) {
+    for (let index = 0; index < periodObject.currentPeriodArr.length; index++) {
         let [year, month] = periodObject.currentPeriodArr[index].split("."),
             [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
 
@@ -2670,5 +2670,24 @@ countlyCommon.stringIncrement = function(str) {
     }
     return res;
 };
+/**
+* Format timestamp to ddd, D MMM YYYY HH:mm:ss if format is not provided
+* @param {number} timestamp - timestamp in seconds or miliseconds
+* @param {string} format - format to use
+* @returns {string} formated time and date
+* @example
+* //outputs Thu, 23 Jun 2022 19:20:25
+* countlyCommon.formatTime(1658673625);
+*/
+countlyCommon.formatTime = function(timestamp, format) {
+    if (Math.round(timestamp).toString().length === 10) {
+        timestamp *= 1000;
+    }
+    var ft = format || "ddd, D MMM YYYY HH:mm:ss";
+    var target = new Date(timestamp);
+    var tooltip = moment(target).format(ft);
+    return tooltip;
+};
+
 
 module.exports = countlyCommon;

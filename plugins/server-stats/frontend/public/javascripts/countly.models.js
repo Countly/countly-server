@@ -15,7 +15,7 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
                 data: {
-                    "period": countlyCommon.getPeriodForAjax(),
+                    "period": countlyCommon.getPeriodAsDateStrings(),
                     "selected_app": options.app_id || "",
                 },
                 dataType: "json",
@@ -31,7 +31,7 @@
 
     countlyDataPoints.punchCard = function(options) {
         var data = {};
-        data.period = countlyCommon.getPeriodForAjax();
+        data.period = countlyCommon.getPeriodAsDateStrings();
 
         if (options.app_id) {
             data.selected_app = options.app_id;
@@ -53,7 +53,7 @@
 
     countlyDataPoints.calculateTop = function(/*options*/) {
         var data = {};
-        data.period = countlyCommon.getPeriodForAjax();
+        data.period = countlyCommon.getPeriodAsDateStrings();
         return $.when(
             $.ajax({
                 type: "GET",

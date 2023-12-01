@@ -21,8 +21,6 @@ var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
 
-const log = common.log('members');
-
 var versionInfo = require('./../version.info'),
     COUNTLY_TYPE = versionInfo.type;
 
@@ -45,17 +43,15 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
  * @property {object} emptyPermission - empty crud permission
  */
 membersUtility.emptyPermission = {
-    "permission": {
-        "c": {},
-        "r": {},
-        "u": {},
-        "d": {},
-        "_": {
-            "a": [],
-            "u": [
-                []
-            ]
-        }
+    "c": {},
+    "r": {},
+    "u": {},
+    "d": {},
+    "_": {
+        "a": [],
+        "u": [
+            []
+        ]
     }
 };
 
@@ -346,9 +342,7 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 *   membersUtility.updateStats(member );
 **/
 membersUtility.updateStats = function(member) {
-    var countlyConfig = membersUtility.countlyConfig;
-
-    if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
+    if (plugins.getConfig('frontend').countly_tracking && !plugins.getConfig("api").offline_mode) {
         countlyStats.getUser(membersUtility.db, member, function(statsObj) {
             const userApps = getUserApps(member);
             var custom = {
@@ -360,13 +354,24 @@ membersUtility.updateStats = function(member) {
                 users: statsObj["total-users"]
             };
             var date = new Date();
+            let domain = plugins.getConfig('api').domain;
+
+            try {
+                // try to extract hostname from full domain url
+                const urlObj = new URL(domain);
+                domain = urlObj.hostname;
+            }
+            catch (_) {
+                // do nothing, domain from config will be used as is
+            }
+
             request({
                 uri: "https://stats.count.ly/i",
                 method: "GET",
                 timeout: 4E3,
                 qs: {
-                    device_id: member.email,
-                    app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                    device_id: domain,
+                    app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                     timestamp: Math.round(date.getTime() / 1000),
                     hour: date.getHours(),
                     dow: date.getDay(),
@@ -415,44 +420,38 @@ membersUtility.login = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
-                plugins.callMethod("loginSuccessful", {req: req, data: member});
+            plugins.callMethod("loginSuccessful", {req: req, data: member});
 
-                // update stats
-                membersUtility.updateStats(member);
+            // update stats
+            membersUtility.updateStats(member);
 
-                req.session.regenerate(function() {
-                    common.licenseAssign(req, licenseCheck);
+            req.session.regenerate(function() {
 
-                    // will have a new session here
-                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
-                    if (typeof member.password_changed === "undefined") {
-                        update.password_changed = Math.round(new Date().getTime() / 1000);
-                    }
-                    if (req.body.lang && req.body.lang !== member.lang) {
-                        update.lang = req.body.lang;
-                    }
+                // will have a new session here
+                var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                if (typeof member.password_changed === "undefined") {
+                    update.password_changed = Math.round(new Date().getTime() / 1000);
+                }
+                if (req.body.lang && req.body.lang !== member.lang) {
+                    update.lang = req.body.lang;
+                }
 
-                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
 
-                    if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
-                        req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
-                    }
-                    if (member.upgrade) {
-                        res.set({
-                            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
-                            'Expires': '0',
-                            'Pragma': 'no-cache'
-                        });
-                    }
-
-                    setLoggedInVariables(req, member, membersUtility.db, function() {
-                        callback(member, true);
+                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                }
+                if (member.upgrade) {
+                    res.set({
+                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                        'Expires': '0',
+                        'Pragma': 'no-cache'
                     });
+                }
+
+                setLoggedInVariables(req, member, membersUtility.db, function() {
+                    callback(member, true);
                 });
-            }, e => {
-                log.e('Error while checking member login', e);
-                callback(undefined);
             });
         }
     });
@@ -494,43 +493,37 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
             callback(member, false);
         }
         else {
-            plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
-                plugins.callMethod("loginSuccessful", {req: req, data: member});
+            plugins.callMethod("loginSuccessful", {req: req, data: member});
 
-                // update stats
-                membersUtility.updateStats(member);
+            // update stats
+            membersUtility.updateStats(member);
 
-                req.session.regenerate(function() {
-                    common.licenseAssign(req, licenseCheck);
+            req.session.regenerate(function() {
 
-                    // will have a new session here
-                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                // will have a new session here
+                var update = {last_login: Math.round(new Date().getTime() / 1000)};
 
-                    if (req.body.lang && req.body.lang !== member.lang) {
-                        update.lang = req.body.lang;
-                    }
+                if (req.body.lang && req.body.lang !== member.lang) {
+                    update.lang = req.body.lang;
+                }
 
-                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
 
-                    if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
-                        req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
-                    }
-                    if (member.upgrade) {
-                        res.set({
-                            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
-                            'Expires': '0',
-                            'Pragma': 'no-cache'
-                        });
-                    }
-
-                    setLoggedInVariables(req, member, membersUtility.db, function() {
-                        req.session.settings = member.settings;
-                        callback(member, true);
+                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                }
+                if (member.upgrade) {
+                    res.set({
+                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                        'Expires': '0',
+                        'Pragma': 'no-cache'
                     });
+                }
+
+                setLoggedInVariables(req, member, membersUtility.db, function() {
+                    req.session.settings = member.settings;
+                    callback(member, true);
                 });
-            }, e => {
-                log.e('Error while checking member login', e);
-                callback(undefined);
             });
         }
     });
@@ -602,21 +595,14 @@ membersUtility.loginWithToken = function(req, callback) {
                     callback(undefined);
                 }
                 else {
-                    plugins.callPromisedAppMethod('checkMemberLogin', {req, member}).then(licenseCheck => {
-                        common.licenseAssign(req, licenseCheck);
+                    plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
 
-                        plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
-
-                        if (valid.temporary) {
-                            req.session.temporary_token = true;
-                        }
-                        setLoggedInVariables(req, member, membersUtility.db, function() {
-                            req.session.settings = member.settings;
-                            callback(member);
-                        });
-                    }, e => {
-                        log.e('Error while checking member login', e);
-                        callback(undefined);
+                    if (valid.temporary) {
+                        req.session.temporary_token = true;
+                    }
+                    setLoggedInVariables(req, member, membersUtility.db, function() {
+                        req.session.settings = member.settings;
+                        callback(member);
                     });
                 }
             });
@@ -724,6 +710,7 @@ membersUtility.setup = function(req, callback) {
                 },
             };
             var memberCreateValidation = common.validateArgs(req.body, argProps, true);
+
             if (!(req.body = memberCreateValidation.obj)) {
                 callback({
                     message: memberCreateValidation.errors,
@@ -918,13 +905,19 @@ membersUtility.settings = function(req, callback) {
             return;
         }
 
+        req.body.full_name = (req.body.full_name + "").trim();
         req.body.username = (req.body.username + "").trim();
+        if (req.body.username === "") {
+            callback(false, "management-users.username-required");
+            return;
+        }
         if (req.body.member_image && req.body.member_image !== "delete") {
             updatedUser.member_image = req.body.member_image;
         }
         if (req.body.member_image === "delete") {
             updatedUser.member_image = "";
         }
+        updatedUser.full_name = req.body.full_name;
         updatedUser.username = req.body.username;
         updatedUser.api_key = req.body.api_key;
         if (req.body.lang) {

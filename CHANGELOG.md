@@ -1,3 +1,125 @@
+## Version 23.11.3
+Fixes:
+- [core] Script for fixing drill properties
+ 
+Enterprise Fixes:
+- [drill] Update custom properties only on session end/begin and duration. (Do not process on user_details )
+- [drill] Fixed query for generating snapshot to do not error on unexpected object values
+- [drill] Fixed custom property updating on incoming data for cases when property update is done with special operations like $push, $addToSet
+- [drill] Sanitize keys in bulk writing process
+
+
+## Version 23.11.2
+Fixes:
+- [push] Fixed bug to allow querying by push message name
+- [server-stats] Improved logic for date picker to show graph correctly in different timezones based on selected dates.
+- [core] Always Calculate city and country and store in user object based on passed coordinates, not only on session start
+- [cms] Moved data fetching for guides/startup/walkthroughs to frontend
+ -[core] Added script to export anonymized drill data
+ 
+Enterprise Fixes:
+- [drill] Rewriting drill query before running it on the database to look also for numeric values for a passed list of values (["1"] => ["1",1]) (Helps to better search for data if values are saved in both ways - as numbers and also as strings)
+- [drill] Make sure duration is parsed before sending it for database update.
+- [users] Fixes for breakdown filter.
+
+## Version 23.11.1
+Fixes:
+- [scripts] Fix for Check app images scripts
+- [onboarding] Fix onboarding loop for offline only installs
+- [cms] Stop cms calls after failure
+- [cms] Calculate timedifference against meta entry
+- [heatmaps] Update deprecated methods in heatmaps.js
+  
+Enterprise Fixes:
+- [drill] Fix the correct type prefix for widget names
+- [surveys] Fix the survey api to include previous month
+- [attribution] Fix encoding on campaign links
+
+## Version 23.11
+Features:
+- [apps] App initial as default app image
+- [compliance-hub] Use millisecond timestamp when recording consent
+- [consent] Ask for countly tracking and newsletter subscription
+- [core] Add config for setting maximum upload file size
+- [data_migration] Fixed problem with export
+- [guides] New plugin explaining Countly sections with videos and other content
+- [hooks] Add validation error messages when creating hooks
+- [jobs] Add the ability to pause jobs
+- [license] Check license at render instead of login
+- [onboarding] New onboarding flow when setting up a server
+- [quickstart] Menu to show some actions new users could take
+- [sdks] Add health checks with debug information
+- [sdks] Add queue size metrics
+- [sdks] Add request metrics
+- [server-stats] Record breakdown of internal events of data points
+- [settings] Trim incoming data based on API setting
+- [star-rating] Make comments table serverside 
+- [UI] Loading state fixes to distinguish from no data state
+- [views] Make table column widths adjustable
+
+Enterprise features:
+- [ab-testing] Add user selected minimum improvement rate for the automatic stop option
+- [ab-testing] Add experiment health-check logs for effective sample size and MCMC convergence
+- [auth-plugins] Allow hiding/showing login form
+- [block] Show the last time the filtering rule was triggered
+- [cohorts] Filtering by User Property segmentation in Cohorts using OR operator
+- [cohorts] Improved cohorts nightly job to reduce memory usage
+- [concurrent_users] Switched user sampling to the job so it will run only once per cluster
+- [crash_symbolication] Add instance id to symbolication requests
+- [data-manager] Allow exporting the event schema as a data populator template
+- [drill] Automatically disable estimation correction on slow servers
+- [drill] Delete dashboard widgets if a related Drill query is deleted
+- [drill] Make table column widths adjustable
+- [drill] Table widget for dashboards
+- [drill] Track how many duration updates did the session have in the document
+- [drill] Update user properties on session updates, so the session always gets the latest user properties that changed during the session
+- [drill] Use data snapshots to provide consistent data view between graph, table, and export
+- [ingestion] Fixed some concurrency issues when updating the duration for views or sessions
+- [surveys] Add ability for providing custom segment
+- [surveys] Added global/app/widget level settings
+- [surveys] Fixed export table
+- [users] Make table column widths adjustable
+- [users] New debug dialog for users merging both options
+- [views] Record UTM and Source as segments on drill
+- [white-labeling] Add emailing settings
+
+## Version 23.06.16
+Fixes:
+- [cache] Removing noCursorTimeout from cache cursor
+- [core] fix cursor timeout issue
+- [core] fix for Do not set session cookie on widget load
+- [core] uploadformfile was called even if it was not file upload
+- [core][report-manager] fix for If a report is created for the dashboard widget, viewing leads to the dashboard with that widget.
+- [core][views] Omitting views segments
+- [dependencies] Bump @babel/traverse from 7.22.5 to 7.23.2
+- [dependencies] Bump nodemailer from 6.9.6 to 6.9.7
+- [dependencies]Bump countly-sdk-web from 23.6.0 to 23.6.2
+- [permissions] Add feature check in rights
+- [push] Removing past dates from recurring messages details, fixing tests, sorting trigger dates
+- [ratings] fix for toggle issue in ratings
+- [scripts] fix for new recheck_merges script
+
+Enterprise fixes:
+- [ab-testing] fix for ab_opt_out call when keys not supplied
+- [data-manager] fix for Renamed Segment appearing in All Events
+- [retention_segments] fix cohort queries when selected by breakdown
+- [surveys] fix for disable csrf and session for widgets
+
+## Version 23.06.15
+Fixes:
+- [crashes] Add config for activating custom field cleanup job
+- [data-migration] Fix for upload request
+- [core] Remove sensitive fields from API responses
+- [dashboards] Validating links for note widgets
+- [star-rating] Css changes for ratings comments table
+- [star-rating] Fix for targeting reset on toggle
+- [members] Fix full Name updates in db
+
+Enterprise fixes: 
+- [crash_symbolication] Fix for symbol file upload
+- [data-manager] Fix for disabled input in view transformations
+- [data-manager] Fix for duplicate events being created in event transformation
+
 ## Version 23.06.14
 Fixes:
 - [cache] Fixing initialization race conditions (group store is not initialized)

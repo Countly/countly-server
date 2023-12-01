@@ -80,7 +80,8 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_processing: true,
         //batch_read_on_master: false,
         batch_read_ttl: 600,
-        batch_read_period: 60
+        batch_read_period: 60,
+        trim_trailing_ending_spaces: false
     });
 
     /**
@@ -255,6 +256,7 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        plugins.installMissingPlugins(common.db);
         common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
         common.cache.start().then(() => {
@@ -335,7 +337,12 @@ plugins.connectToAllDatabases().then(function() {
             };
 
             if (req.method.toLowerCase() === 'post') {
-                const form = new formidable.IncomingForm();
+                const formidableOptions = {};
+                if (countlyConfig.api.maxUploadFileSize) {
+                    formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+                }
+
+                const form = new formidable.IncomingForm(formidableOptions);
                 req.body = '';
                 req.on('data', (data) => {
                     req.body += data;

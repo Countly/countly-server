@@ -32,6 +32,10 @@
                         return value >= 1 && value <= 12;
                     }
                 },
+                testId: {
+                    type: String,
+                    default: "drawer-test-id",
+                }
             },
             data: function() {
                 return {

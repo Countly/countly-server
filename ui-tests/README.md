@@ -21,6 +21,18 @@
 
 - `npm install cypress`
 
+[Faker](https://github.com/faker-js/faker)
+
+- `npm install @faker-js/faker`
+
+[Cypress-File-Upload](https://github.com/abramenal/cypress-file-upload)
+
+- `npm install cypress-file-upload`
+
+[Base-64](https://github.com/mathiasbynens/base64)
+
+- `npm install base-64`
+
 ### Structure of Automation
 
 #### e2e

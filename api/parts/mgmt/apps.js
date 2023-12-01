@@ -261,6 +261,7 @@ appsApi.createApp = async function(params) {
     newApp.edited_at = newApp.created_at;
     newApp.owner = params.member._id + "";
     newApp.seq = 0;
+    newApp.has_image = false;
     let seed = '';
     try {
         seed = await new Promise((resolve, reject) => {

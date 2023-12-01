@@ -5,6 +5,7 @@
     countlyGlobal,
     countlyAuth,
     _,
+    CountlyHelpers,
     moment,
  */
 
@@ -14,10 +15,10 @@
 
 
     /**
-     * hook mock data generator
-     * @param {object} hookConfig - hookConfig record
-     * @return {object} mockData - trigger related mock data
-     */
+         * hook mock data generator
+         * @param {object} hookConfig - hookConfig record
+         * @return {object} mockData - trigger related mock data
+         */
     hooksPlugin.mockDataGenerator = function mockDataGenerator(hookConfig) {
         var triggerType = hookConfig && hookConfig.trigger && hookConfig.trigger.type;
         var data;
@@ -283,6 +284,9 @@
                     success: function() {
                         context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
                         context.dispatch("countlyHooks/initializeDetail", record._id, {root: true});
+                    },
+                    error: function() {
+                        CountlyHelpers.notify({type: "error", message: jQuery.i18n.map["hooks.trigger-save-failed"]});
                     }
                 });
             },
@@ -409,9 +413,7 @@
                             });
                         }
                         context.commit("setInitialized", true);
-                        if (tableData && tableData.length > 0) {
-                            context.commit("setAll", tableData);
-                        }
+                        context.commit("setAll", tableData);
                     });
                 },
             }

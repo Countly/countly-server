@@ -82,7 +82,7 @@ const FEATURE_NAME = 'compliance_hub';
                     after: after,
                     change: changes,
                     type: type,
-                    ts: params.time.timestamp,
+                    ts: params.time.mstimestamp,
                     cd: new Date(),
                     device_id: params.qstring.device_id,
                     uid: params.app_user.uid,
@@ -187,7 +187,7 @@ const FEATURE_NAME = 'compliance_hub';
 
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
-                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
                         }
 
                         params.qstring.project = params.qstring.project || {};

@@ -169,6 +169,22 @@
 
             store.set("countly_date", period);
         };
+        /* Returns strings representing dates, not timestamps*/
+        countlyCommon.getPeriodAsDateStrings = function() {
+            var array = [];
+            if (Array.isArray(_period)) {
+                if (countlyCommon.periodObj.currentPeriodArr && countlyCommon.periodObj.currentPeriodArr.length > 0) {
+                    var splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
+                    splitted = countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");
+                }
+                return JSON.stringify(array);
+            }
+            else {
+                return countlyCommon.getPeriodForAjax();
+            }
+        };
 
         /**
         * Get currently selected period
@@ -5184,6 +5200,19 @@
                 return undefined;
             }
             return _.unescape(text || df).replace(/&#39;/g, "'");
+        };
+
+        /**
+         * Remove spaces, tabs, and newlines from the start and end of the string
+         * @param {String} str - Arbitrary string
+         * @returns {String} Trimmed string
+         */
+        countlyCommon.trimWhitespaceStartEnd = function(str) {
+            if (typeof str !== 'string') {
+                return str;
+            }
+            str = str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+            return str;
         };
     };
 

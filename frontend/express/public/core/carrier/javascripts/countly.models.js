@@ -81,15 +81,20 @@
         };
 
         var appCarrierActions = {
-            fetchAll: function(context) {
+            fetchAll: function(context, useLoader) {
+                if (useLoader) {
+                    context.state.isLoading = true;
+                }
                 context.dispatch('onFetchInit');
                 countlyAppCarrier.service.fetchData()
                     .then(function(response) {
                         var dataModel = countlyAppCarrier.service.mapAppCarrierDtoToModel(response);
                         context.commit('setAppCarrier', dataModel);
                         context.dispatch('onFetchSuccess');
+                        context.state.isLoading = false;
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
+                        context.state.isLoading = false;
                     });
             },
             onFetchInit: function(context) {
@@ -114,17 +119,14 @@
                 state.appCarrier.totals = state.appCarrier.totals || {};
             },
             setFetchInit: function(state) {
-                state.isLoading = true;
                 state.hasError = false;
                 state.error = null;
             },
             setFetchError: function(state, error) {
-                state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
             },
             setFetchSuccess: function(state) {
-                state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
             }

@@ -269,12 +269,12 @@ plugins.register("/i/hook/save", function(ob) {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
-                common.returnMessage(params, 200, 'Not enough args');
+                common.returnMessage(params, 400, 'Not enough args');
                 return true;
             }
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                common.returnMessage(params, 200, 'Invalid configuration for effects');
+                common.returnMessage(params, 400, 'Invalid configuration for effects');
                 return true;
             }
 
@@ -561,7 +561,7 @@ plugins.register("/i/hook/test", function(ob) {
             }
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                common.returnMessage(params, 200, 'Config invalid');
+                common.returnMessage(params, 400, 'Config invalid');
                 return true;
             }
 

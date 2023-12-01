@@ -328,7 +328,10 @@ function getValues(values, valuesMap, paramList, doc, options) {
 */
 exports.stream = function(params, stream, options) {
     var headers = {};
-
+    var emptyFun = function(val) {
+        return val;
+    };
+    var transformFunction = options.transformFunction || emptyFun;
     var filename = options.filename;
     var type = options.type;
     var projection = options.projection;
@@ -349,6 +352,7 @@ exports.stream = function(params, stream, options) {
         params.res.writeHead(200, headers);
     }
     if (type === "csv") {
+        options.streamOptions.transform = transformFunction;
         var head = [];
         if (listAtEnd === false) {
             for (let p = 0; p < paramList.length; p++) {
@@ -381,6 +385,7 @@ exports.stream = function(params, stream, options) {
         });
     }
     else if (type === 'xlsx' || type === 'xls') {
+        options.streamOptions.transform = transformFunction;
         var xc = new XLSXTransformStream();
         xc.pipe(params.res);
         if (listAtEnd === false) {
@@ -627,6 +632,7 @@ exports.fromRequest = function(options) {
 
 
 exports.fromRequestQuery = function(options) {
+    options.db = options.db || common.db;
     options.path = options.path || "/";
     if (!options.path.startsWith("/")) {
         options.path = "/" + options.path;
@@ -648,7 +654,10 @@ exports.fromRequestQuery = function(options) {
                 log.e(err);
             }
             if (body) {
-                var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
+                if (body.transformFunction) {
+                    options.transformFunction = body.transformFunction;
+                }
+                var cursor = options.db.collection(body.collection).aggregate(body.pipeline);
                 options.projection = body.projection;
                 var outputStream = new Transform({
                     objectMode: true,
@@ -660,7 +669,12 @@ exports.fromRequestQuery = function(options) {
                 if (options.type === "stream" || options.type === "json") {
                     options.streamOptions.transform = function(doc) {
                         doc = transformValuesInObject(doc, options.mapper);
-                        return JSON.stringify(doc);
+                        if (body.transformFunction) {
+                            return JSON.stringify(body.transformFunction(doc));
+                        }
+                        else {
+                            return JSON.stringify(doc);
+                        }
                     };
                 }
                 exports.stream({res: outputStream}, cursor, options);
