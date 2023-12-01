@@ -6,6 +6,22 @@
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
+var fs = require('fs');
+var path = require('path');
+var isMyCountly = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            isMyCountly = true;
+        }
+    }
+    catch (e) {
+        isMyCountly = false;
+    }
+}
+
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
     COUNTLY_VERSION = versionInfo.version,
@@ -27,8 +43,6 @@ var versionInfo = require('./version.info'),
         }
     }),
     crypto = require('crypto'),
-    fs = require('fs'),
-    path = require('path'),
     jimp = require('jimp'),
     request = require('countly-request'),
     flash = require('connect-flash'),
@@ -66,7 +80,13 @@ var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
-if (versionInfo.footer) {
+
+if (isMyCountly) {
+    COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+    COUNTLY_TYPE_CE = false;
+    COUNTLY_TRACK_TYPE = "Enterprise";
+}
+else if (versionInfo.footer) {
     COUNTLY_NAMED_TYPE = versionInfo.footer;
     COUNTLY_TYPE_CE = false;
     if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
@@ -899,8 +919,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
+        var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
-        app.loadThemeFiles(configs.theme, function(theme) {
+        app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
             }
@@ -913,6 +934,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (isMyCountly) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
             }
 
             if (req.session.licenseError) {
@@ -977,6 +1005,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                 },
+                mycountly: isMyCountly,
+                isLocked: isLocked,
             };
 
             var toDashboard = {
