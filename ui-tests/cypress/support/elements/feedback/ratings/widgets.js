@@ -200,15 +200,15 @@ export const feedbackRatingWidgetDetailsPageElements = {
     RATINGS_WIDGET_DETAILS_FILTER_PARAMETERS_CONFIRM_BUTTON: 'ratings-detail-confirm-button',
     RATINGS_WIDGET_DETAILS_FILTER_PARAMETERS_CANCEL_BUTTON: 'ratings-detail-cancel-button',
     RATINGS_WIDGET_DETAILS_RATINGS_LABEL: 'ratings-detail-metric-card-widget-detail-ratings-label',
-    RATINGS_WIDGET_DETAILS_RATINGS_TOOLTIP: 'ratings-detail-metric-card-widget-detail-ratings-metric-card-tooltip',
-    RATINGS_WIDGET_DETAILS_RATINGS_VALUE: 'ratings-detail-metric-card-widget-detail-ratings-metric-card-number',
+    RATINGS_WIDGET_DETAILS_RATINGS_TOOLTIP: 'ratings-detail-metric-card-widget-detail-ratings--tooltip',
+    RATINGS_WIDGET_DETAILS_RATINGS_VALUE: 'ratings-detail-metric-card-widget-detail-ratings--number',
     RATINGS_WIDGET_DETAILS_RATINGS_RATE_LABEL: 'ratings-detail-metric-card-widget-detail-rate-label',
-    RATINGS_WIDGET_DETAILS_RATINGS_RATE_TOOLTIP: 'ratings-detail-metric-card-widget-detail-rate-metric-card-tooltip',
+    RATINGS_WIDGET_DETAILS_RATINGS_RATE_TOOLTIP: 'ratings-detail-metric-card-widget-detail-rate--tooltip',
     RATINGS_WIDGET_DETAILS_RATINGS_RATE_PROGRESS: '.el-progress.el-progress--circle.el-progress--without-text',
-    RATINGS_WIDGET_DETAILS_RATINGS_RATE_VALUE: 'ratings-detail-metric-card-widget-detail-rate-metric-card-number',
+    RATINGS_WIDGET_DETAILS_RATINGS_RATE_VALUE: 'ratings-detail-metric-card-widget-detail-rate--number',
     RATINGS_WIDGET_DETAILS_TIMES_SHOWN_LABEL: 'ratings-detail-metric-card-widget-detail-times-shown-label',
-    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_TOOLTIP: 'ratings-detail-metric-card-widget-detail-times-shown-metric-card-tooltip',
-    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_VALUE: 'ratings-detail-metric-card-widget-detail-times-shown-metric-card-number',
+    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_TOOLTIP: 'ratings-detail-metric-card-widget-detail-times-shown--tooltip',
+    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_VALUE: 'ratings-detail-metric-card-widget-detail-times-shown--number',
     RATINGS_WIDGET_DETAILS_TAB_RATINGS: 'ratings-detail-table-tab-ratings-title',
     RATINGS_WIDGET_DETAILS_TAB_COMMENTS: 'ratings-detail-table-tab-comments-title',
 };
@@ -281,4 +281,3 @@ module.exports = {
     feedbackRatingWidgetDetailsCommentsDataTableElements,
     feedbackRatingWidgetDetailsRatingsDataTableElements
 };
-
