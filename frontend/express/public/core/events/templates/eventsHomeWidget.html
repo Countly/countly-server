@@ -15,8 +15,8 @@
                     <span v-if="item.trend=='d'" slot="description" class="cly-trend-down" :data-test-id="`empty-card-trend-down-desc-${item.name.toLowerCase().replace(/\s/g, '-')}`"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="`empty-card-trend-up-arrow-down-icon-${item.name.toLowerCase().replace(/\s/g, '-')}`"></i>{{item.change}}</span>
                     <span v-else slot="description" class="cly-trend-up" :data-test-id="`empty-card-trend-up-desc-${item.name.toLowerCase().replace(/\s/g, '-')}`"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="`empty-card-trend-up-arrow-up-icon-${item.name.toLowerCase().replace(/\s/g, '-')}`"></i>{{item.change}}</span>
                 </cly-metric-card>
-                <div v-if="items.length <1 && !isLoading" :data-test-id="`empty-card-${item.name.toLowerCase().replace(/\s/g, '-')}`" class="technology-analytics-wrapper__empty-card" >
-                    <div class="text-medium" :data-test-id="`empty-card-label-${item.name.toLowerCase().replace(/\s/g, '-')}`">{{i18n('common.table.no-data')}}</div>
+                <div v-if="items.length <1 && !isLoading" class="technology-analytics-wrapper__empty-card" :data-test-id="`empty-card-${i18n('events.overview.top.events.by.count').toLowerCase().replace(/\s/g, '-')}`">
+                    <div class="text-medium" :data-test-id="`empty-card-label-${i18n('events.overview.top.events.by.count').toLowerCase().replace(/\s/g, '-')}`">{{i18n('common.table.no-data')}}</div>
                 </div>
             </cly-metric-cards>
         <!-- </vue-scroll> -->
