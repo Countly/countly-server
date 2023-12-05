@@ -2,7 +2,8 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     tracker = require('../../../api/parts/mgmt/tracker.js'),
     plugins = require('../../pluginManager.js'),
-    systemUtility = require('./system.utility');
+    systemUtility = require('./system.utility'),
+    log = common.log('system-utility:api');
 
 (function() {
     //write api call
@@ -13,37 +14,44 @@ var plugin = {},
 	*/
 
     plugins.register("/i/profiling", function(ob) {
-
         var params = ob.params,
             path = ob.paths[3].toLowerCase(),
             validate = ob.validateUserForGlobalAdmin;
-
+        
         switch (path) {
         case 'start':
             validate(params, () => {
                 systemUtility.startProfiling()
-                    .then(
-                        res => common.returnMessage(params, 200, res),
-                        res => common.returnMessage(params, 500, res)
-                    );
+                    .then(res => common.returnMessage(params, 200, res))
+                    .catch(err => {
+                        log.e(err);
+                        common.returnMessage(params, 500, "Profiling couldn't be started");
+                    });
             });
             return true;
         case 'stop':
             validate(params, () => {
                 systemUtility.stopProfiling()
-                    .then(
-                        res => common.returnMessage(params, 200, res),
-                        res => common.returnMessage(params, 500, res)
-                    );
+                    .then(res => common.returnMessage(params, 200, res))
+                    .catch(err => {
+                        log.e(err);
+                        common.returnMessage(params, 500, "Profiling couldn't be stopped");
+                    });
             });
             return true;
         case 'download':
             validate(params, () => {
                 systemUtility.downloadProfiling()
-                    .then(
-                        res => res.download,
-                        res => common.returnMessage(params, 500, res)
-                    );
+                    .then(({ data, filename }) => {
+                        common.returnRaw(params, 200, data, {
+                            'Content-Type': 'plain/text; charset=utf-8',
+                            'Content-disposition': 'attachment; filename=' + filename 
+                        });
+                    })
+                    .catch(err => {
+                        log.e(err);
+                        common.returnMessage(params, 500, "File not found");
+                    });
             });
             return true;
         default:

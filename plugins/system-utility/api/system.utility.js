@@ -2,10 +2,12 @@ var common = require('../../../api/utils/common.js');
 const inspector = require('inspector');
 const fs = require('fs');
 const countlyFs = require('../../../api/utils/countlyFs.js');
-countlyFs = require('./../../utils/countlyFs.js');
 var exec = require('child_process').exec;
 const session = new inspector.Session();
 session.connect();
+
+const PROFILER_DIR = "nodeprofile";
+const CPU_PROFILE_FILE = "countly.cpuprofile";
 
 var _id = null;
 
@@ -430,21 +432,26 @@ function startProfiling() {
 
 function stopProfiling() {
     return new Promise((resolve, reject) => {
-        session.post('Profiler.stop', (err, { profile }) => {
+        session.post('Profiler.stop', (err, result) => {
             if (err) {
-                reject(err);
+                return reject(err);
             }
-            else {
-                countlyFs.gridfs.saveData("nodeprofile", "1", JSON.stringify(profile), {id: "1"}, function(err2, res2) {
+            if (!result || !result.profile) {
+                reject(new Error("Profiler needs to be started first"));
+            }
+
+            countlyFs.gridfs.saveData(
+                PROFILER_DIR, CPU_PROFILE_FILE, JSON.stringify(result.profile),
+                { writeMode: "overwrite" },
+                function(err2, res2) {
                     if (err2) {
                         reject(err2);
                     }
-                    resolve(res2);
-                });
-            }
+                    resolve("Profiling saved");
+                }
+            );
         });
     });
-
 }
 
 /**
@@ -454,26 +461,13 @@ function stopProfiling() {
 function downloadProfiling() {
     // download file
     return new Promise((resolve, reject) => {
-        fs.readFile('./profile.cpuprofile', (err, data) => {
+        countlyFs.gridfs.getData(PROFILER_DIR, CPU_PROFILE_FILE, {}, function(err, data) {
             if (err) {
-                reject(err);
+                return reject("File not found");
             }
-            else {
-                resolve({ download: data });
-            }
+            resolve({ data, filename: CPU_PROFILE_FILE });
         });
     });
-
-
-    return new Promise(async (resolve, reject) => {
-        try {
-            const profileData = await fs.promises.readFile('./profile.cpuprofile');
-            resolve(profileData);
-        } catch (err) {
-            reject(err);
-        }
-    });
-
 }
 exports.startProfiling = startProfiling;
 exports.stopProfiling = stopProfiling;
