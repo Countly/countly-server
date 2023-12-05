@@ -164,7 +164,7 @@ var UPDATE_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
                         // data found in backend
                         if (response.data && response.data.length > 0) {
                             // if data from backend is stale, get new data
-                            if (entryNeedsUpdate(response.data[0]) || options.refresh) {
+                            if (entryNeedsUpdate(response.data[0]) || (options && options.refresh)) {
                                 return countlyCMS.requestFromCMSAndSave(params);
                             }
                             else {
