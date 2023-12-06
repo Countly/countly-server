@@ -1,3 +1,7 @@
+## Version 23.11.4
+Enterprise Fixes:
+- [drill] Fix for drill snapshot query
+  
 ## Version 23.11.3
 Fixes:
 - [core] Script for fixing drill properties
