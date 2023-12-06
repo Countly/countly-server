@@ -256,10 +256,66 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="cly-vue-alert-drawer__line"></div>
 
-            <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
-                <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
+            <cly-form-field>
+                <div class="text-big text-heading bu-mb-3">
+                    {{i18n('alert.email-header')}}
+                </div>
+
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                    <el-radio 
+                        v-model="selectedRadioButton"
+                        :label="item.value" 
+                        :key="idx"
+                        v-for="(item, idx) in emailOptions"
+                        class="is-autosized"
+                        border>
+                            {{item.label}}
+                    </el-radio>            
+                </div>
             </cly-form-field>
+  
+            <cly-form-field 
+                v-if="selectedRadioButton === 'specificAddress'"
+                name="alertValues" 
+                :label="i18n('alert.email-to-receive')"        
+                rules= "required">
+                <cly-select-email 
+                    placeholder="Enter email address"
+                    v-model="drawerScope.editedObject.alertValues" 
+                    :collapse-tags="false">
+                </cly-select-email>
+            </cly-form-field>
+
+            <cly-form-field 
+                v-if="selectedRadioButton === 'toGroup'"
+                name="alertValues" 
+                :label="i18n('alert.email-to-receive2')" 
+                rules="required">
+                <cly-select-email 
+                    placeholder="Choose user groups"
+                    v-model="drawerScope.editedObject.alertValues" 
+                    :collapse-tags="false">
+                </cly-select-email>
+            </cly-form-field>
+
+            <cly-form-field 
+                v-if="selectedRadioButton === 'dontSend'"
+                name="alertValues" 
+                :label="i18n('alert.email-to-receive2')" 
+                rules="required">
+                <cly-select-email 
+                    placeholder="CDont send email"
+                    v-model="drawerScope.editedObject.alertValues" 
+                    :collapse-tags="false">
+                </cly-select-email>
+            </cly-form-field>
+
+            <!--<cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
+                <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
+            </cly-form-field>-->
  
             <pre v-if="0">
                 {{drawerScope.editedObject}}

@@ -25,6 +25,7 @@
         },
         data: function() {
             return {
+                selectedRadioButton: 'specificAddress',
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
@@ -89,7 +90,12 @@
                             { value: 'decreased by at least', label: 'decreased by at least' },
                         ]
                     },
-                }
+                },
+                emailOptions: [
+                    {label: jQuery.i18n.map["alert.email-to-specific-address"], value: "specificAddress"},
+                    {label: jQuery.i18n.map["alert.email-to-group"], value: "toGroup"},
+                    {label: jQuery.i18n.map["alert.email-to-dont-send"], value: "dontSend"},
+                ],
             };
         },
         computed: {
