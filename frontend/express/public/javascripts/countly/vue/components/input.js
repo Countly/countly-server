@@ -1152,7 +1152,7 @@
                                                 </div>\
                                                 <div class="bu-is-flex bu-is-align-items-center number">\
                                                     <h2 v-if="item.isEstimate" class="is-estimate" v-tooltip="item.estimateTooltip" :data-test-id="`cly-radio-number-${item.label.replace(\' \', \'-\').toLowerCase()}`">~{{item.number}}</h2>\
-                                                    <h2 v-else>{{item.number}}</h2>\
+                                                    <h2 v-else :data-test-id="`cly-radio-number-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.number}}>{{item.number}}</h2>\
                                                     <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
                                                         <i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="`cly-radio-trend-up-icon-${item.label.replace(\' \', \'-\').toLowerCase()}`"></i><span>{{item.trendValue}}</span>\
                                                     </div>\
