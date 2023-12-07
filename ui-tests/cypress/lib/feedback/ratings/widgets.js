@@ -27,6 +27,7 @@ const verifyEmptyPageElements = () => {
 };
 
 const verifySettingsPageElements = ({
+    widgetName,
     question,
     emojiOneText,
     emojiTwoText,
@@ -43,6 +44,17 @@ const verifySettingsPageElements = ({
 
     stepElements.verifyRatingStepElements(FEEDBACK_ADD_STEPS.SETTINGS);
 
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
+        labelText: "surveys.drawer.internal.name",
+        element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
+        value: widgetName,
+        elementPlaceHolder: "Widget Name"
+    });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_DESC,
+        labelText: "Name survey for internal purposes. It is not going to be shown on survey.",
+    });
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.QUESTION_LABEL,
         labelText: "Question",
@@ -360,6 +372,10 @@ const clickSaveButton = () => {
 
 const typeQuestion = (question) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.QUESTION_INPUT, question);
+};
+
+const typeWidgetName = (widgetName) => {
+    cy.typeInput(feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT, widgetName);
 };
 
 const clearQuestion = () => {
@@ -947,6 +963,7 @@ module.exports = {
     clickSaveButton,
     clearQuestion,
     clearThanksMessage,
+    typeWidgetName,
     typeQuestion,
     typeEmojiOneText,
     typeEmojiTwoText,
