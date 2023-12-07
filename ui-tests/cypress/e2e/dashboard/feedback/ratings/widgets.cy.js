@@ -19,6 +19,7 @@ describe('Create New Widget', () => {
     it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
+        widgetsHelpers.typeWidgetName("My New Widget");
         widgetsHelpers.clickNextStepButton();
         widgetsHelpers.verifyAppearancePageDefaultElements();
 
@@ -75,6 +76,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: "What's your opinion about this page?",
+            internalName: "My New Widget",
             pages: "/",
             isActive: true
         });
@@ -128,6 +130,7 @@ describe('Create New Widget', () => {
 
         const widget = generateWidgetFixture();
 
+        widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.typeEmojiOneText(widget.emojiOneText);
         widgetsHelpers.typeEmojiTwoText(widget.emojiTwoText);
@@ -193,6 +196,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -259,6 +263,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -268,6 +273,7 @@ describe('Create New Widget', () => {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton(),
+        widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.typeEmojiOneText(widget.emojiOneText);
         widgetsHelpers.typeEmojiTwoText(widget.emojiTwoText);
@@ -331,6 +337,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -391,7 +398,8 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
-            //BUG ALERT: After a rating widget's status changed, page is cleared. https://countly.atlassian.net/browse/SER-890
+            internalName: widget.widgetName,
+            //There is still an issue TODO
             //pages: "/homepage, /shopping, /checkout",
             isActive: false
         });
@@ -401,6 +409,8 @@ describe('Create New Widget', () => {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
+        widgetsHelpers.shouldBeDisabledNextStepButton();
+        widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.clearQuestion();
         widgetsHelpers.shouldBeDisabledNextStepButton();
         widgetsHelpers.typeQuestion(widget.question);
@@ -437,6 +447,7 @@ describe('Create New Widget', () => {
         componentAddFeedbackSteps.clickSettingsTab();
 
         widgetsHelpers.verifySettingsPageElements({
+            widgetName: widget.widgetName,
             question: widget.question,
             emojiOneText: widget.emojiOneText,
             emojiTwoText: widget.emojiTwoText,
@@ -474,6 +485,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.clickSaveButton();
         widgetsHelpers.verifyWidgetDataFromTable({
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/",
             isActive: false
         });
@@ -503,6 +515,7 @@ describe('Create New Widget', () => {
         let widgetRateFour = generateWidgetsRatesFixture();
         let widgetRateFive = generateWidgetsRatesFixture();
 
+        widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.clickAddCommentCheckbox();
         widgetsHelpers.clickContactViaCheckbox();
@@ -512,6 +525,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             isTargetingAllUsers: true,
             pages: "/",
             isActive: true
