@@ -148,6 +148,7 @@ const widgetsDataTableElements = (index = 0) => {
         STATUS_SWITCH_WRAPPER: 'ratings-widgets-data-table-status-' + index + '-el-switch-wrapper',
         STATUS_SWITCH_INPUT: 'ratings-widgets-data-table-status-' + index + '-el-switch-input',
         WIDGET_QUESTION: 'ratings-widgets-data-table-widget-name-' + index,
+        INTERNAL_NAME: 'ratings-widgets-data-table-internal-widget-name-' + index,
         WIDGET_ID_LABEL: 'ratings-widgets-data-table-widget-id-label-' + index,
         WIDGET_ID: 'ratings-widgets-data-table-widget-id-value-' + index,
         TARGETING_ALL_USERS: 'ratings-widgets-data-table-targeting-' + index + '-all-users',

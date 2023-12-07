@@ -76,6 +76,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: "What's your opinion about this page?",
+            internalName: "My New Widget",
             pages: "/",
             isActive: true
         });
@@ -195,6 +196,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -261,6 +263,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -334,6 +337,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
@@ -394,7 +398,8 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
-            //BUG ALERT: After a rating widget's status changed, page is cleared. https://countly.atlassian.net/browse/SER-890
+            internalName: widget.widgetName,
+            //There is still an issue TODO
             //pages: "/homepage, /shopping, /checkout",
             isActive: false
         });
@@ -480,6 +485,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.clickSaveButton();
         widgetsHelpers.verifyWidgetDataFromTable({
             question: widget.question,
+            internalName: widget.widgetName,
             pages: "/",
             isActive: false
         });
@@ -519,6 +525,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyWidgetDataFromTable({
             index: 0,
             question: widget.question,
+            internalName: widget.widgetName,
             isTargetingAllUsers: true,
             pages: "/",
             isActive: true

@@ -520,12 +520,18 @@ const clickSetActiveCheckbox = (page) => {
 const verifyWidgetDataFromTable = ({
     index,
     question,
+    internalName,
     pages,
     isActive
 }) => {
     cy.verifyElement({
         element: widgetsDataTableElements(index).WIDGET_QUESTION,
         elementText: question
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).INTERNAL_NAME,
+        elementText: internalName
     });
 
     cy.verifyElement({
