@@ -2865,6 +2865,14 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/cms': {
+                switch (paths[3]) {
+                case 'save_entries':
+                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    break;
+                }
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,

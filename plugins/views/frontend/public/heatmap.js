@@ -159,7 +159,7 @@
                 tag.setAttribute('class', 'cly-heatmap-item');
                 tag.setAttribute('data-value', map);
                 tag.innerHTML = capitalize(map) + " Map";
-                Countly._internals.add_event(tag, "click", function(e) {
+                Countly._internals.add_event_listener(tag, "click", function(e) {
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
@@ -239,7 +239,7 @@
 
                 deviceListDiv.appendChild(tag);
 
-                Countly._internals.add_event(tag, "click", function(e) {
+                Countly._internals.add_event_listener(tag, "click", function(e) {
                     document.body.style.width = "100%";
                     var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
@@ -316,7 +316,7 @@
             mainDiv.appendChild(deviceDropdown);
             mainDiv.appendChild(refresh);
 
-            Countly._internals.add_event(refresh, "click", function() {
+            Countly._internals.add_event_listener(refresh, "click", function() {
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
@@ -348,7 +348,7 @@
             canvas.id = "cly-heatmap-canvas-map";
             document.body.appendChild(canvas);
 
-            Countly._internals.add_event(window, "resize", function() {
+            Countly._internals.add_event_listener(window, "resize", function() {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
                 var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
@@ -404,7 +404,7 @@
             shLabel.appendChild(shInput);
             shLabel.appendChild(shSpan);
             showHide.appendChild(shLabel);
-            Countly._internals.add_event(shInput, "click", function() {
+            Countly._internals.add_event_listener(shInput, "click", function() {
                 showHeatMap = shInput.checked;
                 addDataToWindow([{ "key": "showHeatMap", "value": showHeatMap }]);
 
@@ -430,7 +430,7 @@
 
             topbar.appendChild(showHide);
 
-            Countly._internals.add_event(document.body, "click", function(e) {
+            Countly._internals.add_event_listener(document.body, "click", function(e) {
                 var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
                 if (dropdowns.length) {
                     Object.keys(dropdowns).forEach((drop) => {

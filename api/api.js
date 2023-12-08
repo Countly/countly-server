@@ -342,7 +342,12 @@ plugins.connectToAllDatabases().then(function() {
             };
 
             if (req.method.toLowerCase() === 'post') {
-                const form = new formidable.IncomingForm();
+                const formidableOptions = {};
+                if (countlyConfig.api.maxUploadFileSize) {
+                    formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+                }
+
+                const form = new formidable.IncomingForm(formidableOptions);
                 req.body = '';
                 req.on('data', (data) => {
                     req.body += data;

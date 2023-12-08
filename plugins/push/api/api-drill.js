@@ -108,7 +108,7 @@ async function find(q) {
 }
 
 const toIdsMappers = {
-    'message.name': (query, app_id) => find({app: common.db.ObjectID(app_id), 'message.info.name': query}),
+    'message.name': (query, app_id) => find({app: common.db.ObjectID(app_id), 'info.title': query}),
     'message.title': (query, app_id) => find({app: common.db.ObjectID(app_id), 'contents.title': query}),
     'message.message': (query, app_id) => find({app: common.db.ObjectID(app_id), 'contents.message': query}),
 };

@@ -32,6 +32,7 @@ const OVERRIDES = {
 
     API: {
         MAX_SOCKETS: 'max_sockets',
+        MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize'
     },
 
     WEB: {
