@@ -407,6 +407,11 @@
                 var maxLen = 0;
                 var maxStr = "";
 
+                if (xAxis.data.length) {
+                    xAxis.data = xAxis.data.map(function(item) {
+                        return countlyCommon.unescapeHtml(item);
+                    });
+                }
                 xAxis.data.forEach(function(item) {
                     var str = "";
                     if (Array.isArray(item)) {

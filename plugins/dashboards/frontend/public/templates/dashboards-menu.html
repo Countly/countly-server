@@ -27,7 +27,7 @@
                             :class="['cly-vue-sidebar__menu-items has-ellipsis',
                             {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
                             @click="onDashboardMenuItemClick(dashboard)">
-                            {{dashboard.name}}
+                            <span v-html="dashboard.name"></span>
                         </div>
                     </a>
                 </li>
