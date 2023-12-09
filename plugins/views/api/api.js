@@ -251,41 +251,48 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var oldUid = ob.oldUser.uid;
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
-            common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
-                const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
-                var haveUpdate = false;
-                for (var k in data) {
-                    for (var view in data[k]) {
-                        if (view !== '_id') {
-                            if (data[k][view].ts) {
-                                let orRule = {};
-                                orRule[view + ".ts"] = {$lt: data[k][view].ts};
-                                let orRule2 = {};
-                                orRule2[view] = {$exists: false};
-                                let setRule = {};
-                                setRule[view + ".ts"] = data[k][view].ts;
-                                if (data[k][view].lvid) {
-                                    setRule[view + ".lvid"] = data[k][view].lvid;
+            return new Promise(function(resolve, reject) {
+                common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
+                    if (err) {
+                        log.e(err);
+                        reject(err);
+                        return;
+                    }
+                    const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
+                    var haveUpdate = false;
+                    for (var k in data) {
+                        for (var view in data[k]) {
+                            if (view !== '_id') {
+                                if (data[k][view].ts) {
+                                    let orRule = {};
+                                    orRule[view + ".ts"] = {$lt: data[k][view].ts};
+                                    let orRule2 = {};
+                                    orRule2[view] = {$exists: false};
+                                    let setRule = {};
+                                    setRule[view + ".ts"] = data[k][view].ts;
+                                    if (data[k][view].lvid) {
+                                        setRule[view + ".lvid"] = data[k][view].lvid;
+                                    }
+                                    if (data[k][view].sg) {
+                                        setRule[view + ".sg"] = data[k][view].sg;
+                                    }
+                                    bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
+                                    haveUpdate = true;
                                 }
-                                if (data[k][view].sg) {
-                                    setRule[view + ".sg"] = data[k][view].sg;
-                                }
-                                bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
-                                haveUpdate = true;
                             }
                         }
                     }
-                }
-                if (haveUpdate) {
-
-                    bulk.execute().catch(function(err1) {
-                        if (parseInt(err1.code) !== 11000) {
-                            log.e(err1);
-                        }
+                    if (haveUpdate) {
+                        bulk.execute().catch(function(err1) {
+                            if (parseInt(err1.code) !== 11000) {
+                                log.e(err1);
+                            }
+                        });
+                    }
+                    common.db.collection("app_userviews" + appId).remove({_id: oldUid}, function(/*err, res*/) {
+                        resolve();
                     });
-
-                }
-                common.db.collection("app_userviews" + appId).remove({_id: oldUid}, function(/*err, res*/) {});
+                });
             });
         }
     });
