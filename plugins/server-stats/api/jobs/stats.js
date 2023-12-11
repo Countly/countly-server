@@ -7,6 +7,22 @@ const job = require('../../../../api/parts/jobs/job.js'),
     moment = require('moment-timezone'),
     request = require('countly-request');
 
+const getDP = function(entry) {
+    let dp = 0;
+
+    if ('d' in entry && Array.isArray(entry.d)) {
+        entry.d.forEach((item) => {
+            for (const k in item) {
+                for (const j in item[k]) {
+                    dp += item[k][j].dp || 0;
+                }
+            }
+        });
+    }
+
+    return dp;
+};
+
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
     /**
@@ -31,9 +47,8 @@ class StatsJob extends job.Job {
                     db.collection("server_stats_data_points").aggregate([
                         {
                             $group: {
-                                _id: "$m",
-                                e: { $sum: "$e"},
-                                s: { $sum: "$s"}
+                                _id: '$m',
+                                d: { $addToSet: '$d' },
                             }
                         }
                     ], { allowDiskUse: true }, function(error, allData) {
@@ -48,9 +63,10 @@ class StatsJob extends job.Job {
                                 utcMoment.subtract(1, 'months');
                             }
                             for (let i = 0; i < allData.length; i++) {
-                                data.all += allData[i].e + allData[i].s;
+                                const dp = getDP(allData[i]);
+                                data.all += dp;
                                 if (months[allData[i]._id]) {
-                                    data.month3.push(allData[i]._id + " - " + (allData[i].e + allData[i].s));
+                                    data.month3.push(allData[i]._id + " - " + dp);
                                 }
                             }
                             data.avg = Math.round((data.all / allData.length) * 100) / 100;
@@ -113,7 +129,7 @@ class StatsJob extends job.Job {
                                 var avg6 = 0;
                                 for (let i = 0; i < allData.length; i++) {
                                     if (ids[allData[i]._id]) {
-                                        var val = allData[i].e + allData[i].s;
+                                        var val = getDP(allData[i]);
                                         DP[ids[allData[i]._id]] = val;
                                         if (!ids0[allData[i]._id]) {
                                             avg12monthDP += DP[ids[allData[i]._id]];
