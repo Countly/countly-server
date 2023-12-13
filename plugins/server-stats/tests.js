@@ -82,6 +82,9 @@ function verifyAddedEvents(addedEvents, initialRequest) {
                 lastEventCounts[internalEventKey] += event.count;
                 lastEventCounts.e += event.count;
             });
+            if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
+                lastEventCounts.s++;
+            }
 
             for (const key in lastEventCounts) {
                 if (Object.hasOwnProperty.call(lastEventCounts, key)) {
