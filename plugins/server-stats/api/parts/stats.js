@@ -2,7 +2,7 @@ const moment = require("moment");
 
 const internalEventsEnum =
 {
-    "[CLY]_session": "ss",
+    "[CLY]_session": "s",
     "[CLY]_view": "v",
     "[CLY]_nps": "n",
     "[CLY]_crash": "c",
@@ -48,9 +48,19 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         for (var key in eventCount) {
             incObject[key] = eventCount[key];
             incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.${key}`] = eventCount[key];
-            sum += eventCount[key] || 0;
+            // sum += eventCount[key] || 0;
+            if (key === "e" || key === "s" || key === "p") { //because other are breakdowns from events.
+                sum += eventCount[key] || 0;
+            }
         }
         incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`] = sum;
+    }
+    else if (sessionCount && (eventCount === null || typeof eventCount === 'undefined' || (typeof eventCount === 'object' && !Object.keys(eventCount).length))) {
+        incObject = {
+            s: sessionCount,
+            [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.s`]: sessionCount,
+            [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount
+        };
     }
     else if (typeof eventCount === 'number') {
         incObject = {
