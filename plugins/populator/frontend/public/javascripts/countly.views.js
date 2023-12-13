@@ -173,7 +173,7 @@
 
                 countlyPopulator.setSelectedTemplate(self.selectedTemplate);
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
-                    countlyPopulator.generateUsers(self.maxTime * 4, template);
+                    countlyPopulator.generateUsers(self.maxTime, template);
                 });
                 var startTime = Math.round(Date.now() / 1000);
                 this.progressBar = setInterval(function() {
