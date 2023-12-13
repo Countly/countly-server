@@ -116,6 +116,28 @@ function generateRandomEvents(key) {
     return randomInternalEvents;
 }
 
+function verifyDPCount() {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const query = {"_id": APP_ID + "_" + year + ":" + month};
+    return testUtils.db.collection("server_stats_data_points").find(query).toArray()
+        .then((res, err) => {
+            res = res[0];
+            if (err) {
+                throw ({err: err});
+            }
+            else {
+                var d = res.d[Object.keys(res.d)[0]][Object.keys(res.d[Object.keys(res.d)[0]])[0]];
+                if (!d.e) {
+                    d.e = 0;
+                }
+                if (d.s + d.e !== d.dp) {
+                    throw ({err: 'Session and event count is not equal to data point count'});
+                }
+            }
+        });
+}
+
 describe('Testing data points plugin', function() {
     describe('Get server stats data', function() {
         it('should list track of the data point consumption in (30 days)', function(done) {
@@ -211,7 +233,7 @@ describe('Testing data points plugin', function() {
         });
     });
 
-    describe('Test event types', function() {
+    describe('Test the accuracy of event breakdowns', function() {
         for (const internalKey in statInternalEvents) {
             internalEvents.push({key: internalKey, count: 1});
             const value = statInternalEvents[internalKey];
@@ -321,6 +343,120 @@ describe('Testing data points plugin', function() {
         it('should confirm that random events are added to data points correctly [3.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e3).then(() => {
                 done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('should delete data point record for the test app', function(done) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const query = {"_id": APP_ID + "_" + year + ":" + month};
+            testUtils.db.collection("server_stats_data_points").deleteOne(query, function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+        });
+    });
+
+    describe('Verify data point number always equals to session + event count', function() {
+        it('should send session request', function(done) {
+            request
+                .get('/o/data_ingestion?app_key=' + APP_KEY + '&begin_session=1&device_id=ABC&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return {error: err};
+                    }
+                    const ob = JSON.parse(res.text);
+                    ob.should.have.property('result', true);
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                });
+        });
+        it('should verify session request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('should send session + event request', function(done) {
+            request
+                .get('/o/data_ingestion?app_key=' + APP_KEY + '&begin_session=1&device_id=ABCD&app_id=' + APP_ID + '&events=' + JSON.stringify(customEvents.single))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return {error: err};
+                    }
+                    const ob = JSON.parse(res.text);
+                    ob.should.have.property('result', true);
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                });
+        });
+        it('should verify session + event request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('should send session + view request', function(done) {
+            request
+                .get('/o/data_ingestion?app_key=' + APP_KEY + '&begin_session=1&device_id=ABCD&app_id=' + APP_ID + '&events=' + JSON.stringify([{key: '[CLY]_view', count: 1}]))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return {error: err};
+                    }
+                    const ob = JSON.parse(res.text);
+                    ob.should.have.property('result', true);
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                });
+        });
+        it('should verify session + view request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('should send session + view + custom event request', function(done) {
+            request
+                .get('/o/data_ingestion?app_key=' + APP_KEY + '&begin_session=1&device_id=ABCD&app_id=' + APP_ID + '&events=' + JSON.stringify([{key: '[CLY]_view', count: 1}, {key: 'event_1', count: 1}]))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return {error: err};
+                    }
+                    const ob = JSON.parse(res.text);
+                    ob.should.have.property('result', true);
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                });
+        });
+        it('should verify session + view + custom event request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('should send view + view request', function(done) {
+            request
+                .get('/o/data_ingestion?app_key=' + APP_KEY + '&begin_session=1&app_id=' + APP_ID + '&events=' + JSON.stringify([{key: '[CLY]_view', count: 1}, {key: '[CLY]_view', count: 1}]))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return {error: err};
+                    }
+                    const ob = JSON.parse(res.text);
+                    ob.should.have.property('result', true);
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                });
+        });
+        it('should verify view + view request NOT included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }).catch(err => {
                 done(err);
             });
