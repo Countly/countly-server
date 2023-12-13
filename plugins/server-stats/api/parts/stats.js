@@ -2,7 +2,7 @@ const moment = require("moment");
 
 const internalEventsEnum =
 {
-    "[CLY]_session": "ss",
+    "[CLY]_session": "s",
     "[CLY]_view": "v",
     "[CLY]_nps": "n",
     "[CLY]_crash": "c",
