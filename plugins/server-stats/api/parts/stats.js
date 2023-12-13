@@ -48,7 +48,9 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
         for (var key in eventCount) {
             incObject[key] = eventCount[key];
             incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.${key}`] = eventCount[key];
-            sum += eventCount[key] || 0;
+            if (key === "e" || key === "s" || key === "p") { //because other are breakdowns from events.
+                sum += eventCount[key] || 0;
+            }
         }
         incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`] = sum;
     }
