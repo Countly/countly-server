@@ -120,6 +120,14 @@ class Sender {
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
+            if (plugins.push.message_timeout) {
+                if (typeof plugins.push.message_timeout === "number") {
+                    cfg.message_timeout = plugins.push.message_timeout;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid message timeout configuration: %j', plugins.push.message_timeout);
+                }
+            }
         }
 
         return cfg;
