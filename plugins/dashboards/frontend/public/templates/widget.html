@@ -19,7 +19,7 @@
         For this we use the validateWidgets method.
     -->
 
-    <div class="grid-stack-item-content bu-p-5">
+    <div :class="['grid-stack-item-content', customPadding]">
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">

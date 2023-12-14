@@ -61,4 +61,6 @@ spec:
           - name: COUNTLY_CONFIG_HOSTNAME
             value: countly.example.com
           - name: NODE_OPTIONS
-            value: "--max-old-space-size=2048"  
+            value: "--max-old-space-size=2048"
+          - name: COUNTLY_CONFIG_API_API_WORKERS
+            value: "4"  # value can be CPU core count
