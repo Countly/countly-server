@@ -8,19 +8,7 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var fs = require('fs');
 var path = require('path');
-var isMyCountly = false;
-
-if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
-    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
-    try {
-        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
-            isMyCountly = true;
-        }
-    }
-    catch (e) {
-        isMyCountly = false;
-    }
-}
+var IS_FLEX = true;
 
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
@@ -81,10 +69,10 @@ var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
 
-if (isMyCountly) {
+if (IS_FLEX) {
     COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
-    COUNTLY_TRACK_TYPE = "Enterprise";
+    COUNTLY_TRACK_TYPE = "Flex";
 }
 else if (versionInfo.footer) {
     COUNTLY_NAMED_TYPE = versionInfo.footer;
@@ -935,7 +923,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
             }
-            if (isMyCountly) {
+            if (IS_FLEX) {
                 let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
                 if (locked?.isLocked === true) {
                     isLocked = true;
@@ -1005,7 +993,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                 },
-                mycountly: isMyCountly,
+                mycountly: IS_FLEX,
                 isLocked: isLocked,
             };
 
