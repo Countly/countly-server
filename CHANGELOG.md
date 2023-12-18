@@ -1,3 +1,15 @@
+## Version 23.11.6
+Fixes:
+- [core] fix for optimizing loyalty calculation
+- [star-rating] changes for status change on detail page
+- [bugfix] Filter was not working on isset/ is not set
+- [recaptcha] Fix for Recaptcha response is not passed along with login details when 2 fa is enabled
+
+Enterprise Fixes:
+- [data-manager] Recheck logic for  date regex for event timeline
+- [data-manager] Do not show 'all-time' in regeneration drawer in data manager
+- [drill] typo fixes in drill localization
+   
 ## Version 23.11.5
 Fixes:
 - [core] add required excludes to scripts
