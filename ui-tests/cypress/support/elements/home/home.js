@@ -164,8 +164,7 @@ export default {
         BOUNCE_RATE_PROGRESS_BAR: 'el-progress-metric-card-views-index-2-column'
     },
 
-    TECHNOLOGY: (index = 0) => {
-        return {
+    TECHNOLOGY: (index = 0) => ({
             LABEL: 'widget-label-technology',
             TOOLTIP: 'widget-tooltip-technology',
             GO_TO_TECHNOLOGY_LINK: 'widget-link-go-to-technology',
@@ -210,8 +209,7 @@ export default {
             TOP_DEVICE_TYPES_VALUE: 'cly-section-top-device-types-item-' + index + '-value',
             TOP_DEVICE_TYPES_PERCENT: 'cly-section-top-device-types-item-' + index + '-percent',
             TOP_DEVICE_TYPES_PROGRESS_BAR: 'cly-section-top-device-types-item-' + index + '-progress-bar',
-        };
-    },
+    }),
 
     COUNTRIES: {
         LABEL: 'widget-label-countries',

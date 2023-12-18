@@ -17,7 +17,7 @@ describe('Complete Onboarding', () => {
     });
 
     it('should be complete onboarding flow with creating demo application', function() {
-        setupHelpers.verifyDefaultPageElements;
+        setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -44,7 +44,7 @@ describe('Complete Onboarding', () => {
     });
 
     it('should be complete onboarding flow with creating demo application and enable tracking and subscribe to newsletter', function() {
-        setupHelpers.verifyDefaultPageElements;
+        setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -71,7 +71,7 @@ describe('Complete Onboarding', () => {
     });
 
     it('should be complete onboarding flow with creating own application', function() {
-        setupHelpers.verifyDefaultPageElements;
+        setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -148,7 +148,7 @@ describe('Complete Onboarding', () => {
     });
 
     it('verify home page after complete onboarding with Banking data', function() {
-        setupHelpers.verifyDefaultPageElements;
+        setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
