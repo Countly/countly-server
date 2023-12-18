@@ -570,7 +570,8 @@ async function profilerFilesTarStream() {
         stream.pipe(entry);
         stream.on("end", () => {
             entry.end();
-            if (++fileStreamFinished === files.length) {
+            fileStreamFinished++;
+            if (fileStreamFinished === files.length) {
                 pack.finalize();
             }
         });
