@@ -14,10 +14,10 @@
 						<div class="bu-is-flex bu-is-align-items-center number" :data-test-id="`tab-box-center-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">
 							<h2 :data-test-id="`tab-box-center-item-number-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">{{item.number}}</h2>
 							<div v-if="item.trend == 'u'" class="cly-trend-up" :data-test-id="`tab-box-center-item-trend-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">
-								<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2" :data-test-id="`tab-box-center-item-trend-up-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`"></i><span :data-test-id="`tab-box-center-item-trend-up-value-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">{{item.trendValue}}</span>
+								<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2" :data-test-id="`tab-box-center-item-trend-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`"></i><span :data-test-id="`tab-box-center-item-trend-value-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">{{item.trendValue}}</span>
 							</div>
-							<div v-if="item.trend == 'd'" class="cly-trend-down" :data-test-id="`tab-box-center-item-trend-d-down-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">
-								<i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2" :data-test-id="`tab-box-center-item-trend-down-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`"></i><span :data-test-id="`tab-box-center-item-trend-down-value-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">{{item.trendValue}}</span>
+							<div v-if="item.trend == 'd'" class="cly-trend-down" :data-test-id="`tab-box-center-item-trend-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">
+								<i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2" :data-test-id="`tab-box-center-item-trend-icon-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`"></i><span :data-test-id="`tab-box-center-item-trend-value-${item.label.toLowerCase().replace('.', '').replace(/\s/g, '-')}`">{{item.trendValue}}</span>
 							</div>
 						</div>
 					</div>
