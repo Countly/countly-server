@@ -389,13 +389,13 @@
 
         this.hasSession = false;
         this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        if ((totalCountWithoutUserProps < totalUserCount / 3)) {
+        if ((totalUserCount % 3 === 0)) {
             this.userdetails = { custom: getUserProperties(templateUp) };
-            totalCountWithoutUserProps++;
         }
         else {
             this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
         }
+        totalUserCount++;
         this.userdetails.custom.populator = true;
         this.metrics = {};
         this.startTs = startTs;
@@ -1057,7 +1057,6 @@
     var usersForAb = [];
     var userAmount = 1000;
     var totalUserCount = 0;
-    var totalCountWithoutUserProps = 0;
     var queued = 0;
     var abExampleCount = 1;
     var abExampleName = "Pricing";
@@ -1554,27 +1553,27 @@
                 });
             });
         }
-
-        generateRatingWidgets(function() {
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
-                generateNPSWidgets(function() {
-                    setTimeout(function() {
-                        generateSurveyWidgets1(done);
-                    }, 1000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets2(done);
-                    }, 3000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets3(done);
-                    }, 5000);
-                });
-            }
-            else {
-                done();
-            }
-        });
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+            generateRatingWidgets(function() {
+                if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
+                    generateNPSWidgets(function() {
+                        setTimeout(function() {
+                            generateSurveyWidgets1(function() {
+                                generateSurveyWidgets2(function() {
+                                    generateSurveyWidgets3(done);
+                                });
+                            });
+                        }, 1000);
+                    });
+                }
+                else {
+                    done();
+                }
+            });
+        }
+        else {
+            done();
+        }
     }
 
 
@@ -1770,8 +1769,6 @@
             idCount++;
         }
 
-        totalUserCount += userAmount + retentionCall; // campaign users
-        totalCountWithoutUserProps = 0;
 
         generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
@@ -1952,14 +1949,24 @@
          * @param {object} u - user object
          **/
         function processUsers() {
-            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUser(users[userAmountIndex]);
-            }
-            if (users.length > 0 && generating) {
-                setTimeout(processUsers, timeout);
+            if (bulk.length < 10) {
+                for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
+                    processUser(users[userAmountIndex]);
+                }
+                if (users.length > 0 && generating) {
+                    setTimeout(processUsers, timeout);
+                }
+                else {
+                    countlyPopulator.sync(true);
+                }
             }
             else {
-                countlyPopulator.sync(true);
+                if (generating) {
+                    setTimeout(processUsers, timeout);
+                }
+                else {
+                    countlyPopulator.sync(true);
+                }
             }
         }
         /**
@@ -1974,7 +1981,9 @@
 
         generateWidgets(function() {
             generateRetention(template, function() {
+                countlyPopulator.sync(true);
                 generateCampaigns(function() {
+                    countlyPopulator.sync(true);
                     for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                         createUser();
                     }
@@ -2042,7 +2051,7 @@
     };
 
     countlyPopulator.sync = function(force) {
-        if (generating && (force || bulk.length > bucket) && !countlyPopulator.bulking) {
+        if (generating && (force || bulk.length > 1) && !countlyPopulator.bulking) {
             queued++;
             var mult = Math.round(queued / 10) + 1;
             timeout = bucket * 10 * mult * mult;
