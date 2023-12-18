@@ -631,6 +631,24 @@ countlyFs.gridfs = {};
             });
         });
     };
+    /**
+     * List files inside the category (collection/directory)
+     * @param {string} category - collection to list files in
+     * @param {function} callback - function called when files found or query errored, providing error object as first param and a list of filename, creation date and size as secondas second
+     */
+    ob.listFiles = function(category, callback) {
+        const bucket = new GridFSBucket(db, { bucketName: category });
+        bucket.find().toArray()
+            .then((records) => callback(
+                null,
+                records.map(({ filename, uploadDate, length }) =>  ({
+                    filename,
+                    createdOn: uploadDate,
+                    size: length
+                }))
+            ))
+            .catch((error) => callback(error, null));
+    }
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
@@ -940,6 +958,30 @@ countlyFs.fs = {};
             }
         });
     };
+
+    /**
+     * List files inside the category (directory)
+     * @param {string} category - directory to list files in
+     * @param {function} callback - function called when files found, providing error object as first param and a list of filename, creation date and size as second
+     */
+    ob.listFiles = function(category, callback) {
+        fs.readdir(category, function(err, files){
+            if (err) {
+                return callback(err);
+            }
+            callback(
+                null,
+                files.map(filename => {
+                    const stats = fs.statSync(category + '/' + filename);
+                    return {
+                        filename,
+                        createdOn: stats.mtime,
+                        size: stats.size
+                    };
+                })
+            );
+        });  
+    }
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection

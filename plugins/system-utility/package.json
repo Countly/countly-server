@@ -20,6 +20,7 @@
     "template"
   ],
   "dependencies": {
+    "tar-stream": "^3.1.6"
   },
   "private": true
 }
