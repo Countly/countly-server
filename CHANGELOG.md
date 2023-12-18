@@ -2,11 +2,11 @@
 Fixes:
 - [core] fix for optimizing loyalty calculation
 - [star-rating] changes for status change on detail page
-- [bugfix] Filter was not working on isset/ is not set
+- [core][bugfix] Filter was not working on isset/ is not set in anayltics/loyality
 - [recaptcha] Fix for Recaptcha response is not passed along with login details when 2 fa is enabled
 
 Enterprise Fixes:
-- [data-manager] Recheck logic for  date regex for event timeline
+- [flows] Recheck logic for  date regex for event timeline
 - [data-manager] Do not show 'all-time' in regeneration drawer in data manager
 - [drill] typo fixes in drill localization
    
