@@ -138,8 +138,8 @@ const verifyDefaultPageElements = () => {
     });
 };
 const closeQuickStartPopover = () => {
-    cy.clickElement(quickstartPopoeverElements.CLOSE_ICON)
-}
+    cy.clickElement(quickstartPopoeverElements.CLOSE_ICON);
+};
 
 module.exports = {
     verifyDefaultPageElements,

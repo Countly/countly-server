@@ -261,7 +261,8 @@ Cypress.Commands.add('verifyElement', ({
         if (attr != null && attrText != null) {
             cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
         }
-    } else {
+    }
+    else {
 
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);

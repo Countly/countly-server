@@ -322,7 +322,7 @@ const verifyStaticElementsOfPage = () => {
         tooltipElement: homePageElements.CRASH_STATISTICS.CRASH_FREE_SESSIONS_TOOLTIP,
         tooltipText: "Number of sessions during which the selected crash did not occur in the selected time period, expressed as a percentage of the total number of sessions within that time period."
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -545,7 +545,7 @@ const verifyFullDataPageElements = () => {
     cy.scrollPageToTop('.main-view');
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.TOTAL_SESSIONS_NUMBER,
         elementText: "0",
     });
@@ -555,13 +555,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.TOTAL_SESSIONS_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.NEW_SESSIONS_NUMBER,
         elementText: "0",
     });
@@ -571,13 +571,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.NEW_SESSIONS_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.TIME_SPENT_NUMBER,
         elementText: "0.0 m",
     });
@@ -587,13 +587,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.TIME_SPENT_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_SESSION_DURATION_NUMBER,
         elementText: "0.0 m",
     });
@@ -603,13 +603,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_SESSION_DURATION_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
         elementText: "0.0",
     });
@@ -619,7 +619,7 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
         elementText: "NA",
     });
@@ -627,7 +627,7 @@ const verifyFullDataPageElements = () => {
     cy.scrollPageToCenter('.main-view');
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.VIEWS.TOTAL_VIEWS_NUMBER,
         elementText: "0",
     });
@@ -637,7 +637,7 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.VIEWS.BOUNCE_RATE_NUMBER,
         elementText: "0%",
     });
@@ -677,7 +677,7 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_SESSIONS_NUMBER,
         elementText: "0",
     });
@@ -687,30 +687,30 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_SESSIONS_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_USERS_NUMBER,
         elementText: "~0",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_USERS_TREND_ICON,
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_USERS_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.NEW_USERS_NUMBER,
         elementText: "0",
     });
@@ -720,7 +720,7 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.COUNTRIES.NEW_USERS_TREND_VALUE,
         elementText: "NA",
     });
@@ -728,7 +728,7 @@ const verifyFullDataPageElements = () => {
     cy.scrollPageToBottom('.main-view');
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.TOTAL_CRASHES_NUMBER,
         elementText: "0",
     });
@@ -738,13 +738,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.TOTAL_CRASHES_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.UNIQUE_CRASHES_NUMBER,
         elementText: "~0",
     });
@@ -754,13 +754,13 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.UNIQUE_CRASHES_TREND_VALUE,
         elementText: "NA",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASHES_SESSIONS_NUMBER,
         elementText: "0",
     });
@@ -770,24 +770,24 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_NUMBER,
         elementText: "100.00%",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_TREND_ICON,
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_TREND_VALUE,
         elementText: "0.0%",
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_SESSIONS_NUMBER,
         elementText: "100.00%",
     });
@@ -797,11 +797,11 @@ const verifyFullDataPageElements = () => {
     });
 
     cy.verifyElement({
-        shouldNot: true, 
+        shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_SESSIONS_TREND_VALUE,
         elementText: "0.0%",
     });
-}
+};
 
 module.exports = {
     verifyEmptyPageElements,

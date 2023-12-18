@@ -279,4 +279,4 @@ export default {
         CRASH_FREE_SESSIONS_TREND_ICON: 'metric-card-crashes-index-4-coloumn-trend-icon',
         CRASH_FREE_SESSIONS_TREND_VALUE: 'metric-card-crashes-index-4-coloumn-trend-desc'
     },
-}
+};

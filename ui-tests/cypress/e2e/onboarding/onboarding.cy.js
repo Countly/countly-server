@@ -5,7 +5,7 @@ const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
-const homePageHelpers = require('../../lib/home/home')
+const homePageHelpers = require('../../lib/home/home');
 
 describe('Complete Onboarding', () => {
     beforeEach(function() {
