@@ -412,7 +412,7 @@ exports.dbcheck = mongodbConnectionCheck;
  * @param {string} cmd session command to run
  * @returns {Promise<mixed>} the value command returns
  */
-const sessionPost = function(cmd) {
+function sessionPost(cmd) {
     return new Promise((res, rej) => {
         session.post(cmd, (err, arg) => {
             if (err) {
@@ -422,19 +422,22 @@ const sessionPost = function(cmd) {
         });
     });
 }
+
 /**
  * Saves the result to gridfs
- * @param {string} filename
+ * @param {string} filename file name with extension
  * @param {object} result result object returned by the profiler
  * @returns {Promise<string>} filename
  */
-const saveProfilerResult = function(filename, result) {
+function saveProfilerResult(filename, result) {
     return new Promise((res, rej) => {
         countlyFs.gridfs.saveData(
             PROFILER_DIR, filename, JSON.stringify(result),
             { writeMode: "overwrite" },
             function(err) {
-                if (err) return rej(err);
+                if (err) {
+                    return rej(err);
+                }
                 res(filename);
             }
         );
@@ -444,7 +447,6 @@ const saveProfilerResult = function(filename, result) {
 /**
  * Connects to inspector session and starts profilers
  * There're 3 types of profiler: cpu, heap, coverage
- * @returns {Promise<void>}
  */
 async function startProfiler() {
     session.connect();
@@ -463,7 +465,7 @@ async function startProfiler() {
  *  - process-name.cpuprofile
  *  - process-name.heapprofile
  *  - process-name.coverage
- * @returns {Promise<void>}
+ * @param {string} processName process or worker and process id
  */
 async function stopProfiler(processName) {
     const errors = [];
@@ -475,14 +477,15 @@ async function stopProfiler(processName) {
             null,
             err => err ? rej(err) : res()
         )
-    )
+    );
 
     // coverage
     try {
         const coverage = await sessionPost("Profiler.takePreciseCoverage");
         await saveProfilerResult(processName + ".coverage", coverage?.result);
         await sessionPost("Profiler.stopPreciseCoverage");
-    } catch(err) {
+    }
+    catch (err) {
         errors.push(err);
     }
 
@@ -491,16 +494,18 @@ async function stopProfiler(processName) {
         const cpuProfile = await sessionPost("Profiler.stop");
         await saveProfilerResult(processName + ".cpuprofile", cpuProfile?.profile);
         await sessionPost("Profiler.disable");
-    } catch(err) {
+    }
+    catch (err) {
         errors.push(err);
     }
-    
+
     // heap profiler
     try {
         const heapProfile = await sessionPost("HeapProfiler.stopSampling");
         await saveProfilerResult(processName + ".heapprofile", heapProfile?.profile);
         await sessionPost("HeapProfiler.disable");
-    } catch(err) {
+    }
+    catch (err) {
         errors.push(err);
     }
 
@@ -513,8 +518,8 @@ async function stopProfiler(processName) {
 
 /**
  * Returns the data of a file in PROFILER_DIR collection
- * @param {string} filename
- * @returns {Promise<{data:string, filename:string}>}
+ * @param {string} filename file name with extension
+ * @returns {Promise<{data:string, filename:string}>} file object with name and content
  */
 function downloadProfilerFile(filename) {
     return new Promise((resolve, reject) => {
@@ -527,8 +532,8 @@ function downloadProfilerFile(filename) {
     });
 }
 /**
- * Returns the names and creation dates of all files in the PROFILER_DIR collection
- * @returns {Promise<Array<{createdOn:Date, filename:string}>>}
+ * Returns the names, creation dates and size of all files in the PROFILER_DIR collection
+ * @returns {Promise<Array<{createdOn: Date, filename: string, size: number }>>} file info
  */
 function listProfilerFiles() {
     return new Promise((resolve, reject) => {
@@ -543,7 +548,7 @@ function listProfilerFiles() {
 
 /**
  * Returns the tarball read stream for all profiler files
- * @returns {tar.Pack}
+ * @returns {tar.Pack} tar stream
  */
 async function profilerFilesTarStream() {
     const files = await listProfilerFiles();
@@ -560,7 +565,7 @@ async function profilerFilesTarStream() {
                 files[i].filename,
                 {},
                 (err, fileStream) => err ? rej(err) : res(fileStream)
-            )
+            );
         });
         stream.pipe(entry);
         stream.on("end", () => {
@@ -583,7 +588,8 @@ function startInspector() {
     return new Promise((res, rej) => {
         try {
             res(inspector.open());
-        } catch(err) {
+        }
+        catch (err) {
             rej(err);
         }
     });
@@ -598,7 +604,8 @@ function stopInspector() {
     return new Promise((res, rej) => {
         try {
             res(inspector.close());
-        } catch(err) {
+        }
+        catch (err) {
             rej(err);
         }
     });

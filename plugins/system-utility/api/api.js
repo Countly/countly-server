@@ -10,6 +10,11 @@ const processName = (cluster.isMaster ? "master" : "worker") + "-" + process.pid
 const profilerCmds = ["startProfiler", "stopProfiler", "startInspector", "stopInspector"];
 let numberOfWorkers;
 
+/**
+ * Checks if the message is sent from profiler/inspector endpoints
+ * @param {object} msg IPC message object contains a "cmd" key
+ * @returns {boolean} true if an inspector/profiler message
+ */
 function isInspectorMessage(msg) {
     return typeof msg === "object" && profilerCmds.includes(msg.cmd);
 }
@@ -17,7 +22,6 @@ function isInspectorMessage(msg) {
 /**
  * Handles IPC messages sent by profiler and inspector endpoints.
  * @param {object} msg should contain at least "cmd" and "msgId" key
- * @returns {Promise<mixed>}
  */
 function handleMessage(msg) {
     if (isInspectorMessage(msg)) {
@@ -32,7 +36,8 @@ function handleMessage(msg) {
             log.e(err);
             console.error(err);
         });
-    } else if (typeof msg === "object" && msg.cmd === "setNumberOfWorkers") {
+    }
+    else if (typeof msg === "object" && msg.cmd === "setNumberOfWorkers") {
         numberOfWorkers = msg.params.numberOfWorkers;
     }
 }
@@ -62,7 +67,7 @@ plugins.register("/master", () => {
                 // broadcast to all workers except for "startInspector".
                 // running startInspector on master also starts worker's inspectors.
                 if (!["startInspector"].includes(msg.cmd)) {
-                    workers.forEach(worker => worker.send(msg));
+                    workers.forEach(_worker => _worker.send(msg));
                 }
             }
         });
@@ -71,6 +76,11 @@ plugins.register("/master", () => {
 
 // helper functions to start/stop with a timeout.
 let timeouts = { Profiler: null, Inspector: null };
+/**
+ * Sends a "startInspector" or "startProfiler" message to main process.
+ * Sets a timeout callback to stop the same operation.
+ * @param {string} type Inspector|Profiler
+ */
 function startWithTimeout(type) {
     if (timeouts[type]) {
         throw new Error("Already started");
@@ -78,6 +88,11 @@ function startWithTimeout(type) {
     process.send({ cmd: "start" + type });
     timeouts[type] = setTimeout(() => stopWithTimeout(type, true), 2 * 60 * 60 * 1000);
 }
+/**
+ * Sends a "stopInspector" or "stopProfiler" message to main process.
+ * @param {string} type Inspector|Profiler
+ * @param {boolean} fromTimeout true if its being stoped because of the timeout
+ */
 function stopWithTimeout(type, fromTimeout = false) {
     if (!timeouts[type]) {
         throw new Error(type + " needs to be started");
@@ -94,8 +109,8 @@ function stopWithTimeout(type, fromTimeout = false) {
         var params = ob.params,
             path = ob.paths[3].toLowerCase(),
             validate = ob.validateUserForGlobalAdmin;
-        
-        switch(path) {
+
+        switch (path) {
         case "start":
             validate(params, () => {
                 const masterPort = common.config?.api?.masterInspectorPort ?? 9229;
@@ -105,7 +120,8 @@ function stopWithTimeout(type, fromTimeout = false) {
                         workers: numberOfWorkers,
                         ports: [masterPort, masterPort + numberOfWorkers]
                     });
-                } catch(err) {
+                }
+                catch (err) {
                     log.e(err);
                     common.returnMessage(params, 500, err.toString());
                 }
@@ -117,13 +133,14 @@ function stopWithTimeout(type, fromTimeout = false) {
                 try {
                     stopWithTimeout("Inspector");
                     common.returnMessage(params, 200, "Stoping inspector for all processes");
-                } catch(err) {
+                }
+                catch (err) {
                     log.e(err);
                     common.returnMessage(params, 500, err.toString());
                 }
             });
             return true;
-        
+
         default:
             return false;
         }
@@ -133,14 +150,15 @@ function stopWithTimeout(type, fromTimeout = false) {
         var params = ob.params,
             path = ob.paths[3].toLowerCase(),
             validate = ob.validateUserForGlobalAdmin;
-        
+
         switch (path) {
         case 'start':
             validate(params, () => {
                 try {
                     startWithTimeout("Profiler");
                     common.returnMessage(params, 200, "Starting profiler for all processes");
-                } catch(err) {
+                }
+                catch (err) {
                     log.e(err);
                     common.returnMessage(params, 500, err.toString());
                 }
@@ -152,7 +170,8 @@ function stopWithTimeout(type, fromTimeout = false) {
                 try {
                     stopWithTimeout("Profiler");
                     common.returnMessage(params, 200, "Stoping profiler for all processes");
-                } catch(err) {
+                }
+                catch (err) {
                     log.e(err);
                     common.returnMessage(params, 500, err.toString());
                 }
@@ -176,7 +195,7 @@ function stopWithTimeout(type, fromTimeout = false) {
                     .then(({ data, filename }) => {
                         common.returnRaw(params, 200, data, {
                             'Content-Type': 'plain/text; charset=utf-8',
-                            'Content-disposition': 'attachment; filename=' + filename 
+                            'Content-disposition': 'attachment; filename=' + filename
                         });
                     })
                     .catch(err => {
@@ -185,9 +204,9 @@ function stopWithTimeout(type, fromTimeout = false) {
                     });
             });
             return true;
-        
+
         case 'download-all':
-            validate(params, async () => {
+            validate(params, async() => {
                 try {
                     const tarStream = await systemUtility.profilerFilesTarStream();
                     params.res.writeHead(200, {
@@ -196,12 +215,13 @@ function stopWithTimeout(type, fromTimeout = false) {
                     });
                     tarStream.on("end", () => params.res.end());
                     tarStream.pipe(params.res);
-                } catch(err) {
+                }
+                catch (err) {
                     log.e(err);
                     console.error(err);
                     common.returnMessage(params, 500, "Server error");
                 }
-            })
+            });
             return true;
 
         default:

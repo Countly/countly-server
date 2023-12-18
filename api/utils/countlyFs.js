@@ -641,14 +641,14 @@ countlyFs.gridfs = {};
         bucket.find().toArray()
             .then((records) => callback(
                 null,
-                records.map(({ filename, uploadDate, length }) =>  ({
+                records.map(({ filename, uploadDate, length }) => ({
                     filename,
                     createdOn: uploadDate,
                     size: length
                 }))
             ))
             .catch((error) => callback(error, null));
-    }
+    };
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
@@ -965,7 +965,7 @@ countlyFs.fs = {};
      * @param {function} callback - function called when files found, providing error object as first param and a list of filename, creation date and size as second
      */
     ob.listFiles = function(category, callback) {
-        fs.readdir(category, function(err, files){
+        fs.readdir(category, function(err, files) {
             if (err) {
                 return callback(err);
             }
@@ -980,8 +980,8 @@ countlyFs.fs = {};
                     };
                 })
             );
-        });  
-    }
+        });
+    };
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection

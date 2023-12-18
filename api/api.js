@@ -171,7 +171,7 @@ plugins.connectToAllDatabases().then(function() {
     *  Handle exit events for gracefull close
     */
     ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-        'SIGBUS', 'SIGFPE',  'SIGSEGV', 'SIGTERM',
+        'SIGBUS', 'SIGFPE', 'SIGSEGV', 'SIGTERM',
     ].forEach(function(sig) {
         process.on(sig, async function() {
             storeBatchedData(sig);
