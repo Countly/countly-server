@@ -169,7 +169,7 @@ class Connector extends DoFinish {
                         }
                     }, callback);
             }
-            else if (push._id.getTimestamp().getTime() < Date.now() - 3600000) {
+            else if (push._id.getTimestamp().getTime() < Date.now() - this.state.cfg.message_timeout) {
                 this.tooLateToSend.addAffected(push._id, 1);
                 this.do_flush(callback, true);
                 return;

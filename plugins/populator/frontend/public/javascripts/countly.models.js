@@ -50,9 +50,9 @@
         segment: ["Android", "iOS", "Windows Phone"]
     };
     var messages = [
-        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "💥 Latest 💥", "default|0|t": "Go", "default|0|l": "theapp://offers", "default": "Check our latest offers!"}, "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": "events", "autoEvents": ["Login"], "autoTime": 576000, "autoCapMessages": 1, "autoCapSleep": 864000},
+        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "HOT offers with 30% discount, only 6 hours left!"}},
+        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "Last chance! Only 3 hours left to get 30% discount!"}},
+        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "💥 Latest 💥", "default|0|t": "Go", "default|0|l": "theapp://offers", "default": "Check our latest offers!"}, "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": "events", "autoEvents": ["Login"], "autoTime": 576000, "autoCapMessages": 1, "autoCapSleep": 864000, info: {title: "Check our latest offers!"}},
         // {
         //     demo: 4,
         //     app: countlyCommon.ACTIVE_APP_ID,
@@ -75,6 +75,50 @@
         {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
         {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
     var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+    var jsErrors = [
+        {
+            error: "Error: URIError\n" +
+            "    URI malformed\n" +
+            "    at decodeURIComponent (<anonymous>)\n" +
+            "    at o (bundle.js:1:61)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: 'Error: URIError'
+        },
+        {
+            error: "Error: RangeError\n" +
+            "    toFixed() digits argument must be between 0 and 100\n" +
+            "    at Number.toFixed (<anonymous>)\n" +
+            "    at o (bundle.js:1:100)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: RangeError"
+        },
+        {
+            error: "Error: SyntaxError\n" +
+                "    Hello Countly (at bundle.js:1:138)\n" +
+                "    at o (bundle.js:1:138)\n" +
+                "    at bundle.js:1:247\n" +
+                "    at bundle.js:1:276",
+            name: "Error: SyntaxError"
+        },
+        {
+            error: "Error: TypeError\n" +
+            '    "Countly".reverse is not a function\n' +
+            "    at o (bundle.js:1:190)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: TypeError"
+        },
+        {
+            error: "Error: ReferenceError\n" +
+            "    param is not defined\n" +
+            "    at o (bundle.js:1:25)\n" +
+            "    at bundle.js:1:247\n" +
+            "    at bundle.js:1:276",
+            name: "Error: ReferenceError"
+        }
+    ];
     var defaultTemplates = [
         {
             "_id": "defaultBanking",
@@ -345,13 +389,13 @@
 
         this.hasSession = false;
         this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        if ((totalCountWithoutUserProps < totalUserCount / 3)) {
+        if ((totalUserCount % 3 === 0)) {
             this.userdetails = { custom: getUserProperties(templateUp) };
-            totalCountWithoutUserProps++;
         }
         else {
             this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
         }
+        totalUserCount++;
         this.userdetails.custom.populator = true;
         this.metrics = {};
         this.startTs = startTs;
@@ -440,9 +484,7 @@
             var error = "";
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-                var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
-                return err.stack + "";
+                return jsErrors[Math.floor(Math.random() * jsErrors.length)].error;
             }
             else if (this.platform === "Android") {
                 errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
@@ -1002,7 +1044,7 @@
             });
         };
     }
-
+    var crashSymbolVersions = {};
     var bulk = [];
     var campaingClicks = [];
     var startTs = 1356998400;
@@ -1015,7 +1057,6 @@
     var usersForAb = [];
     var userAmount = 1000;
     var totalUserCount = 0;
-    var totalCountWithoutUserProps = 0;
     var queued = 0;
     var abExampleCount = 1;
     var abExampleName = "Pricing";
@@ -1512,27 +1553,27 @@
                 });
             });
         }
-
-        generateRatingWidgets(function() {
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
-                generateNPSWidgets(function() {
-                    setTimeout(function() {
-                        generateSurveyWidgets1(done);
-                    }, 1000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets2(done);
-                    }, 3000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets3(done);
-                    }, 5000);
-                });
-            }
-            else {
-                done();
-            }
-        });
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+            generateRatingWidgets(function() {
+                if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
+                    generateNPSWidgets(function() {
+                        setTimeout(function() {
+                            generateSurveyWidgets1(function() {
+                                generateSurveyWidgets2(function() {
+                                    generateSurveyWidgets3(done);
+                                });
+                            });
+                        }, 1000);
+                    });
+                }
+                else {
+                    done();
+                }
+            });
+        }
+        else {
+            done();
+        }
     }
 
 
@@ -1728,8 +1769,6 @@
             idCount++;
         }
 
-        totalUserCount += userAmount + retentionCall; // campaign users
-        totalCountWithoutUserProps = 0;
 
         generateRetentionUser(ts, userCount--, ids, template, function() {
             ts += 60 * 60 * 24;
@@ -1910,14 +1949,24 @@
          * @param {object} u - user object
          **/
         function processUsers() {
-            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUser(users[userAmountIndex]);
-            }
-            if (users.length > 0 && generating) {
-                setTimeout(processUsers, timeout);
+            if (bulk.length < 10) {
+                for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
+                    processUser(users[userAmountIndex]);
+                }
+                if (users.length > 0 && generating) {
+                    setTimeout(processUsers, timeout);
+                }
+                else {
+                    countlyPopulator.sync(true);
+                }
             }
             else {
-                countlyPopulator.sync(true);
+                if (generating) {
+                    setTimeout(processUsers, timeout);
+                }
+                else {
+                    countlyPopulator.sync(true);
+                }
             }
         }
         /**
@@ -1932,7 +1981,9 @@
 
         generateWidgets(function() {
             generateRetention(template, function() {
+                countlyPopulator.sync(true);
                 generateCampaigns(function() {
+                    countlyPopulator.sync(true);
                     for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                         createUser();
                     }
@@ -2000,7 +2051,7 @@
     };
 
     countlyPopulator.sync = function(force) {
-        if (generating && (force || bulk.length > bucket) && !countlyPopulator.bulking) {
+        if (generating && (force || bulk.length > 1) && !countlyPopulator.bulking) {
             queued++;
             var mult = Math.round(queued / 10) + 1;
             timeout = bucket * 10 * mult * mult;
@@ -2014,6 +2065,9 @@
                         temp[stat] += req[i].stats[stat];
                     }
                     delete req[i].stats;
+                }
+                if (req[i].crash && Object.keys(req[i].crash).length) {
+                    crashSymbolVersions[req[i].crash._app_version] = true;
                 }
             }
             $.ajax({
@@ -2042,6 +2096,26 @@
     };
 
     countlyPopulator.ensureJobs = function() {
+
+        //upload all version at once
+        var crashVersions = Object.keys(crashSymbolVersions);
+        var form_data = new FormData();
+        form_data.append('build', crashVersions);
+        form_data.append('platform', 'javascript');
+        form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
+        form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
+        form_data.append('populator', true);
+
+        $.ajax({
+            url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
+            data: form_data,
+            processData: false,
+            contentType: false,
+            type: "POST",
+            success: function() {},
+            error: function() {}
+        });
+
         messages.forEach(function(m) {
             m.apps = [countlyCommon.ACTIVE_APP_ID];
         });

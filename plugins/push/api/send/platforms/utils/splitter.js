@@ -83,7 +83,12 @@ class Splitter extends Base {
                 res.on('data', d => {
                     res.reply += d;
                 });
-                res.on('end', () => handler(res));
+                res.on('end', () => {
+                    if (this.opts.agent && this.opts.agent.popReject) {
+                        this.opts.agent.popReject(reject);
+                    }
+                    handler(res);
+                });
                 // res.on('close', () => handler(res));
             });
             // req.on('socket', socket => {
@@ -93,6 +98,10 @@ class Splitter extends Base {
                 this.log.d('send request error', error);
                 reject([0, error]);
             });
+
+            if (this.opts.agent && this.opts.agent.pushReject) {
+                this.opts.agent.pushReject(reject);
+            }
             req.end(content);
         });
     }

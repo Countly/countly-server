@@ -346,10 +346,12 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && member.permission._.a.indexOf(params.qstring.app_id) === -1) {
-                    common.returnMessage(params, 401, 'User does not have right');
-                    reject('User does not have right');
-                    return false;
+                if (!member.global_admin) {
+                    if (!member.permission || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
+                        return false;
+                    }
                 }
 
                 if (member && member.locked) {
@@ -712,10 +714,12 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                         else {
                             isFeatureAllowedInReadPermissionObject = false;
-                            for (var i = 0; i < feature.length; i++) {
-                                if (isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature[i]]))) {
-                                    isFeatureAllowedInReadPermissionObject = true;
-                                    break;
+                            if (feature) {
+                                for (var i = 0; i < feature.length; i++) {
+                                    if (isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature[i]]))) {
+                                        isFeatureAllowedInReadPermissionObject = true;
+                                        break;
+                                    }
                                 }
                             }
                         }

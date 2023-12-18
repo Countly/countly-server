@@ -1,10 +1,10 @@
-<div class="bu-column" :class="customClass">
+<div class="bu-column" :class="customClass" v-if="items.length > 0">
     <div class="overview">
         <div class="bu-level">
             <div class="bu-level-left">
                 <div class="bu-level-item bu-is-flex bu-is-flex-direction-column bu-is-align-items-start">
-                    <div class="title">{{ title }}</div>
-                    <div class="description">{{ description }}</div>
+                    <div class="title">{{ titleContent }}</div>
+                    <div class="description">{{ descriptionContent }}</div>
                 </div>
             </div>
             <div class="bu-level-right" v-if="link">
@@ -24,6 +24,7 @@
                     :value="items[index]"
                     :style="wrapperStyle"
                     :key="items[index].id"
+                    :index="index"
                 >
                 </walkthrough-component> 
                 <article-component

@@ -334,8 +334,11 @@
     }
 }
 
-.el-dropdown-menu__item > i.cly-icon-outline {
-    padding: 2px 7px;
+.el-dropdown-menu__item {
+    padding: 7px 6px;
+    > i.cly-icon-outline {
+        padding: 2px 7px;
+    }
 }
 
 .el-select-dropdown {
@@ -344,6 +347,9 @@
             opacity: 1 !important;
             right: 0;
         }
+    }
+    &__item {
+        padding: 7px 6px;
     }
 }
 

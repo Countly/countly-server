@@ -1,0 +1,23 @@
+{
+  "name": "countly-e2e",
+  "version": "1.0.0",
+  "description": "e2e testing",
+  "author": "Countly, Inc.",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run:dashboard": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/dashboard/**/*.cy.js --browser chrome",
+    "cy:run:onboarding": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --browser chrome",
+    "cy:run:login": "cypress run --spec **/login.cy.js --browser chrome",
+    "cy:run:userActivity": "cypress run --spec **/analytics/loyalty/userActivity.cy.js --browser chrome"
+  },
+  "devDependencies": {
+    "cypress": "^13.4.0"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@faker-js/faker": "^8.2.0",
+    "base-64": "^1.0.0",
+    "cypress-file-upload": "^5.0.8",
+    "moment": "^2.29.4"
+  }
+}

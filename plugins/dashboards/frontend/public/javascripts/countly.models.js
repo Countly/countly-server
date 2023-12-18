@@ -53,11 +53,13 @@
 
     countlyDashboards.service = {
         dashboards: {
-            getAll: function() {
+            getAll: function(just_schema = false) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
-                    data: {},
+                    data: {
+                        "just_schema": just_schema,
+                    },
                     dataType: "json"
                 }, {disableAutoCatch: true});
             },
@@ -534,7 +536,9 @@
                         _id: app._id,
                         name: app.name,
                         image: app.image,
-                        type: app.type
+                        type: app.type,
+                        created_at: app.created_at,
+                        has_image: app.has_image
                     };
                     return acc;
                 }, {});
@@ -546,7 +550,9 @@
                         _id: key,
                         name: countlyGlobal.apps[key].name,
                         image: countlyGlobal.apps[key].image,
-                        type: countlyGlobal.apps[key].type
+                        type: countlyGlobal.apps[key].type,
+                        created_at: countlyGlobal.apps[key].created_at,
+                        has_image: countlyGlobal.apps[key].has_image
                     };
                 }
 
@@ -558,8 +564,10 @@
             /*
                 Public actions
             */
-            getAll: function(context) {
-                return countlyDashboards.service.dashboards.getAll().then(function(res) {
+            getAll: function(context, params = null) {
+                var just_schema = params && params.just_schema;
+
+                return countlyDashboards.service.dashboards.getAll(just_schema).then(function(res) {
                     var dashboards = res || [];
                     context.dispatch("setAll", dashboards);
                     return dashboards;

@@ -4,11 +4,14 @@
 
     /**
     * Replace escaped characters
-    * @param {string} val - string to replace
+    * @param {string} str - string to replace
     * @returns {string} - replaced escaped characters
     */
-    function replaceEscapes(val) {
-        return val.replace("&#39;", "'");
+    function replaceEscapes(str) {
+        if (typeof str === 'string') {
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        }
+        return str;
     }
 
     var Drawer = countlyVue.views.create({
@@ -140,7 +143,7 @@
                         loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
                     }
                     else {
-                        loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                        loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
                     }
                 }
                 loadImage.onload = function() {
@@ -182,7 +185,12 @@
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
             comments: Array,
-            loadingState: Boolean
+            loadingState: Boolean,
+            filter: {
+                type: Object,
+                default: {},
+                required: false
+            }
         },
         methods: {
             decode: function(str) {
@@ -204,8 +212,50 @@
             }
         },
         data: function() {
+            var self = this;
+            var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("commentsTable", {
+                columns: ['comment', 'cd', 'email', 'rating'],
+                onRequest: function() {
+                    const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
+                    var filter = self.filter;
+                    if (filter) {
+                        if (filter.rating && filter.rating !== "") {
+                            data.rating = filter.rating;
+                        }
+                        if (filter.version && filter.version !== "") {
+                            data.version = filter.version.replace(":", ".");
+                        }
+                        if (filter.platform && filter.platform !== "") {
+                            data.platform = filter.platform;
+                        }
+                        if (filter.widget && filter.widget !== "") {
+                            data.widget_id = filter.widget;
+                        }
+                        if (filter.uid && filter.uid !== "") {
+                            data.uid = filter.uid;
+                        }
+                    }
+                    return {
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o/feedback/data",
+                        data: data
+                    };
+                },
+                onError: function(context, err) {
+                    throw err;
+                },
+                onReady: function(context, rows) {
+                    rows.forEach(function(row) {
+                        row.cd = countlyCommon.formatTimeAgoText(row.cd).tooltip;
+                        row.time = moment.unix(row.ts).format("DD MMMM YYYY HH:MM:SS");
+                        row.comment = replaceEscapes(row.comment);
+                    });
+                    return rows;
+                },
+            }));
             return {
-                commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID
+                commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID,
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "commentsTable"),
             };
         }
     });
@@ -486,7 +536,7 @@
                 if (force) {
                     self.isLoading = true;
                 }
-                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
+                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackWidgetsData())
                     .then(function() {
                         self.isLoading = false;
                         // set platform versions for filter
@@ -496,8 +546,6 @@
                         // calculate cumulative data for chart
                         self.rating = starRatingPlugin.getRatingInPeriod();
                         self.calCumulativeData();
-                        // set comments data for all widgets
-                        self.feedbackData = starRatingPlugin.getFeedbackData();
                     });
             },
             prepareVersions: function(newValue) {
@@ -585,7 +633,8 @@
                 },
                 widget: '',
                 rating: {},
-                loading: true
+                loading: true,
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
         },
         methods: {
@@ -661,7 +710,19 @@
                 this.fetch(force);
             },
             setWidget: function(row, status) {
-                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
+                var finalizedTargeting = null;
+                var target_pages = row.target_pages === "-" ? [] : row.target_pages.split(", ");
+                if (this.cohortsEnabled) {
+                    var exported = row.targeting;
+                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
+                        finalizedTargeting = Object.assign({}, {
+                            user_segmentation: JSON.stringify(exported.user_segmentation),
+                            steps: JSON.stringify(exported.steps)
+                        });
+                    }
+
+                }
+                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status, target_pages: target_pages, targeting: finalizedTargeting }, function() {
                     CountlyHelpers.notify({
                         type: 'success',
                         message: CV.i18n('feedback.successfully-updated')
@@ -1020,7 +1081,7 @@
                 if (force) {
                     this.isLoading = true;
                 }
-                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
+                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                     .then(function() {
                         self.isLoading = false;
                         // set platform versions for filter
@@ -1029,8 +1090,6 @@
                         // calculate cumulative data for chart
                         self.rating = starRatingPlugin.getRatingInPeriod();
                         self.calCumulativeData();
-                        // set comments data for all widgets
-                        self.feedbackData = starRatingPlugin.getFeedbackData();
                     });
             },
             prepareVersions: function(newValue) {

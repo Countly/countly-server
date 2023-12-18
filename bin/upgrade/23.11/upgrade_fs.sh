@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="23.06"
+VER="23.11"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
@@ -23,7 +23,7 @@ then
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
 
-    #countly plugin enable sdk;
+    countly plugin enable guides;
     
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"

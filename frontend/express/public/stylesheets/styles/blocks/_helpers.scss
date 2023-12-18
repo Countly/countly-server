@@ -150,3 +150,11 @@
 .cly-is-fullwidth {
     width: 100%;
 }
+
+.is-estimate {
+    &:hover { 
+        color:#0166D6; 
+        text-decoration: underline;
+        text-decoration-style: dotted;
+    }
+}

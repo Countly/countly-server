@@ -214,7 +214,7 @@ function transformAppVersion(inpVersion) {
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_u[prop]) / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
@@ -228,11 +228,11 @@ function transformAppVersion(inpVersion) {
                     }
                     else {
                         if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
-                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                            propValue = ((dashboard.cr_s[prop] - dashboard[name][prop]) / dashboard.cr_s[prop] * 100);
                         }
                         else {
                             // Use real total session if cr_s value is too low
-                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                            propValue = ((realTotalSession - dashboard[name][prop]) / realTotalSession * 100);
                         }
                     }
 
@@ -1244,7 +1244,7 @@ function transformAppVersion(inpVersion) {
         return id;
     };
 
-    countlyCrashes.modifyOsVersionQuery = function(inpQuery) {
+    countlyCrashes.modifyQueries = function(inpQuery) {
         var resultQuery = {};
 
         Object.keys(inpQuery).forEach(function(key) {
@@ -1253,6 +1253,19 @@ function transformAppVersion(inpVersion) {
                 var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
 
                 resultQuery[newKey] = inpQuery[key];
+            }
+            else if (key.startsWith('is_hidden')) {
+                Object.keys(inpQuery[key]).forEach(function(innerKey) {
+                    if (
+                        (innerKey === '$in' || innerKey === '$nin') &&
+                        Array.isArray(inpQuery[key][innerKey]) &&
+                        inpQuery[key][innerKey].includes(false)
+                    ) {
+                        inpQuery[key][innerKey].push(null);
+                    }
+                });
+
+                resultQuery[key] = inpQuery[key];
             }
             else {
                 resultQuery[key] = inpQuery[key];
