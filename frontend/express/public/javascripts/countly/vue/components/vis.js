@@ -639,12 +639,7 @@
                                 }
 
                                 params.sort(function(a, b) {
-                                    if (typeof a.value === 'object') {
-                                        return b.value[1] - a.value[1];
-                                    }
-                                    else {
-                                        return b.value - a.value;
-                                    }
+                                    return a.seriesIndex - b.seriesIndex;
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
