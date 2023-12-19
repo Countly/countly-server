@@ -42,6 +42,12 @@ const OVERRIDES = {
         SESSION_NAME: 'session_name'
     },
 
+    MAIL: {
+        CONFIG: {
+            IGNORETLS: "ignoreTLS"
+        }
+    },
+
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter'
