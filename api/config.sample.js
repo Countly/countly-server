@@ -122,17 +122,17 @@ var countlyConfig = {
     mail: {
         // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
         //transport: 'nodemailer-smtp-transport',
-        
+
         // config object passed to the transport
         config: {
             //host: 'smtp.example.com',
             //port: 25,
             //auth: {
-                //user: 'USER',
-                //pass: 'PASSWORD'
+            //user: 'USER',
+            //pass: 'PASSWORD'
             //},
         },
-        
+
         // standard strings used in email templates
         strings: {
             //from: 'countly@example.com',
