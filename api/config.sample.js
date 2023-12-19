@@ -138,6 +138,7 @@ var countlyConfig = {
             //from: 'countly@example.com',
             //hithere: 'there' // as in "Hi, there" when name is unknown
         }
+    }
 };
 
 module.exports = require('./configextender')('API', countlyConfig, process.env);
