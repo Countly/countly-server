@@ -7,14 +7,14 @@
 							<span class="text-medium text-uppercase" :data-test-id="`cly-section-label-${item.title.toLowerCase().replace(/\s/g, '-')}`">{{item.title}}</span>
 							<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-tooltip`" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
 						</div>
-						<div class="topData bu-pl-3 bu-pr-3 bu-pb-5">
+						<div class="topData bu-pl-3 bu-pr-3 bu-pb-5" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-data-block`">
 							<div :key="idx2" v-for="(item2, idx2) in item.data" >
-								<div class="version-graph-block bu-p-3">
+								<div class="version-graph-block bu-p-3" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}`">
 									<div class="bu-columns version-graph-title">
-										<div class="bu-column" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-${item2.name.toLowerCase().replace(/\s/g, '-')}-item-name`">{{item2.name}}</div>
-										<div class="bu-column" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-${item2.name.toLowerCase().replace(/\s/g, '-')}-item-value`">{{formatNumber(item2.value)}} {{item2.value > 1 ? 'Users' : 'User'}}<span class="divider" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-${item2.name.toLowerCase().replace(/\s/g, '-')}-divider`"> | </span :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-${item2.name.toLowerCase().replace(/\s/g, '-')}-percent`">{{item2.percent}}% </div>
+										<div class="bu-column" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}-name`">{{item2.name}}</div>
+										<div class="bu-column" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}-value`">{{formatNumber(item2.value)}} {{item2.value > 1 ? 'Users' : 'User'}}<span class="divider" :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}-divider`"> | </span><span :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}-percent`">{{item2.percent}}% </span></div>
 									</div>
-									<cly-progress-bar :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-${item2.name.toLowerCase().replace(/\s/g, '-')}-progress-bar`" :entities="item2.bar" :height=8></cly-progress-bar>
+									<cly-progress-bar :data-test-id="`cly-section-${item.title.toLowerCase().replace(/\s/g, '-')}-item-${idx2}-progress-bar`" :entities="item2.bar" :height=8></cly-progress-bar>
 								</div>
 							</div>
 						</div>

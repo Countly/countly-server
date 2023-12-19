@@ -137,7 +137,11 @@ const verifyDefaultPageElements = () => {
         hrefContainUrl: "https://discord.gg/countly"
     });
 };
+const closeQuickStartPopover = () => {
+    cy.clickElement(quickstartPopoeverElements.CLOSE_ICON);
+};
 
 module.exports = {
-    verifyDefaultPageElements
+    verifyDefaultPageElements,
+    closeQuickStartPopover
 };
