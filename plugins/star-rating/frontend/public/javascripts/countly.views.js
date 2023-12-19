@@ -704,6 +704,7 @@
                     target_page: false,
                     logoType: logoType,
                     globalLogo: globalLogo,
+                    internalName: ''
                 });
             },
             refresh: function(force) {
