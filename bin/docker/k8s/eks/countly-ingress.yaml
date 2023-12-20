@@ -11,9 +11,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: countly-ingress
-  namespace: countly
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
 spec:
-  ingressClassName: nginx
   tls:
   - hosts:
     - YOUR_HOSTNAME                     # countly.example.com
@@ -23,7 +25,7 @@ spec:
     http:
       paths:
       - path: /i
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: countly-api
@@ -37,7 +39,7 @@ spec:
             port:
               number: 3001
       - path: /o
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: countly-api
@@ -50,15 +52,8 @@ spec:
             name: countly-api
             port:
               number: 3001
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: countly-frontend
-            port:
-              number: 6001
-      - path: /images/
-        pathType: Prefix
+      - path: /*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: countly-frontend

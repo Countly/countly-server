@@ -1,3 +1,35 @@
+## Version 23.11.6
+Fixes:
+- [core] fix for optimizing loyalty calculation
+- [star-rating] changes for status change on detail page
+- [core][bugfix] Filter was not working on isset/ is not set in anayltics/loyality
+- [recaptcha] Fix for Recaptcha response is not passed along with login details when 2 fa is enabled
+
+Enterprise Fixes:
+- [flows] Recheck logic for  date regex for event timeline
+- [data-manager] Do not show 'all-time' in regeneration drawer in data manager
+- [drill] typo fixes in drill localization
+   
+## Version 23.11.5
+Fixes:
+- [core] add required excludes to scripts
+- [core] updated hostname placeholder values
+- [cms] Add more options check
+- [crashes] fix for Crash-free users and crash-free sessions cannot be negative
+- [dashboards] fix for notes widget
+- [dashboards] fix for special characters gets messed up in dashboards
+- [core] updated ingress to support latest api version
+- [core] Update Versions view to new UI
+- [bugfix] Correctly count datapoints
+- [populator]fixes for populator plugin
+- [push] Updated push settings to be able to parameterize message timeout
+- [hooks] Fixed hook settings texts
+- [core] udated ingress to support latest api version
+  
+Enterprise Fixes:
+- [formulas] text change in formulas
+- [core] Remove tests from packages
+  
 ## Version 23.11.4
 Enterprise Fixes:
 - [drill] Fix for drill snapshot query

@@ -27,3 +27,13 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE }}
+      - name: Send custom JSON data to Discord
+        uses: sarisia/actions-status-discord@v1.13.0
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          nodetail: true
+          title: New ${{ github.repository }} version ${{ github.event.release.tag_name }} published by ${{ github.actor }}
+          description: |
+            Release URL: ${{ github.event.release.html_url }}
+            Click [here](https://github.com/Countly/countly-server/blob/master/CHANGELOG.md) to view the change log.
+            `${{ github.event.release.body }}`

@@ -1212,8 +1212,9 @@ const getAggregatedAppUsers = (collectionName, aggregation) => {
     });
 };
 
+
 usersApi.loyalty = function(params) {
-    const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "> 500"];
+    const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "500+"];
     const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [50, 99], [100, 499], [500] ];
     const collectionName = 'app_users' + params.qstring.app_id;
     let query = params.qstring.query || {};
@@ -1221,6 +1222,10 @@ usersApi.loyalty = function(params) {
     if (typeof query === "string") {
         try {
             query = JSON.parse(query);
+            plugins.dispatch("/drill/preprocess_query", {
+                query: query,
+                params
+            });
         }
         catch (error) {
             query = {};
@@ -1241,32 +1246,39 @@ usersApi.loyalty = function(params) {
     const matchQuery = { '$match': query};
     const sevenDaysMatch = { '$match': {ls: { '$gte': (ts - sevenDays) / 1000}}};
     const thirtyDaysMatch = { '$match': {ls: { '$gte': (ts - thirtyDays) / 1000}}};
-    const rangeProject = { '$project': { 'range': { '$concat': [] }}};
-    const indexProject = { '$project': {'count': 1, 'index': { '$concat': [] }}};
-    const groupBy = { '$group': { '_id': '$range', count: { '$sum': 1 }}};
+
+    const groupBy = { "$group": {"_id": "$sc", "count": {"$sum": 1}}};
     const sort = {'$sort': { 'index': 1}};
 
-    rangeProject.$project.range.$concat = rangeLabels.map((label, index) => {
-        const range = ranges[index];
-        if (index < 2 && range.length === 1) {
-            return { '$cond': [{ '$eq': ['$sc', range[0] ]}, label, '']};
+    var switches = [];
+    var switches2 = [];
+    for (let k = 0; k < ranges.length; k++) {
+        if (k === ranges.length - 1) {
+            switches.push({"case": {"$gte": ["$_id", ranges[k][0]]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$gte": ["$_id", ranges[k][0]]}, "then": k});
         }
-        else if (range.length === 1) {
-            return { $cond: [{ $gte: ['$sc', range[0] ]}, label, '']};
+        else if (ranges[k].length === 1) {
+            switches.push({"case": {"$eq": ["$_id", ranges[k][0]]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$eq": ["$_id", ranges[k][0]]}, "then": k});
         }
         else {
-            return { $cond: [{ $and: [{$gte: ['$sc', range[0]]}, {$lte: ['$sc', range[1]]}]}, label, '']};
+            switches.push({"case": {"$and": [{"$gte": ["$_id", ranges[k][0]]}, {"$lte": ["$_id", ranges[k][1]]}]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$and": [{"$gte": ["$_id", ranges[k][0]]}, {"$lte": ["$_id", ranges[k][1]]}]}, "then": k});
         }
-    });
+    }
 
-    indexProject.$project.index.$concat = rangeLabels.map((label, index) => (
-        { '$cond': [{'$eq': ['$_id', label]}, index.toString(), '']}
-    ));
+    var indexProject = {};
 
+    indexProject.$project = {
+        "_id": {"$switch": {"branches": switches, "default": ""}},
+        "index": {"$switch": {"branches": switches2, "default": ""}},
+        "count": "$count"
+    };
+    var group2 = {"$group": {"_id": "$_id", "count": {"$sum": "$count"}, "index": {"$first": "$index"}}};
     // Promises
-    const allDataPromise = getAggregatedAppUsers(collectionName, [matchQuery, rangeProject, groupBy, indexProject, sort]);
-    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, matchQuery, rangeProject, groupBy, indexProject, sort]);
-    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, matchQuery, rangeProject, groupBy, indexProject, sort]);
+    const allDataPromise = getAggregatedAppUsers(collectionName, [matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
+    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
+    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
 
     Promise.all([allDataPromise, sevenDaysPromise, thirtyDaysPromise]).then(promiseResults => {
         common.returnOutput(params, {
