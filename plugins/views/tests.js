@@ -703,14 +703,41 @@ describe('Testing views plugin', function() {
                         delete res[k].userinfo;
                     }
                 }
-                if (compareObjects(userObject2, userObject)) {
-                    done();
+                if (Object.keys(userObject2).length === 0) {
+                    console.log('refetching');
+                    //try refetching in few seconds
+                    setTimeout(function() {
+                        testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+                            var userObject2 = {};
+                            for (var k = 0; k < res.length; k++) {
+                                if (res[k].userinfo && res[k].userinfo[0]) {
+                                    userObject2[res[k].userinfo[0].did] = res[k];
+                                    delete res[k].userinfo;
+                                }
+                            }
+                            if (compareObjects(userObject2, userObject)) {
+                                done();
+
+                            }
+                            else {
+                                console.log(JSON.stringify(userObject2));
+                                console.log(JSON.stringify(userObject));
+                                done("Invalid merging users ");
+                            }
+                        });
+                    }, 5000);
 
                 }
                 else {
-                    console.log(JSON.stringify(userObject2));
-                    console.log(JSON.stringify(userObject));
-                    done("Invalid merging users ");
+                    if (compareObjects(userObject2, userObject)) {
+                        done();
+
+                    }
+                    else {
+                        console.log(JSON.stringify(userObject2));
+                        console.log(JSON.stringify(userObject));
+                        done("Invalid merging users ");
+                    }
                 }
             });
         });
