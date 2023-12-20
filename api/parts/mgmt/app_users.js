@@ -710,6 +710,11 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                 temp = oldAppUser.uid;
                 oldAppUser.uid = newAppUser.uid;
                 newAppUser.uid = temp;
+
+                //switching around doc references
+                var tempDoc = oldAppUser;
+                oldAppUser = newAppUser;
+                newAppUser = tempDoc;
             }
             common.db.collection('app_user_merges').insert({
                 //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex

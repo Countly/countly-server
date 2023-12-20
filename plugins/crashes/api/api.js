@@ -12,7 +12,7 @@ var plugin = {},
     { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
-
+var log = common.log('crashes:api');
 const FEATURE_NAME = 'crashes';
 
 plugins.setConfigs("crashes", {
