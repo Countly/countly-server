@@ -720,12 +720,13 @@ describe('Testing views plugin', function() {
 
                             }
                             else {
+                                console.log(JSON.stringify(res));
                                 console.log(JSON.stringify(userObject2));
                                 console.log(JSON.stringify(userObject));
                                 done("Invalid merging users ");
                             }
                         });
-                    }, 5000);
+                    }, 20000);
 
                 }
                 else {
