@@ -411,7 +411,10 @@ usersApi.mergeOtherPlugins = function(db, app_id, newAppUser, oldAppUser, update
                         app_id: app_id,
                         oldUser: oldAppUser,
                         newUser: newAppUser
-                    }, function(result) {
+                    }, function(err9, result) {
+                        if (err9) {
+                            log.e(err9);
+                        }
                         var retry = false;
                         if (result && result.length) {
                             for (let index = 0; index < result.length; index++) {

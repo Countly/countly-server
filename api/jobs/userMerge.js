@@ -29,6 +29,16 @@ var handleMerges = function(db, callback) {
                             resolve();
                         });
                     }
+                    else if(user.t>100){
+                        log.e("deleting document in merges with too many retries: " + user._id);
+                        db.collection('app_user_merges').remove({"_id": user._id}, (err2)=>{
+                            if (err2) {
+                                log.e("error deleting document in merges with _id: " + user._id);
+                                log.e(err2);
+                            }
+                            resolve();
+                        });
+                    }
                     else {
                         var app_id = dd[0];
                         var olduid = dd[2];
@@ -67,51 +77,61 @@ var handleMerges = function(db, callback) {
                                         });
                                     }
                                     else if (oldAppUser && newAppUser) {
-                                        //Both documents exists. We can assume that documents were not merged
-                                        plugins.dispatch("/i/user_merge", {
-                                            app_id: app_id,
-                                            newAppUser: newAppUser,
-                                            oldAppUser: oldAppUser
-                                        }, function() {
-                                            //merge user data
-                                            usersApi.mergeUserProperties(newAppUser, oldAppUser);
-                                            //update new user
+                                        db.collection('app_user_merges').update({"_id": user._id}, {"$inc": {"t": 1}}, {upsert: false}, function(err0) {
+                                            if(err0){
+                                                log.e(err0);
+                                            }
+                                            //Both documents exists. We can assume that documents were not merged
+                                            plugins.dispatch("/i/user_merge", {
+                                                app_id: app_id,
+                                                newAppUser: newAppUser,
+                                                oldAppUser: oldAppUser
+                                            }, function() {
+                                                //merge user data
+                                                usersApi.mergeUserProperties(newAppUser, oldAppUser);
+                                                //update new user
 
-                                            db.collection('app_users' + app_id).update({_id: newAppUser._id}, {'$set': newAppUser}, function(err6) {
-                                                if (callback && typeof callback === 'function') {
-                                                    callback(null, newAppUser);//we do not return error as merge is already registred. Doc merging will be retried in job.
-                                                }
-                                                //Dispatch to other plugins only after callback.
-                                                if (!err6) {
-                                                    //update metric changes document
-                                                    db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUser.uid}}, {multi: true}, function(err7) {
-                                                        if (err7) {
-                                                            log.e("Failed metric changes update in app_users merge", err7);
-                                                        }
-                                                    });
-                                                    //delete old app users document
-                                                    db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
-                                                        if (errRemoving) {
-                                                            log.e("Failed to remove merged user from database", errRemoving);
-                                                        }
-                                                        else {
-                                                            usersApi.mergeOtherPlugins(db, app_id, newAppUser, oldAppUser, {"cc": true, "u": true}, resolve);
-                                                        }
-                                                    });
-                                                }
+                                                db.collection('app_users' + app_id).update({_id: newAppUser._id}, {'$set': newAppUser}, function(err6) {
+                                                    if (callback && typeof callback === 'function') {
+                                                        callback(null, newAppUser);//we do not return error as merge is already registred. Doc merging will be retried in job.
+                                                    }
+                                                    //Dispatch to other plugins only after callback.
+                                                    if (!err6) {
+                                                        //update metric changes document
+                                                        db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUser.uid}}, {multi: true}, function(err7) {
+                                                            if (err7) {
+                                                                log.e("Failed metric changes update in app_users merge", err7);
+                                                            }
+                                                        });
+                                                        //delete old app users document
+                                                        db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
+                                                            if (errRemoving) {
+                                                                log.e("Failed to remove merged user from database", errRemoving);
+                                                            }
+                                                            else {
+                                                                usersApi.mergeOtherPlugins(db, app_id, newAppUser, oldAppUser, {"cc": true, "u": true}, resolve);
+                                                            }
+                                                        });
+                                                    }
+                                                });
                                             });
                                         });
                                     }
                                 });
                             }
                             else if (!user.mc) { //documents are merged, but metric changes and other plugins are not yet
-                                db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
-                                    if (err7) {
-                                        log.e("Failed metric changes update in app_users merge", err7);
+                                db.collection('app_user_merges').update({"_id": user._id}, {"$inc": {"t": 1}}, {upsert: false}, function(err0) {
+                                    if(err0){
+                                        log.e(err0);
                                     }
-                                    else {
-                                        usersApi.mergeOtherPlugins(db, app_id, {uid: user.merged_to}, {uid: olduid}, {"cc": true, "mc": true}, resolve);
-                                    }
+                                    db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
+                                        if (err7) {
+                                            log.e("Failed metric changes update in app_users merge", err7);
+                                        }
+                                        else {
+                                            usersApi.mergeOtherPlugins(db, app_id, {uid: user.merged_to}, {uid: olduid}, {"cc": true, "mc": true}, resolve);
+                                        }
+                                    });
                                 });
                             }
                             else {

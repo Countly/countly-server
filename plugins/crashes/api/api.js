@@ -87,40 +87,46 @@ plugins.setConfigs("crashes", {
                             return;
                         }
                         if (res && res.length) {
-                            const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
-                            for (let i = 0; i < res.length; i++) {
-                                const updates = {};
-                                for (const key of ['last', 'sessions']) {
-                                    if (res[i][key]) {
-                                        if (!updates.$max) {
-                                            updates.$max = {};
+                            try {
+                                const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
+                                for (let i = 0; i < res.length; i++) {
+                                    const updates = {};
+                                    for (const key of ['last', 'sessions']) {
+                                        if (res[i][key]) {
+                                            if (!updates.$max) {
+                                                updates.$max = {};
+                                            }
+                                            updates.$max[key] = res[i][key];
                                         }
-                                        updates.$max[key] = res[i][key];
                                     }
-                                }
-                                for (const key of ['reports', 'crashes', 'fatal']) {
-                                    if (res[i][key]) {
-                                        if (!updates.$inc) {
-                                            updates.$inc = {};
+                                    for (const key of ['reports', 'crashes', 'fatal']) {
+                                        if (res[i][key]) {
+                                            if (!updates.$inc) {
+                                                updates.$inc = {};
+                                            }
+                                            updates.$inc[key] = res[i][key];
                                         }
-                                        updates.$inc[key] = res[i][key];
                                     }
+                                    const group = res[i].group;
+                                    if (Object.keys(updates).length) {
+                                        bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
+                                    }
+                                    bulk.find({uid: oldUid, group: group}).delete();
                                 }
-                                const group = res[i].group;
-                                if (Object.keys(updates).length) {
-                                    bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
-                                }
-                                bulk.find({uid: oldUid, group: group}).delete();
+                                bulk.execute(function(bulkerr) {
+                                    if (bulkerr) {
+                                        console.log(bulkerr);
+                                        reject();
+                                    }
+                                    else {
+                                        resolve();
+                                    }
+                                });
                             }
-                            bulk.execute(function(bulkerr) {
-                                if (bulkerr) {
-                                    console.log(bulkerr);
-                                    reject();
-                                }
-                                else {
-                                    resolve();
-                                }
-                            });
+                            catch (exc) {
+                                log.e(exc);
+                                reject("Failed to merge crashes");
+                            }
                         }
                         else {
                             resolve();
