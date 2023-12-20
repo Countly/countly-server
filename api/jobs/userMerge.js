@@ -29,7 +29,7 @@ var handleMerges = function(db, callback) {
                             resolve();
                         });
                     }
-                    else if(user.t>100){
+                    else if (user.t > 100) {
                         log.e("deleting document in merges with too many retries: " + user._id);
                         db.collection('app_user_merges').remove({"_id": user._id}, (err2)=>{
                             if (err2) {
@@ -78,7 +78,7 @@ var handleMerges = function(db, callback) {
                                     }
                                     else if (oldAppUser && newAppUser) {
                                         db.collection('app_user_merges').update({"_id": user._id}, {"$inc": {"t": 1}}, {upsert: false}, function(err0) {
-                                            if(err0){
+                                            if (err0) {
                                                 log.e(err0);
                                             }
                                             //Both documents exists. We can assume that documents were not merged
@@ -121,7 +121,7 @@ var handleMerges = function(db, callback) {
                             }
                             else if (!user.mc) { //documents are merged, but metric changes and other plugins are not yet
                                 db.collection('app_user_merges').update({"_id": user._id}, {"$inc": {"t": 1}}, {upsert: false}, function(err0) {
-                                    if(err0){
+                                    if (err0) {
                                         log.e(err0);
                                     }
                                     db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
