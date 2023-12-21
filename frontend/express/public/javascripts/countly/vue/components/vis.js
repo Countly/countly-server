@@ -539,6 +539,11 @@
             noEmpty: {
                 type: Boolean,
                 default: false
+            },
+            sortBy: {
+                type: String,
+                default: "value",
+                required: false
             }
         },
         data: function() {
@@ -638,14 +643,21 @@
                                     template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
                                 }
 
-                                params.sort(function(a, b) {
-                                    if (typeof a.value === 'object') {
-                                        return b.value[1] - a.value[1];
-                                    }
-                                    else {
-                                        return b.value - a.value;
-                                    }
-                                });
+                                if (self.sortBy === "index") {
+                                    params.sort(function(a, b) {
+                                        return a.seriesIndex - b.seriesIndex;
+                                    });
+                                }
+                                else {
+                                    params.sort(function(a, b) {
+                                        if (typeof a.value === 'object') {
+                                            return b.value[1] - a.value[1];
+                                        }
+                                        else {
+                                            return b.value - a.value;
+                                        }
+                                    });
+                                }
 
                                 for (var i = 0; i < params.length; i++) {
                                     if (params[i].seriesName.toLowerCase() === 'duration' || params[i].seriesName.toLowerCase() === 'avg. duration') {
