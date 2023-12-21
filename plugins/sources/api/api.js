@@ -3,7 +3,7 @@ var pluginInstance = {},
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
-    parseDomain = require('parse-domain'),
+    //parseDomain = require('parse-domain'),
     { validateRead } = require('../../../api/utils/rights.js'),
     urlParse = require('url');
 
@@ -25,7 +25,8 @@ var stripPath = ["r.search.yahoo.com", "m.baidu.com"];
 var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
 
 
-(function(plugin) {
+(async function(plugin) {
+    var parseDomain = await import("parse-domain");
     plugins.setConfigs("sources", {
         sources_length_limit: 100
     });
