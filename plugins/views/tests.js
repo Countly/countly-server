@@ -592,9 +592,27 @@ describe('Testing views plugin', function() {
         verifyTotals("30days");
     });
 
+    var check_if_merges_finished = function(tries, done) {
+        if (tries == 3) {
+            done();
+        }
+        else {
+            testUtils.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    console.log(JSON.stringify(res));
+                    setTimeout(function() {
+                        check_if_merges_finished(tries + 1, done);
+                    }, 10000);
+                }
+                else {
+                    done();
+                }
+            });
+        }
+    };
+
     describe('Validating user merging', function() {
         it('getting Info about users', function(done) {
-
             testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -621,6 +639,9 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
 
+        });
+        it('making sure merge is finished', function(done) {
+            check_if_merges_finished(0, done);
         });
 
         it('validating result', function(done) {
@@ -656,6 +677,9 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 3000 * testUtils.testScalingFactor);
                 });
 
+        });
+        it('making sure merge is finished', function(done) {
+            check_if_merges_finished(0, done);
         });
 
         it('validating result', function(done) {
@@ -693,6 +717,9 @@ describe('Testing views plugin', function() {
                 });
 
         });
+        it('making sure merge is finished', function(done) {
+            check_if_merges_finished(0, done);
+        });
 
         it('validating result', function(done) {
             testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
@@ -703,12 +730,47 @@ describe('Testing views plugin', function() {
                         delete res[k].userinfo;
                     }
                 }
-                if (compareObjects(userObject2, userObject)) {
-                    done();
+                if (Object.keys(userObject2).length === 0) {
+                    console.log('refetching...');
+                    //try refetching in few seconds
+                    setTimeout(function() {
+                        testUtils.db.collection("app_userviews" + APP_ID).aggregate([
+                            { $replaceRoot: { newRoot: { _id: "$_id", "data": "$$ROOT"}}},
+                            {"$unionWith": {"coll": "app_users" + APP_ID, "pipeline": [{"$project": {"_id": "$uid", "userinfo": "$$ROOT"}}]}},
+                            {"$group": {"_id": "$_id", "userinfo": {"$addToSet": "$userinfo"}, "data": {"$addToSet": "$data"}}},
+                            {"$project": {"_id": 1, "userinfo": "$userinfo", "data": {"$first": "$data"}}}
+                        ], function(err, res) {
+                            var userObject2 = {};
+                            console.log(JSON.stringify(res));
+                            for (var k = 0; k < res.length; k++) {
+                                if (res[k].userinfo && res[k].userinfo[0]) {
+                                    userObject2[res[k].userinfo[0].did] = res[k].data;
+                                    delete res[k].userinfo;
+                                }
+                            }
+                            if (compareObjects(userObject2, userObject)) {
+                                done();
+
+                            }
+                            else {
+                                console.log(JSON.stringify(userObject2));
+                                console.log(JSON.stringify(userObject));
+                                done("Invalid merging users ");
+                            }
+                        });
+                    }, 20000);
 
                 }
                 else {
-                    done("Invalid merging users ");
+                    if (compareObjects(userObject2, userObject)) {
+                        done();
+
+                    }
+                    else {
+                        console.log(JSON.stringify(userObject2));
+                        console.log(JSON.stringify(userObject));
+                        done("Invalid merging users ");
+                    }
                 }
             });
         });

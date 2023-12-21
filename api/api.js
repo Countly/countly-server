@@ -298,7 +298,7 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
-            //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
     }

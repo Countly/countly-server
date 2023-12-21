@@ -296,10 +296,6 @@ appsApi.createApp = async function(params) {
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-                common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
-                    expireAfterSeconds: 60 * 60 * 3,
-                    background: true
-                }, function() {});
                 common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
                 plugins.dispatch("/i/apps/create", {
@@ -839,12 +835,13 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     if (!fromAppDelete) {
         common.db.collection('apps').update({'_id': common.db.ObjectID(appId)}, {$set: {seq: 0}}, function() {});
     }
-    common.db.collection('users').remove({'_id': {$regex: appId + ".*"}}, function() {});
-    common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}}, function() {});
-    common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}}, function() {});
-    common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}}, function() {});
-    common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    common.db.collection('users').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
+    common.db.collection('carriers').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
+    common.db.collection('devices').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
+    common.db.collection('device_details').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
+    common.db.collection('cities').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
     common.db.collection('top_events').remove({'app_id': common.db.ObjectID(appId)}, function() {});
+    common.db.collection('app_user_merges').remove({'_id': {$regex: "^" + appId + "_.*"}}, function() {});
     deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
