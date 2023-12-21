@@ -9,6 +9,7 @@ const fs = require('fs');
 var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
+const groupsModel = require('../../../groups/frontend/public/javascripts/app/models/groupsModel.js');
 
 const utils = {_apps: {}};
 utils.sendEmail = function(to, subject, message, callback) {
@@ -170,6 +171,16 @@ utils.getDashboardUserEmail = function(userIds) {
                 return reject(err);
             }
             return resolve(_.map(members, 'email'));
+        });
+    });
+};
+
+utils.getUserEmailsBasedOnGroups = function(groupIds) {
+    groupIds.forEach((item) =>{
+        groupsModel.getGroupUsers(item).then(function() {
+            var users = groupsModel.groupUsers();
+            // eslint-disable-next-line no-unused-vars
+            var email = users[0].email;
         });
     });
 };

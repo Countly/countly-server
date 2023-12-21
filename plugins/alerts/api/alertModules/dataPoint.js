@@ -21,7 +21,8 @@ const dataPointAlert = {
 
                 utils.addAlertCount();
                 if (alertConfigs.alertBy === 'email') {
-                    const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues);
+                    //const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues);
+                    const emails = yield utils.getUserEmailsBasedOnGroups(alertConfigs.allGroups);
                     let html = '';
                     const host = yield utils.getHost();
 

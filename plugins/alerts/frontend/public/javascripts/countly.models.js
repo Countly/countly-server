@@ -418,6 +418,7 @@
             enabled: true,
             compareDescribe: '',
             alertValues: [],
+            groupEmail: []
         };
     };
 }(window.countlyAlerts = window.countlyAlerts || {}, jQuery));

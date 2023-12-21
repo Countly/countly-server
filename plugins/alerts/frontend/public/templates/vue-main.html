@@ -289,38 +289,38 @@
                 </cly-select-email>
             </cly-form-field>
 
-            <cly-form-field 
+            <cly-form-field
                 v-if="selectedRadioButton === 'toGroup'"
-                name="alertValues" 
-                :label="i18n('alert.email-to-receive2')" 
-                rules="required">
-                <cly-select-email 
-                    placeholder="Choose user groups"
-                    v-model="drawerScope.editedObject.alertValues" 
-                    :collapse-tags="false">
-                </cly-select-email>
+                name="allGroups"
+                :label="i18n('alert.email-to-receive3')">   
+                <el-select
+                    :key="elSelectKey"
+                    multiple
+                    v-model="drawerScope.editedObject.allGroups"                        
+                    style="width: 100%;">
+                    <el-option
+                        v-for="(item) in allGroups"
+                        :value="item.value"
+                        :label="item.name"
+                        :key="item.value">
+                    </el-option>
+                </el-select>
             </cly-form-field>
 
             <cly-form-field 
                 v-if="selectedRadioButton === 'dontSend'"
                 name="alertValues" 
-                :label="i18n('alert.email-to-receive2')" 
                 rules="required">
-                <cly-select-email 
-                    placeholder="CDont send email"
-                    v-model="drawerScope.editedObject.alertValues" 
-                    :collapse-tags="false">
-                </cly-select-email>
+                <div class="test">            
+                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                    {{i18n('alerts.email-icon')}}
+                </div>
             </cly-form-field>
-
-            <!--<cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
-                <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
-            </cly-form-field>-->
  
             <pre v-if="0">
                 {{drawerScope.editedObject}}
             </pre>
-        </cly-form-step>
+            </cly-form-step>
         </template>
     </cly-drawer>
 </script>

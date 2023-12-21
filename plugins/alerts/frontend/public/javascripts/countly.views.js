@@ -9,6 +9,8 @@
     countlyEvent,
     countlyAuth,
     CV,
+    groupsModel,
+    _,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -26,6 +28,8 @@
         data: function() {
             return {
                 selectedRadioButton: 'specificAddress',
+                allGroups: [],
+                allUserGroups: [],
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
@@ -130,6 +134,13 @@
                 }
 
                 return allOptions;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g.name;
+                }).join(",");
+
+                return key;
             }
         },
         props: {
@@ -138,6 +149,18 @@
             }
         },
         mounted: function() {
+            var self = this;
+            groupsModel.initialize().then(function() {
+                var groups = _.sortBy(groupsModel.data(), 'name');
+                var userGroups = groups.map(function(g) {
+                    return {
+                        name: g.name,
+                        value: g._id,
+                        users: g.users
+                    };
+                });
+                self.allGroups = userGroups;
+            });
         },
         methods: {
             onAppChange: function(val, notReset) {
