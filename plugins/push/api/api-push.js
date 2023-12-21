@@ -458,6 +458,9 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                         }
                     });
                 }
+                else {
+                    resolve();
+                }
             });
         });
     }
