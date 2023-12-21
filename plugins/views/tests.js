@@ -593,12 +593,13 @@ describe('Testing views plugin', function() {
     });
 
     var check_if_merges_finished = function(tries, done) {
-        if (tries == 5) {
+        if (tries == 3) {
             done();
         }
         else {
-            testUtils.db.collection("app_user_merges").findOne({"_id": {"$regex": "^" + APP_ID}}, function(err, res) {
-                if (res) {
+            testUtils.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    console.log(JSON.stringify(res));
                     setTimeout(function() {
                         check_if_merges_finished(tries + 1, done);
                     }, 10000);
@@ -735,15 +736,15 @@ describe('Testing views plugin', function() {
                     setTimeout(function() {
                         testUtils.db.collection("app_userviews" + APP_ID).aggregate([
                             { $replaceRoot: { newRoot: { _id: "$_id", "data": "$$ROOT"}}},
-                            {"$unionWith": {"coll": "app_userviews" + APP_ID, "pipeline": [{"$project": {"_id": "$uid", "userinfo": "$$ROOT"}}]}},
+                            {"$unionWith": {"coll": "app_users" + APP_ID, "pipeline": [{"$project": {"_id": "$uid", "userinfo": "$$ROOT"}}]}},
                             {"$group": {"_id": "$_id", "userinfo": {"$addToSet": "$userinfo"}, "data": {"$addToSet": "$data"}}},
-                            {"$project": {"_id": 1, "userinfo": {"$first": "$userinfo"}, "data": {"$first": "$data"}}}
+                            {"$project": {"_id": 1, "userinfo": "$userinfo", "data": {"$first": "$data"}}}
                         ], function(err, res) {
                             var userObject2 = {};
                             console.log(JSON.stringify(res));
                             for (var k = 0; k < res.length; k++) {
                                 if (res[k].userinfo && res[k].userinfo[0]) {
-                                    userObject2[res[k].userinfo[0].did] = res[k];
+                                    userObject2[res[k].userinfo[0].did] = res[k].data;
                                     delete res[k].userinfo;
                                 }
                             }
