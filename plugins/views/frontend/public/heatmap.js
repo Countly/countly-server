@@ -39,7 +39,33 @@
         var D = document;
         return Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
     }
+
+    function checkIfLoggingIsOn() {
+        // check if logging is enabled
+        if (Countly && Countly.debug && typeof console !== "undefined") {
+            return true;
+        }
+        return false;
+    }
         
+    function add_event_listener(element, type, listener) {
+        if (element === null || typeof element === "undefined") {
+            // element can be null so lets check it first
+            if (checkIfLoggingIsOn()) {
+                // eslint-disable-next-line no-console
+                console.warn("[WARNING] [Countly] add_event_listener, Can't bind [" + type + "] event to nonexisting element");
+            }
+            return;
+        }
+        if (typeof element.addEventListener !== "undefined") {
+            element.addEventListener(type, listener, false);
+        }
+        // for old browser use attachEvent instead
+        else {
+            element.attachEvent("on" + type, listener);
+        }
+    }
+
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
     loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
@@ -192,7 +218,7 @@
                 tag.setAttribute('class', 'cly-heatmap-item');
                 tag.setAttribute('data-value', map);
                 tag.innerHTML = capitalize(map) + " Map";
-                Countly._internals.add_event_listener(tag, "click", function(e) {
+                add_event_listener(tag, "click", function(e) {
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
@@ -272,7 +298,7 @@
 
                 deviceListDiv.appendChild(tag);
 
-                Countly._internals.add_event_listener(tag, "click", function(e) {
+                add_event_listener(tag, "click", function(e) {
                     document.body.style.width = "100%";
                     var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
@@ -349,7 +375,7 @@
             mainDiv.appendChild(deviceDropdown);
             mainDiv.appendChild(refresh);
 
-            Countly._internals.add_event_listener(refresh, "click", function() {
+            add_event_listener(refresh, "click", function() {
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
@@ -381,7 +407,7 @@
             canvas.id = "cly-heatmap-canvas-map";
             document.body.appendChild(canvas);
 
-            Countly._internals.add_event_listener(window, "resize", function() {
+            add_event_listener(window, "resize", function() {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
                 var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
@@ -437,7 +463,7 @@
             shLabel.appendChild(shInput);
             shLabel.appendChild(shSpan);
             showHide.appendChild(shLabel);
-            Countly._internals.add_event_listener(shInput, "click", function() {
+            add_event_listener(shInput, "click", function() {
                 showHeatMap = shInput.checked;
                 addDataToWindow([{ "key": "showHeatMap", "value": showHeatMap }]);
 
@@ -463,7 +489,7 @@
 
             topbar.appendChild(showHide);
 
-            Countly._internals.add_event_listener(document.body, "click", function(e) {
+            add_event_listener(document.body, "click", function(e) {
                 var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
                 if (dropdowns.length) {
                     Object.keys(dropdowns).forEach((drop) => {
