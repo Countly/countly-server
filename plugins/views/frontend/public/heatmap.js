@@ -6,11 +6,29 @@
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true,
         clickMap,
         scrollMap;
+
+    function loadFile(tag, attr, type, src, data, callback) {
+        var fileRef = document.createElement(tag);
+        var loaded;
+        fileRef.setAttribute(attr, type);
+        fileRef.setAttribute(src, data);
+        var callbackFunction = function callbackFunction() {
+            if (!loaded) {
+                callback();
+            }
+            loaded = true;
+        };
+        if (callback) {
+            fileRef.onreadystatechange = callbackFunction;
+            fileRef.onload = callbackFunction;
+        }
+        document.getElementsByTagName("head")[0].appendChild(fileRef);
+    }
         
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
-    Countly._internals.loadCSS(Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
-        Countly._internals.loadCSS(Countly.passed_data.url + "/views/stylesheets/heatmap.css", function() {
+    loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
+        loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/views/stylesheets/heatmap.css", function() {
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
@@ -511,7 +529,7 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
+        loadFile('script', 'type', 'text/javascript', 'src', Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
@@ -575,7 +593,7 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
+        loadFile('script', 'type', 'text/javascript', 'src', Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
