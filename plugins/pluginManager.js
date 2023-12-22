@@ -1910,7 +1910,12 @@ var pluginManager = function pluginManager() {
 
     this.getMaskingSettings = function(appID) {
         if (appID === 'all') {
-            return JSON.parse(JSON.stringify(masking.apps));
+            if (masking && masking.apps) {
+                return JSON.parse(JSON.stringify(masking.apps));
+            }
+            else {
+                return {};
+            }
         }
         else if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));
