@@ -24,6 +24,21 @@
         }
         document.getElementsByTagName("head")[0].appendChild(fileRef);
     }
+
+    function getDocHeight() {
+        var D = document;
+        return Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
+    }
+
+    function getDocWidth() {
+        var D = document;
+        return Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
+    }
+
+    function getViewportHeight() {
+        var D = document;
+        return Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
+    }
         
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
@@ -102,16 +117,16 @@
             document.body.appendChild(topbar);
 
             if (currentDevice.length) {
-                pageWidth = Countly._internals.getDocWidth();
+                pageWidth = getDocWidth();
                 pageWidth = Math.min(currentDevice[0].maxWidth, pageWidth);
                 document.body.style.width = pageWidth + "px";
                 document.body.style.marginLeft = "auto";
                 document.body.style.marginRight = "auto";
-                pageHeight = Countly._internals.getDocHeight() - toppx;
+                pageHeight = getDocHeight() - toppx;
             }
             else {
-                pageWidth = Countly._internals.getDocWidth();
-                pageHeight = Countly._internals.getDocHeight() - toppx;
+                pageWidth = getDocWidth();
+                pageHeight = getDocHeight() - toppx;
             }
 
             for (var i = 0; i < allDevices.length; i++) {
@@ -263,14 +278,14 @@
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
-                    pageWidth = Countly._internals.getDocWidth();
+                    pageWidth = getDocWidth();
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
                     pageWidth = Math.min(device.maxWidth, pageWidth);
                     document.body.style.width = pageWidth + "px";
                     document.body.style.marginLeft = "auto";
                     document.body.style.marginRight = "auto";
-                    pageHeight = Countly._internals.getDocHeight() - toppx;
+                    pageHeight = getDocHeight() - toppx;
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
@@ -375,8 +390,8 @@
                 }
                 setTimeout(function() {
                     document.body.style.width = "100%";
-                    pageWidth = Countly._internals.getDocWidth();
-                    pageHeight = Countly._internals.getDocHeight() - toppx;
+                    pageWidth = getDocWidth();
+                    pageHeight = getDocHeight() - toppx;
                     var updatedDevice = devices.filter((deviceObj) => {
                         if (currentDevice[0].type == "all") {
                             return deviceObj.type == "all";
@@ -597,7 +612,7 @@
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
-                map.viewPortSize({ height: Countly._internals.getViewportHeight() });
+                map.viewPortSize({ height: getViewportHeight() });
 
                 if (eventType == "refresh") {
                     dataCache = {};
@@ -679,7 +694,7 @@
                     map.addMarkers();
 
                     //GRADIENT MAP
-                    var totalPageWidth = Countly._internals.getDocWidth();
+                    var totalPageWidth = getDocWidth();
                     var resolutionXOffest = totalPageWidth - map._width;
                     var grdMapX = map._width + (resolutionXOffest / 2) - 70;
                     var grdMapY = map._viewPortHeight - 200;
