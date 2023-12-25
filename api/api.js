@@ -171,7 +171,7 @@ plugins.connectToAllDatabases().then(function() {
     *  Handle exit events for gracefull close
     */
     ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-        'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+        'SIGBUS', 'SIGFPE', 'SIGSEGV', 'SIGTERM',
     ].forEach(function(sig) {
         process.on(sig, async function() {
             storeBatchedData(sig);
@@ -278,7 +278,10 @@ plugins.connectToAllDatabases().then(function() {
             : os.cpus().length;
 
         for (let i = 0; i < workerCount; i++) {
-            const worker = cluster.fork();
+            // there's no way to define inspector port of a worker in the code. So if we don't
+            // pick a unique port for each worker, they conflict with each other.
+            const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
+            const worker = cluster.fork({ NODE_OPTIONS: "--inspect-port=" + inspectorPort });
             workers.push(worker);
         }
 
