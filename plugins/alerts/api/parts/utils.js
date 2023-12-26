@@ -9,7 +9,6 @@ const fs = require('fs');
 var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
-const groupsModel = require('../../../groups/frontend/public/javascripts/app/models/groupsModel.js');
 
 const utils = {_apps: {}};
 utils.sendEmail = function(to, subject, message, callback) {
@@ -175,16 +174,6 @@ utils.getDashboardUserEmail = function(userIds) {
     });
 };
 
-utils.getUserEmailsBasedOnGroups = function(groupIds) {
-    groupIds.forEach((item) =>{
-        groupsModel.getGroupUsers(item).then(function() {
-            var users = groupsModel.groupUsers();
-            // eslint-disable-next-line no-unused-vars
-            var email = users[0].email;
-        });
-    });
-};
-
 utils.checkAppLocalTimeHour = function(appId, targetHour) {
     return new Promise(function(resolve, reject) {
         utils.getAppInfo(appId).then((app)=> {
@@ -204,6 +193,51 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
             }
         });
     });
+};
+
+/**
+ * Retrieves user emails based on group IDs.
+ * @param {Array} groupIds - The array of group IDs.
+ * @returns {Promise<Array>} - A promise that resolves to an array of user emails.
+ */
+utils.getUserEmailsBasedOnGroups = function(groupIds) {
+    const memberEmails = [];
+    // eslint-disable-next-line require-jsdoc
+    const fetchMembers = (groupId) => {
+        const model = { "_id": groupId };
+        const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };
+        return new Promise((resolve, reject) => {
+            common.db.collection('members').find(query, { password: 0 }).toArray((err, members) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    for (let idx = 0; idx < members.length; idx++) {
+                        members[idx].last_login = members[idx].last_login || 0;
+                    }
+                    members.forEach((member) => {
+                        memberEmails.push(member.email);
+                    });
+                    resolve();
+                }
+            });
+        });
+    };
+    const promises = groupIds.map(fetchMembers);
+    return Promise.all(promises).then(() => {
+        return memberEmails;
+    }).catch((error) => {
+        return Promise.reject(error);
+    });
+};
+
+utils.fillEmailList = function(alertConfigs) {
+    if (alertConfigs.alertValues && alertConfigs.alertValues.length > 0) {
+        return utils.getDashboardUserEmail(alertConfigs.alertValues);
+    }
+    else {
+        return utils.getUserEmailsBasedOnGroups(alertConfigs.allGroups);
+    }
 };
 
 

@@ -23,7 +23,7 @@ const RatingAlert = {
                 log.i('trigger alert:', alertConfigs);
                 utils.addAlertCount();
                 if (alertConfigs.alertBy === 'email') {
-                    const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
+                    const emails = yield utils.fillEmailList(alertConfigs);
                     let html = '';
                     const host = yield utils.getHost();
 

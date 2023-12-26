@@ -379,7 +379,7 @@
                                     _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, list[j].app),
                                     _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, list[j].app),
                                 });
-                                tableData.push(rowData);
+                                tableData.push(rowData); 
                             }
                             context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
@@ -417,8 +417,7 @@
             alertBy: "email",
             enabled: true,
             compareDescribe: '',
-            alertValues: [],
-            groupEmail: []
+            alertValues: []
         };
     };
 }(window.countlyAlerts = window.countlyAlerts || {}, jQuery));

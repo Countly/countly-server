@@ -292,7 +292,8 @@
             <cly-form-field
                 v-if="selectedRadioButton === 'toGroup'"
                 name="allGroups"
-                :label="i18n('alert.email-to-receive3')">   
+                :label="i18n('alert.email-to-receive3')"
+                rules= "required">   
                 <el-select
                     :key="elSelectKey"
                     multiple
@@ -309,8 +310,7 @@
 
             <cly-form-field 
                 v-if="selectedRadioButton === 'dontSend'"
-                name="alertValues" 
-                rules="required">
+                name="alertValues">
                 <div class="test">            
                     <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
                     {{i18n('alerts.email-icon')}}
