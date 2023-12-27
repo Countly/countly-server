@@ -32,7 +32,7 @@ const FEATURE_NAME = 'server-stats';
     function eventCountMapper(events) {
         const eventCountMap = {};
         for (let i = 0; i < events.length; i++) {
-            const eventKeyCount = 1;
+            const eventKeyCount = events[i].count || 1;
 
             if (stats.internalEventsEnum[events[i].key]) {
                 eventCountMap[stats.internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[stats.internalEventsEnum[events[i].key]] || 0);
