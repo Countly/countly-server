@@ -118,7 +118,15 @@
                 "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
-                "approximated": approx
+                "approximated": approx,
+                "crash": periodData.crash,
+                "views": periodData.views,
+                "actions": periodData.actions,
+                "nps": periodData.nps,
+                "surveys": periodData.surveys,
+                "ratings": periodData.ratings,
+                "custom": periodData.ce,
+
             });
         }
 

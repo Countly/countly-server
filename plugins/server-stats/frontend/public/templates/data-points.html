@@ -44,6 +44,47 @@
 						{{i18n('sidebar.events')}}
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
 					</template>
+					<div slot-scope="scopeRow">
+						<el-popover
+							title="EVENT BREAKDOWN"
+							width="257"
+							trigger="hover"
+							placement="right"
+							popper-class="bu-is-size-5 bu-has-text-weight-medium"
+							offset=50
+							
+							:close-delay=50>
+								<div>
+									<span class="bu-has-text-weight-normal">Crash</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.crash}}</span>
+								</div> 
+								<div>
+									<span class="bu-has-text-weight-normal">Views</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.views}}</span>
+								</div>
+								<div>
+									<span class="bu-has-text-weight-normal">Actions</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.actions}}</span>
+								</div>
+								<div>
+									<span class="bu-has-text-weight-normal">NPS</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.nps}}</span>
+								</div>
+								<div>
+									<span class="bu-has-text-weight-normal">Surveys</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.surveys}}</span>
+								</div>
+								<div>
+									<span class="bu-has-text-weight-normal">Ratings</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.ratings}}</span>
+								</div>
+								<div>
+									<span class="bu-has-text-weight-normal">Custom Events</span>
+									<span class="bu-has-text-right bu-is-size-4 bu-has-text-weight-medium">{{scopeRow.row.custom}}</span>
+								</div>
+							<span slot="reference">{{ scopeRow.row.events }}</span>
+						</el-popover>
+					</div>
 				</el-table-column>
 				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
