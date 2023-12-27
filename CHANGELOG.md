@@ -1,3 +1,18 @@
+## Version 23.11.7
+Fixes:
+- [core] sort values by index in tooltip in charts
+- [core] ensure data consistency when user merging
+- [core] Null check for fetching masking properties
+- [tracker] Fixes for device id domain
+
+Enterprise Fixes:
+- [ab-testing] Limit days to 10 years
+- [data redaction] Fixed code in masking processing for drill_meta aggregation
+- [dashboards][drill] added "average session duration" metric to drill widget
+- [ab-testing] Use since period object for infinite ab tests
+- [nps] Fix for nps appearance color not getting updated
+- [users] Fixed filtering events in users profile if selected event type is start rating
+
 ## Version 23.11.6
 Fixes:
 - [core] fix for optimizing loyalty calculation
