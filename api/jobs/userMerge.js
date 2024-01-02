@@ -92,9 +92,6 @@ var handleMerges = function(db, callback) {
                                                 //update new user
 
                                                 db.collection('app_users' + app_id).update({_id: newAppUser._id}, {'$set': newAppUser}, function(err6) {
-                                                    if (callback && typeof callback === 'function') {
-                                                        callback(null, newAppUser);//we do not return error as merge is already registred. Doc merging will be retried in job.
-                                                    }
                                                     //Dispatch to other plugins only after callback.
                                                     if (!err6) {
                                                         //update metric changes document
@@ -112,6 +109,9 @@ var handleMerges = function(db, callback) {
                                                                 usersApi.mergeOtherPlugins(db, app_id, newAppUser, oldAppUser, {"cc": true, "u": true}, resolve);
                                                             }
                                                         });
+                                                    }
+                                                    else {
+                                                        resolve();//will retry after
                                                     }
                                                 });
                                             });
@@ -170,11 +170,38 @@ class UserMergeJob extends job.Job {
      * Run the job
      * @param {Db} db connection
      * @param {done} done callback
+     * @param {function} progressJob - callback when progress made
      */
-    run(db, done) {
+    run(db, done, progressJob) {
+        var total = 0;
+        var current = 0;
+        var bookmark = "";
+
+        /**
+         * check job status periodically
+         */
+        function ping() {
+            log.d('Pinging user merging job');
+            if (timeout) {
+                progressJob(total, current, bookmark);
+                timeout = setTimeout(ping, 10000);
+            }
+        }
+        /**
+         * end job
+         * @returns {varies} job done
+         */
+        function endJob() {
+            log.d('Ending user merging job');
+            clearTimeout(timeout);
+            timeout = 0;
+            return done();
+        }
+        var timeout = setTimeout(ping, 10000);
+
         log.d('finishing up not finished merges merges...');
         handleMerges(db, ()=>{
-            done();
+            endJob();
         });
     }
 }
