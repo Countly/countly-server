@@ -3,7 +3,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy');
+    { request } = require('./proxy'),
+    {ObjectId} = require("mongodb");
 
 
 /**
@@ -82,8 +83,13 @@ async function validate(args, draft = false) {
                     throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform`);
                 }
             }
-
-            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
+            let creds = await common.db.collection(Creds.collection).find({
+                _id: {
+                    $in: msg.platforms
+                        .map(p => common.dot(app, `plugins.push.${p}._id`))
+                        .map(oid => ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                }
+            }).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }
