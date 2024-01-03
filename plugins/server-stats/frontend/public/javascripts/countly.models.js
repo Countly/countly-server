@@ -114,19 +114,20 @@
                 "appName": getAppName(app),
                 "appId": appId,
                 "sessions": periodData.sessions,
-                "events": periodData.events,
                 "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
                 "approximated": approx,
-                "crash": periodData.crash,
-                "views": periodData.views,
-                "actions": periodData.actions,
-                "nps": periodData.nps,
-                "surveys": periodData.surveys,
-                "ratings": periodData.ratings,
-                "custom": periodData.ce,
-
+                "events": {
+                    "total": periodData.events,
+                    "crash": periodData.crash,
+                    "views": periodData.views,
+                    "actions": periodData.actions,
+                    "nps": periodData.nps,
+                    "surveys": periodData.surveys,
+                    "ratings": periodData.ratings,
+                    "custom": periodData.ce,
+                },
             });
         }
 
