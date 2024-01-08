@@ -4,6 +4,8 @@
 
 echo "Starting documention deployment script"
 GITHUB_BRANCH=${GITHUB_REF##*/}
+echo "$GITHUB_HEAD_REF"
+echo "Ref: $GITHUB_REF  Branch: $GITHUB_BRANCH  Repo: $GITHUB_REPOSITORY"
 
 if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_BRANCH" == "master" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
 
@@ -34,16 +36,17 @@ git config user.name "Github Actions"
 git config user.email "actions@github.com"
 
 echo "Removing everything"
+mkdir -p "./lite/$GITHUB_BRANCH"
 # Remove everything currently in the gh-pages branch.
 # GitHub is smart enough to know which files have changed and which files have
 # stayed the same and will only update the changed files. So the gh-pages branch
 # can be safely cleaned, and it is sure that everything pushed later is the new
 # documentation.
-rm -rf ./*
+rm -rf "./lite/$GITHUB_BRANCH/"*
 
 # Need to create a .nojekyll file to allow filenames starting with an underscore
 # to be seen on the gh-pages site. Therefore creating an empty .nojekyll file.
-echo "" > .nojekyll
+echo "" > "./lite/$GITHUB_BRANCH/.nojekyll"
 
 
 echo "Generating documentation"
@@ -51,13 +54,13 @@ echo "Generating documentation"
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
 countly docs generate ;
-mv "$DIR/../../"frontend/express/public/docs/* ./
+mv "$DIR/../../"frontend/express/public/docs/* "./lite/$GITHUB_BRANCH"
 
 ################################################################################
 ##### Upload the documentation to the gh-pages branch of the repository.   #####
 # Only upload if JSDoc successfully created the documentation.
 # Check this by verifying that the file index.html exists
-if [ -f "index.html" ]; then
+if [ -f "./lite/$GITHUB_BRANCH/index.html" ]; then
 
     echo 'Uploading documentation to the gh-pages branch...'
     # Add everything in this directory to the
