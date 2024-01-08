@@ -1,0 +1,6251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>api/lib/countly.common - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">api/lib/countly.common</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>This module defines default model to handle users collection data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>This module defines default model to handle users collection data</p></div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".periodObj"><span class="type-signature type-signature-static">(static) </span>periodObj<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Currently selected period</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line771">line 771</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period start timestamp in miliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>end</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period end timestamp in miliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>currentPeriodArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for current period (available only for special periods), example [&quot;2016.12.22&quot;,&quot;2016.12.23&quot;,&quot;2016.12.24&quot;, ...]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>previousPeriodArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for previous period (available only for special periods), example [&quot;2016.12.22&quot;,&quot;2016.12.23&quot;,&quot;2016.12.24&quot;, ...]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dateString</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>date format to use when outputting date in graphs, example D MMM, YYYY</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isSpecialPeriod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>true if current period is special period, false if it is not</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>daysInPeriod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>amount of full days in selected period, example 30</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodContainsToday</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>true if period contains today, false if not</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uniquePeriodArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for current period which contains data for unique values, like unique users, example [&quot;2016.12.22&quot;,&quot;2016.w52&quot;,&quot;2016.12.30&quot;, ...]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uniquePeriodCheckArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for higher buckets to current period unique value estimation, example [&quot;2016.w51&quot;,&quot;2016.w52&quot;,&quot;2016.w53&quot;,&quot;2017.1&quot;,...]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>previousUniquePeriodArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for previous period which contains data for unique values, like unique users, example [&quot;2016.12.22&quot;,&quot;2016.w52&quot;,&quot;2016.12.30&quot;]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>previousUniquePeriodCheckArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with ticks for higher buckets to previous period unique value estimation, example [&quot;2016.w47&quot;,&quot;2016.w48&quot;,&quot;2016.12&quot;]</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>activePeriod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period name formatted in dateString (available in non-special periods)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>previousPeriod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>previous period name formatted in dateString (available in non-special periods)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodMax</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>max value of current period tick (available in non-special periods)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodMin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>min value of current period tick (available in non-special periods)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reqMonthDbDateIds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>metric model month document ids to query for this period</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reqZeroDbDateIds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>metric model year document ids to query for this period</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description usertext">
+    <p>Currently selected period</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Special period object (7days)</p>
+    
+    <pre class="prettyprint"><code>{
+   "start":1487721600000,
+   "end":1488326399000,
+   "activePeriod":"NA",
+   "periodMax":"NA",
+   "periodMin":"NA",
+   "previousPeriod":"NA",
+   "currentPeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.2.26","2017.2.27","2017.2.28"],
+   "previousPeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+   "uniquePeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.w9"],
+   "uniquePeriodCheckArr":["2017.w8","2017.w9"],
+   "previousUniquePeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+   "previousUniquePeriodCheckArr":["2017.w7","2017.w8"],
+   "dateString":"D MMM",
+   "daysInPeriod":7,
+   "isSpecialPeriod":true,
+   "reqMonthDbDateIds":["2017:2"],
+   "reqZeroDbDateIds":["2017:0"],
+   "periodContainsToday":true
+}</code></pre>
+
+        <p class="code-caption">Simple period object (today period - hour)</p>
+    
+    <pre class="prettyprint"><code>{
+   "start":1488240000000,
+   "end":1488326399000,
+   "activePeriod":"2017.2.28",
+   "periodMax":11,
+   "periodMin":0,
+   "previousPeriod":"2017.2.27",
+   "currentPeriodArr":["2017.2.28"],
+   "previousPeriodArr":["2017.2.27"],
+   "uniquePeriodArr":[],
+   "uniquePeriodCheckArr":[],
+   "previousUniquePeriodArr":[],
+   "previousUniquePeriodCheckArr":[],
+   "dateString":"HH:mm",
+   "daysInPeriod":1,
+   "isSpecialPeriod":false,
+   "reqMonthDbDateIds":["2017:2"],
+   "reqZeroDbDateIds":["2017:0"],
+   "periodContainsToday":true
+}</code></pre>
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".calculatePeriodObject"><span class="type-signature type-signature-static">(static) </span>calculatePeriodObject<span class="signature">(period)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Calculate period function</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2639">line 2639</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>given period</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>returns <code>countlyCommon.periodObj</code></p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".decode"><span class="type-signature type-signature-static">(static) </span>decode<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Decode value from db, decoding first $ to $ and all . to . (dots). Decodes also url encoded values as &amp;#36;.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2538">line 2538</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>str</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>value to decode</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>decoded string</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".encode"><span class="type-signature type-signature-static">(static) </span>encode<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Encode value to be passed to db as key, encoding $ symbol to $ if it is first and all . (dot) symbols to . in the string</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2529">line 2529</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>str</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>value to encode</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>encoded string</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractBarData"><span class="type-signature type-signature-static">(static) </span>extractBarData<span class="signature">(db, rangeArray, clearFunction, fetchFunction, maxItems, metric<span class="signature-attributes">opt</span>, totalUserOverrideObj<span class="signature-attributes">opt</span>, fixBarSegmentData, period)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1642">line 1642</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+        <p class="code-caption">Return data</p>
+    
+    <pre class="prettyprint"><code>[
+   {"name":"iOS","percent":35},
+   {"name":"Android","percent":33},
+   {"name":"Windows Phone","percent":32}
+]</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rangeArray</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>array of all metrics/segments to extract (usually what is contained in meta)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fetchFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxItems</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>amount of items to return, default 3, if -1 return all</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>metric to output and use in sorting, default &quot;t&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalUserOverrideObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>data from total users api request to correct unique user values</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fixBarSegmentData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>function to make any adjustments to the extracted data based on segment</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>period to extract data from</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>array with top 3 values</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractChartData"><span class="type-signature type-signature-static">(static) </span>extractChartData<span class="signature">(db, clearFunction, chartData, dataProperties)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extract single level data without metrics/segments, like total user data from users collection</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1002">line 1002</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Extracting total users data from users collection</p>
+    
+    <pre class="prettyprint"><code>countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
+     { data:[], label:"Total Users" }
+ ], [
+     {
+         name:"t",
+         func:function (dataObj) {
+             return dataObj["u"]
+         }
+     }
+ ]);
+ </code></pre>
+
+        <p class="code-caption">Returned data</p>
+    
+    <pre class="prettyprint"><code>{"chartDP":[
+   {
+       "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
+       "label":"Total Sessions",
+       "color":"#DDDDDD",
+       "mode":"ghost"
+   },
+   {
+       "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
+       "label":"Total Sessions",
+       "color":"#333933"
+   }
+ ],
+ "chartData":[
+   {"date":"22 Dec, 2016","pt":0,"t":6},
+   {"date":"23 Dec, 2016","pt":0,"t":14},
+   {"date":"24 Dec, 2016","pt":0,"t":11},
+   {"date":"25 Dec, 2016","pt":0,"t":18},
+   {"date":"26 Dec, 2016","pt":0,"t":10},
+   {"date":"27 Dec, 2016","pt":0,"t":32},
+   {"date":"28 Dec, 2016","pt":0,"t":53},
+   {"date":"29 Dec, 2016","pt":0,"t":55},
+   {"date":"30 Dec, 2016","pt":0,"t":71},
+   {"date":"31 Dec, 2016","pt":0,"t":82},
+   {"date":"1 Jan, 2017","pt":0,"t":74},
+   {"date":"2 Jan, 2017","pt":0,"t":69},
+   {"date":"3 Jan, 2017","pt":0,"t":60},
+   {"date":"4 Jan, 2017","pt":0,"t":17},
+   {"date":"5 Jan, 2017","pt":0,"t":6},
+   {"date":"6 Jan, 2017","pt":12,"t":3}
+ ],
+ "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
+}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chartData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>prefill chart data with labels, colors, etc</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataProperties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>describing which properties and how to extract</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use in timeline graph with {&quot;chartDP&quot;:chartData, &quot;chartData&quot;:_.compact(tableData), &quot;keyEvents&quot;:keyEvents}</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractData"><span class="type-signature type-signature-static">(static) </span>extractData<span class="signature">(db, clearFunction, dataProperties, periodObject)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extract single level data without metrics/segments, like total user data from users collection</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1818">line 1818</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Extracting total users data from users collection</p>
+    
+    <pre class="prettyprint"><code>countlyCommon.extractData(_sessionDb, countlySession.clearObject, [
+    { name:"t" },
+    { name:"n" },
+    { name:"u" },
+    { name:"d" },
+    { name:"e" }
+]);</code></pre>
+
+        <p class="code-caption">Returned data</p>
+    
+    <pre class="prettyprint"><code>[
+   {"_id":"2017-1-30","t":6,"n":6,"u":6,"d":0,"e":6},
+   {"_id":"2017-1-31","t":2,"n":2,"u":2,"d":0,"e":2},
+   {"_id":"2017-2-1","t":5,"n":5,"u":5,"d":0,"e":5},
+   {"_id":"2017-2-2","t":5,"n":5,"u":5,"d":0,"e":5},
+   {"_id":"2017-2-3","t":8,"n":8,"u":8,"d":0,"e":8},
+   {"_id":"2017-2-4","t":7,"n":7,"u":7,"d":0,"e":7},
+   {"_id":"2017-2-5","t":6,"n":6,"u":6,"d":0,"e":6},
+   {"_id":"2017-2-6","t":5,"n":5,"u":5,"d":0,"e":5},
+   {"_id":"2017-2-7","t":6,"n":6,"u":6,"d":0,"e":6},
+   {"_id":"2017-2-8","t":5,"n":5,"u":5,"d":0,"e":5},
+   {"_id":"2017-2-9","t":4,"n":4,"u":4,"d":0,"e":4},
+   {"_id":"2017-2-10","t":6,"n":6,"u":6,"d":0,"e":6},
+   {"_id":"2017-2-11","t":8,"n":8,"u":8,"d":0,"e":8},
+   {"_id":"2017-2-12","t":3,"n":3,"u":3,"d":0,"e":3},
+   {"_id":"2017-2-13","t":8,"n":6,"u":7,"d":0,"e":8},
+   {"_id":"2017-2-14","t":7,"n":7,"u":7,"d":0,"e":7},
+   {"_id":"2017-2-15","t":4,"n":4,"u":4,"d":0,"e":4},
+   {"_id":"2017-2-16","t":2,"n":2,"u":2,"d":0,"e":2},
+   {"_id":"2017-2-17","t":4,"n":4,"u":4,"d":0,"e":4},
+   {"_id":"2017-2-18","t":14,"n":14,"u":14,"d":0,"e":14},
+   {"_id":"2017-2-19","t":20,"n":11,"u":20,"d":0,"e":20},
+   {"_id":"2017-2-20","t":25,"n":9,"u":25,"d":0,"e":25},
+   {"_id":"2017-2-21","t":33,"n":12,"u":33,"d":0,"e":33},
+   {"_id":"2017-2-22","t":36,"n":12,"u":36,"d":0,"e":36},
+   {"_id":"2017-2-23","t":37,"n":12,"u":37,"d":0,"e":37},
+   {"_id":"2017-2-24","t":29,"n":5,"u":29,"d":0,"e":29},
+   {"_id":"2017-2-25","t":28,"n":7,"u":28,"d":0,"e":28},
+   {"_id":"2017-2-26","t":3,"n":3,"u":3,"d":0,"e":3},
+   {"_id":"2017-2-27","t":3,"n":3,"u":3,"d":0,"e":3},
+   {"_id":"2017-2-28","t":7,"n":7,"u":7,"d":0,"e":7}
+]</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataProperties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>describing which properties and how to extract</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-api_lib_countly.common.html#.periodObj">module:api/lib/countly.common.periodObj</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period object override to use for extracting data</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use in timeline graph</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractMetric"><span class="type-signature type-signature-static">(static) </span>extractMetric<span class="signature">(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extract metrics data break down by segments, like total user by carriers</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1938">line 1938</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Extracting total users data from users collection</p>
+    
+    <pre class="prettyprint"><code>countlyCommon.extractData(countlyCarriers.getDb(), countlyCarriers.getMeta(), countlyCarriers.clearObject, [
+    {
+        name:"carriers",
+        func:function (rangeArr, dataObj) {
+            return rangeArr;
+        }
+    },
+    { "name":"t" },
+    { "name":"n" },
+    { "name":"u" }
+]);</code></pre>
+
+        <p class="code-caption">Returned data</p>
+    
+    <pre class="prettyprint"><code>[
+   {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+   {"_id":"Tele2","t":32,"n":19,"u":31},
+   {"_id":"\tAt&amp;amp;t","t":32,"n":20,"u":31},
+   {"_id":"O2","t":26,"n":19,"u":26},
+   {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+   {"_id":"Turkcell","t":23,"n":11,"u":23},
+   {"_id":"Telus","t":22,"n":15,"u":22},
+   {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+   {"_id":"Verizon","t":21,"n":11,"u":21},
+   {"_id":"Sprint","t":21,"n":11,"u":20},
+   {"_id":"Vodafone","t":22,"n":12,"u":19},
+   {"_id":"Orange","t":18,"n":12,"u":18},
+   {"_id":"T-mobile","t":17,"n":9,"u":17},
+   {"_id":"Bell Canada","t":12,"n":6,"u":12}
+]</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rangeArray</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>array of all metrics/segments to extract (usually what is contained in meta)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataProperties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>describing which properties and how to extract</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalUserOverrideObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>data from total users api request to correct unique user values</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use in timeline graph</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractRangeData"><span class="type-signature type-signature-static">(static) </span>extractRangeData<span class="signature">(db, propertyName, rangeArray, explainRange)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extract range data from standard countly metric data model</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line871">line 871</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+        <p class="code-caption">Extracting session frequency from users collection</p>
+    
+    <pre class="prettyprint"><code>   //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+   countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlySession.explainFrequencyRange);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>propertyName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the property to extract</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rangeArray</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array of all metrics/segments to extract (usually what is contained in meta)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>explainRange</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function to convert range/bucket index to meaningful label</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>array containing extracted ranged data as [{&quot;f&quot;:&quot;First session&quot;,&quot;t&quot;:352,&quot;percent&quot;:&quot;88.4&quot;},{&quot;f&quot;:&quot;2 days&quot;,&quot;t&quot;:46,&quot;percent&quot;:&quot;11.6&quot;}]</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extractTwoLevelData"><span class="type-signature type-signature-static">(static) </span>extractTwoLevelData<span class="signature">(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj<span class="signature-attributes">opt</span>, period<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extract two level data with metrics/segments, like total user data from carriers collection</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1424">line 1424</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Extracting carriers data from carriers collection</p>
+    
+    <pre class="prettyprint"><code>var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&amp;t", "Verizon"], countlyCarrier.clearObject, [
+     {
+         name:"carrier",
+         func:function (rangeArr, dataObj) {
+             return rangeArr;
+         }
+     },
+     { "name":"t" },
+     { "name":"u" },
+     { "name":"n" }
+]);</code></pre>
+
+        <p class="code-caption">Return data</p>
+    
+    <pre class="prettyprint"><code>{"chartData":['
+   {"carrier":"At&amp;t","t":71,"u":62,"n":36},
+   {"carrier":"Verizon","t":66,"u":60,"n":30}
+]}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>countly standard metric data object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rangeArray</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>array of all metrics/segments to extract (usually what is contained in meta)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataProperties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>describing which properties and how to extract</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalUserOverrideObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>data from total users api request to correct unique user values</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>period to override</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use in bar and pie charts with {&quot;chartData&quot;:_.compact(tableData)}</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".fixPercentageDelta"><span class="type-signature type-signature-static">(static) </span>fixPercentageDelta<span class="signature">(items, totalPercent)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function to fix percentage difference</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2613">line 2613</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>All items</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalPercent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Total percentage so far</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>items</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".formatTime"><span class="type-signature type-signature-static">(static) </span>formatTime<span class="signature">(timestamp, format)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Format timestamp to ddd, D MMM YYYY HH:mm:ss if format is not provided</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2682">line 2682</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs Thu, 23 Jun 2022 19:20:25
+countlyCommon.formatTime(1658673625);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timestamp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>timestamp in seconds or miliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>format</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>format to use</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>formated time and date</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getDashboardData"><span class="type-signature type-signature-static">(static) </span>getDashboardData<span class="signature">(data, properties, unique, totalUserOverrideObj, prevTotalUserOverrideObj, periodObject)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2186">line 2186</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
+//outputs
+{
+     "t":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+     "n":{"total":402,"prev-total":255,"change":"57.6%","trend":"u"},
+     "u":{"total":423,"prev-total":255,"change":"75.7%","trend":"u","isEstimate":false},
+     "d":{"total":0,"prev-total":0,"change":"NA","trend":"u"},
+     "e":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+     "p":{"total":103,"prev-total":29,"change":"255.2%","trend":"u","isEstimate":true},
+     "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
+}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>countly metric model data</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array of all properties to extract</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>unique</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array of all properties that are unique from properties array. We need to apply estimation to them</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalUserOverrideObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>prevTotalUserOverrideObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden for previous period</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period object override for calculation</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>dashboard data object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getDateRange"><span class="type-signature type-signature-static">(static) </span>getDateRange<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Getting the date range shown on the dashboard like 1 Aug - 30 Aug, using <code>dateString property which holds the date format.</p></li></ul></dd>     
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1739">line 1739</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>string with  formatted date range as 1 Aug - 30 Aug</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getDescendantProp"><span class="type-signature type-signature-static">(static) </span>getDescendantProp<span class="signature">(obj, desc)</span><span class="type-signature"> &rarr; {object</code></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Fetches nested property values from an obj.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line845">line 845</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+        <p class="code-caption">Path found</p>
+    
+    <pre class="prettyprint"><code>//outputs {"u":20,"t":20,"n":5}
+countlyCommon.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>standard countly metric object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>desc</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>dot separate path to fetch from object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>fetched object from provided path</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getPercentChange"><span class="type-signature type-signature-static">(static) </span>getPercentChange<span class="signature">(previous, current)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Calculates the percent change between previous and current values.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line806">line 806</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs {"percent":"100%","trend":"u"}
+  countlyCommon.getPercentChange(100, 200);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>previous</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data for previous period</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>current</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data for current period</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>in the following format {&quot;percent&quot;: &quot;20%&quot;, &quot;trend&quot;: &quot;u&quot;}</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getPeriodObj"><span class="type-signature type-signature-static">(static) </span>getPeriodObj<span class="signature">(params, defaultPeriod)</span><span class="type-signature"> &rarr; {<a href="module-api_lib_countly.common.html#.periodObj">module:api/lib/countly.common.periodObj</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get period object in atomic way from params,
+getting params.qstring.period for period
+and params.appTimezone for timezone</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2550">line 2550</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object with app timezone and period</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultPeriod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">Array.&lt;number></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>default period value in case it's not supplied in the params</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>period object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-api_lib_countly.common.html#.periodObj">module:api/lib/countly.common.periodObj</a></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getShortNumber"><span class="type-signature type-signature-static">(static) </span>getShortNumber<span class="signature">(number)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Shortens the given number by adding K (thousand) or M (million) postfix. K is added only if the number is bigger than 10000, etc.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1717">line 1717</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs 10K
+countlyCommon.getShortNumber(10000);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>number</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>number to shorten</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>shorter representation of number</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getSparklineData"><span class="type-signature type-signature-static">(static) </span>getSparklineData<span class="signature">(data, props, clearObject, periodObject)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line1352">line 1352</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
+    "total-sessions": "t",
+    "new-users": "n",
+    "total-users": "u",
+    "total-duration": "d",
+    "events": "e",
+    "returning-users": function(tmp_x){return Math.max(tmp_x["u"] - tmp_x["n"], 0);},
+    "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] === 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
+    "avg-events": function(tmp_x){return (tmp_x["u"] === 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
+}, countlySession.clearObject);
+//outputs
+{
+  "total-sessions":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+  "new-users":"24,30,25,20,16,18,11,7,17,18,20,18,17,11,15,15,6,11,6,16,13,14,12,10,7,4,8,9,2,2",
+  "total-users":"45,54,50,44,37,18,11,7,17,27,36,39,41,36,39,36,6,11,6,16,22,30,33,34,32,29,29,9,2,2",
+  "total-duration":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+  "events":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+  "returning-users":"21,24,25,24,21,0,0,0,0,9,16,21,24,25,24,21,0,0,0,0,9,16,21,24,25,25,21,0,0,0",
+  "avg-duration-per-session":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+  "avg-events":"1.6222222222222222,1.5555555555555556,1.6,1.6363636363636365,1.6486486486486487,1,1,1,1,1,1.8333333333333333,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.4137931034482758,1,1,1,1"
+}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>countly metric model data</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>object where key is output property name and value could be string as key from data object or function to create new value based on existing ones</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>periodObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>period object override</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object with sparkleline data for each property</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getTimestampRangeQuery"><span class="type-signature type-signature-static">(static) </span>getTimestampRangeQuery<span class="signature">(params, inSeconds)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get timestamp query range based on request data using period and app's timezone</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2380">line 2380</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>countlyCommon.getTimestampRangeQuery(params, true)
+//outputs
+{
+   $gte:1488259482,
+   $lte:1488279482
+}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>inSeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>if true will output result in seconds, else in miliseconds</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>mongodb query object with preset ts field to be queried</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".mergeMetricsByName"><span class="type-signature type-signature-static">(static) </span>mergeMetricsByName<span class="signature">(chartData, metric)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2459">line 2459</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Sample input</p>
+    
+    <pre class="prettyprint"><code>   {"chartData":[
+       {"metric":"Test","t":71,"u":62,"n":36},
+       {"metric":"Test1","t":66,"u":60,"n":30},
+       {"metric":"Test","t":2,"u":3,"n":4}
+   ]}</code></pre>
+
+        <p class="code-caption">Sample output</p>
+    
+    <pre class="prettyprint"><code>   {"chartData":[
+       {"metric":"Test","t":73,"u":65,"n":40},
+       {"metric":"Test1","t":66,"u":60,"n":30}
+   ]}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>chartData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>metric name to merge</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>chartData object with same metrics summed up</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".setPeriod"><span class="type-signature type-signature-static">(static) </span>setPeriod<span class="signature">(period)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Change currently selected period</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line792">line 792</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".setTimezone"><span class="type-signature type-signature-static">(static) </span>setTimezone<span class="signature">(appTimezone)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Change timezone of internal Date object</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line779">line 779</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>appTimezone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the timezone</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".stringIncrement"><span class="type-signature type-signature-static">(static) </span>stringIncrement<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function that increments strings alphabetically.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2648">line 2648</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>str</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>string that next character will be calculated</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>calculated string</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".timeString"><span class="type-signature type-signature-static">(static) </span>timeString<span class="signature">(timespent)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Format duration into highest unit of how much time have passed. Used in big numbers</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2146">line 2146</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs 2824.7 yrs
+countlyCommon.timeString(1484654066);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timespent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>amount in seconds or miliseconds passed since some reference point</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>formated time with how much highest units passed</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".union"><span class="type-signature type-signature-static">(static) </span>union<span class="signature">(x, y)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Joined 2 arrays into one removing all duplicated values</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2498">line 2498</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs [1,2,3]
+countlyCommon.union([1,2],[2,3]);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>first array</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>second array</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>new array with only unique values from x and y</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".validateEmail"><span class="type-signature type-signature-static">(static) </span>validateEmail<span class="signature">(email)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Validate email address</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_countly.common.js.html">lib/countly.common.js</a>, <a href="lib_countly.common.js.html#line2587">line 2587</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs true
+countlyCommon.validateEmail("test@test.test");
+
+//outputs false
+countlyCommon.validateEmail("test@test");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>email address to validate</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if valid and false if invalid</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:15:18 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

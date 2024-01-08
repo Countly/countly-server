@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/data/usage.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/data/usage.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* This module processes main session and user information
+* @module "api/parts/data/usage"
+*/
+
+/** @lends module:api/parts/data/usage */
+var usage = {},
+    common = require('./../../utils/common.js'),
+    geoip = require('geoip-lite'),
+    geocoder = require('offline-geocoder')(),
+    log = require('../../utils/log.js')('api:usage'),
+    async = require('async'),
+    plugins = require('../../../plugins/pluginManager.js'),
+    moment = require('moment-timezone');
+
+/**
+* Get location either from coordinate to populate country and city, or from country and city to get coordinates
+* @param {params} params - params object
+* @param {object} loc - location object    
+* @param {number} loc.lat - lattitude    
+* @param {number} loc.lon - longitude 
+* @param {string} loc.country - country 
+* @param {string} loc.city - city
+* @param {string} loc.tz - timezone
+* @returns {Promise} promise which resolves missing location parameters
+**/
+function locFromGeocoder(params, loc) {
+    return new Promise(resolve => {
+        try {
+            let promise;
+            if (loc.lat !== undefined &amp;&amp; loc.lon !== undefined) {
+                loc.gps = true;
+                promise = geocoder.reverse(loc.lat, loc.lon);
+            }
+            else if (loc.city &amp;&amp; loc.country) {
+                loc.gps = false;
+                promise = geocoder.location(loc.city, loc.country);
+            }
+            else {
+                promise = Promise.resolve();
+            }
+            promise.then(data => {
+                loc.country = loc.country || (data &amp;&amp; data.country &amp;&amp; data.country.id);
+                loc.city = loc.city || (data &amp;&amp; data.name);
+                loc.lat = loc.lat === undefined ? data &amp;&amp; data.coordinates &amp;&amp; data.coordinates.latitude : loc.lat;
+                loc.lon = loc.lon === undefined ? data &amp;&amp; data.coordinates &amp;&amp; data.coordinates.longitude : loc.lon;
+                if (!loc.tz &amp;&amp; data &amp;&amp; data.tz) {
+                    var zone = moment.tz.zone(data.tz);
+                    if (zone) {
+                        loc.tz = -zone.utcOffset(new Date(params.time.mstimestamp || Date.now()));
+                    }
+                }
+                resolve(loc);
+            }, err => {
+                log.w('Error to reverse geocode: %j', err);
+                resolve(loc);
+            });
+        }
+        catch (err) {
+            log.e('Error in geocoder: %j', err, err.stack);
+            resolve(loc);
+        }
+    });
+}
+
+/**
+* Get location data from ip address
+* @param {object} loc - location object    
+* @param {number} loc.lat - lattitude    
+* @param {number} loc.lon - longitude 
+* @param {string} loc.country - country 
+* @param {string} loc.city - city
+* @param {string} loc.tz - timezone
+* @param {string} ip_address - User's ip address
+* @returns {Promise} promise which resolves missing location parameters
+**/
+function locFromGeoip(loc, ip_address) {
+    return new Promise(resolve => {
+        try {
+            var data = geoip.lookup(ip_address);
+            if (data) {
+                loc.country = loc.country || (data &amp;&amp; data.country);
+                loc.city = loc.city || (data &amp;&amp; data.city);
+                loc.region = loc.region || (data &amp;&amp; data.region);
+                loc.lat = loc.lat === undefined ? (data &amp;&amp; data.ll &amp;&amp; data.ll[0]) : loc.lat;
+                loc.lon = loc.lon === undefined ? (data &amp;&amp; data.ll &amp;&amp; data.ll[1]) : loc.lon;
+                resolve(loc);
+            }
+            else {
+                return resolve(loc);
+            }
+        }
+        catch (e) {
+            log.e('Error in geoip: %j', e);
+            resolve(loc);
+        }
+    });
+}
+
+/**
+ * Set Location information in params but donot update it in users document
+ * @param  {params} params - params object
+ * @returns {Promise} promise which resolves upon completeing processing
+ */
+usage.setLocation = function(params) {
+    if ('tz' in params.qstring) {
+        params.user.tz = parseInt(params.qstring.tz);
+        if (isNaN(params.user.tz)) {
+            delete params.user.tz;
+        }
+    }
+
+    return new Promise(resolve => {
+        var loc = {
+            country: params.qstring.country_code,
+            city: params.qstring.city,
+            tz: params.user.tz
+        };
+
+        if ('location' in params.qstring) {
+            if (params.qstring.location) {
+                var coords = params.qstring.location.split(',');
+                if (coords.length === 2) {
+                    var lat = parseFloat(coords[0]),
+                        lon = parseFloat(coords[1]);
+
+                    if (!isNaN(lat) &amp;&amp; !isNaN(lon)) {
+                        loc.lat = lat;
+                        loc.lon = lon;
+                    }
+                }
+            }
+        }
+
+        if (loc.lat !== undefined || (loc.country &amp;&amp; loc.city)) {
+            locFromGeocoder(params, loc).then(loc2 => {
+                if (loc2.city &amp;&amp; loc2.country &amp;&amp; loc2.lat !== undefined) {
+                    usage.setUserLocation(params, loc2);
+                    return resolve();
+                }
+                else {
+                    loc2.city = loc2.country === undefined ? undefined : loc2.city;
+                    loc2.country = loc2.city === undefined ? undefined : loc2.country;
+                    locFromGeoip(loc2, params.ip_address).then(loc3 => {
+                        usage.setUserLocation(params, loc3);
+                        return resolve();
+                    });
+                }
+            });
+        }
+        else {
+            locFromGeoip(loc, params.ip_address).then(loc2 => {
+                usage.setUserLocation(params, loc2);
+                return resolve();
+            });
+        }
+    });
+};
+
+/**
+ * Set user location in params
+ * @param  {params} params - params object
+ * @param  {object} loc - location info
+ */
+usage.setUserLocation = function(params, loc) {
+    params.user.country = plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).country_data === false ? undefined : loc.country;
+    params.user.region = plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).city_data === true ? loc.region : undefined;
+    params.user.city = (plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).city_data === false ||
+        plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).country_data === false) ? undefined : loc.city;
+};
+
+/**
+* Process session_duration calls
+* @param {params} params - params object
+* @param {function} callback - callback when done
+**/
+usage.processSessionDuration = function(params, callback) {
+    var updateUsers = {},
+        session_duration = parseInt(params.qstring.session_duration),
+        session_duration_limit = parseInt(plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).session_duration_limit);
+
+    if (session_duration) {
+        if (session_duration_limit &amp;&amp; session_duration > session_duration_limit) {
+            session_duration = session_duration_limit;
+        }
+
+        if (session_duration &lt; 0) {
+            session_duration = 30;
+        }
+
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.duration, session_duration);
+
+        var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        var dbDateIds = common.getDateIds(params);
+
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+        params.qstring.session_duration = session_duration;
+
+        if (!params.qstring.begin_session) {
+            plugins.dispatch("/session/duration", {
+                params: params,
+                session_duration: session_duration
+            });
+        }
+
+        if (callback) {
+            callback();
+        }
+    }
+};
+
+/**
+* Gets metrics to collect from plugins
+* @param {params} params - params object
+* @param {object} userProps - object where to populate with user properties to set to user document
+* @returns {array} collected metrics
+**/
+usage.getPredefinedMetrics = function(params, userProps) {
+
+    if (params.qstring.metrics) {
+        common.processCarrier(params.qstring.metrics);
+        if (params.qstring.metrics._os &amp;&amp; params.qstring.metrics._os_version &amp;&amp; !params.is_os_processed) {
+            params.qstring.metrics._os += "";
+            params.qstring.metrics._os_version += "";
+
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] &amp;&amp; !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
+                params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
+            }
+            else {
+                var value;
+                var length;
+                for (var key in common.os_mapping) {
+                    if (params.qstring.metrics._os.toLowerCase().startsWith(key)) {
+                        if (value) {
+                            if (length &lt; key.length) {
+                                value = common.os_mapping[key];
+                                length = key.length;
+                            }
+                        }
+                        else {
+                            value = common.os_mapping[key];
+                            length = key.length;
+                        }
+                    }
+                }
+
+                if (!value) {
+                    params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
+                else {
+                    params.qstring.metrics._os_version = value + params.qstring.metrics._os_version;
+                    params.is_os_processed = true;
+                }
+            }
+        }
+        if (params.qstring.metrics._app_version) {
+            params.qstring.metrics._app_version += "";
+            if (params.qstring.metrics._app_version.indexOf('.') === -1 &amp;&amp; common.isNumber(params.qstring.metrics._app_version)) {
+                params.qstring.metrics._app_version += ".0";
+            }
+        }
+        if (!params.qstring.metrics._device_type &amp;&amp; params.qstring.metrics._device) {
+            var device = (params.qstring.metrics._device + "");
+            if (params.qstring.metrics._os === "iOS" &amp;&amp; (device.startsWith("iPhone") || device.startsWith("iPod"))) {
+                params.qstring.metrics._device_type = "mobile";
+            }
+            else if (params.qstring.metrics._os === "iOS" &amp;&amp; device.startsWith("iPad")) {
+                params.qstring.metrics._device_type = "tablet";
+            }
+            else if (params.qstring.metrics._os === "watchOS" &amp;&amp; device.startsWith("Watch")) {
+                params.qstring.metrics._device_type = "wearable";
+            }
+            else if (params.qstring.metrics._os === "tvOS" &amp;&amp; device.startsWith("AppleTV")) {
+                params.qstring.metrics._device_type = "smarttv";
+            }
+            else if (params.qstring.metrics._os === "macOS" &amp;&amp; (device.startsWith("Mac") || device.startsWith("iMac"))) {
+                params.qstring.metrics._device_type = "desktop";
+            }
+        }
+        if (!params.qstring.metrics._manufacturer &amp;&amp; params.qstring.metrics._os) {
+            if (params.qstring.metrics._os === "iOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "watchOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "tvOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "macOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+        }
+    }
+
+    var predefinedMetrics = [
+        {
+            db: "carriers",
+            metrics: [{
+                name: "_carrier",
+                set: "carriers",
+                short_code: common.dbUserMap.carrier
+            }]
+        },
+        {
+            db: "devices",
+            metrics: [
+                {
+                    name: "_device",
+                    set: "devices",
+                    short_code: common.dbUserMap.device
+                },
+                {
+                    name: "_manufacturer",
+                    set: "manufacturers",
+                    short_code: common.dbUserMap.manufacturer
+                }
+            ]
+        },
+        {
+            db: "device_details",
+            metrics: [
+                {
+                    name: "_app_version",
+                    set: "app_versions",
+                    short_code: common.dbUserMap.app_version
+                },
+                {
+                    name: "_os",
+                    set: "os",
+                    short_code: common.dbUserMap.platform
+                },
+                {
+                    name: "_device_type",
+                    set: "device_type",
+                    short_code: common.dbUserMap.device_type
+                },
+                {
+                    name: "_os_version",
+                    set: "os_versions",
+                    short_code: common.dbUserMap.platform_version
+                },
+                {
+                    name: "_resolution",
+                    set: "resolutions",
+                    short_code: common.dbUserMap.resolution
+                }
+            ]
+        },
+        {
+            db: "cities",
+            metrics: [{
+                is_user_prop: true,
+                name: "city",
+                set: "cities",
+                short_code: common.dbUserMap.city
+            }]
+        }
+    ];
+    var isNewUser = (params.app_user &amp;&amp; params.app_user[common.dbUserMap.first_seen]) ? false : true;
+    plugins.dispatch("/session/metrics", {
+        params: params,
+        predefinedMetrics: predefinedMetrics,
+        userProps: userProps,
+        user: params.app_user,
+        isNewUser: isNewUser
+    });
+
+    return predefinedMetrics;
+};
+
+
+/**
+ * Process all metrics and return
+ * @param  {params} params - params object
+ * @returns {object} params
+ */
+usage.returnAllProcessedMetrics = function(params) {
+    var userProps = {};
+    var processedMetrics = {};
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    for (var i = 0; i &lt; predefinedMetrics.length; i++) {
+        for (var j = 0; j &lt; predefinedMetrics[i].metrics.length; j++) {
+            var tmpMetric = predefinedMetrics[i].metrics[j];
+            var recvMetricValue = undefined;
+
+            if (tmpMetric.is_user_prop) {
+                recvMetricValue = params.user[tmpMetric.name];
+            }
+            else if (params.qstring.metrics &amp;&amp; (tmpMetric.name in params.qstring.metrics)) {
+                recvMetricValue = params.qstring.metrics[tmpMetric.name];
+            }
+
+            // We check if country data logging is on and user's country is the configured country of the app
+            if (tmpMetric.name === "country" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+                continue;
+            }
+            // We check if city data logging is on and user's country is the configured country of the app
+            if (tmpMetric.name === "city" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
+                continue;
+            }
+
+            if (recvMetricValue) {
+                var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+            }
+        }
+    }
+
+    params.processed_metrics = processedMetrics;
+    return processedMetrics;
+};
+
+/**
+* Process session duration ranges for Session duration metric
+* @param {number} totalSessionDuration - duration of session
+* @param {params} params - params object
+* @param {function} done - callback when done
+**/
+usage.processSessionDurationRange = function(totalSessionDuration, params, done) {
+    var durationRanges = [
+            [0, 10],
+            [11, 30],
+            [31, 60],
+            [61, 180],
+            [181, 600],
+            [601, 1800],
+            [1801, 3600]
+        ],
+        durationMax = 3601,
+        calculatedDurationRange,
+        updateUsers = {},
+        updateUsersZero = {},
+        dbDateIds = common.getDateIds(params),
+        monthObjUpdate = [];
+
+    if (totalSessionDuration >= durationMax) {
+        calculatedDurationRange = (durationRanges.length) + '';
+    }
+    else {
+        for (var i = 0; i &lt; durationRanges.length; i++) {
+            if (totalSessionDuration &lt;= durationRanges[i][1] &amp;&amp; totalSessionDuration >= durationRanges[i][0]) {
+                calculatedDurationRange = i + '';
+                break;
+            }
+        }
+    }
+
+    monthObjUpdate.push(common.dbMap.durations + '.' + calculatedDurationRange);
+    common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
+    common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
+    var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+    common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+    var update = {
+        '$inc': updateUsersZero,
+        '$set': {}
+    };
+    update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
+    common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
+
+    if (done) {
+        done();
+    }
+};
+
+/**
+* Process ending user session and calculate loyalty and frequency range metrics
+* @param {object} dbAppUser - user's document
+* @param {params} params - params object
+* @param {function} done - callback when done
+* @returns {void} void
+**/
+function processUserSession(dbAppUser, params, done) {
+    var updateUsersZero = {},
+        updateUsersMonth = {},
+        usersMeta = {},
+        sessionFrequency = [
+            [0, 24],
+            [24, 48],
+            [48, 72],
+            [72, 96],
+            [96, 120],
+            [120, 144],
+            [144, 168],
+            [168, 192],
+            [192, 360],
+            [360, 744]
+        ],
+        sessionFrequencyMax = 744,
+        calculatedFrequency,
+        uniqueLevels = [],
+        uniqueLevelsZero = [],
+        uniqueLevelsMonth = [],
+        zeroObjUpdate = [],
+        monthObjUpdate = [],
+        dbDateIds = common.getDateIds(params);
+
+    monthObjUpdate.push(common.dbMap.events);
+    monthObjUpdate.push(common.dbMap.total);
+    monthObjUpdate.push(params.user.country + '.' + common.dbMap.total);
+
+    if (dbAppUser &amp;&amp; dbAppUser[common.dbUserMap.first_seen]) {
+        var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
+            currDate = common.getDate(params.time.timestamp, params.appTimezone),
+            userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
+            secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+            secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+            secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
+            secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+
+        if (dbAppUser.cc !== params.user.country) {
+            monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+            zeroObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+        }
+
+        // Calculate the frequency range of the user
+
+        if ((params.time.timestamp - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
+            calculatedFrequency = sessionFrequency.length + '';
+        }
+        else {
+            for (let i = 0; i &lt; sessionFrequency.length; i++) {
+                if ((params.time.timestamp - userLastSeenTimestamp) &lt; (sessionFrequency[i][1] * 60 * 60) &amp;&amp;
+                        (params.time.timestamp - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
+                    calculatedFrequency = (i + 1) + '';
+                    break;
+                }
+            }
+        }
+
+        //if for some reason we received past data lesser than last session timestamp
+        //we can't calculate frequency for that part
+        if (typeof calculatedFrequency !== "undefined") {
+            zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
+        }
+
+        if (userLastSeenTimestamp &lt; (params.time.timestamp - secInMin)) {
+            // We don't need to put hourly fragment to the unique levels array since
+            // we will store hourly data only in sessions collection
+            updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap.unique] = 1;
+        }
+
+        if (userLastSeenTimestamp &lt; (params.time.timestamp - secInHour)) {
+            uniqueLevels[uniqueLevels.length] = params.time.daily;
+            uniqueLevelsMonth.push(params.time.day);
+        }
+
+        if (userLastSeenDate.year() === params.time.yearly &amp;&amp;
+                Math.ceil(userLastSeenDate.format("DDD") / 7) &lt; params.time.weekly) {
+            uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
+            uniqueLevelsZero.push("w" + params.time.weekly);
+        }
+
+        if (userLastSeenTimestamp &lt; (params.time.timestamp - secInMonth)) {
+            uniqueLevels[uniqueLevels.length] = params.time.monthly;
+            uniqueLevelsZero.push(params.time.month);
+        }
+
+        if (userLastSeenTimestamp &lt; (params.time.timestamp - secInYear)) {
+            uniqueLevels[uniqueLevels.length] = params.time.yearly;
+            uniqueLevelsZero.push("Y");
+        }
+
+        for (let k = 0; k &lt; uniqueLevelsZero.length; k++) {
+            if (uniqueLevelsZero[k] === "Y") {
+                updateUsersZero['d.' + common.dbMap.unique] = 1;
+                if (dbAppUser.cc === params.user.country) {
+                    updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                }
+            }
+            else {
+                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.unique] = 1;
+                if (dbAppUser.cc === params.user.country) {
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                }
+            }
+        }
+
+        for (let l = 0; l &lt; uniqueLevelsMonth.length; l++) {
+            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
+            if (dbAppUser.cc === params.user.country) {
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+            }
+        }
+    }
+    else {
+        // User is not found in app_users collection so this means she is both a new and unique user.
+        zeroObjUpdate.push(common.dbMap.unique);
+        monthObjUpdate.push(common.dbMap.new);
+        monthObjUpdate.push(common.dbMap.unique);
+
+        zeroObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+        monthObjUpdate.push(params.user.country + '.' + common.dbMap.new);
+        monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+
+        // First time user.
+        calculatedFrequency = '0';
+
+        zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+        monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+
+        usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
+    }
+
+    usersMeta['meta_v2.countries.' + (params.user.country || "Unknown")] = true;
+
+    common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
+    common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
+
+    var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+    if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
+        usersMeta.m = dbDateIds.zero;
+        usersMeta.a = params.app_id + "";
+        var updateObjZero = {$set: usersMeta};
+
+        if (Object.keys(updateUsersZero).length) {
+            updateObjZero.$inc = updateUsersZero;
+        }
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero);
+    }
+    if (Object.keys(updateUsersMonth).length) {
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
+            $set: {
+                m: dbDateIds.month,
+                a: params.app_id + ""
+            },
+            '$inc': updateUsersMonth
+        });
+    }
+
+    plugins.dispatch("/session/user", {
+        params: params,
+        dbAppUser: dbAppUser
+    });
+
+    processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
+}
+
+/**
+* Process metrics from request into aggregated data
+* @param {object} user - user's document
+* @param {array} uniqueLevelsZero - unique properties of zero document
+* @param {array} uniqueLevelsMonth - unique properties of month document
+* @param {params} params - params object
+* @param {function} done - callback when done
+* @returns {boolean} true
+**/
+function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
+    var userProps = {},
+        isNewUser = (user &amp;&amp; user[common.dbUserMap.first_seen]) ? false : true,
+        metricChanges = {};
+
+    if (isNewUser) {
+        userProps[common.dbUserMap.first_seen] = params.time.timestamp;
+        userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+        userProps[common.dbUserMap.device_id] = params.qstring.device_id;
+    }
+    else {
+        if (parseInt(user[common.dbUserMap.last_seen], 10) &lt; params.time.timestamp) {
+            userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+        }
+
+        if (user[common.dbUserMap.country_code] !== params.user.country) {
+            /*
+                 Init metric changes object here because country code is not a part of
+                 "metrics" object received from begin_session thus won't be tracked otherwise
+            */
+            metricChanges.uid = user.uid;
+            metricChanges.ts = params.time.timestamp;
+            metricChanges.cd = new Date();
+            metricChanges[common.dbUserMap.country_code] = {
+                "o": user[common.dbUserMap.country_code],
+                "n": params.user.country
+            };
+        }
+
+        if (user[common.dbUserMap.device_id] !== params.qstring.device_id) {
+            userProps[common.dbUserMap.device_id] = params.qstring.device_id;
+        }
+    }
+
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    var dateIds = common.getDateIds(params);
+    var metaToFetch = {};
+    if (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).metric_limit > 0) {
+        for (let i = 0; i &lt; predefinedMetrics.length; i++) {
+            for (let j = 0; j &lt; predefinedMetrics[i].metrics.length; j++) {
+                let tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = null,
+                    postfix = null;
+                if (tmpMetric.is_user_prop) {
+                    recvMetricValue = params.user[tmpMetric.name];
+                }
+                else if (params.qstring.metrics &amp;&amp; params.qstring.metrics[tmpMetric.name]) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                }
+
+                // We check if country data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "country" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "city" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
+
+                if (recvMetricValue) {
+                    recvMetricValue = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                    postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
+                    metaToFetch[predefinedMetrics[i].db + params.app_id + "_" + dateIds.zero + "_" + postfix] = {
+                        coll: predefinedMetrics[i].db,
+                        id: params.app_id + "_" + dateIds.zero + "_" + postfix
+                    };
+                }
+            }
+        }
+    }
+
+    /**
+    * Get meta of aggregated data
+    * @param {string} id - id of the document in database
+    * @param {function} callback - callback when done
+    **/
+    function fetchMeta(id, callback) {
+        common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {
+            var retObj = metaDoc || {};
+            retObj.coll = metaToFetch[id].coll;
+            callback(null, retObj);
+        });
+    }
+
+    var metas = {};
+    async.map(Object.keys(metaToFetch), fetchMeta, function(err, metaDocs) {
+        for (let i = 0; i &lt; metaDocs.length; i++) {
+            if (metaDocs[i].coll &amp;&amp; metaDocs[i].meta_v2) {
+                metas[metaDocs[i]._id] = metaDocs[i].meta_v2;
+            }
+        }
+
+        for (let i = 0; i &lt; predefinedMetrics.length; i++) {
+            for (let j = 0; j &lt; predefinedMetrics[i].metrics.length; j++) {
+                let tmpTimeObjZero = {},
+                    tmpTimeObjMonth = {},
+                    tmpSet = {},
+                    needsUpdate = false,
+                    zeroObjUpdate = [],
+                    monthObjUpdate = [],
+                    tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = "",
+                    escapedMetricVal = "",
+                    postfix = "";
+
+                if (tmpMetric.is_user_prop) {
+                    recvMetricValue = params.user[tmpMetric.name];
+                }
+                else if (params.qstring.metrics &amp;&amp; params.qstring.metrics[tmpMetric.name]) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                }
+
+                // We check if country data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "country" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "city" &amp;&amp; (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
+
+                if (recvMetricValue) {
+                    escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                    postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
+
+                    // Assign properties to app_users document of the current user
+                    if (isNewUser || (!isNewUser &amp;&amp; user[tmpMetric.short_code] !== escapedMetricVal)) {
+                        userProps[tmpMetric.short_code] = escapedMetricVal;
+                    }
+                    var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix;
+                    var ignore = false;
+                    if (metas[tmpZeroId] &amp;&amp;
+                            metas[tmpZeroId][tmpMetric.set] &amp;&amp;
+                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length &amp;&amp;
+                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length >= plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).metric_limit &amp;&amp;
+                            typeof metas[tmpZeroId][tmpMetric.set][escapedMetricVal] === "undefined") {
+                        ignore = true;
+                    }
+
+                    //should metric be ignored for reaching the limit
+                    if (!ignore) {
+
+                        //making sure metrics are strings
+                        needsUpdate = true;
+                        tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
+
+                        monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.total);
+
+                        if (isNewUser) {
+                            zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.new);
+                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                        }
+                        else if (!tmpMetric.is_user_prop &amp;&amp; tmpMetric.short_code &amp;&amp; user[tmpMetric.short_code] !== escapedMetricVal) {
+                            zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                        }
+                        else {
+                            for (let k = 0; k &lt; uniqueLevelsZero.length; k++) {
+                                if (uniqueLevelsZero[k] === "Y") {
+                                    tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                }
+                                else {
+                                    tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                }
+                            }
+
+                            for (let l = 0; l &lt; uniqueLevelsMonth.length; l++) {
+                                tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                            }
+                        }
+                    }
+
+
+                    /*
+                        If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
+                        with a document like below inside metric_changesAPPID collection
+            
+                        { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+                    */
+                    if (predefinedMetrics[i].metrics[j].track_changes !== false &amp;&amp; !isNewUser &amp;&amp; user[tmpMetric.short_code] !== escapedMetricVal) {
+                        if (!metricChanges.uid) {
+                            metricChanges.uid = user.uid;
+                            metricChanges.ts = params.time.timestamp;
+                            metricChanges.cd = new Date();
+                        }
+
+                        metricChanges[tmpMetric.short_code] = {
+                            "o": user[tmpMetric.short_code],
+                            "n": escapedMetricVal
+                        };
+                    }
+                    common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
+                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate);
+
+                    if (needsUpdate) {
+                        tmpSet.m = dateIds.zero;
+                        tmpSet.a = params.app_id + "";
+                        var tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
+                            updateObjZero = {$set: tmpSet};
+
+                        if (Object.keys(tmpTimeObjZero).length) {
+                            updateObjZero.$inc = tmpTimeObjZero;
+                        }
+
+                        if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
+                            common.writeBatcher.add(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
+                        }
+
+                        common.writeBatcher.add(predefinedMetrics[i].db, tmpMonthId, {
+                            $set: {
+                                m: dateIds.month,
+                                a: params.app_id + ""
+                            },
+                            '$inc': tmpTimeObjMonth
+                        });
+                    }
+                }
+            }
+        }
+
+        if (!isNewUser) {
+            /*
+                If metricChanges object contains a uid this means we have at least one metric that has changed
+                in this begin_session so we'll insert it into metric_changesAPPID collection.
+                Inserted document has below format;
+        
+                { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+            */
+            if (plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).metric_changes &amp;&amp; metricChanges.uid &amp;&amp; params.qstring.begin_session) {
+                common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
+            }
+        }
+
+        if (done) {
+            done();
+        }
+    });
+
+    return true;
+}
+
+plugins.register("/i", function(ob) {
+    var params = ob.params;
+    var config = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true);
+    if (params.qstring.end_session) {
+        setTimeout(function() {
+            //need to query app user again to get data modified by another request
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
+                if (!dbAppUser || err) {
+                    return;
+                }
+                //if new session did not start during cooldown, then we can post process this session
+                if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                    usage.processSessionDurationRange(params.session_duration || 0, params);
+                    let updates = [];
+                    plugins.dispatch("/session/end", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates
+                    });
+                    plugins.dispatch("/session/post", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates,
+                        session_duration: params.session_duration,
+                        end_session: true
+                    }, function() {
+                        updates.push({$set: {sd: 0, data: {}}});
+                        let updateUser = {};
+                        for (let i = 0; i &lt; updates.length; i++) {
+                            updateUser = common.mergeQuery(updateUser, updates[i]);
+                        }
+                        common.updateAppUser(params, updateUser);
+                    });
+
+
+                }
+            });
+        }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
+    }
+});
+
+plugins.register("/sdk/user_properties", async function(ob) {
+    var params = ob.params;
+    var userProps = {};
+    var update = {};
+    params.user = {};
+    var config = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true);
+
+    if (params.qstring.tz) {
+        var tz = parseInt(params.qstring.tz);
+        if (isNaN(tz)) {
+            userProps.tz = tz;
+        }
+    }
+
+    if (params.qstring.country_code) {
+        userProps.cc = params.qstring.country_code;
+    }
+
+    if (params.qstring.region) {
+        userProps.rgn = params.qstring.region;
+    }
+
+    if (params.qstring.city) {
+        userProps.cty = params.qstring.city;
+    }
+    var locationData;
+    if (params.qstring.location) {
+        var coords = (params.qstring.location + "").split(',');
+        if (coords.length === 2) {
+            var lat = parseFloat(coords[0]),
+                lon = parseFloat(coords[1]);
+
+            if (!isNaN(lat) &amp;&amp; !isNaN(lon)) {
+                userProps.loc = {
+                    gps: true,
+                    geo: {
+                        type: 'Point',
+                        coordinates: [lon, lat]
+                    },
+                    date: params.time.mstimestamp
+                };
+                locationData = await locFromGeocoder(params, {
+                    country: userProps.cc,
+                    city: userProps.cc,
+                    tz: userProps.tz,
+                    lat: userProps.loc &amp;&amp; userProps.loc.geo.coordinates[1],
+                    lon: userProps.loc &amp;&amp; userProps.loc.geo.coordinates[0]
+                });
+
+                if (!userProps.cc &amp;&amp; locationData.country) {
+                    userProps.cc = locationData.country;
+                }
+
+                if (!userProps.rgn &amp;&amp; locationData.region) {
+                    userProps.rgn = locationData.region;
+                }
+
+                if (!userProps.cty &amp;&amp; locationData.city) {
+                    userProps.cty = locationData.city;
+                }
+            }
+        }
+    }
+
+    if (params.qstring.begin_session &amp;&amp; params.qstring.location === "") {
+        //user opted out of location tracking
+        userProps.cc = userProps.rgn = userProps.cty = 'Unknown';
+        if (userProps.loc) {
+            delete userProps.loc;
+        }
+        if (params.app_user.loc) {
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            update.$unset = {loc: 1};
+        }
+    }
+    else if (params.qstring.begin_session &amp;&amp; params.qstring.location !== "") {
+        if (userProps.loc !== undefined || (userProps.cc &amp;&amp; userProps.cty)) {
+            let data = locationData || await locFromGeocoder(params, {
+                country: userProps.cc,
+                city: userProps.cc,
+                tz: userProps.tz,
+                lat: userProps.loc &amp;&amp; userProps.loc.geo.coordinates[1],
+                lon: userProps.loc &amp;&amp; userProps.loc.geo.coordinates[0]
+            });
+            if (data) {
+                if (!userProps.cc &amp;&amp; data.country) {
+                    userProps.cc = data.country;
+                }
+
+                if (!userProps.rgn &amp;&amp; data.region) {
+                    userProps.rgn = data.region;
+                }
+
+                if (!userProps.cty &amp;&amp; data.city) {
+                    userProps.cty = data.city;
+                }
+
+                if (plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).city_data === true &amp;&amp; !userProps.loc &amp;&amp; typeof data.lat !== "undefined" &amp;&amp; typeof data.lon !== "undefined") {
+                    // only override lat/lon if no recent gps location exists in user document
+                    if (!params.app_user.loc || (params.app_user.loc.gps &amp;&amp; params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                        userProps.loc = {
+                            gps: false,
+                            geo: {
+                                type: 'Point',
+                                coordinates: [data.ll[1], data.ll[0]]
+                            },
+                            date: params.time.mstimestamp
+                        };
+                    }
+                }
+            }
+        }
+        else {
+            try {
+                let data = geoip.lookup(params.ip_address);
+                if (data) {
+                    if (!userProps.cc &amp;&amp; data.country) {
+                        userProps.cc = data.country;
+                    }
+
+                    if (!userProps.rgn &amp;&amp; data.region) {
+                        userProps.rgn = data.region;
+                    }
+
+                    if (!userProps.cty &amp;&amp; data.city) {
+                        userProps.cty = data.city;
+                    }
+
+                    if (plugins.getConfig('api', params.app &amp;&amp; params.app.plugins, true).city_data === true &amp;&amp; !userProps.loc &amp;&amp; data.ll &amp;&amp; typeof data.ll[0] !== "undefined" &amp;&amp; typeof data.ll[1] !== "undefined") {
+                        // only override lat/lon if no recent gps location exists in user document
+                        if (!params.app_user.loc || (params.app_user.loc.gps &amp;&amp; params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                            userProps.loc = {
+                                gps: false,
+                                geo: {
+                                    type: 'Point',
+                                    coordinates: [data.ll[1], data.ll[0]]
+                                },
+                                date: params.time.mstimestamp
+                            };
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                log.e('Error in geoip: %j', e);
+            }
+        }
+        if (!userProps.cc) {
+            userProps.cc = "Unknown";
+        }
+        if (!userProps.cty) {
+            userProps.cty = "Unknown";
+        }
+        if (!userProps.rgn) {
+            userProps.rgn = "Unknown";
+        }
+    }
+
+    if (config.country_data === false) {
+        userProps.cc = 'Unknown';
+        userProps.cty = 'Unknown';
+    }
+
+    if (config.city_data === false) {
+        userProps.cty = 'Unknown';
+    }
+
+    params.user.country = userProps.cc || "Unknown";
+    params.user.city = userProps.cty || "Unknown";
+
+    //if we have metrics, let's process metrics
+    if (params.qstring.metrics) {
+        var up = usage.returnAllProcessedMetrics(params);
+
+        if (Object.keys(up).length) {
+            for (let key in up) {
+                userProps[key] = up[key];
+            }
+        }
+    }
+
+    if (params.qstring.session_duration) {
+        var session_duration = parseInt(params.qstring.session_duration),
+            session_duration_limit = parseInt(plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).session_duration_limit);
+
+        if (session_duration) {
+            if (session_duration_limit &amp;&amp; session_duration > session_duration_limit) {
+                session_duration = session_duration_limit;
+            }
+
+            if (session_duration &lt; 0) {
+                session_duration = 30;
+            }
+
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc.sd = session_duration;
+            update.$inc.tsd = session_duration;
+            params.session_duration = (params.app_user.sd || 0) + session_duration;
+
+            usage.processSessionDuration(params);
+        }
+    }
+
+    if (!params.session_duration) {
+        params.session_duration = params.app_user.sd || 0;
+    }
+
+    //if session began
+    if (params.qstring.begin_session) {
+        var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
+
+        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
+            userProps[common.dbUserMap.has_ongoing_session] = true;
+        }
+
+        userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
+
+        //check when last session ended and if it was less than cooldown
+        if (!params.qstring.ignore_cooldown &amp;&amp; lastEndSession &amp;&amp; (params.time.timestamp - lastEndSession) &lt; config.session_cooldown) {
+            plugins.dispatch("/session/extend", {
+                params: params,
+                dbAppUser: params.app_user,
+                updates: ob.updates
+            });
+            if (params.qstring.session_duration) {
+                plugins.dispatch("/session/duration", {
+                    params: params,
+                    session_duration: params.qstring.session_duration
+                });
+            }
+        }
+        else {
+            userProps.lsid = params.request_id;
+
+            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+                usage.processSessionDurationRange(params.session_duration || 0, params);
+
+                //process duration from unproperly ended previous session
+                plugins.dispatch("/session/post", {
+                    params: params,
+                    dbAppUser: params.app_user,
+                    updates: ob.updates,
+                    session_duration: params.session_duration,
+                    end_session: false
+                });
+                userProps.sd = 0;
+                userProps.data = {};
+            }
+            processUserSession(params.app_user, params);
+
+            //new session
+            var isNewUser = (params.app_user &amp;&amp; params.app_user[common.dbUserMap.first_seen]) ? false : true;
+
+            plugins.dispatch("/session/begin", {
+                params: params,
+                dbAppUser: params.app_user,
+                updates: ob.updates,
+                isNewUser: isNewUser
+            });
+
+            if (isNewUser) {
+                userProps[common.dbUserMap.first_seen] = params.time.timestamp;
+                userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+            }
+            else {
+                if (parseInt(params.app_user[common.dbUserMap.last_seen], 10) &lt; params.time.timestamp) {
+                    userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+                }
+            }
+
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc.sc = 1;
+        }
+    }
+    else if (params.qstring.end_session) {
+        // check if request is too old, ignore it
+        userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
+        if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            update.$unset[common.dbUserMap.has_ongoing_session] = "";
+        }
+    }
+
+    if (!params.qstring.begin_session &amp;&amp; !params.qstring.session_duration) {
+        const dbDateIds = common.getDateIds(params),
+            updateUsers = {};
+
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
+        const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+    }
+
+    if (params.qstring.events) {
+        var eventCount = 0;
+        for (let i = 0; i &lt; params.qstring.events.length; i++) {
+            let currEvent = params.qstring.events[i];
+            if (currEvent.key === "[CLY]_orientation") {
+                if (currEvent.segmentation &amp;&amp; currEvent.segmentation.mode) {
+                    userProps.ornt = currEvent.segmentation.mode;
+                }
+            }
+            if (!(currEvent.key + "").startsWith("[CLY]_")) {
+                eventCount++;
+            }
+        }
+        if (eventCount > 0) {
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc["data.events"] = eventCount;
+        }
+    }
+
+    //do not write values that are already assignd to user
+    for (var key in userProps) {
+        if (userProps[key] === params.app_user[key]) {
+            delete userProps[key];
+        }
+    }
+
+    if (Object.keys(userProps).length) {
+        update.$set = userProps;
+    }
+
+    if (Object.keys(update).length) {
+        ob.updates.push(update);
+    }
+});
+
+module.exports = usage;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:15:18 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

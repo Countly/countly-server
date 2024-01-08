@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/jobs/job.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/jobs/job.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+/* jshint ignore:start */
+
+const EventEmitter = require('events'),
+    later = require('later'),
+    ipc = require('./ipc.js'),
+    log = require('../../utils/log.js')('jobs:job'),
+    retry = require('./retry.js'),
+    ObjectID = require('mongodb').ObjectID;
+
+const STATUS = {
+        SCHEDULED: 0,
+        RUNNING: 1,
+        DONE: 2,
+        CANCELLED: 3,
+        ABORTED: 4,
+        PAUSED: 5,
+        WAITING: 6,
+        SUSPENDED: 7
+    },
+    STATUS_MAP = {
+        0: "SCHEDULED",
+        1: "RUNNING",
+        2: "DONE",
+        3: "CANCELLED",
+        4: "ABORTED",
+        5: "PAUSED",
+        6: "WAITING",
+        7: "SUSPENDED"
+    },
+    ERROR = {
+        CRASH: 'crash',
+        TIMEOUT: 'timeout'
+    },
+    EVT = {
+        UPDATE: 'job:update',
+        DONE: 'job:done',
+        TRANSIENT_CHANNEL: 'jobs:transient',
+        TRANSIENT_RUN: 'jobs:transient:run',
+        TRANSIENT_DONE: 'jobs:transient:done'
+    };
+
+/**
+ * Debounce function which decreases number of calls to func to be once in minWait ... maxWait.
+ * @param {function} func - function to debounce
+ * @param {number} minWait - minimal waiting time
+ * @param {number} maxWait - maximal waiting time
+ * @returns {function} debounced function
+ */
+const debounce = function(func, minWait, maxWait) {
+    var timeout, first, args, context,
+        delater = function() {
+            func.apply(context, args);
+            timeout = first = args = context = null;
+        };
+    return function() {
+        context = this;
+        args = arguments;
+        if (!first) {
+            first = Date.now();
+        }
+
+        clearTimeout(timeout);
+
+        if (maxWait &lt; (Date.now() - first)) {
+            delater();
+        }
+        else {
+            timeout = setTimeout(delater, Math.min(minWait, maxWait - (Date.now() - first)));
+        }
+    };
+};
+
+/**
+ * Job superclass for all jobs. To add new job type you need to:
+ * 1. Define job class which has to be single export from a node.js module. This module can be either in api/jobs folder (API job), 
+ *    or in a plugins/plugin/api/jobs folder (plugin job). Job name is assigned automatically to have the form of "[API or plugin name]:[job file name]".
+ * 2. Schedule a job by running any of the following (replace 'api:clear' with your Job name from point 1 above):
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).now() - to run the job ASAP.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).in(5) - to run the job in 5 seconds from now.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).once(new Date() or Date.now()) - to run the job on specified date.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).schedule("once in 2 hours") - to run the job on specified schedule, see https://bunkat.github.io/later/parsers.html#text for examples.
+ *    NOTE! For most jobs, scheduling must be done either from master process, or from plugins.register("/master", ...) to eliminate multiple replacing on app start.
+ * 3. Optionally set allowed concurrency (maximum running jobs of this type at any point in time) of the job by overriding getConcurrency method in your job class.
+ * 4. Optionally allow the job to be divided by overriding divide in your job class. Resulted subjobs (or subs) will be run as separte jobs in parallel to improve performance.
+ *
+ * There are 3 useful Job subclasses already implemented:
+ * ResourcefulJob is used when job requires some persistent resource to run on. Read - network connection, memory cache, etc.
+ * IPCJob which extends ResourcefulJob is used when resource needs to live in a separate from Countly master process. Example - push which runs a 
+ * TransientJob which extends IPCJob is used when job shouldn't be saved in jobs collection with all status updates being run through IPC.
+ */
+class Job extends EventEmitter {
+    /**
+    * Create job instance
+    * @param {string} name - name of the job
+    * @param {object} data - data about the job
+    **/
+    constructor(name, data) {
+        super();
+        if (typeof name === 'object') {
+            this._json = name;
+            if (this._json._id &amp;&amp; typeof this._json._id === 'string') {
+                this._json._id = new ObjectID(this._json._id);
+            }
+        }
+        else {
+            this._json = {
+                //	_id: ObjectId
+                name: name,
+                created: Date.now(),
+                status: STATUS.SCHEDULED,
+                started: null,	// timestamp
+                finished: null,	// timestamp
+                duration: 0,	// seconds
+                data: data || {}
+                //	size: 0,
+                //	done: 0,
+                //	bookmark: null,	// anything
+                //	error: ''
+                //  data: {},
+                //  subs: [
+                //  	{_id: same ObjectId, idx: 0, name: 'same or other name', created, status, started, finished, duration, size, done, bookmark, error, data},
+                //  	{_id: same ObjectId, idx: 1, name: 'same or other name', created, status, started, finished, duration, size, done, bookmark, error, data}
+                //	],
+            };
+        }
+        this._replace = false;
+        this._errorCount = 0;
+
+    }
+
+    /**
+    * Get job id with fallback
+    * @returns {string} job id
+    **/
+    get id() {
+        return this._json._id ? '' + this._json._id : undefined;
+    }
+
+    /**
+    * Get job id
+    * @returns {string} job id
+    **/
+    get _id() {
+        return this._json._id;
+    }
+
+    /**
+    * Get job channel
+    * @returns {string} job channel id
+    **/
+    get channel() {
+        return (this.id || '') + (this.isInExecutor ? ':executor' : '');
+    }
+
+    /**
+    * Get job name
+    * @returns {string} job name
+    **/
+    get name() {
+        return this._json.name;
+    }
+
+    /**
+    * Get job data
+    * @returns {object} job data
+    **/
+    get data() {
+        return this._json.data || {};
+    }
+
+    /**
+    * Get job status
+    * @returns {number} job status
+    **/
+    get status() {
+        return this._json.status;
+    }
+
+    /**
+    * Check if job is completed
+    * @returns {boolean} if job was completed
+    **/
+    get isCompleted() {
+        return this._json.status === STATUS.DONE;
+    }
+
+    /**
+    * Check if job was aborted
+    * @returns {boolean} if job was aborted
+    **/
+    get isAborted() {
+        return this._json.status === STATUS.ABORTED;
+    }
+
+    /**
+    * Check if job is running
+    * @returns {boolean} if job is running
+    **/
+    get canRun() {
+        return this._json.status === STATUS.RUNNING;
+    }
+
+    /**
+    * Get schedule object
+    * @returns {object} schedule object from later js
+    **/
+    get scheduleObj() {
+        return this._json.schedule;
+    }
+
+    /**
+    * Get strict schedule value
+    * @returns {boolean} strict
+    **/
+    get strict() {
+        return this._json.strict;
+    }
+
+    /**
+    * Get next run time
+    * @returns {object} next run
+    **/
+    get next() {
+        return this._json.next;
+    }
+
+
+    /**
+    * Schedule job
+    * @param {object} schedule - schedule object from later js
+    * @param {number} strict (optional) - maximum time in ms after each schedule occurrence date the job must be run, otherwise it'd be discarded
+    * @param {object} nextTime (optional) - next run time
+    * @returns {object} result of saving job
+    **/
+    schedule(schedule, strict, nextTime) {
+        this._json.schedule = schedule;
+        this._json.status = STATUS.SCHEDULED;
+
+        if (strict !== undefined) {
+            this._json.strict = strict;
+        }
+
+        if (nextTime) {
+            this._json.next = nextTime;
+        }
+        else {
+            schedule = typeof schedule === 'string' ? later.parse.text(schedule) : schedule;
+            var next = later.schedule(schedule).next(1);
+            if (!next) {
+                return null;
+            }
+
+            this._json.next = next.getTime();
+        }
+
+        return this._save();
+    }
+
+    /**
+    * Run job once
+    * @param {number|Date} date - date when to run
+    * @param {number} strict (optional) - maximum time in ms after scheduled date the job must be run, otherwise it'd be discarded
+    * @returns {object} result of saving job
+    **/
+    once(date, strict) {
+        this._json.next = typeof date === 'number' ? date : date.getTime();
+        if (strict !== undefined) {
+            this._json.strict = strict;
+        }
+
+        return this._save();
+    }
+
+    /**
+    * Run job now
+    * @returns {object} result of saving job
+    **/
+    now() {
+        this._json.next = Date.now();
+        return this._save();
+    }
+
+    /**
+    * Run job in providd amount of seconds
+    * @param {number} seconds - after how many seconds to run the job
+    * @returns {object} result of saving job
+    **/
+    in(seconds) {
+        this._json.next = Date.now() + seconds * 1000;
+        return this._save();
+    }
+
+    /**
+    * Replace existing job if, it exists
+    * @returns {object} self
+    **/
+    replace() {
+        if (this.isInExecutor) {
+            throw new Error('Replace cannot be run from executor');
+        }
+        this._replace = true;
+        return this;
+    }
+
+    /**
+    * Update job atomically
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @param {boolean=} neo - should return new document
+    * @returns {Promise} promise
+    **/
+    static updateAtomically(db, match, update, neo = true) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').findAndModify(match, [['_id', 1]], update, {new: neo}, (err, doc) => {
+                if (err) {
+                    reject(err);
+                }
+                else if (!doc || !doc.ok || !doc.value) {
+                    reject('Job not found');
+                }
+                else {
+                    resolve(doc.value);
+                }
+            });
+        });
+    }
+
+    /**
+    * Update job
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @returns {Promise} promise
+    **/
+    static update(db, match, update) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').updateOne(match, update, (err, res) => {
+                if (err || !res) {
+                    reject(err || 'no res');
+                }
+                else {
+                    resolve(res.matchedCount ? true : false);
+                }
+            });
+        });
+    }
+
+    /**
+    * Update multiple jobs
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @returns {Promise} promise
+    **/
+    static updateMany(db, match, update) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').updateMany(match, update, (err, res) => {
+                if (err || !res) {
+                    reject(err || 'no res');
+                }
+                else {
+                    resolve(res.matchedCount || 0);
+                }
+            });
+        });
+    }
+
+    /**
+    * Insert new job
+    * @param {object} db - database connection
+    * @param {object} data - job document to insert
+    * @returns {Promise} promise
+    **/
+    static insert(db, data) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').insertOne(data, (err, res) => {
+                if (err || !res) {
+                    reject(err || 'no res');
+                }
+                else if (res.insertedCount) {
+                    data._id = data._id || res.insertedId;
+                    resolve(data);
+                }
+                else {
+                    resolve(null);
+                }
+            });
+        });
+    }
+
+    /**
+    * Read job
+    * @param {object} db - database connection
+    * @param {string} id - id of the job
+    * @returns {Promise} promise
+    **/
+    static load(db, id) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').findOne({_id: typeof id === 'string' ? db.ObjectID(id) : id}, (err, job) => {
+                if (err || !job) {
+                    reject(err || 'no res');
+                }
+                else {
+                    resolve(job);
+                }
+            });
+        });
+    }
+
+    /**
+    * Read multiple jobs
+    * @param {object} db - database connection
+    * @param {object} match - query for jobs
+    * @returns {Promise} promise
+    **/
+    static findMany(db, match) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').find(match).toArray((err, jobs) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(jobs || []);
+                }
+            });
+        });
+    }
+
+    /**
+    * Replace jobs that will run after provided timestamp
+    * @param {number} next - timestamp
+    * @param {function} queror - function which modifies query request
+    * @returns {Promise} promise
+    **/
+    replaceAfter(next, queror) {
+        log.d('[!!!!!!!!] %s: replaceAfter %d (%d %j)', this._id, next, this.next, this.data);
+        return new Promise((resolve, reject) => {
+            let query = {
+                status: STATUS.SCHEDULED,
+                name: this.name,
+                next: {$gte: next}
+            };
+            if (this._id) {
+                query._id = {$ne: this._id};
+            }
+            if (this.data &amp;&amp; Object.keys(this.data).length) {
+                query.data = this.data;
+            }
+            if (queror) {
+                queror(query);
+            }
+
+            log.d('[!!!!!!!!] %s: replaceAfter %d query', this._id, next, query);
+
+            Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(arg => {
+                log.d('[!!!!!!!!] %s: replaceAfter %d RESOLVE UPDATED: %j', this._id, next, arg);
+                resolve(arg);
+            }, err => {
+                log.d('[!!!!!!!!] %s: replaceAfter %d ERROR %j', this._id, next, err);
+                if (err === 'Job not found') {
+                    query.next = {$lt: next};
+                    Job.findMany(this.db(), query).then(existing => {
+                        log.d('[!!!!!!!!] %s: replaceAfter %d EXISTING %j', this._id, next, existing);
+                        if (existing &amp;&amp; existing.length) {
+                            log.d('[!!!!!!!!] %s: replaceAfter %d RESOLVE EXISTING', this._id, next);
+                            resolve(existing[0]);
+                        }
+                        else {
+                            log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB', this._id, next);
+                            new Job(this.name, this.data).once(next).then((arg) => {
+                                log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB CREATED %j', this._id, next, arg);
+                                resolve(arg);
+                            }, (e2) => {
+                                log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB ERROR %j', this._id, next, e2);
+                                reject(e2);
+                            });
+                        }
+                    }, reject);
+                }
+                else {
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    /**
+    * Replace all jobs
+    * @param {number} next - timestamp
+    * @returns {object} job data
+    **/
+    async _replaceAll() {
+
+        let query = {
+            status: STATUS.SCHEDULED,
+            name: this.name
+        };
+        if (this.data &amp;&amp; Object.keys(this.data).length) {
+            query.data = this.data;
+        }
+
+        log.i('Replacing jobs %s (%j)', this.name, query);
+
+        if (this._json.schedule) {
+            // query.next = {$lte: Date.now() + 30000};
+            let updated = await Job.updateMany(this.db(), query, {$set: {status: STATUS.CANCELLED}});
+            if (updated) {
+                log.i('Cancelled %d previous jobs %s (%j)', updated, this.name, query);
+            }
+
+            // delete query.next;
+        }
+
+        // if scheduled or suspended job exists, do not insert, skip it
+        query.status = {$in: [query.status, STATUS.SUSPENDED]};
+        let existing = await Job.findMany(this.db(), query);
+        if (existing.length === 1 &amp;&amp; (existing[0].schedule &amp;&amp; existing[0].schedule === this._json.schedule)) {
+            log.i('No need for replace of %s (%j): existing job %j', this.name, this.data, existing[0]);
+            this._json = existing[0];
+            return existing[0];
+
+        }
+        else if (existing.length === 0) {
+            log.i('No job to replace, inserting %j', this._json);
+            let inserted = await Job.insert(this.db(), this._json);
+            if (!inserted) {
+                throw new Error('Cannot insert a job');
+            }
+            this._json = inserted;
+            return inserted;
+        }
+        else {
+            let last = existing.sort((a, b) => b.next - a.next)[0],
+                others = existing.filter(a => a !== last);
+
+            log.i('replacing last job %j with %j', last, this._json);
+
+            if (others.length) {
+                await Job.updateMany(this.db(), {_id: {$in: others.map(o => o._id)}}, {$set: {status: STATUS.CANCELLED}});
+            }
+
+            let neo;
+            try {
+                neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            }
+            catch (e) {
+                log.w('Job was modified while rescheduling, skipping', e);
+            }
+
+            if (!neo) {
+                log.w('Job was modified while rescheduling, skipping');
+                return null;
+            }
+            this._json = neo;
+            return neo;
+        }
+    }
+
+    /**
+    * Save job
+    * @param {boolean} set - if should update instead of creating
+    * @returns {object} job data
+    **/
+    async _save(set) {
+        if (set) {
+            log.d('Updating job %s with %j', this.id, set);
+        }
+        else {
+            log.d('Creating job %s with data %j', this.name, this.data);
+        }
+
+        if (this._replace) {
+            return await this._replaceAll();
+        }
+        else if (this._id) {
+            if (set) {
+                Object.keys(set).forEach(k => {
+                    this._json[k] = set[k];
+                });
+            }
+            else {
+                set = Object.assign({}, this._json);
+                delete set._id;
+            }
+
+            set.modified = Date.now();
+            if (this._json.started || set.started) {
+                set.duration = set.modified - (this._json.started || set.started);
+            }
+
+            let updated = await Job.update(this.db(), {_id: this._id}, {$set: set});
+            if (updated) {
+                return set;
+            }
+            else {
+                throw new Error('No such job in db');
+            }
+        }
+        else {
+            Object.keys(set || {}).forEach(k => {
+                this._json[k] = set[k];
+            });
+
+            let inserted = await Job.insert(this.db(), this._json);
+            if (inserted) {
+                return inserted;
+            }
+            else {
+                throw new Error('Cannot insert a job');
+            }
+        }
+    }
+
+    // _save (set) {
+    // 	return new Promise((resolve, reject) => {
+    // 		try {
+    // 			this._json.modified = Date.now();
+    // 			var query, update, clb = (err, res) => {
+    // 				if (err) { 
+    // 					if (this._errorCount++ &lt; MAXIMUM_SAVE_ERRORS) {
+    // 						log.w('Error while saving job: %j', err);
+    // 						setTimeout(() => {
+    // 							this._save(set).then(resolve.bind(null, set), reject);
+    // 						}, 1000); 
+    // 					} else {
+    // 						log.e('Error while saving job: %j', err);
+    // 						reject(err);
+    // 					}
+    // 				} else if (res.result.nModified === 0) {
+    // 					log.e('Job %s has been changed while doing _save: %j / setting %j for query %j', this._id, this._json, update, query);
+    // 					reject('Job cannot be found while doing _save');
+    // 				} else {
+    // 					resolve(set || this._json);
+    // 				}
+    // 			};
+
+    // 			if (this._replace) {
+    // 				query = {status: STATUS.SCHEDULED, name: this.name};
+    // 				if (this.data) { query.data = this.data; }
+
+    // 				if (this._json.schedule) {
+    // 					let schedule = typeof this._json.schedule === 'string' ? later.parse.text(this._json.schedule) : this._json.schedule,
+    // 						prev = later.schedule(schedule).prev(1);
+
+    // 					log.i('replacing job %j with', query, this._json);
+    // 					this.db().collection('jobs').find(query).toArray((err, jobs) => {
+    // 						if (err) {
+    // 							log.e('job replacement error when looking for existing jobs to replace', err);
+    // 							this.db().collection('jobs').save(this._json, clb);
+    // 						} else if (jobs &amp;&amp; jobs.length) {
+    // 							try {
+    // 							let last = jobs.sort((a, b) => b.next - a.next)[0];
+    // 							let others = jobs.filter(a => a !== last);
+    // 							if (others.length) {
+    // 								log.i('found %d jobs with %j, going to cancel %j', jobs.length, query, others.map(j => j._id));
+    // 								Promise.all(others.map(j => {
+    // 									return require('./index.js').create(j).cancel(this.db(), false);
+    // 								}));
+    // 								// this.db().collection('jobs').update({_id: {$in: others.map(j => j._id)}}, {$set: {status: STATUS.CANCELLED}}, {multi: true}, log.logdb(''));
+    // 							}
+
+    // 							if (last.schedule === this._json.schedule &amp;&amp; last.next > prev.getTime()) {
+    // 								// just do nothing
+    // 								log.i('last job is scheduled correctly, won\'t replace anything for %j: current %j, won\'t replace to %j', query, new Date(last.next), new Date(this.next));
+    // 								resolve(set);
+    // 							} else {
+    // 								log.i('replacing last job %j with %j', last, this._json);
+    // 								this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
+    // 									if (err) {
+    // 										log.e('job replacement error, saving new job', err, job);
+    // 										this.db().collection('jobs').save(this._json, clb);
+    // 									} else if (job &amp;&amp; !job.value){
+    // 										log.i('no job found to replace, saving new job', err, job);
+    // 										this.db().collection('jobs').save(this._json, clb);
+    // 									} else {
+    // 										log.i('job replacing done', job.value);
+    // 										resolve(set);
+    // 									}
+    // 								});
+    // 							}
+    // 						}catch(e) { log.e(e, e.stack); }
+    // 						} else {
+    // 							log.i('no jobs found to replace for %j, saving new one', query);
+    // 							this.db().collection('jobs').save(this._json, clb);
+    // 						}
+    // 					});
+    // 				} else {
+    // 					this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
+    // 						if (err) {
+    // 							log.e('job replacement error, saving new job', err, job);
+    // 							this.db().collection('jobs').save(this._json, clb);
+    // 						} else if (job &amp;&amp; !job.value){
+    // 							log.i('no job found to replace, saving new job', err, job);
+    // 							this.db().collection('jobs').save(this._json, clb);
+    // 						} else {
+    // 							log.i('job replacing done', job.value);
+    // 							resolve(set);
+    // 						}
+    // 					});
+    // 				}
+
+
+    // 			} else if (this._json._id) {
+    // 				if (set) {
+    // 					for (let k in set) {
+    // 						if (k !== '_id') {
+    // 							this._json[k] = set[k];
+    // 						}
+    // 					}
+    // 				}
+    // 				query = {_id: this._json._id};
+    // 				update = {$set: set || this._json};
+    // 				update.$set.modified = this._json.modified;
+    // 				delete update.$set._id;
+    // 				log.d('saving %j: %j', query, update);
+    // 				this.db().collection('jobs').updateOne(query, update, clb);
+    // 			} else {
+    // 				log.d('saving %j', this._json);
+    // 				this._json._id = this.db().ObjectID();
+    // 				this.db().collection('jobs').save(this._json, clb);
+    // 			}
+    // 		} catch(e) {
+    // 			log.e(e, e.stack);
+    // 			throw e;
+    // 		}
+    // 	}).then(() => { this._replace = false; return set; });
+    // }
+
+    /**
+    * Get database connection
+    * @returns {object} db
+    **/
+    db() {
+        return require('./index.js').db;
+    }
+
+    /**
+    * Abort job
+    * @param {Error} err - error with which to abort
+    * @returns {Promise} promise
+    **/
+    _abort(err) {
+        log.d('%s: aborting', this.channel);
+        return this._finish(err || 'Aborted');
+        // if (this.retryPolicy().errorIsRetriable(err)) {
+        // 	log.d('%s: won\'t abort since error %j is retriable', this._idIpc, err);
+        // } else {
+        // 	log.d('%s: aborting', this._idIpc);
+        // 	return this._finish(err || 'Aborted');
+        // }
+    }
+
+    /**
+    * Finish job
+    * @param {Error=} err - error with which to finish
+    * @returns {Promise} promise
+    **/
+    _finish(err) {
+        if (this.isCompleted) {
+            return Promise.resolve();
+        }
+        else {
+            log.d('%s: finishing', this.id);
+            this._json.status = STATUS.DONE;
+            this._json.finished = Date.now();
+            this._json.duration = this._json.finished - this._json.started;
+            this._json.error = err ? (err.message || err.code || (typeof err === 'string' ? err : JSON.stringify(err))) : null;
+            this.emit(EVT.DONE, this._json);
+            return this._save({
+                status: this._json.status,
+                finished: this._json.finished,
+                duration: this._json.duration,
+                error: this._json.error
+            });
+        }
+    }
+
+    /**
+    * Internal run function for managing states
+    * @returns {Promise} promise
+    **/
+    _run() {
+        return new Promise((resolve, reject) => {
+            this._json.status = STATUS.RUNNING;
+            this._json.started = Date.now();
+            this._save({
+                status: STATUS.RUNNING,
+                started: this._json.started
+            }).then(() => {
+                try {
+                    let promise = this.run(
+                        this.db(),
+                        (err) => {
+                            log.d('%s: done running: error %j', this.id, err);
+                            if (!this.isCompleted) {
+                                this._finish(err).then(
+                                    err ? reject.bind(null, err) : resolve,
+                                    err ? reject.bind(null, err) : reject
+                                );
+                            }
+                        },
+                        () => {});
+
+                    if (promise &amp;&amp; promise instanceof Promise) {
+                        promise.then(() => {
+                            log.d('%s: done running', this.id);
+                            this._finish().then(resolve, resolve);
+                        }, (err) => {
+                            log.d('%s: done running: error %j', this.id, err);
+                            if (!this.isCompleted) {
+                                this._finish(err).then(reject.bind(null, err), reject.bind(null, err));
+                            }
+                        });
+                    }
+                }
+                catch (e) {
+                    log.e('[%s] caught error when running: %j / %j', this.channel, e, e.stack);
+                    this._finish(e).then(reject.bind(null, e), reject.bind(null, e));
+                }
+            }, reject);
+        });
+    }
+
+    /**
+    * Run job with retry policy applied
+    * @returns {Promise} promise
+    **/
+    _runWithRetries() {
+        return this.retryPolicy().run(this._run.bind(this));
+    }
+
+    /**
+	 * Override in actual job class
+	 * Takes 2 parameters omitted for the sake of ESLint:
+	 * 		- db - db connection which must be used for this job in most cases, otherwise you're responsible for opening / closing an appropriate connection
+	 * 		- done - function which must be called (when promise is not returned) when job processing is done with either no arguments or error string
+	 * 		
+	 */
+    run(/*db, done*/) {
+        throw new Error('Job must be overridden');
+    }
+
+    /**
+	 * Override if job needs a graceful cancellation. Job is cancelled in two cases:
+	 * 		1. When server is restarted and last modification of the job was too long ago to consider it not running (becauseOfRestart = true).
+	 * 		2. When server was not running at the time strict job should have been run (becauseOfRestart = false).
+     * @returns {Promise} promise
+	 */
+    cancel(/*db, becauseOfRestart*/) {
+        return this._save({
+            status: STATUS.CANCELLED,
+            error: 'Cancelled on restart',
+            modified: Date.now(),
+            finished: Date.now()
+        });
+    }
+
+    /**
+	 * Override if default policy isn't good enough
+     * @returns {RetryPolicy} retry policy
+	 */
+    retryPolicy() {
+        return new retry.DefaultRetryPolicy(3);
+    }
+
+    /**
+	 * Override if job needs a manager instance to run
+     * @returns {Promise} promise
+	 */
+    prepare(/*manager, db*/) {
+        return Promise.resolve();
+    }
+
+    /**
+	 * Override if 0 doesn't work for this job:
+	 *  0 = default = run jobs of this type on any number of servers, with any number of jobs running at the same time
+	 *  1 ... N = run not more than N jobs of this time at the same time
+     * @returns {number} concurrency
+	 */
+    getConcurrency() {
+        return 0;
+    }
+}
+
+/**
+ * Job which needs some resource to run: socket, memory cache, etc.
+ * Resource lives longer than a single job and reassigned from one job to another when first one is done. 
+ */
+class ResourcefulJob extends Job {
+    /** Create resource **/
+    createResource(/*_id, name, options */) {
+        throw new Error('ResourcefulJob.createResource must be overridden to return possibly open resource instance');
+    }
+
+    /** Release resource **/
+    releaseResource(/* resource */) {
+        throw new Error('ResourcefulJob.releaseResource must be overridden to return possibly open resource instance');
+    }
+
+    /** Get resource name **/
+    resourceName() {
+        throw new Error('ResourcefulJob.resourceName must be overridden to return non-unique string which identifies type of a resource');
+    }
+}
+
+/**
+ * Job which runs in 2 processes:
+ * - Initiator process (Countly master) creates subprocess (fork of executor.js) and processes IPC messages from subprocess
+ * - Subprocess actually runs the job, but sends state updates through IPC, keeping all listeners aware of its lifecycle
+ *
+ * This complex structure gives following advantage:
+ * - Subprocess can safely crash, initiator process will be able to just restart the job in a new subprocess from the point it stopped.
+ * 
+ * Extends ResourcefulJob, meaning job resource can live longer than job and reassigned to other job after current job is done.
+ *
+ * Works in combination with IPCFaçadeJob which listens for IPC status messages from subprocess and persists them in DB.
+ */
+class IPCJob extends ResourcefulJob {
+
+    /**
+    * Check if job is run in executor
+    * @returns {boolean} if job is run in executor
+    **/
+    get isInExecutor() {
+        return process.argv[1].endsWith('executor.js');
+    }
+
+    /**
+    * Get retry policy
+    * @returns {RetryPolicy} retry policy
+    **/
+    retryPolicy() {
+        return new retry.IPCRetryPolicy(1);
+    }
+
+    /**
+    * Release resource
+    * @returns {Promise} promise
+    **/
+    releaseResource(/* resource */) {
+        return Promise.resolve();
+    }
+
+    /**
+    * Save resource data
+    * @param {object} data - resource data
+    * @returns {Promise} promise
+    **/
+    _save(data) {
+        if (process.send) {
+            log.d('[%d]: Sending progress update %j', process.pid, {
+                _id: this.channel,
+                cmd: EVT.UPDATE,
+                from: process.pid,
+                data: data
+            });
+            process.send({
+                _id: this.channel,
+                cmd: EVT.UPDATE,
+                from: process.pid,
+                data: data
+            });
+        }
+        return super._save.apply(this, arguments);
+    }
+}
+/** Listens for IPC status messages from subprocess and persists them in DB **/
+class IPCFaçadeJob extends ResourcefulJob {
+    /**
+    * Constructor
+    * @param {Job} job - job
+    * @param {function} getResourceFaçade - function to get resource
+    **/
+    constructor(job, getResourceFaçade) {
+        super(job._json, null, null);
+        this.job = job;
+        this.getResourceFaçade = getResourceFaçade;
+    }
+
+    /**
+    * Create resource
+    * @returns {object} resource
+    **/
+    createResource() {
+        log.d('[%s] IPCFaçadeJob creates a resource', this.job.channel);
+        return this.getResourceFaçade();
+    }
+
+    /**
+    * Get resource name
+    * @returns {string} resource name
+    **/
+    resourceName() {
+        return this.job.resourceName();
+    }
+
+    /**
+    * Release resource
+    * @param {object} resource to release
+    * @returns {Promise} promise
+    **/
+    releaseResource(resource) {
+        log.d('[%s] IPCFaçadeJob releases its resource', this.job.channel);
+        return this.job.releaseResource(resource);
+    }
+
+    /**
+    * Get retry policy
+    * @returns {RetryPolicy} retry policy
+    **/
+    retryPolicy() {
+        return this.job.retryPolicy();
+    }
+
+    /**
+    * Run the job
+    * @returns {Promise} promise
+    **/
+    _run() {
+        log.d('[%s] Running in IPCFaçadeJob', this.job.channel);
+        try {
+            this.resourceFaçade = this.getResourceFaçade();
+        }
+        catch (e) {
+            log.d('[%s] Caught Façade error: %j', this.job.channel, e);
+            return Promise.reject(e);
+        }
+
+        this.ipcChannel = new ipc.IdChannel(this.job.channel).attach(this.resourceFaçade._worker);
+        this.ipcChannel.on(EVT.UPDATE, (json) => {
+            log.d('[%s] UPDATE in IPCFaçadeJob: %j', this.job.channel, json);
+            for (var k in json) {
+                this.job._json[k] = json[k];
+            }
+            if (json.status) {
+                this.emit(EVT.UPDATE, json);
+            }
+        });
+
+        return this.resourceFaçade.run(this).then(() => {
+            this.ipcChannel.remove();
+        }, (error) => {
+            this.ipcChannel.remove();
+            log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
+            this.job._finish(error || 'Aborted').catch(()=>{});
+            throw error;
+        });
+    }
+
+    /**
+    * Abort the job
+    * @param {Error} error - error with which to abort
+    **/
+    _abort(error) {
+        log.w('%s: ABORTING in IPCFaçadeJob', this.job.channel);
+        this.resourceFaçade.abort(error);
+    }
+}
+
+/** Class for transiend jobs **/
+class TransientJob extends IPCJob {
+    /**
+    * Send data for current channel
+    * @param {object} data - data to send
+    **/
+    _sendAndSave(data) {
+        log.d('[%s] transient _sendAndSave: %j', this.channel, data);
+    }
+
+    /**
+    * Save data
+    * @param {object} data - data to save
+    * @returns {Promise} promise
+    **/
+    _save(data) {
+        if (process.send) {
+            log.d('[%d]: Sending progress update %j', process.pid, {
+                _id: this.channel,
+                cmd: EVT.UPDATE,
+                from: process.pid,
+                data: data
+            });
+            process.send({
+                _id: this.channel,
+                cmd: EVT.UPDATE,
+                from: process.pid,
+                data: data
+            });
+        }
+        if (data) {
+            for (let k in data) {
+                if (k !== '_id') {
+                    this._json[k] = data[k];
+                }
+            }
+        }
+        return Promise.resolve(data);
+    }
+}
+
+module.exports = {
+    EVT: EVT,
+    ERROR: ERROR,
+    Job: Job,
+    IPCJob: IPCJob,
+    IPCFaçadeJob: IPCFaçadeJob,
+    TransientJob: TransientJob,
+    STATUS: STATUS,
+    STATUS_MAP: STATUS_MAP,
+    debounce: debounce
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:15:18 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

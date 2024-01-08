@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>libs/preventBruteforce.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Modules</h3><ul><li><a href="module-frontend_express_app.html">frontend/express/app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_app.html#~paramsGenerator">paramsGenerator</a></li></ul></li><li><a href="module-frontend_express_config.html">frontend/express/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.cookie">cookie</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.passwordSecret">passwordSecret</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.web">web</a></li></ul></li><li><a href="module-frontend_express_libs_dollar-defender.html">frontend/express/libs/dollar-defender</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_dollar-defender.html#~recursiveDollarSearch">recursiveDollarSearch</a></li></ul></li><li><a href="module-frontend_express_libs_express-expose.html">frontend/express/libs/express-expose</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~expose">expose</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~exposed">exposed</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~renderNamespace">renderNamespace</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~renderObject">renderObject</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~string">string</a></li></ul></li><li><a href="module-frontend_express_libs_members.html">frontend/express/libs/members</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.countlyConfig">countlyConfig</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.db">db</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.emptyPermission">emptyPermission</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.checkEmail">checkEmail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.checkUsername">checkUsername</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.clearReqAndRes">clearReqAndRes</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.extendSession">extendSession</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.findByUsernameOrEmail">findByUsernameOrEmail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.findMembers">findMembers</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.forgot">forgot</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.login">login</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.loginWithExternalAuthentication">loginWithExternalAuthentication</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.loginWithToken">loginWithToken</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.logout">logout</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.recheckConfigs">recheckConfigs</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.removeMembers">removeMembers</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.settings">settings</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.setup">setup</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.updateMember">updateMember</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.updateStats">updateStats</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.verifyCredentials">verifyCredentials</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~createMember">createMember</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~getSessionTimeoutInMs">getSessionTimeoutInMs</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~killOtherSessionsForUser">killOtherSessionsForUser</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~mergePermissions">mergePermissions</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~setLoggedInVariables">setLoggedInVariables</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~validatePassword">validatePassword</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-frontend_express_libs_preventBruteforce.html">frontend/express/libs/preventBruteforce</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.blockHooks">blockHooks</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.db">db</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.fails">fails</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.pathIdentifiers">pathIdentifiers</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.userIdentifiers">userIdentifiers</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.wait">wait</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.fail">fail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.isBlocked">isBlocked</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.middleware">middleware</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#~getTimestamp">getTimestamp</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#SkinStore">SkinStore</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">libs/preventBruteforce.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Module to record failed attempts and prevent brute force credential guessing
+ * @module frontend/express/libs/preventBruteforce
+ * @example
+ * var username, pass;
+ * preventBruteforce.isBlocked("login", username, function(isBlocked, fails, err) {
+ *     if (isBlocked) {
+ *         console.log("User is blocked");
+ *         return;
+ *     }
+ *     else {
+ *         if (login()) {
+ *             //user logged in, reset any fails user had
+ *             preventBruteforce.reset("login", username);
+ *         }
+ *         else {
+ *             //user failed to login, increase fails
+ *             preventBruteforce.fail("login", username);
+ *         }
+ *     }
+ * });
+ *
+ */
+
+/** @lends module:frontend/express/libs/preventBruteforce */
+const preventBruteforce = {};
+
+/**
+ * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
+ */
+preventBruteforce.db = null;
+
+/**
+ * @property {object} mail - Mail service to add mailing capabilities
+ */
+preventBruteforce.mail = null;
+
+/**
+ * @property {number} fails - How many times user is allowed to fail
+ */
+preventBruteforce.fails = 3;
+
+/**
+ * @property {number} wait - How long to wait in seconds until removing the block
+ */
+preventBruteforce.wait = 5 * 60;
+
+/**
+ * @property {object} pathIdentifiers - Scope or path of check
+ */
+preventBruteforce.pathIdentifiers = {};
+
+/**
+ * @property {object} userIdentifiers - map paths to functions that extract identifiers from requests i.e. (req) => {ip: req.ip}
+ */
+preventBruteforce.userIdentifiers = {};
+
+/**
+ * @property {object} blockHooks - map path identifiers to functions that are executed when users are blocked e.g. send a mail
+ */
+preventBruteforce.blockHooks = {};
+
+/**
+ * Middleware to listen to specific paths and check if user is blocked
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - callback to call next middleware
+ * @example
+ * app.use(preventBruteforce.middleware);
+ **/
+preventBruteforce.middleware = function(req, res, next) {
+    const path = req.path;
+
+    if (req.method.toLowerCase() === "post" &amp;&amp; path in preventBruteforce.pathIdentifiers) {
+        const uid = path in preventBruteforce.userIdentifiers ? preventBruteforce.userIdentifiers[path](req) : req.ip;
+        const pid = preventBruteforce.pathIdentifiers[path];
+
+        if (pid) {
+            preventBruteforce.isBlocked(pid, uid, function(isBlocked, fails, err) {
+                req.session.fails = fails;
+
+                if (isBlocked) {
+                    if (err) {
+                        res.status(500).send("Server Error");
+                    }
+                    else {
+                        if (path in preventBruteforce.blockHooks) {
+                            preventBruteforce.blockHooks[pid](uid, req, res);
+                        }
+
+                        res.redirect(path + "?message=login.blocked");
+                    }
+                }
+                else {
+                    next();
+                }
+            });
+        }
+        else {
+            next();
+        }
+    }
+    else {
+        next();
+    }
+};
+
+/**
+ * Check if user is blocked for provided namepsace and user idendtifier
+ * @param {string} pid - namespace of the block
+ * @param {string} uid - user identifier
+ * @param {function} callback - callback to call with result
+ * @example
+ * var username, pass;
+ * preventBruteforce.isBlocked("login", username, function(isBlocked, fails, err) {
+ *     if (isBlocked) {
+ *         console.log("User is blocked");
+ *         return;
+ *     }
+ *     else {
+ *         if (login()) {
+ *             //user logged in, reset any fails user had
+ *             preventBruteforce.reset("login", username);
+ *         }
+ *         else {
+ *             //user failed to login, increase fails
+ *             preventBruteforce.fail("login", username);
+ *         }
+ *     }
+ * });
+ **/
+preventBruteforce.isBlocked = function(pid, uid, callback) {
+    preventBruteforce.db.collection("failed_logins").findOne({_id: JSON.stringify([pid, uid])}, function(err, result) {
+        result = result || {fails: 0};
+
+        if (err) {
+            callback(true, result.fails, err);
+        }
+        else if (result.fails > 0 &amp;&amp; (result.fails % preventBruteforce.fails) === 0 &amp;&amp; getTimestamp() &lt; (((result.fails / preventBruteforce.fails) * preventBruteforce.wait) + result.lastFail)) {
+            callback(true, result.fails);
+        }
+        else {
+            callback(false, result.fails);
+        }
+    });
+};
+
+/**
+ * Reset fails for provided namepsace and user
+ * @param {string} pid - namespace of the block
+ * @param {string} uid - user identifier
+ * @param {function} callback - callback to call when done
+ * @example
+ * preventBruteforce.reset("login", username);
+ **/
+preventBruteforce.reset = function(pid, uid, callback) {
+    callback = callback || function() {};
+
+    preventBruteforce.db.collection("failed_logins").remove({_id: JSON.stringify([pid, uid])}, callback);
+};
+
+/**
+ * Increase fails for provided namepsace and user
+ * @param {string} pid - namespace of the block
+ * @param {string} uid - user identifier
+ * @param {function} callback - callback to call when done
+ * @example
+ * preventBruteforce.fail("login", username);
+ **/
+preventBruteforce.fail = function(pid, uid, callback) {
+    callback = callback || function() {};
+
+    preventBruteforce.db.collection("failed_logins").update({_id: JSON.stringify([pid, uid])}, {$inc: {fails: 1}, $set: {lastFail: getTimestamp()}}, {upsert: true}, callback);
+};
+
+/**
+* Get current unix timestamp in seconds
+* @returns {number} current unix timestamp in seconds
+**/
+function getTimestamp() {
+    return Math.floor(new Date().getTime() / 1000);
+}
+
+module.exports = preventBruteforce;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:15:20 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
