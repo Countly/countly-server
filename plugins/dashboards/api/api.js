@@ -1511,9 +1511,9 @@ plugins.setConfigs("dashboards", {
         });
     });
 
-    plugins.register("/i/users/delete", function(ob) {
+    plugins.register("/i/users/delete", async function(ob) {
         var email = ob.data.email + "";
-        common.db.collection('dashboards').update({}, {$pull: {shared_email_edit: email, shared_email_view: email}}, {multi: true}, function() {});
+        await common.db.collection('dashboards').update({}, {$pull: {shared_email_edit: email, shared_email_view: email}}, {multi: true}, function() {});
     });
 
     /**
