@@ -151,7 +151,8 @@
                     else {
                         row.app = CV.i18n('token_manager.table.all-apps');
                     }
-                    if (row.purpose !== "") {
+                    if (row.purpose && row.purpose !== "") {
+                        row.purpose = row.purpose + "";
                         row.purpose = row.purpose[0].toUpperCase() + row.purpose.substring(1);
                     }
                     if (Array.isArray(row.endpoint)) {
