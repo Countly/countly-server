@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>countly/vue/components/sidebar.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyDrop.html">CountlyDrop</a></li><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.addColumnSelector">addColumnSelector</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.arrayUnique">arrayUnique</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDTableColVis">changeDTableColVis</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDialogHeight">changeDialogHeight</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.clip">clip</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.closeRows">closeRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirmWithCheckbox">confirmWithCheckbox</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createDrawer">createDrawer</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.expandRows">expandRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initBreadcrumbs">initBreadcrumbs</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeMultiSelect">initializeMultiSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeSelect">initializeSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTableOptions">initializeTableOptions</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTextSelect">initializeTextSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loading">loading</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.model">model</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.newJSONEditor">newJSONEditor</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.objectWithoutProperties">objectWithoutProperties</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.openResource">openResource</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.popup">popup</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.refreshTable">refreshTable</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeDialog">removeDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeEmptyValues">removeEmptyValues</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.reopenRows">reopenRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.revealDialog">revealDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.tableExport">tableExport</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.upload">upload</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Handlebars.html">Handlebars</a><ul class='members'><li data-type='member' style='display: none;'><a href="Handlebars.html#.app-categories">app-categories</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.appIdsToNames">appIdsToNames</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-selector">date-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-time-selector">date-time-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfArray">eachOfArray</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObject">eachOfObject</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObjectValue">eachOfObjectValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.encodeURIComponent">encodeURIComponent</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.for">for</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getFormattedNumber">getFormattedNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getIdValue">getIdValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getShortNumber">getShortNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.ifCond">ifCond</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.limitString">limitString</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.prettyJSON">prettyJSON</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.replace">replace</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.round">round</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.timezones">timezones</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.toUpperCase">toUpperCase</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.withItem">withItem</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#tipsify">tipsify</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.compareVersions">compareVersions</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.divide">divide</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGauge">drawGauge</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGraph">drawGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawHorizontalStackedBars">drawHorizontalStackedBars</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawTimeGraph">drawTimeGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecondForDP">formatSecondForDP</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.localeStringToNumber">localeStringToNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.numberToLocaleString">numberToLocaleString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.pad">pad</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyManagementView.html">countlyManagementView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.afterCollapse">afterCollapse</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.beforeExpand">beforeExpand</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.config">config</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.doOnChange">doOnChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.isSaveAvailable">isSaveAvailable</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.onChange">onChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.resetTemplateData">resetTemplateData</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.savingString">savingString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.setAppId">setAppId</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.showError">showError</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.titleString">titleString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.validate">validate</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li><li><a href="global.html#setMenuItems">setMenuItems</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">countly/vue/components/sidebar.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
+
+(function(countlyVue, $) {
+
+    $(document).ready(function() {
+        var AppsMixin = {
+            computed: {
+                allApps: {
+                    get: function() {
+                        var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                        var apps = _.sortBy(storedApp, function(app) {
+                            return (app.name + "").toLowerCase();
+                        });
+                        if (countlyGlobal.member.appSortList) {
+                            apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                        }
+                        apps = apps.map(function(a) {
+                            a.image = countlyGlobal.path + "appimages/" + a._id + ".png";
+                            a.label = a.name;
+                            a.value = a._id;
+                            return a;
+                        });
+                        return apps;
+                    },
+                },
+                activeApp: function() {
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] &amp;&amp; this.$store.getters["countlyCommon/getActiveApp"]._id;
+                    var active = this.allApps.find(function(a) {
+                        return a._id === selectedAppId;
+                    });
+
+                    if (active) {
+                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                    }
+                    return active || {};
+                },
+            },
+            methods: {
+                sortBy: function(arrayToSort, sortList) {
+                    if (!sortList.length) {
+                        return arrayToSort;
+                    }
+
+                    var tmpArr = [],
+                        retArr = [];
+
+                    var i;
+                    for (i = 0; i &lt; arrayToSort.length; i++) {
+                        var objId = arrayToSort[i]._id + "";
+                        if (sortList.indexOf(objId) !== -1) {
+                            tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
+                        }
+                    }
+
+                    for (i = 0; i &lt; tmpArr.length; i++) {
+                        if (tmpArr[i]) {
+                            retArr[retArr.length] = tmpArr[i];
+                        }
+                    }
+
+                    for (i = 0; i &lt; arrayToSort.length; i++) {
+                        if (retArr.indexOf(arrayToSort[i]) === -1) {
+                            retArr[retArr.length] = arrayToSort[i];
+                        }
+                    }
+
+                    return retArr;
+                }
+            }
+        };
+
+        var AppSelector = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-selector.html'),
+            data: function() {
+                return {
+                    centerDialogVisible: true
+                };
+            },
+            computed: {
+                activeApp: {
+                    get: function() {
+                        var app = this.$store.getters["countlyCommon/getActiveApp"];
+                        return app &amp;&amp; app._id;
+                    },
+                    set: function(activeApp) {
+                        this.onChange(activeApp);
+                    }
+                },
+                showCompare: function() {
+                    var cc = countlyVue.container.dataMixin({
+                        'compareComponent': '/apps/compare'
+                    });
+                    var component = cc.data();
+                    if (component &amp;&amp; component.compareComponent &amp;&amp; component.compareComponent.length > 0) {
+                        return component.compareComponent[0].enabled.default || false;
+                    }
+                    return false;
+                },
+            },
+            props: {
+                allApps: {
+                    type: Array
+                }
+            },
+            methods: {
+                compare: function() {
+                    app.navigate("#/compare", true);
+                    this.$emit("close");
+                },
+                onChange: function(id) {
+                    var selectedApp = this.allApps.find(function(a) {
+                        return a._id === id;
+                    });
+
+                    var appKey = selectedApp.key;
+                    var appName = selectedApp.name;
+                    var appId = selectedApp._id;
+                    if (app.activeAppKey !== appKey) {
+                        app.activeAppName = appName;
+                        app.activeAppKey = appKey;
+                        app.switchApp(appId);
+                    }
+                    this.handleClose();
+                },
+                handleClose: function() {
+                    this.$emit("close");
+                }
+            }
+        });
+
+        var UsersMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
+            props: {
+                item: {
+                    type: Object
+                }
+            },
+            data: function() {
+                return {
+                    helpCenterLink: {
+                        isString: typeof countlyGlobal.usermenu.helpCenterLink === "string" ? countlyGlobal.usermenu.helpCenterLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.helpCenterLink === "boolean" &amp;&amp; countlyGlobal.usermenu.helpCenterLink
+                    },
+                    documentationLink: {
+                        isString: typeof countlyGlobal.usermenu.documentationLink === "string" ? countlyGlobal.usermenu.documentationLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.documentationLink === "boolean" &amp;&amp; countlyGlobal.usermenu.documentationLink
+                    },
+                    feedbackLink: {
+                        isString: typeof countlyGlobal.usermenu.feedbackLink === "string" ? countlyGlobal.usermenu.feedbackLink : false
+                    },
+                    featureRequestLink: {
+                        isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" &amp;&amp; countlyGlobal.usermenu.featureRequestLink
+                    },
+                    successMessage: CV.i18n("sidebar.copy-api-key-success-message"),
+                    errorMessage: CV.i18n("common.copy-error-message")
+                };
+            },
+            methods: {
+                logout: function() {
+                    this.$store.dispatch("countlyCommon/removeActiveApp");
+                    store.remove('countly_date');
+                    store.remove('countly_location_city');
+                    this.logoutRequest();
+                },
+                logoutRequest: function() {
+                    var logoutForm = document.createElement("form");
+                    logoutForm.action = countlyGlobal.path + '/logout';
+                    logoutForm.method = "post";
+                    logoutForm.style.display = "none";
+                    logoutForm.type = "submit";
+                    var logoutForm_csrf = document.createElement("input");
+                    logoutForm_csrf.name = '_csrf';
+                    logoutForm_csrf.value = countlyGlobal.csrf_token;
+                    logoutForm.appendChild(logoutForm_csrf);
+                    document.body.appendChild(logoutForm);
+                    logoutForm.submit();
+                    document.body.removeChild(logoutForm);
+                },
+                onCopy: function() {
+                    CountlyHelpers.notify({
+                        message: this.successMessage,
+                        type: "success"
+                    });
+                },
+                onError: function() {
+                    CountlyHelpers.notify({
+                        message: this.errorMessage,
+                        type: "error"
+                    });
+                }
+            }
+        });
+
+        var ValidationMixin = {
+            methods: {
+                validate: function(item) {
+                    var valid = true;
+
+                    var tabsValidated = this.validateTabs(item);
+
+                    return valid &amp;&amp; tabsValidated;
+                },
+                validateTabs: function(item) {
+                    var valid = true;
+
+                    if (item.tabsPath) {
+                        var tbs = countlyVue.container.tabsMixin({
+                            t: item.tabsPath
+                        });
+
+                        var tabs = tbs.data().t;
+
+                        valid = (tabs.length > 0);
+                    }
+
+                    return valid;
+                }
+            }
+        };
+
+        var AnalyticsMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/analytics-menu.html'),
+            mixins: [AppsMixin, ValidationMixin],
+            components: {
+                "app-selector": AppSelector
+            },
+            data: function() {
+                return {
+                    selectedAnalyticsMenu: null,
+                    appSelector: false
+                };
+            },
+            computed: {
+                categories: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return [];
+                    }
+
+                    var c = countlyVue.container.dataMixin({
+                        categories: "/sidebar/analytics/menuCategory"
+                    });
+
+                    var cats = c.data().categories;
+
+                    return cats;
+                },
+                categorizedMenus: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return {};
+                    }
+
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
+
+                    var mm = m.data().menus;
+
+                    var self = this;
+                    var menus = mm.reduce(function(acc, val) {
+                        if (val.app_type === self.activeApp.type) {
+                            if (self.validate(val)) {
+                                if (!acc[val.category]) {
+                                    acc[val.category] = [];
+                                }
+
+                                acc[val.category].push(val);
+                            }
+                        }
+                        return acc;
+                    }, {});
+
+                    return menus;
+                },
+                categorizedSubmenus: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return {};
+                    }
+
+                    var s = countlyVue.container.dataMixin({
+                        submenus: "/sidebar/analytics/submenu"
+                    });
+
+                    var sbm = s.data().submenus;
+
+                    var self = this;
+                    var submenus = sbm.reduce(function(acc, val) {
+                        if (val.app_type === self.activeApp.type) {
+                            if (self.validate(val)) {
+                                if (!acc[val.parent_code]) {
+                                    acc[val.parent_code] = [];
+                                }
+
+                                acc[val.parent_code].push(val);
+                            }
+                        }
+                        return acc;
+                    }, {});
+
+                    return submenus;
+                },
+                selectedMenuItem: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (selected &amp;&amp; selected.menu === "analytics") {
+                        this.selectedAnalyticsMenu = selected.item &amp;&amp; selected.item.parent_code;
+                        return selected.item;
+                    }
+
+                    return {};
+                }
+            },
+            methods: {
+                suffixIconClass: function(dropdown) {
+                    return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
+                },
+                onMenuItemClick: function(item) {
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                },
+                identifySelected: function() {
+                    var currLink = Backbone.history.fragment;
+                    if (/^\/custom/.test(currLink) === true) {
+                        return;
+                    }
+                    var menus = this.categorizedMenus;
+                    var submenus = this.categorizedSubmenus;
+                    var foundMenu = false;
+                    var currMenu;
+                    var part1 = "";
+                    var part2 = "";
+                    var part3 = "";
+                    var menu;
+
+                    for (var k in menus) {
+                        for (var i = 0; i &lt; menus[k].length; i++) {
+                            menu = menus[k][i];
+
+
+                            if (menu.url === "#" + currLink) {
+                                foundMenu = true;
+                                currMenu = menu;
+                                break;
+                            }
+
+                            if (currLink.split("/").length > 2) {
+                                part1 = "/" + currLink.split("/")[1];
+                                part2 = part1 + "/" + currLink.split("/")[2];
+                                part3 = part2 + "/";
+                                if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (foundMenu) {
+                            break;
+                        }
+                    }
+
+                    if (!foundMenu) {
+                        for (var l in submenus) {
+                            for (var j = 0; j &lt; submenus[l].length; j++) {
+                                menu = submenus[l][j];
+
+                                if (menu.url === "#" + currLink) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
+                                }
+
+                                if (currLink.split("/").length > 2) {
+                                    part1 = "/" + currLink.split("/")[1];
+                                    part2 = part1 + "/" + currLink.split("/")[2];
+                                    part3 = part2 + "/";
+                                    if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
+                                        foundMenu = true;
+                                        currMenu = menu;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (foundMenu) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (currMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
+                    }
+                    else {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "analytics") {
+                            /**
+                             * Incase the selected menu is already analytics, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: {} });
+                        }
+                    }
+                },
+                toggleAppSelection: function() {
+                    this.appSelector = !this.appSelector;
+                }
+            }
+        });
+
+        var ManagementMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/management-menu.html'),
+            mixins: [AppsMixin, ValidationMixin],
+            computed: {
+                menu: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return [];
+                    }
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
+
+                    var mm = m.data().menus;
+                    var self = this;
+
+                    var menu = mm.filter(function(val) {
+                        if (val.category === "management" &amp;&amp; self.validate(val)) {
+                            return true;
+                        }
+
+                        return false;
+                    });
+
+                    this.$emit("management-menu-ready", menu);
+                    return menu;
+                },
+                selectedMenuItem: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (selected &amp;&amp; selected.menu === "management") {
+                        return selected.item;
+                    }
+
+                    return {};
+                }
+            },
+            methods: {
+                onMenuItemClick: function(item) {
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                },
+                identifySelected: function() {
+                    var currLink = Backbone.history.fragment;
+                    if (/^\/custom/.test(currLink) === true) {
+                        return;
+                    }
+                    var menu = this.menu;
+
+                    var currMenu = menu.find(function(m) {
+                        return m.url === currLink;
+                    });
+
+                    if (!currMenu) {
+                        if (currLink.split("/").length > 2) {
+                            var part1 = "/" + currLink.split("/")[1];
+                            var part2 = part1 + "/" + currLink.split("/")[2];
+                            currMenu = menu.find(function(m) {
+                                return (m.url === "#" + part1 || m.url === "#" + part2);
+                            });
+                        }
+                    }
+
+                    if (currMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
+                    }
+                    else {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "management") {
+                            /**
+                             * Incase the selected menu is already management, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: {} });
+                        }
+                    }
+                }
+            }
+        });
+
+        var LanguageMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/language-menu.html'),
+            data: function() {
+                return {
+                    localLang: countlyCommon.BROWSER_LANG_SHORT
+                };
+            },
+            computed: {
+                allLanguages: function() {
+                    return countlyGlobal.languages.map(function(l) {
+                        return {
+                            label: l.name,
+                            value: l.code
+                        };
+                    });
+                },
+                selLang: {
+                    get: function() {
+                        return this.localLang;
+                    },
+                    set: function(langCode) {
+                        store.set("countly_lang", langCode);
+                        countlyCommon.BROWSER_LANG_SHORT = langCode;
+                        countlyCommon.BROWSER_LANG = langCode;
+
+                        this.localLang = langCode;
+
+                        try {
+                            moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+                        }
+                        catch (e) {
+                            moment.locale("en");
+                        }
+
+                        countlyCommon.getMonths(true);
+
+                        CV.$.ajax({
+                            type: "POST",
+                            url: countlyGlobal.path + "/user/settings/lang",
+                            data: {
+                                "username": countlyGlobal.member.username,
+                                "lang": countlyCommon.BROWSER_LANG_SHORT,
+                                _csrf: countlyGlobal.csrf_token
+                            },
+                            success: function() {
+                                window.location.reload(true);
+                            },
+                            error: function() {
+                                //we could output error here
+                                window.location.reload(true);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        var SidebarView = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
+            mixins: [
+                countlyVue.container.dataMixin({
+                    "externalMainMenuOptions": "/sidebar/menu/main",
+                    "externalOtherMenuOptions": "/sidebar/menu/other"
+                })
+            ],
+            components: {
+                "users-menu": UsersMenu,
+                "analytics-menu": AnalyticsMenu,
+                "management-menu": ManagementMenu,
+                "language-menu": LanguageMenu
+            },
+            data: function() {
+                return {
+                    selectedMenuOptionLocal: null,
+                    versionInfo: countlyGlobal.countlyTypeName,
+                    countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
+                    showMainMenu: true,
+                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
+                    onOptionsMenu: false,
+                    onMainMenu: false,
+                    enableGuides: CountlyHelpers.isPluginEnabled('guides'),
+                    defaultMainMenuOptions: [
+                        {
+                            name: "app",
+                            icon: "cly-icon-sidebar-app",
+                            noSelect: true
+                        },
+                        {
+                            name: "analytics",
+                            icon: "cly-icon-sidebar-analytics",
+                            tooltip: CV.i18n("sidebar.main-menu")
+                        },
+                        {
+                            name: "divider",
+                            icon: "cly-icon-sidebar-divider",
+                            noSelect: true
+                        },
+                        {
+                            name: "management",
+                            icon: "cly-icon-sidebar-management",
+                            tooltip: "Management",
+                            svg: ""
+                        },
+                        {
+                            name: "last-queries",
+                            icon: "cly-icon-sidebar-report-manager",
+                            noSelect: true,
+                            tooltip: "Report Manager"
+                        }
+                    ]
+                };
+            },
+            computed: {
+                components: function() {
+                    var menuOptions = [];
+
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+
+                    if (externalMainMenuOptions &amp;&amp; externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
+                    }
+
+                    if (externalOtherMenuOptions &amp;&amp; externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
+                    }
+
+                    return menuOptions;
+                },
+                mainMenuOptions: function() {
+                    var menuOptions = JSON.parse(JSON.stringify(this.defaultMainMenuOptions));
+
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+
+                    if (externalMainMenuOptions &amp;&amp; externalMainMenuOptions.length) {
+                        for (var i = 0; i &lt; externalMainMenuOptions.length; i++) {
+                            menuOptions.splice(2, 0, externalMainMenuOptions[i]);
+                        }
+                    }
+
+                    return menuOptions;
+                },
+                otherMenuOptions: function() {
+                    var menuOptions = [
+                        {
+                            name: "help-center",
+                            icon: "cly-icon-sidebar-help-center",
+                            noSelect: true,
+                            tooltip: "Help Center"
+                        },
+                        {
+                            name: "user",
+                            noSelect: true,
+                            member: this.member,
+                            tooltip: CV.i18n("sidebar.my-profile")
+                        },
+                        {
+                            name: "language",
+                            noSelect: true,
+                            tooltip: "Language"
+                        },
+                        {
+                            name: "toggle",
+                            icon: "cly-icon-sidebar-toggle-left",
+                            noSelect: true
+                        }
+                    ];
+
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+
+                    if (externalOtherMenuOptions &amp;&amp; externalOtherMenuOptions.length) {
+                        for (var i = 0; i &lt; externalOtherMenuOptions.length; i++) {
+                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
+                        }
+                    }
+
+                    return menuOptions;
+                },
+                member: function() {
+                    //We should fetch the user from vuex
+                    //So that updates are reactive
+
+                    var userImage = {};
+                    var member = countlyGlobal.member;
+                    if (member.member_image) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png?v2";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
+                },
+                pseudoSelectedMenuOption: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (!this.selectedMenuOptionLocal &amp;&amp; selected) {
+                        return selected.menu;
+                    }
+
+                    return this.selectedMenuOptionLocal;
+                },
+                selectedMenuOption: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    return selected &amp;&amp; selected.menu;
+                },
+                helpCenterLink: function() {
+                    return this.enableGuides ? '#/guides' : "https://support.count.ly";
+                },
+                helpCenterTarget: function() {
+                    return this.enableGuides ? '_self' : "_blank";
+                }
+            },
+            methods: {
+                onClick: function(option) {
+                    if (!option.noSelect) {
+                        this.selectedMenuOptionLocal = option.name;
+                        this.showMainMenu = true;
+                    }
+
+                    if (option.name === "toggle") {
+                        this.onToggleClick();
+                    }
+                },
+                onToggleClick: function() {
+                    this.showMainMenu = !this.showMainMenu;
+                },
+                identifySelected: function() {
+                    for (var ref in this.$refs) {
+                        if (Array.isArray(this.$refs[ref])) {
+                            for (var i = 0; i &lt; this.$refs[ref].length; i++) {
+                                if (this.$refs[ref][i].identifySelected) {
+                                    this.$refs[ref][i].identifySelected();
+                                }
+                            }
+                        }
+                        else if (this.$refs[ref].identifySelected) {
+                            this.$refs[ref].identifySelected();
+                        }
+                    }
+
+                    this.setDefaultMenu();
+                },
+                setDefaultMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (!selected || !selected.menu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: {}});
+                    }
+
+                    if (selected &amp;&amp; selected.menu &amp;&amp; selected.menu === "dashboards") {
+                        /**
+                         * If the selected menu in vuex is dashboards, the sidebar should be floating.
+                         */
+                        this.showMainMenu = false;
+                    }
+                },
+                onOptionsMenuMouseOver: function() {
+                    this.onOptionsMenu = true;
+
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selectedOption &amp;&amp; selectedOption.menu === "dashboards" &amp;&amp; !this.showMainMenu) {
+                        this.showMainMenu = true;
+                    }
+                },
+                onOptionsMenuMouseLeave: function() {
+                    var self = this;
+                    this.onOptionsMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the main menu or not.
+                     * If he went over it, onMainMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the main menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the main menu.
+                     * And thus hide the main menu.
+                     *
+                     * We need this handler mainly for the case when the user moves away
+                     * from the browser window. Basically the window is small and the user
+                     * is moving outside of the window from the left side.
+                     * Bcz if he goes to the right side, onMainMenu will be set to true,
+                     * and the main menu will still be visible.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption &amp;&amp; selectedOption.menu === "dashboards") {
+                                    if (!self.onMainMenu &amp;&amp; self.$refs.dashboards &amp;&amp; self.$refs.dashboards[0] &amp;&amp; !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                        0;
+                                        /**
+                                         * If not on the main menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
+                },
+                onMainMenuMouseOver: function() {
+                    this.onMainMenu = true;
+                },
+                onMainMenuMouseLeave: function() {
+                    var self = this;
+                    this.onMainMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the options menu or not.
+                     * If he went over it, onOptionsMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the options menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the options menu.
+                     * And thus hide the main menu.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption &amp;&amp; selectedOption.menu === "dashboards") {
+                                    if (!self.onOptionsMenu &amp;&amp; self.$refs.dashboards &amp;&amp; self.$refs.dashboards[0] &amp;&amp; !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                        /**
+                                         * If not on the options menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
+                },
+                onManagementMenuReady: function(items) {
+                    this.defaultMainMenuOptions = this.defaultMainMenuOptions.map(function(menu) {
+                        if (menu.name === "management") {
+                            if (items.length) {
+                                delete menu.hide;
+                            }
+                            else {
+                                menu.hide = true;
+                            }
+                        }
+
+                        return menu;
+                    });
+                }
+            },
+            mounted: function() {
+                var self = this;
+
+                /**
+                 * As per official vue documentation for mounted, its likely that refs are not
+                 * available immediately. Therefore, they suggest to check for the refs
+                 * in the nextTick.
+                 *
+                 * Following technique of checking refs is just a fullproof way of doing it.
+                 */
+                setTimeout(function() {
+                    self.$nextTick(function() {
+                        self.$nextTick(function() {
+                            /**
+                             * Check if the refs are available.
+                             */
+                            if (Object.keys(self.$refs).length) {
+                                self.identifySelected();
+                            }
+                            else {
+                                /**
+                                 * This means that we don't have refs available yet.
+                                 * Lets retry to check refs after a interval.
+                                 * Clear the interval when the refs are found.
+                                 */
+                                var counter = 0;
+                                var interval = setInterval(function() {
+                                    if (counter > 10) {
+                                        /**
+                                         * Lets only check for the refs 10 times.
+                                         * Bcz this could go on forever although not likely.
+                                         * If refs are not found until then, the its likely
+                                         * that there is some other issue.
+                                         * After that lets clear the interval and return.
+                                         */
+
+                                        // eslint-disable-next-line no-console
+                                        console.log("Refs not found in sidebar yet. Returning...");
+                                        clearInterval(interval);
+                                        return;
+                                    }
+
+                                    if (Object.keys(self.$refs).length) {
+                                        self.identifySelected();
+                                        clearInterval(interval);
+                                    }
+
+                                    counter++;
+                                }, 50);
+                            }
+                        });
+                    });
+                }, 0);
+            },
+            created: function() {
+                var self = this;
+                if (this.enableGuides) {
+                    countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                        self.enableGuides = (config &amp;&amp; config.data &amp;&amp; config.data[0] &amp;&amp; config.data[0].enableGuides) || false;
+                    });
+                }
+            }
+        });
+
+        app.initSidebar = function() {
+            countlyVue.sideBarComponent = new Vue({
+                el: $('#sidebar-x').get(0),
+                store: countlyVue.vuex.getGlobalStore(),
+                components: {
+                    Sidebar: SidebarView
+                },
+                template: '&lt;Sidebar>&lt;/Sidebar>'
+            });
+        };
+
+        if (Object.keys(countlyGlobal.apps).length &amp;&amp; !/initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash)) {
+            app.initSidebar();
+        }
+    });
+
+}(window.countlyVue = window.countlyVue || {}, jQuery));</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:48:01 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
