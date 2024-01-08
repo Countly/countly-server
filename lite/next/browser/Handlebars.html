@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Handlebars - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyDrop.html">CountlyDrop</a></li><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.addColumnSelector">addColumnSelector</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.arrayUnique">arrayUnique</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDTableColVis">changeDTableColVis</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDialogHeight">changeDialogHeight</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.clip">clip</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.closeRows">closeRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirmWithCheckbox">confirmWithCheckbox</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createDrawer">createDrawer</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.expandRows">expandRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initBreadcrumbs">initBreadcrumbs</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeMultiSelect">initializeMultiSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeSelect">initializeSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTableOptions">initializeTableOptions</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTextSelect">initializeTextSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loading">loading</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.model">model</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.newJSONEditor">newJSONEditor</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.objectWithoutProperties">objectWithoutProperties</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.openResource">openResource</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.popup">popup</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.refreshTable">refreshTable</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeDialog">removeDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeEmptyValues">removeEmptyValues</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.reopenRows">reopenRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.revealDialog">revealDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.tableExport">tableExport</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.upload">upload</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Handlebars.html">Handlebars</a><ul class='members'><li data-type='member' style='display: none;'><a href="Handlebars.html#.app-categories">app-categories</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.appIdsToNames">appIdsToNames</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-selector">date-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-time-selector">date-time-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfArray">eachOfArray</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObject">eachOfObject</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObjectValue">eachOfObjectValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.encodeURIComponent">encodeURIComponent</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.for">for</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getFormattedNumber">getFormattedNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getIdValue">getIdValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getShortNumber">getShortNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.ifCond">ifCond</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.limitString">limitString</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.prettyJSON">prettyJSON</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.replace">replace</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.round">round</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.timezones">timezones</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.toUpperCase">toUpperCase</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.withItem">withItem</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#tipsify">tipsify</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.compareVersions">compareVersions</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.divide">divide</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGauge">drawGauge</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGraph">drawGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawHorizontalStackedBars">drawHorizontalStackedBars</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawTimeGraph">drawTimeGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecondForDP">formatSecondForDP</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.localeStringToNumber">localeStringToNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.numberToLocaleString">numberToLocaleString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.pad">pad</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyManagementView.html">countlyManagementView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.afterCollapse">afterCollapse</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.beforeExpand">beforeExpand</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.config">config</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.doOnChange">doOnChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.isSaveAvailable">isSaveAvailable</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.onChange">onChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.resetTemplateData">resetTemplateData</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.savingString">savingString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.setAppId">setAppId</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.showError">showError</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.titleString">titleString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.validate">validate</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li><li><a href="global.html#setMenuItems">setMenuItems</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Handlebars</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            Namespace
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+
+    
+
+    <h4 class="name" id="Handlebars">Handlebars</h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee &lt;% %&gt; tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1188">line 1188</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".app-categories"><span class="type-signature type-signature-static">(static) </span>app-categories<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display common app category selecting UI element</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1244">line 1244</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Display common app category selecting UI element</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{> app-categories }}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".appIdsToNames"><span class="type-signature type-signature-static">(static) </span>appIdsToNames<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Convert array of app ids to comma separate string of app names. Handlebar binding to <a href="CountlyHelpers.html#.appIdsToNames"><code>CountlyHelpers.appIdsToNames</code></a></p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1351">line 1351</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Convert array of app ids to comma separate string of app names. Handlebar binding to <a href="CountlyHelpers.html#.appIdsToNames"><code>CountlyHelpers.appIdsToNames</code></a></p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;div class="apps">{{appIdsToNames appIds}}&lt;/div></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".date-selector"><span class="type-signature type-signature-static">(static) </span>date-selector<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display common date selecting UI elements</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1196">line 1196</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Display common date selecting UI elements</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{> date-selector }}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".date-time-selector"><span class="type-signature type-signature-static">(static) </span>date-time-selector<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display common date time selecting UI elements</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1228">line 1228</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Display common date time selecting UI elements</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{> date-time-selector }}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".eachOfArray"><span class="type-signature type-signature-static">(static) </span>eachOfArray<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Iterate through array, creating variable &quot;index&quot; for element index and variable &quot;value&quot; for value at that index</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1288">line 1288</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Iterate through array, creating variable &quot;index&quot; for element index and variable &quot;value&quot; for value at that index</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{#eachOfArray events}}
+&lt;div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
+	&lt;div class="name">{{value.name}}&lt;/div>
+&lt;/div>
+{{/eachOfArray}}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".eachOfObject"><span class="type-signature type-signature-static">(static) </span>eachOfObject<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Iterate object with keys and values, creating variable &quot;property&quot; for object key and variable &quot;value&quot; for object value</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1252">line 1252</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Iterate object with keys and values, creating variable &quot;property&quot; for object key and variable &quot;value&quot; for object value</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{#eachOfObject app_types}}
+  &lt;div data-value="{{property}}" class="item">{{value}}&lt;/div>
+{{/eachOfObject}}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".eachOfObjectValue"><span class="type-signature type-signature-static">(static) </span>eachOfObjectValue<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Iterate only values of object, this will reference the value of current object</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1268">line 1268</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Iterate only values of object, this will reference the value of current object</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{#eachOfObjectValue apps}}
+&lt;div class="app searchable">
+	&lt;div class="image" style="background-image: url('/appimages/{{this._id}}.png');">&lt;/div>
+	&lt;div class="name">{{this.name}}&lt;/div>
+	&lt;input class="app_id" type="hidden" value="{{this._id}}"/>
+&lt;/div>
+{{/eachOfObjectValue}}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".encodeURIComponent"><span class="type-signature type-signature-static">(static) </span>encodeURIComponent<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Encode uri component</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1518">line 1518</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Encode uri component</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;a href="/path/{{encodeURIComponent entity}}" &lt;/a></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".for"><span class="type-signature type-signature-static">(static) </span>for<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>For loop in template providing start count, end count and increment</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1439">line 1439</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>For loop in template providing start count, end count and increment</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{#for start end 1}}
+	{{#ifCond this "==" ../data.curPage}}
+	&lt;a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}' class="current">{{this}}&lt;/a>
+	{{else}}
+	&lt;a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}'>{{this}}&lt;/a>
+	{{/ifCond}}
+{{/for}}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".forNumberOfTimes"><span class="type-signature type-signature-static">(static) </span>forNumberOfTimes<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Loop for specified amount of times. Creating variable &quot;count&quot; as current index from 1 to provided value</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1361">line 1361</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Loop for specified amount of times. Creating variable &quot;count&quot; as current index from 1 to provided value</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;ul>
+{{#forNumberOfTimes 10}}
+  &lt;li>{{count}}&lt;/li>
+{{/forNumberOfTimes}}
+&lt;/ul></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".forNumberOfTimes"><span class="type-signature type-signature-static">(static) </span>forNumberOfTimes<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Loop for specified amount of times. with variable &quot;need&quot; &amp; &quot;now&quot;, loop time will be ${need} - ${now}</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1379">line 1379</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Loop for specified amount of times. with variable &quot;need&quot; &amp; &quot;now&quot;, loop time will be ${need} - ${now}</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;ul>
+{{#forNumberOfTimes 10 3}}  // will loop 7 times
+  &lt;li>{{count}}&lt;/li>
+{{/forNumberOfTimes}}
+&lt;/ul></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".formatTimeAgo"><span class="type-signature type-signature-static">(static) </span>formatTimeAgo<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Format timestamp to twitter like time ago format, Handlebar binding to <a href="countlyCommon.html#.formatTimeAgo"><code>countlyCommon.formatTimeAgo</code></a></p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1497">line 1497</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Format timestamp to twitter like time ago format, Handlebar binding to <a href="countlyCommon.html#.formatTimeAgo"><code>countlyCommon.formatTimeAgo</code></a></p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;div class="time">{{{formatTimeAgo value.time}}&lt;/div></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".getFormattedNumber"><span class="type-signature type-signature-static">(static) </span>getFormattedNumber<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Format float number up to 2 values after dot</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1326">line 1326</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Format float number up to 2 values after dot</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;div class="number">{{getFormattedNumber this.total}}&lt;/div></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".getIdValue"><span class="type-signature type-signature-static">(static) </span>getIdValue<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get id value from ObjectID string</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1204">line 1204</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Get id value from ObjectID string</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;span>{{#clearObjectId value}}{{/clearObjectId}}&lt;/span></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".getShortNumber"><span class="type-signature type-signature-static">(static) </span>getShortNumber<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Shorten number, Handlebar binding to <a href="countlyCommon.html#.getShortNumber"><code>countlyCommon.getShortNumber</code></a></p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1316">line 1316</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Shorten number, Handlebar binding to <a href="countlyCommon.html#.getShortNumber"><code>countlyCommon.getShortNumber</code></a></p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;span class="value">{{getShortNumber this.data.total}}&lt;/span></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".ifCond"><span class="type-signature type-signature-static">(static) </span>ifCond<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>If condition with different operators, accepting first value, operator and second value.
+Accepted operators are ==, !=, ===, &lt;, &lt;=, &gt;, &gt;=, &amp;&amp;, ||</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1459">line 1459</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>If condition with different operators, accepting first value, operator and second value.
+Accepted operators are ==, !=, ===, &lt;, &lt;=, &gt;, &gt;=, &amp;&amp;, ||</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{#ifCond this.data.trend "==" "u"}}
+    &lt;i class="material-icons">trending_up&lt;/i>
+{{else}}
+    &lt;i class="material-icons">trending_down&lt;/i>
+{{/ifCond}}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".limitString"><span class="type-signature type-signature-static">(static) </span>limitString<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Limit string length.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1409">line 1409</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Limit string length.</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;span>{{#limitString value 15}}{{/limitString}}&lt;/span></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".prettyJSON"><span class="type-signature type-signature-static">(static) </span>prettyJSON<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Print out json in pretty indented way</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1306">line 1306</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Print out json in pretty indented way</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;td class="jh-value jh-object-value">{{prettyJSON value}}&lt;/td></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".replace"><span class="type-signature type-signature-static">(static) </span>replace<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Replaces part of a string with a string.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1399">line 1399</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Replaces part of a string with a string.</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;span>{{#replace value "(" " ("}}{{/replace}}&lt;/span></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".round"><span class="type-signature type-signature-static">(static) </span>round<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Round the number</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1424">line 1424</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Round the number</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;span>{{round number limit}}&lt;/span></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".timezones"><span class="type-signature type-signature-static">(static) </span>timezones<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display common timezone selecting UI element</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1236">line 1236</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Display common timezone selecting UI element</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>{{> timezones }}</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".toUpperCase"><span class="type-signature type-signature-static">(static) </span>toUpperCase<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Convert text to upper case</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1341">line 1341</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Convert text to upper case</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;div class="title">{{toUpperCase page-title}}&lt;/div></code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".withItem"><span class="type-signature type-signature-static">(static) </span>withItem<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get value form object by specific key, this will reference value of the object</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.template.js.html">countly/countly.template.js</a>, <a href="countly_countly.template.js.html#line1507">line 1507</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Get value form object by specific key, this will reference value of the object</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;p>{{#withItem ../apps key=app_id}}{{this}}{{/withItem}}&lt;/p></code></pre>
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

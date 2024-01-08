@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>countly/countly.auth.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyDrop.html">CountlyDrop</a></li><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.addColumnSelector">addColumnSelector</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.arrayUnique">arrayUnique</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDTableColVis">changeDTableColVis</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDialogHeight">changeDialogHeight</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.clip">clip</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.closeRows">closeRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirmWithCheckbox">confirmWithCheckbox</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createDrawer">createDrawer</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.expandRows">expandRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initBreadcrumbs">initBreadcrumbs</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeMultiSelect">initializeMultiSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeSelect">initializeSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTableOptions">initializeTableOptions</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTextSelect">initializeTextSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loading">loading</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.model">model</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.newJSONEditor">newJSONEditor</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.objectWithoutProperties">objectWithoutProperties</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.openResource">openResource</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.popup">popup</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.refreshTable">refreshTable</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeDialog">removeDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeEmptyValues">removeEmptyValues</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.reopenRows">reopenRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.revealDialog">revealDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.tableExport">tableExport</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.upload">upload</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Handlebars.html">Handlebars</a><ul class='members'><li data-type='member' style='display: none;'><a href="Handlebars.html#.app-categories">app-categories</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.appIdsToNames">appIdsToNames</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-selector">date-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-time-selector">date-time-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfArray">eachOfArray</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObject">eachOfObject</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObjectValue">eachOfObjectValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.encodeURIComponent">encodeURIComponent</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.for">for</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getFormattedNumber">getFormattedNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getIdValue">getIdValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getShortNumber">getShortNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.ifCond">ifCond</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.limitString">limitString</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.prettyJSON">prettyJSON</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.replace">replace</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.round">round</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.timezones">timezones</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.toUpperCase">toUpperCase</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.withItem">withItem</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#tipsify">tipsify</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.compareVersions">compareVersions</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.divide">divide</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGauge">drawGauge</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGraph">drawGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawHorizontalStackedBars">drawHorizontalStackedBars</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawTimeGraph">drawTimeGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecondForDP">formatSecondForDP</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.localeStringToNumber">localeStringToNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.numberToLocaleString">numberToLocaleString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.pad">pad</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyManagementView.html">countlyManagementView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.afterCollapse">afterCollapse</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.beforeExpand">beforeExpand</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.config">config</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.doOnChange">doOnChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.isSaveAvailable">isSaveAvailable</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.onChange">onChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.resetTemplateData">resetTemplateData</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.savingString">savingString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.setAppId">setAppId</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.showError">showError</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.titleString">titleString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.validate">validate</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li><li><a href="global.html#setMenuItems">setMenuItems</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">countly/countly.auth.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global countlyGlobal, countlyCommon, $ */
+(function(countlyAuth) {
+    // internal variables
+    countlyAuth.odd = true;
+    countlyAuth.types = ["c", "r", "u", "d"];
+    countlyAuth.typeNames = ["create", "read", "update", "delete"];
+    countlyAuth.features = [];
+
+    /**
+    * initialize feature list from back-end and set it as countlyAuth.features
+    * @returns {function} - ajax func to request data and store in countlyAuth.features
+    */
+    countlyAuth.initFeatures = function() {
+        return $.ajax({
+            type: 'GET',
+            url: countlyCommon.API_URL + "/o/users/permissions",
+            data: {
+                app_id: countlyGlobal.defaultApp._id
+            },
+            success: function(res) {
+                countlyAuth.features = res.features;
+            }
+        });
+    };
+
+    /**
+     * validate write requests for specific feature on specific app
+     * @param {string} accessType - write process type [c, u, d]
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    function validateWrite(accessType, feature, member, app_id) {
+        member = member || countlyGlobal.member;
+        app_id = app_id || countlyCommon.ACTIVE_APP_ID;
+        if (member.locked) {
+            return false;
+        }
+
+        if (!member.global_admin) {
+            var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" &amp;&amp; typeof member.permission[accessType][app_id] === "object");
+
+            var memberHasAllFlag = member.permission &amp;&amp; member.permission[accessType] &amp;&amp; member.permission[accessType][app_id] &amp;&amp; member.permission[accessType][app_id].all;
+            var memberHasAllowedFlag = false;
+
+            if (typeof feature === 'string') {
+                memberHasAllowedFlag = member.permission &amp;&amp; member.permission[accessType] &amp;&amp; member.permission[accessType][app_id] &amp;&amp; member.permission[accessType][app_id].allowed &amp;&amp; member.permission[accessType][app_id].allowed[feature];
+            }
+            else {
+                for (var i = 0 ; i &lt; feature.length; i++) {
+                    if (member.permission &amp;&amp; member.permission[accessType] &amp;&amp; member.permission[accessType][app_id] &amp;&amp; member.permission[accessType][app_id].allowed &amp;&amp; member.permission[accessType][app_id].allowed[feature[i]]) {
+                        memberHasAllowedFlag = true;
+                        break;
+                    }
+                }
+            }
+
+            var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType &amp;&amp; (memberHasAllFlag || memberHasAllowedFlag);
+            var hasAdminAccess = (typeof member.permission === "object" &amp;&amp; typeof member.permission._ === "object" &amp;&amp; typeof member.permission._.a === "object") &amp;&amp; member.permission._.a.indexOf(app_id) > -1;
+            // don't allow if user has not permission for feature and has no admin access for current app
+            if (!(isFeatureAllowedInRelatedPermissionObject) &amp;&amp; !(hasAdminAccess)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return true;
+        }
+    }
+
+    /**
+     * validate create requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateCreate = function(feature, member, app_id) {
+        return validateWrite('c', feature, member, app_id);
+    };
+
+    /**
+     * validate read requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateRead = function(feature, member, app_id) {
+        member = member || countlyGlobal.member;
+        app_id = app_id || countlyCommon.ACTIVE_APP_ID;
+        if (member.locked) {
+            return false;
+        }
+        if (!member.global_admin) {
+            var isPermissionObjectExistForRead = (typeof member.permission.r === "object" &amp;&amp; typeof member.permission.r[app_id] === "object");
+            // TODO: make here better. create helper method for these checks
+            var memberHasAllFlag = member.permission &amp;&amp; member.permission.r &amp;&amp; member.permission.r[app_id] &amp;&amp; member.permission.r[app_id].all;
+            var memberHasAllowedFlag = false;
+
+            if (typeof feature === 'string') {
+                memberHasAllowedFlag = member.permission &amp;&amp; member.permission.r &amp;&amp; member.permission.r[app_id] &amp;&amp; member.permission.r[app_id].allowed &amp;&amp; member.permission.r[app_id].allowed[feature];
+            }
+            else {
+                for (var i = 0; i &lt; feature.length; i++) {
+                    if (member.permission &amp;&amp; member.permission.r &amp;&amp; member.permission.r[app_id] &amp;&amp; member.permission.r[app_id].allowed &amp;&amp; member.permission.r[app_id].allowed[feature[i]]) {
+                        memberHasAllowedFlag = true;
+                        break;
+                    }
+                }
+            }
+
+            var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead &amp;&amp; (memberHasAllFlag || memberHasAllowedFlag);
+
+            var hasAdminAccess = (typeof member.permission === "object" &amp;&amp; typeof member.permission._ === "object" &amp;&amp; typeof member.permission._.a === "object") &amp;&amp; member.permission._.a.indexOf(app_id) > -1;
+            // don't allow if user has not permission for feature and has no admin access for current app
+            if (!(isFeatureAllowedInReadPermissionObject) &amp;&amp; !(hasAdminAccess)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return true;
+        }
+    };
+
+    /**
+     * validate update requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateUpdate = function(feature, member, app_id) {
+        return validateWrite('u', feature, member, app_id);
+    };
+
+    /**
+     * validate delete requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateDelete = function(feature, member, app_id) {
+        return validateWrite('d', feature, member, app_id);
+    };
+
+    /**
+     * validate all types of requests for specific feature on specific app
+     * @param {string} accessType - write process type [c, r, u, d]
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validate = function(accessType, feature, member, app_id) {
+        if (accessType === "r") {
+            return countlyAuth.validateRead(feature, member, app_id);
+        }
+        else {
+            return validateWrite(accessType, feature, member, app_id);
+        }
+    };
+
+    /**
+     * Validate is this user global admin or not
+     * @returns {boolean} is this user global admin or not?
+     */
+    countlyAuth.validateGlobalAdmin = function() {
+        return countlyGlobal.member.global_admin;
+    };
+
+    /**
+     * Validate is this user admin of specific app or not
+     * @param {string} app - countly application id, optional
+     * @returns {boolean} user admin of specific app or not?
+     */
+    countlyAuth.validateAppAdmin = function(app) {
+        var _app = app || countlyCommon.ACTIVE_APP_ID;
+
+        if (countlyGlobal.member.global_admin) {
+            return true;
+        }
+        else {
+            return countlyGlobal.member.permission &amp;&amp; countlyGlobal.member.permission._ &amp;&amp; countlyGlobal.member.permission._.a &amp;&amp; countlyGlobal.member.permission._.a.indexOf(_app) > -1;
+        }
+    };
+
+    /**
+     * Validate is this user admin of any app or not
+     * If this user has admin access for at least one app, 
+     * we can show applications view to this user
+     * @returns {boolean} is this user admin of any app or not?
+     */
+    countlyAuth.validateAnyAppAdmin = function() {
+        return countlyGlobal.member.global_admin || (countlyGlobal.member.permission &amp;&amp; countlyGlobal.member.permission._ &amp;&amp; countlyGlobal.member.permission._.a &amp;&amp; countlyGlobal.member.permission._.a.length > 0);
+    };
+
+    countlyAuth.permissionSetGenerator = function(count) {
+        var permission_sets = [];
+        for (var i = 0; i &lt; count; i++) {
+            permission_sets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+        }
+        return permission_sets;
+    };
+
+    countlyAuth.initializePermissions = function(permissionSets) {
+        var permissionObject = {
+            c: {},
+            r: {},
+            u: {},
+            d: {},
+            _: {
+                a: [],
+                u: [[]]
+            }
+        };
+
+        for (var countlyApp in countlyGlobal.apps) {
+            for (var accessType in permissionObject) {
+                permissionObject[accessType][countlyApp] = {};
+                permissionObject[accessType][countlyApp].all = false;
+                permissionObject[accessType][countlyApp].allowed = {};
+                permissionObject[accessType].global = {};
+                permissionObject[accessType].global.all = false;
+                permissionObject[accessType].global.allowed = {};
+            }
+        }
+
+        permissionSets = [];
+        permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+
+        return {
+            permissionObject: permissionObject,
+            permissionSets: permissionSets
+        };
+    };
+
+    countlyAuth.updateAdminPermissions = function(app_id, permissionObject, processFlag) {
+        for (var i in countlyAuth.types) {
+            permissionObject[countlyAuth.types[i]][app_id] = {all: processFlag, allowed: {}};
+        }
+        return permissionObject;
+    };
+
+    countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
+        permissionObject[permissionType].all = processFlag;
+        for (var i = 0; i &lt; countlyAuth.features.length; i++) {
+            if (permissionType === 'r' &amp;&amp; countlyAuth.features[i] === 'core') {
+                continue;
+            }
+            if (processFlag) {
+                permissionObject[permissionType].allowed[countlyAuth.features[i]] = processFlag;
+            }
+            else {
+                delete permissionObject[permissionType].allowed[countlyAuth.features[i]];
+            }
+        }
+        return permissionObject;
+    };
+
+    countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
+        var allCheck = true;
+        for (var i = 0; i &lt; countlyAuth.features.length; i++) {
+            if (permissionType === 'r' &amp;&amp; countlyAuth.features[i] === 'core') {
+                continue;
+            }
+            if (!permissionObject[permissionType].allowed[countlyAuth.features[i]]) {
+                allCheck = false;
+            }
+        }
+        permissionObject[permissionType].all = allCheck;
+        permissionObject[permissionType].allowed[feature] = true;
+        return permissionObject;
+    };
+
+    countlyAuth.removeFeaturePermission = function(permissionType, feature, permissionObject) {
+        permissionObject[permissionType].all = false;
+        delete permissionObject[permissionType].allowed[feature];
+        return permissionObject;
+    };
+
+    countlyAuth.combinePermissionObject = function(user_apps, user_permission_sets, permission_object) {
+        for (var i = 0; i &lt; user_apps.length; i++) {
+            for (var j = 0; j &lt; user_apps[i].length; j++) {
+                permission_object.c[user_apps[i][j]] = user_permission_sets[i].c;
+                permission_object.r[user_apps[i][j]] = user_permission_sets[i].r;
+                permission_object.u[user_apps[i][j]] = user_permission_sets[i].u;
+                permission_object.d[user_apps[i][j]] = user_permission_sets[i].d;
+            }
+        }
+        return permission_object;
+    };
+
+    countlyAuth.permissionParser = function(parent_el, permission_object, permission_sets) {
+        var admin_apps = permission_object._.a;
+        var user_apps = permission_object._.u;
+        var checked_admin_apps = [];
+        var checked_user_apps = [];
+
+        for (var i = 0; i &lt; admin_apps.length; i++) {
+            if (countlyGlobal.apps[admin_apps[i]]) {
+                checked_admin_apps.push(admin_apps[i]);
+            }
+        }
+
+        $('#manage-users-admin-app-selector')[0].selectize.setValue(checked_admin_apps);
+
+        for (var i0 = 0; i0 &lt; user_apps.length; i0++) {
+            checked_user_apps = [];
+            for (var j0 = 0; j0 &lt; user_apps[i0].length; j0++) {
+                if (countlyGlobal.apps[user_apps[i0][j0]]) {
+                    checked_user_apps.push(user_apps[i0][j0]);
+                }
+            }
+
+            $(parent_el + ' #user-app-selector-' + i0)[0].selectize.setValue(checked_user_apps);
+
+            for (var j1 = 0; j1 &lt; countlyAuth.types.length; j1++) {
+                if (user_apps[i0].length > 0) {
+                    if (permission_object[countlyAuth.types[j1]][user_apps[i0][0]].all) {
+
+                        $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j1] + '-' + i0).countlyCheckbox().set(true);
+
+                        for (var k = 0; k &lt; countlyAuth.features.length; k++) {
+                            $(parent_el + ' #' + countlyAuth.types[j1] + '-' + countlyAuth.features[k] + '-' + i0).countlyCheckbox().set(true);
+                            if (countlyAuth.types[j1] === "r" &amp;&amp; countlyAuth.features[k] === 'core') {
+                                $(parent_el + ' #' + countlyAuth.types[j1] + '-' + countlyAuth.features[k] + '-' + i0).countlyCheckbox().setDisabled();
+                            }
+                        }
+
+                        permission_sets[i0][countlyAuth.types[j1]].all = true;
+                        permission_sets[i0][countlyAuth.types[j1]].allowed = permission_object[countlyAuth.types[j1]][user_apps[i0][0]].allowed;
+                    }
+                    else {
+                        for (var feature in permission_object[countlyAuth.types[j1]][user_apps[i0][0]].allowed) {
+                            permission_sets[i0] = countlyAuth.giveFeaturePermission(countlyAuth.types[j1], feature, permission_sets[i0]);
+                            $(parent_el + ' #' + countlyAuth.types[j1] + '-' + feature + '-' + i0).countlyCheckbox().set(true);
+                            if (countlyAuth.types[j1] === "r" &amp;&amp; feature === 'core') {
+                                $(parent_el + ' #' + countlyAuth.types[j1] + '-' + feature + '-' + i0).countlyCheckbox().setDisabled();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return permission_sets;
+    };
+
+    countlyAuth.getUserApps = function() {
+        var member = countlyGlobal.member;
+        var userApps = [];
+        if (member.global_admin) {
+            for (var app in countlyGlobal.apps) {
+                userApps.push(app);
+            }
+            return userApps;
+        }
+        else {
+            for (var i = 0; i &lt; member.permission._.u.length; i++) {
+                userApps = userApps.concat(member.permission._.u[i]);
+            }
+            return userApps.concat(member.permission._.a);
+        }
+    };
+
+    countlyAuth.getAdminApps = function() {
+        var member = countlyGlobal.member;
+        var adminApps = [];
+        if (member.global_admin) {
+            for (var app in countlyGlobal.apps) {
+                adminApps.push(app);
+            }
+            return adminApps;
+        }
+        else {
+            return member.permission._.a;
+        }
+    };
+
+    countlyAuth.featureBeautifier = function(featureName) {
+        var withDash = featureName.replaceAll("_", "-");
+        var withUnderscore = featureName.replaceAll("-", "_");
+        var localizedName = $.i18n.map[withDash + ".plugin-title"] || $.i18n.map[withDash + ".title"] || $.i18n.map[withUnderscore + ".plugin-title"] || $.i18n.map[withUnderscore + ".title"] || featureName;
+        return localizedName.split(" ").map(function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(" ");
+    };
+
+})(window.countlyAuth = window.countlyAuth || {});</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

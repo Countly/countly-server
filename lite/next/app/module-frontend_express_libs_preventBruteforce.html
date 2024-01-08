@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>frontend/express/libs/preventBruteforce - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Modules</h3><ul><li><a href="module-frontend_express_app.html">frontend/express/app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_app.html#~paramsGenerator">paramsGenerator</a></li></ul></li><li><a href="module-frontend_express_config.html">frontend/express/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.cookie">cookie</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.passwordSecret">passwordSecret</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_config.html#.web">web</a></li></ul></li><li><a href="module-frontend_express_libs_dollar-defender.html">frontend/express/libs/dollar-defender</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_dollar-defender.html#~recursiveDollarSearch">recursiveDollarSearch</a></li></ul></li><li><a href="module-frontend_express_libs_express-expose.html">frontend/express/libs/express-expose</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~expose">expose</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~exposed">exposed</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~renderNamespace">renderNamespace</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~renderObject">renderObject</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_express-expose.html#~string">string</a></li></ul></li><li><a href="module-frontend_express_libs_members.html">frontend/express/libs/members</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.countlyConfig">countlyConfig</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.db">db</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_members.html#.emptyPermission">emptyPermission</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.checkEmail">checkEmail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.checkUsername">checkUsername</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.clearReqAndRes">clearReqAndRes</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.extendSession">extendSession</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.findByUsernameOrEmail">findByUsernameOrEmail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.findMembers">findMembers</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.forgot">forgot</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.login">login</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.loginWithExternalAuthentication">loginWithExternalAuthentication</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.loginWithToken">loginWithToken</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.logout">logout</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.recheckConfigs">recheckConfigs</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.removeMembers">removeMembers</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.settings">settings</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.setup">setup</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.updateMember">updateMember</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.updateStats">updateStats</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#.verifyCredentials">verifyCredentials</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~createMember">createMember</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~getSessionTimeoutInMs">getSessionTimeoutInMs</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~killOtherSessionsForUser">killOtherSessionsForUser</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~mergePermissions">mergePermissions</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~setLoggedInVariables">setLoggedInVariables</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~validatePassword">validatePassword</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_members.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-frontend_express_libs_preventBruteforce.html">frontend/express/libs/preventBruteforce</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.blockHooks">blockHooks</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.db">db</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.fails">fails</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.pathIdentifiers">pathIdentifiers</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.userIdentifiers">userIdentifiers</a></li><li data-type='member' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.wait">wait</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.fail">fail</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.isBlocked">isBlocked</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.middleware">middleware</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="module-frontend_express_libs_preventBruteforce.html#~getTimestamp">getTimestamp</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#SkinStore">SkinStore</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">frontend/express/libs/preventBruteforce</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Module to record failed attempts and prevent brute force credential guessing</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>Module to record failed attempts and prevent brute force credential guessing</p></div>
+            
+
+            
+                <h3>Example</h3>
+                
+    <pre class="prettyprint"><code>var username, pass;
+preventBruteforce.isBlocked("login", username, function(isBlocked, fails, err) {
+    if (isBlocked) {
+        console.log("User is blocked");
+        return;
+    }
+    else {
+        if (login()) {
+            //user logged in, reset any fails user had
+            preventBruteforce.reset("login", username);
+        }
+        else {
+            //user failed to login, increase fails
+            preventBruteforce.fail("login", username);
+        }
+    }
+});</code></pre>
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".blockHooks"><span class="type-signature type-signature-static">(static) </span>blockHooks<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blockHooks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>map path identifiers to functions that are executed when users are blocked e.g. send a mail</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".db"><span class="type-signature type-signature-static">(static) </span>db<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Data base connection. Needs to be set befoe callng any other function.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".fails"><span class="type-signature type-signature-static">(static) </span>fails<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fails</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>How many times user is allowed to fail</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".mail"><span class="type-signature type-signature-static">(static) </span>mail<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mail</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Mail service to add mailing capabilities</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".pathIdentifiers"><span class="type-signature type-signature-static">(static) </span>pathIdentifiers<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pathIdentifiers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Scope or path of check</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".userIdentifiers"><span class="type-signature type-signature-static">(static) </span>userIdentifiers<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>userIdentifiers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>map paths to functions that extract identifiers from requests i.e. (req) =&gt; {ip: req.ip}</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".wait"><span class="type-signature type-signature-static">(static) </span>wait<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>wait</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>How long to wait in seconds until removing the block</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".fail"><span class="type-signature type-signature-static">(static) </span>fail<span class="signature">(pid, uid, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Increase fails for provided namepsace and user</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line170">line 170</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>preventBruteforce.fail("login", username);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>namespace of the block</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>user identifier</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback to call when done</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".isBlocked"><span class="type-signature type-signature-static">(static) </span>isBlocked<span class="signature">(pid, uid, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Check if user is blocked for provided namepsace and user idendtifier</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line132">line 132</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var username, pass;
+preventBruteforce.isBlocked("login", username, function(isBlocked, fails, err) {
+    if (isBlocked) {
+        console.log("User is blocked");
+        return;
+    }
+    else {
+        if (login()) {
+            //user logged in, reset any fails user had
+            preventBruteforce.reset("login", username);
+        }
+        else {
+            //user failed to login, increase fails
+            preventBruteforce.fail("login", username);
+        }
+    }
+});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>namespace of the block</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>user identifier</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback to call with result</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".middleware"><span class="type-signature type-signature-static">(static) </span>middleware<span class="signature">(req, res, next)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Middleware to listen to specific paths and check if user is blocked</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line71">line 71</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>app.use(preventBruteforce.middleware);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>response object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback to call next middleware</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".reset"><span class="type-signature type-signature-static">(static) </span>reset<span class="signature">(pid, uid, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Reset fails for provided namepsace and user</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line156">line 156</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>preventBruteforce.reset("login", username);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>namespace of the block</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>user identifier</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback to call when done</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getTimestamp"><span class="type-signature type-signature-inner">(inner) </span>getTimestamp<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get current unix timestamp in seconds</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_preventBruteforce.js.html">libs/preventBruteforce.js</a>, <a href="libs_preventBruteforce.js.html#line180">line 180</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>current unix timestamp in seconds</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:36 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/mgmt/app_users.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/mgmt/app_users.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* This module is meant for manipulating app_users documents programmatically, without the need of SDK request
+* @module api/parts/mgmt/app_users
+*/
+
+/** @lends module:api/parts/mgmt/app_users */
+var usersApi = {},
+    common = require('./../../utils/common.js'),
+    plugins = require('../../../plugins/pluginManager.js');
+var path = require('path');
+const fs = require('fs');
+var countlyFs = require('./../../utils/countlyFs.js');
+//var cp = require('child_process'); //call process
+//var spawn = cp.spawn; //for calling comannd line
+const fse = require('fs-extra');
+var crypto = require('crypto');
+var log = common.log('core:app_users');
+
+var cohorts;
+try {
+    cohorts = require("../../../plugins/cohorts/api/parts/cohorts.js");
+}
+catch (ex) {
+    cohorts = null;
+}
+
+/**
+* Create new app_user document. Creates uid if one is not provided
+* @param {string} app_id - _id of the app
+* @param {object} doc - document to insert
+* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {function} callback - called when finished providing error (if any) as first param and insert result as second
+*/
+usersApi.create = function(app_id, doc, params, callback) {
+    if (typeof params === "function") {
+        callback = params;
+        params = {};
+    }
+    if (!doc) {
+        callback("Provide data to insert");
+        return;
+    }
+    if (typeof doc.did === "undefined") {
+        callback("Provide device_id as did property for data");
+        return;
+    }
+    common.readBatcher.getOne("apps", {_id: common.db.ObjectID(app_id)}, (err, app) => {
+        if (err || !app) {
+            callback("App does not exist");
+            return;
+        }
+        var _id = common.crypto.createHash('sha1').update(app.key + doc.did + "").digest('hex');
+        if (doc._id &amp;&amp; doc._id !== _id) {
+            callback("Based on app key and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
+            return;
+        }
+        doc._id = _id;
+        if (typeof doc.uid === "undefined") {
+            usersApi.getUid(app_id, function(err1, uid) {
+                if (uid) {
+                    doc.uid = uid;
+                    if (params &amp;&amp; params.href) {
+                        doc.first_req_get = (params.href + "") || "";
+                    }
+                    else {
+                        doc.first_req_get = "";
+                    }
+                    if (params &amp;&amp; params.req &amp;&amp; params.req.body) {
+                        doc.first_req_post = (params.req.body + "") || "";
+                    }
+                    else {
+                        doc.first_req_post = "";
+                    }
+                    common.db.collection('app_users' + app_id).insert(doc, function(err2) {
+                        if (!err2) {
+                            plugins.dispatch("/i/app_users/create", {
+                                app_id: app_id,
+                                user: doc,
+                                res: doc,
+                                params: params
+                            });
+                        }
+                        if (callback) {
+                            callback(err1 || err2, doc);
+                        }
+                    });
+                }
+                else if (callback) {
+                    callback(err1);
+                }
+            });
+        }
+        else {
+            common.db.collection('app_users' + app_id).insert(doc, function(err1) {
+                if (!err1) {
+                    plugins.dispatch("/i/app_users/create", {
+                        app_id: app_id,
+                        user: doc,
+                        res: doc,
+                        params: params
+                    });
+                }
+                if (callback) {
+                    callback(err1, doc);
+                }
+            });
+        }
+    });
+};
+
+/**
+* Update existing app_users document. Cannot replace document, must have modifiers like $set, $unset, etc
+* @param {string} app_id - _id of the app
+* @param {object} query - mongodb query to select which app users to update
+* @param {object} update - mongodb update object
+* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {function} callback - called when finished providing error (if any) as first param and updated user document as second
+*/
+usersApi.update = function(app_id, query, update, params, callback) {
+    if (typeof params === "function") {
+        callback = params;
+        params = {};
+    }
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+    if (Object.keys(update).length) {
+        for (var i in update) {
+            if (i.indexOf("$") !== 0) {
+                let err = "Unkown modifier " + i + " in " + JSON.stringify(update) + " for " + JSON.stringify(query);
+                console.log(err);
+                if (callback) {
+                    callback(err);
+                }
+                return;
+            }
+        }
+        common.db.collection('app_users' + app_id).updateMany(query, update, function(err, res) {
+            if (!err) {
+                var updated = {result: res.result || "", matchedCount: res.matchedCount || 0, modifiedCount: res.modifiedCount || 0, ops: res.ops || []};
+                plugins.dispatch("/i/app_users/update", {
+                    app_id: app_id,
+                    query: query,
+                    update: update,
+                    user: updated,
+                    params: params
+                });
+            }
+            if (callback) {
+                callback(err, res &amp;&amp; res.result);
+            }
+        });
+    }
+    else if (callback) {
+        callback("Update can't be empty");
+    }
+};
+
+/**
+* Delete existing app_users documents, deletes also all plugin data
+* @param {string} app_id - _id of the app
+* @param {object} query - mongodb query to select which app users to delete
+* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
+*/
+usersApi.delete = function(app_id, query, params, callback) {
+    if (typeof params === "function") {
+        callback = params;
+        params = {};
+    }
+    query = query || {};
+    if (typeof query === "string" &amp;&amp; query.length) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = {};
+        }
+    }
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+    common.db.collection("app_users" + app_id).aggregate([
+        {$match: query},
+        {
+            $group: {
+                _id: null,
+                uid: { $addToSet: '$uid' },
+                picture: {$addToSet: '$picture'},
+                exported: {$addToSet: '$appUserExport'}
+            }
+        }
+    ], {allowDiskUse: true}, function(err0, res) {
+        if (err0) {
+            console.log("Error generating list of uids", err0, res);
+        }
+        if (res &amp;&amp; res[0] &amp;&amp; res[0].uid &amp;&amp; res[0].uid.length) {
+            common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function() {
+                plugins.dispatch("/i/app_users/delete", {
+                    app_id: app_id,
+                    query: query,
+                    uids: res[0].uid,
+                    params: params
+                }, function(_, otherPluginResults) {
+                    const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                        if (result.status === "rejected") {
+                            acc.push((result.reason &amp;&amp; result.reason.message) || '');
+                        }
+
+                        return acc;
+                    }, []);
+
+                    if (rejectReasons.length > 0) {
+                        log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                        common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                        return;
+                    }
+
+                    common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
+                        if (res[0].exported) {
+                            //delete exports if exist
+                            for (let i = 0;i &lt; res[0].exported.length; i++) {
+                                let id = res[0].exported[i].split("/");
+                                id = id[id.length - 1]; //last one is filename
+                                id = id.substr(id.length - 7);
+
+                                deleteMyExport(id).then(
+                                    function() {},
+                                    function(err1) {
+                                        console.log(err1);
+                                    }
+                                );
+                            }
+                        }
+                        //deleting userimages(if they exist);
+                        if (res[0].picture) {
+                            for (let i = 0;i &lt; res[0].picture.length; i++) {
+                                //remove /userimages/ 
+                                let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                                var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
+                                countlyFs.deleteFile("userimages", pp, {id: id}, function(err1) {
+                                    if (err1) {
+                                        console.log(err1);
+                                    }
+                                });
+                            }
+                        }
+                        try {
+                            fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                        }
+                        catch (err2) {
+                            console.log(err2);
+                        }
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "app_user_deleted",
+                            data: {
+                                app_id: app_id,
+                                query: JSON.stringify(query),
+                                uids: res[0].uid,
+                            }
+                        });
+                        callback(err, res[0].uid);
+                    });
+                });
+            });
+        }
+        else {
+            callback("No Users to delete", []);
+        }
+    });
+};
+
+/**
+* Search for users by query. Additionally can manipulate result set as sort, limit, skip, and specify return fields
+* @param {string} app_id - _id of the app
+* @param {object|json_string} query - mongodb query to select which app users to update
+* @param {object|json_string} project - mongodb projection which fields to return
+* @param {object|json_string} sort - mongodb sort object
+* @param {number} limit - upper limit, how many users to return
+* @param {number} skip - how many users to skip from beginning
+* @param {function} callback - called when finished providing error (if any) as first param and result user list array as second
+*/
+usersApi.search = function(app_id, query, project, sort, limit, skip, callback) {
+    query = query || {};
+    if (typeof query === "string" &amp;&amp; query.length) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = {};
+        }
+    }
+
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+
+    project = project || {};
+    if (typeof project === "string" &amp;&amp; project.length) {
+        try {
+            project = JSON.parse(project);
+        }
+        catch (ex) {
+            project = {};
+        }
+    }
+
+    sort = sort || {};
+    if (typeof sort === "string" &amp;&amp; sort.length) {
+        try {
+            sort = JSON.parse(sort);
+        }
+        catch (ex) {
+            sort = {};
+        }
+    }
+
+    limit = parseInt(limit) || 0;
+    skip = parseInt(skip) || 0;
+
+    var cursor = common.db.collection('app_users' + app_id).find(query, project);
+    if (Object.keys(sort).length) {
+        cursor.sort(sort);
+    }
+
+    if (skip) {
+        cursor.skip(skip);
+    }
+
+    if (limit) {
+        cursor.limit(limit);
+    }
+
+    cursor.toArray(callback);
+};
+
+/**
+* Count users by query. 
+* @param {string} app_id - _id of the app
+* @param {object|json_string} query - mongodb query to select which app users to update
+* @param {function} callback - called when finished providing error (if any) as first param and resultcount of users as second
+*/
+usersApi.count = function(app_id, query, callback) {
+    query = query || {};
+    if (typeof query === "string" &amp;&amp; query.length) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = {};
+        }
+    }
+
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+
+    common.db.collection('app_users' + app_id).count(query, callback);
+};
+
+/**
+* Returns uid for new users
+* @param {string} app_id - _id of the app
+* @param {function} callback - called when finished providing error (if any) as first param and new uid as second
+*/
+usersApi.getUid = function(app_id, callback) {
+    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(app_id)}, {}, {$inc: {seq: 1}}, {
+        new: true,
+        upsert: true
+    }, function(err, result) {
+        result = result &amp;&amp; result.ok ? result.value : null;
+        if (result &amp;&amp; result.seq) {
+            if (callback) {
+                callback(err, common.parseSequence(result.seq));
+            }
+        }
+        else if (callback) {
+            callback(err);
+        }
+    });
+};
+
+
+usersApi.mergeOtherPlugins = function(db, app_id, newAppUser, oldAppUser, updateFields, callback) {
+    log.d("Merging other plugins ", oldAppUser.uid + "->" + newAppUser.uid);
+    var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
+    updateFields.lu = Math.round(new Date().getTime() / 1000);
+    //mark that we start calculating it, users doc is updated
+    //check if there are any merges pointing to this user. Do not process unless previous is finished.
+    db.collection('app_user_merges').aggregate([{"$match": {"_id": {"$regex": app_id + "_" + oldAppUser.uid + "_.*"}}}, {"$project": {"_id": 1}}, {"$limit": 1}]).toArray(function(err, res) {
+        if (err) {
+            log.e(err);
+            if (callback &amp;&amp; typeof callback === 'function') {
+                callback(err);
+            }
+        }
+        else if (res &amp;&amp; res.length > 0) {
+            callback("skipping till previous merge is finished");
+        }
+        else {
+            db.collection('app_user_merges').update({"_id": iid, "cc": {"$ne": true}}, {'$set': updateFields, "$inc": {"t": 1}}, {upsert: false}, function(err0) {
+                if (err0) {
+                    log.e("Failed to update merge document about started merge", err);
+                    if (callback &amp;&amp; typeof callback === 'function') {
+                        callback(err);
+                    }
+                }
+                else {
+                    plugins.dispatch("/i/device_id", {
+                        app_id: app_id,
+                        oldUser: oldAppUser,
+                        newUser: newAppUser
+                    }, function(err9, result) {
+                        if (err9) {
+                            log.e(err9);
+                        }
+                        var retry = false;
+                        if (result &amp;&amp; result.length) {
+                            for (let index = 0; index &lt; result.length; index++) {
+                                if (result[index].status === "rejected") {
+                                    retry = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (retry) {
+                            //Unmark cc to let it be retried later in job.
+                            common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
+                                if (err4) {
+                                    log.e(err4);
+                                }
+                                if (callback &amp;&amp; typeof callback === 'function') {
+                                    callback(err4);
+                                }
+                            });
+                        }
+                        else {
+                            //data merged. Delete record from merges collection
+                            common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                                if (err5) {
+                                    log.e("Failed to remove merge document", err5);
+                                }
+                                if (callback &amp;&amp; typeof callback === 'function') {
+                                    callback(err5);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+};
+
+usersApi.mergeUserProperties = function(newAppUserP, oldAppUser) {
+    for (var i in oldAppUser) {
+        // sum up session count and total session duration
+        if (i === "sc" || i === "tsd") {
+            if (typeof newAppUserP[i] === "undefined") {
+                newAppUserP[i] = 0;
+            }
+            newAppUserP[i] += oldAppUser[i];
+        }
+        //check if old user has been seen before new one
+        else if (i === "fs") {
+            if (!newAppUserP.fs || oldAppUser.fs &lt; newAppUserP.fs) {
+                newAppUserP.fs = oldAppUser.fs;
+            }
+        }
+        //check if old user has been seen before new one
+        else if (i === "fac") {
+            if (!newAppUserP.fac || oldAppUser.fac &lt; newAppUserP.fac) {
+                newAppUserP.fac = oldAppUser.fac;
+            }
+        }
+        //check if old user has been the last to be seen
+        else if (i === "ls") {
+            if (!newAppUserP.ls || oldAppUser.ls > newAppUserP.ls) {
+                newAppUserP.ls = oldAppUser.ls;
+                //then also overwrite last session data
+                if (oldAppUser.lsid) {
+                    newAppUserP.lsid = oldAppUser.lsid;
+                }
+                if (oldAppUser.sd) {
+                    newAppUserP.sd = oldAppUser.sd;
+                }
+            }
+        }
+        //check if old user has been the last to be seen
+        else if (i === "lac") {
+            if (!newAppUserP.lac || oldAppUser.lac > newAppUserP.lac) {
+                newAppUserP.lac = oldAppUser.lac;
+            }
+        }
+        else if (i === "lest") {
+            if (!newAppUserP.lest || oldAppUser.lest > newAppUserP.lest) {
+                newAppUserP.lest = oldAppUser.lest;
+            }
+        }
+        else if (i === "lbst") {
+            if (!newAppUserP.lbst || oldAppUser.lbst > newAppUserP.lbst) {
+                newAppUserP.lbst = oldAppUser.lbst;
+            }
+        }
+        else if (i === "merges") {
+            if (typeof newAppUserP.merges === "undefined") {
+                newAppUserP.merges = 0;
+            }
+            if (typeof oldAppUser.merges !== "undefined") {
+                newAppUserP.merges += oldAppUser.merges;
+            }
+
+        }
+        //merge custom user data
+        else if (typeof oldAppUser[i] === "object" &amp;&amp; oldAppUser[i]) {
+            if (Array.isArray(oldAppUser[i])) {
+                if (!Array.isArray(newAppUserP[i])) {
+                    newAppUserP[i] = [];
+                }
+                for (let j = 0; j &lt; oldAppUser[i].length; j++) {
+                    //set properties that new user does not have
+                    if (newAppUserP[i].indexOf(oldAppUser[i][j]) === -1) {
+                        newAppUserP[i].push(oldAppUser[i][j]);
+                    }
+                }
+            }
+            else if (typeof oldAppUser[i].toHexString === 'function') {
+                newAppUserP[i] = newAppUserP[i] || oldAppUser[i];
+            }
+            else {
+                if (typeof newAppUserP[i] === "undefined") {
+                    newAppUserP[i] = {};
+                }
+                for (let j in oldAppUser[i]) {
+                    //set properties that new user does not have
+                    if (typeof newAppUserP[i][j] === "undefined") {
+                        newAppUserP[i][j] = oldAppUser[i][j];
+                    }
+                }
+            }
+        }
+        //set other properties that new user does not have
+        else if (i !== "_id" &amp;&amp; i !== "did" &amp;&amp; typeof newAppUserP[i] === "undefined") {
+            newAppUserP[i] = oldAppUser[i];
+        }
+    }
+    newAppUserP.merges = (newAppUserP.merges || 0) + 1;
+};
+
+/*
+async function updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser, callback) {
+    const session = common.db.client.startSession();
+    const transactionOptions = {
+        readPreference: 'primary',
+        readConcern: { level: 'local' },
+        writeConcern: { w: 'majority' }
+    };
+    var returned = false;
+    try {
+        const transactionResults = await session.withTransaction(async() => {
+            await common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, {session});
+            await common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, {session});
+            await common.db.collection("app_user_merges").update({"_id": app_id + "_" + newAppUserP.uid + "_" + oldAppUser.uid}, {'$set': {"u": true}}, {upsert: false, session});
+        }, transactionOptions);
+
+        if (transactionResults) {
+            log.d("Data was updated.");
+        }
+        else {
+            log.e('Transaction on user merge doc update failed.');
+        }
+    }
+    catch (e) {
+        log.e("The transaction was aborted due to an unexpected error: " + e);
+        transactionResults = false;
+    }
+    finally {
+        await session.endSession();
+        callback(!transactionResults);
+    }
+}*/
+
+/**
+* Merges two app users data (including plugin data) into one user, using mostly params from latest user, and updates all collections
+* @param {string} app_id - _id of the app
+* @param {object} newAppUser - app_users document of new/current user
+* @param {string} new_id - new user's _id
+* @param {string} old_id - old user's _id
+* @param {string} new_device_id - new user's device_id
+* @param {string} old_device_id - old user's device_id
+* @param {function} callback - called when finished providing error (if any) as first param and resulting merged document as second
+*/
+usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
+    /**
+    * Inner function to merge user data
+    * @param {object} newAppUserP  - new user data
+    * @param {object} oldAppUser - old user data
+    */
+    function mergeUserData(newAppUserP, oldAppUser) {
+        //allow plugins to deal with user mergin properties
+        plugins.dispatch("/i/user_merge", {
+            app_id: app_id,
+            newAppUser: newAppUserP,
+            oldAppUser: oldAppUser
+        }, function() {
+            //merge user data
+            usersApi.mergeUserProperties(newAppUserP, oldAppUser);
+            //update states in transaction to ensure integrity
+
+            //we could use transactions, which makes it more stable, but we can't for now on all servers.
+            //keeping for future reference
+            /*  
+                updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser, function(err) {
+                    if (err) {
+                        log.e("Failed to update states in transaction", err);
+                    }
+                    if (callback &amp;&amp; typeof callback === 'function') {
+                        callback(err, newAppUserP);
+                    }
+                    if (!err) {
+                        common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
+                            if (err7) {
+                                log.e("Failed metric changes update in app_users merge", err7);
+                            }
+                            else {
+                                usersApi.mergeOtherPlugins(common.db, app_id, newAppUserP, oldAppUser, {"cc": true, "mc": true}, function() {
+
+
+                                });
+                            }
+                        });
+                    }
+                });
+            */
+            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
+                if (err) {
+                    if (callback &amp;&amp; typeof callback === 'function') {
+                        callback(err, newAppUserP); //Filed. Old and new exists. SDK will re
+                    }
+                }
+                else {
+                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
+                        if (errRemoving) {
+                            log.e("Failed to remove merged user from database", errRemoving); //Failed. Old and new exists. SDK will retry
+                        }
+                        if (callback &amp;&amp; typeof callback === 'function') {
+                            callback(errRemoving, newAppUserP);
+                        }
+                        //Dispatch to other plugins only after callback.
+                        if (!errRemoving) {
+                            //If it fails now - job will retry.
+                            //update metric changes document
+                            var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
+                            common.db.collection('app_user_merges').update({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false}, function(err1) {
+                                if (err1) {
+                                    log.e(err1);
+                                }
+                                else {
+                                    common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
+                                        if (err7) {
+                                            log.e("Failed metric changes update in app_users merge", err7);
+                                        }
+                                        usersApi.mergeOtherPlugins(common.db, app_id, newAppUserP, oldAppUser, {"cc": true, "u": true, "mc": true}, function() {});
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    common.db.collection('app_users' + app_id).findOne({'_id': old_id }, function(err, oldAppUser) {
+        if (err) {
+            //problem getting old user data
+            return callback(err, oldAppUser);
+        }
+        if (!oldAppUser) {
+            //there is no old user, process request
+            return callback(null, newAppUser);
+        }
+        if (!newAppUser || !Object.keys(newAppUser).length) {
+            //new user does not exist yet
+            //simply copy user document with old uid
+            //no harm is done
+            oldAppUser.did = new_device_id + "";
+            oldAppUser._id = new_id;
+            common.db.collection('app_users' + app_id).insert(oldAppUser, function(err2) {
+                if (err) {
+                    callback(err2, oldAppUser);
+                }
+                else {
+                    common.db.collection('app_users' + app_id).remove({_id: old_id}, function(err3) {
+                        callback(err3, oldAppUser);
+                    });
+                }
+            });
+        }
+        else {
+            //we have to merge user data
+            if (!newAppUser.ls || (newAppUser.ls &lt; oldAppUser.ls)) {
+                //switching user identity
+                var temp = oldAppUser._id;
+                oldAppUser._id = newAppUser._id;
+                newAppUser._id = temp;
+
+                temp = oldAppUser.did;
+                oldAppUser.did = newAppUser.did;
+                newAppUser.did = temp;
+
+                temp = oldAppUser.uid;
+                oldAppUser.uid = newAppUser.uid;
+                newAppUser.uid = temp;
+
+                //switching around doc references
+                var tempDoc = oldAppUser;
+                oldAppUser = newAppUser;
+                newAppUser = tempDoc;
+            }
+            common.db.collection('app_user_merges').insert({
+                //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
+                _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
+                merged_to: newAppUser.uid,
+                ts: Math.round(new Date().getTime() / 1000),
+                lu: Math.round(new Date().getTime() / 1000),
+                t: 0 //tries
+            }, {ignore_errors: [11000]}, function() {
+                //If there is any merge inserted New->somethingElse, do not merge data yet. skip till that finishes.
+                mergeUserData(newAppUser, oldAppUser);
+            });
+        }
+    });
+};
+
+var deleteMyExport = function(exportID) { //tries to delete packed file, exported folder and saved export in gridfs
+    //normally there should be only export in gridfs. Cleaning all to be sure.
+    //rejects only if there stays any saved data for export
+    return new Promise(function(resolve, reject) {
+        //remove archive
+        var errors = [];
+        if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'))) {
+            try {
+                fs.unlinkSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'));
+            }
+            catch (err) {
+                errors.push(err);
+            }
+        }
+
+        countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
+            if (error &amp;&amp; error.message &amp;&amp; error.message.substring(0, 12) !== "FileNotFound" &amp;&amp; error.message.substring(0, 14) !== 'File not found') {
+                log.e(error.message.substring(0, 14));
+                errors.push(error.message);
+            }
+            if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
+                fse.remove(path.resolve(__dirname, './../../../export/AppUser/' + exportID),
+                    err => {
+                        if (err) {
+                            errors.push(error);
+                        }
+                        if (errors.length === 0) {
+                            resolve();
+                        }
+                        else {
+                            reject(errors);
+                        }
+                    }
+                );
+            }
+            else {
+                if (errors.length === 0) {
+                    resolve();
+                }
+                else {
+                    reject(errors);
+                }
+            }
+        });
+
+    });
+};
+
+usersApi.deleteExport = function(filename, params, callback) {
+    if (filename &amp;&amp; filename !== '') {
+        var base_name = filename.split('.');
+        var name_parts = base_name[0].split('_');
+
+        //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}            
+        if (name_parts[0] !== 'appUser') {
+            callback('invalid filename', '');
+        }
+        else {
+            //remove archive
+            deleteMyExport(base_name[0]).then(
+                function() {
+                    common.db.collection("exports").remove({"_eid": base_name[0]}, function(err0) {
+                        if (err0) {
+                            log.e(err0);
+                        }
+                        if (name_parts.length === 3 &amp;&amp; name_parts[2] !== 'HASH') {
+                            //update user info
+                            common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
+                                if (err) {
+                                    callback(err, "");
+                                }
+                                else {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "export_app_user_deleted",
+                                        data: {
+                                            result: "ok",
+                                            uids: name_parts[2],
+                                            id: base_name[0],
+                                            app_id: name_parts[1],
+                                            info: "Exported data deleted"
+                                        }
+                                    });
+                                    callback(null, "Export deleted");
+                                }
+                            });
+                        }
+                        else {
+                            plugins.dispatch("/systemlogs", {
+                                params: params,
+                                action: "export_app_user_deleted",
+                                data: {
+                                    result: "ok",
+                                    id: base_name[0],
+                                    app_id: name_parts[1],
+                                    info: "Exported data deleted"
+                                }
+                            });
+                            callback(null, "Export deleted");
+                        }
+                    });
+                },
+                function(err) {
+                    console.log(err);
+                    callback("There was some errors during deleting export. Please look in log for more information", "");
+                }
+            );
+        }
+    }
+    else {
+        callback("Invalid filename", "");
+    }
+};
+
+/*
+var run_command = function(my_command, my_args) {
+    log.d("run_command:" + my_command + JSON.stringify(my_args));
+    return new Promise(function(resolve, reject) {
+        var child = spawn(my_command, my_args, {
+            shell: false,
+            cwd: path.resolve(__dirname, './../../../export/AppUser'),
+            detached: false
+        }, function(error) {
+            if (error) {
+                log.e(error);
+                return reject(Error('error:' + JSON.stringify(error)));
+            }
+        });
+        child.on('error', function(error) {
+            log.e(error);
+            return reject(error);
+        });
+        child.on('exit', function(code) {
+            if (code === 0) {
+                return resolve();
+            }
+            else {
+                console.log("Exited with error code: " + code);
+                try { //because we might have rejected it with error
+                    reject("Bad exit code");
+                }
+                catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+    });
+};
+var clear_out_empty_files = function(folder) {
+    return new Promise(function(resolve) {
+        run_command("find", [folder, "-type", "f", "-name", "*.json", "-size", "0", "-delete"]).then(
+            function() {
+                resolve();
+            },
+            function() {
+                resolve(); //resolve anyway(not so bad if empty files not deleted)
+            }
+        );
+    });
+};*/
+
+var export_safely = function(options) {
+    return new Promise(function(resolve) {
+        var args = options.args;
+
+        var params_countly = plugins.getDbConnectionParams('countly');
+
+        var dbName = 'countly';
+        var collection = "";
+        var query = "{}";
+        for (var z = 0; z &lt; args.length; z++) {
+            if (args[z] === '--collection') {
+                collection = args[z + 1];
+            }
+            if (args[z] === '-q') {
+                query = args[z + 1];
+            }
+
+            if (args[z] === '--db') {
+                dbName = args[z + 1];
+            }
+        }
+        try {
+            query = JSON.parse(query);
+        }
+        catch (e) {
+            log.e(e);
+            query = {};
+        }
+
+        var pipeline = [{"$match": query}, {"$addFields": {"_col": collection, "__id": "$_id", "_eid": options.export_id}}, {"$project": {"_id": 0}}, {"$merge": {"into": {"db": "countly", "coll": "exports"}}}];
+        if (dbName === params_countly.db) {
+            common.db.collection(collection).aggregate(pipeline, function(err) {
+                if (err) {
+                    log.e(err);
+                }
+                resolve();
+            });
+        }
+        else {
+            common.drillDb.collection(collection).aggregate(pipeline, function(err2) {
+                if (err2) {
+                    log.e(err2);
+                }
+                resolve();
+            });
+        }
+    });
+};
+/**
+* Exports data about app_users, including plugin data
+* @param {string} app_id - _id of the app
+* @param {object} query - mongodb query to select which app users data to export
+* @param {object} params  - params
+* @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
+*/
+usersApi.export = function(app_id, query, params, callback) {
+    /**
+    * Inner function to have less lines. Called when there is error and is necessery to clean up files
+    * @param {string} my_export_filename  - export name
+    * @param {object} my_params  - params
+    * @param {string} my_app_id  - app id
+    * @param {string} my_eid  - export id
+    * @param {string} message1 - message on successful cleanup
+    * @param {string} message2 -  message on failed cleaning up
+    * @param {function} my_callback - callback function(passed)
+    */
+    function callDeleteExport(my_export_filename, my_params, my_app_id, my_eid, message1, message2, my_callback) {
+        usersApi.deleteExport(my_export_filename, my_params, function(err) {
+            if (err) {
+                my_callback({ message: message1, filename: 'appUser_' + my_app_id + '_' + my_eid }, "");
+            }
+            else {
+                my_callback({ message: message2, filename: 'appUser_' + my_app_id + '_' + my_eid}, "");
+            }
+        });
+    }
+
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+
+    common.db.collection("app_users" + app_id).aggregate([
+        {$match: query},
+        {
+            $group: {
+                _id: null,
+                uid: { $addToSet: '$uid' },
+                mid: {$addToSet: '$_id'}
+            }
+        }
+    ], {allowDiskUse: true}, function(err_base, res) {
+        if (err_base) {
+            callback({
+                message: err_base,
+                filename: ""
+            }, "");
+            return;
+        }
+        if (res &amp;&amp; res[0] &amp;&amp; res[0].uid &amp;&amp; res[0].uid.length) {
+            //create export folder
+            var eid = res[0].uid[0];
+            var eid2 = res[0].mid[0];
+            var single_user = true;
+            //if more than one user - create hash
+            if (res[0].uid.length > 1) {
+                var sorted = res[0].uid.sort();
+                eid = "HASH_" + crypto.createHash('SHA1').update(JSON.stringify(sorted)).digest('hex');
+                single_user = false;
+            }
+
+            var export_folder = path.resolve(__dirname, './../../../export');
+            export_folder = path.resolve(__dirname, './../../../export/AppUser/appUser_' + app_id + '_' + eid);
+            var export_id = 'appUser_' + app_id + '_' + eid;
+            var export_filename = 'appUser_' + app_id + '_' + eid;
+
+            var dbargs = [];
+            var export_commands = {};
+            var db_params = plugins.getDbConnectionParams('countly');
+            for (var p in db_params) {
+                dbargs.push("--" + p);
+                dbargs.push(db_params[p]);
+            }
+
+            plugins.dispatch("/systemlogs", {
+                params: params,
+                action: "export_app_user_started",
+                data: {
+                    result: "ok",
+                    uids: res[0].uid.join(", "),
+                    app_id: app_id,
+                    info: "Export started",
+                    export_file: export_filename + ".json"
+                }
+            });
+
+            //update db if one user
+            // new Promise(function(resolve, reject) {
+            //commented out the below code as we do not want appUserExport in the exported json file
+            // if (single_user) {
+            //     common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
+            //         if (err_sel) {
+            //             reject(err_sel);
+            //         }
+            //         else {
+            //             resolve();
+            //         }
+            //     });
+            // }
+            // else {
+            // resolve();
+            // }
+            new Promise(function(resolve) {
+                log.d("collection marked");
+                //export data from metric_changes
+
+                export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
+                    resolve();
+                });
+            }).then(function() {
+                log.d("metric_changes exported");
+                //export data from app_users
+                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
+
+            }).then(
+                function() {
+                    log.d("app_users exported");
+                    //get other export commands from other plugins
+                    plugins.dispatch("/i/app_users/export", {
+                        app_id: app_id,
+                        dbstr: "",
+                        dbargs: dbargs,
+                        export_commands: export_commands,
+                        query: query,
+                        uids: res[0].uid,
+                        export_folder: export_folder
+                    }, function() {
+                        var commands = [];
+                        for (var prop in export_commands) {
+                            for (let k = 0; k &lt; export_commands[prop].length; k++) {
+                                commands.push(export_safely({export_id: export_id, app_id: app_id, args: export_commands[prop][k].args}));
+                            }
+                        }
+                        Promise.all(commands).then(
+                            function() {
+                                log.d("plugins colections exported");
+                                if (single_user === true) {
+                                    //update user document
+                                    common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
+                                        if (!err4 &amp;&amp; res1.result &amp;&amp; res1.result.nMatched !== 0) { //check against nMatched for cases when there is already false record of export file(to do not fail)
+                                            plugins.dispatch("/systemlogs", {
+                                                params: params,
+                                                action: "export_app_user",
+                                                data: {
+                                                    result: "ok",
+                                                    uids: res[0].uid.join(", "),
+                                                    app_id: app_id,
+                                                    info: "Export successful",
+                                                    export_file: export_filename + ".json"
+                                                }
+                                            });
+                                            callback(null, export_filename + ".json");
+                                        }
+                                        //not updated (not exist or errored)
+                                        else {
+                                            plugins.dispatch("/systemlogs", {
+                                                params: params,
+                                                action: "export_app_user",
+                                                data: {
+                                                    result: "error",
+                                                    uids: res[0].uid.join(", "),
+                                                    app_id: app_id,
+                                                    info: "User not exist",
+                                                    export_file: export_filename + ".json"
+                                                }
+                                            });
+                                            if (res1 &amp;&amp; res1.result) {
+                                                log.e(JSON.stringify(res1.result));
+                                            }
+                                            callDeleteExport(export_filename, params, app_id, eid, "Exporting failed. User does not exist. Unable to clean exported data", "Exporting failed. User does not exist. Partially exported data deleted.", callback);
+                                        }
+                                    });
+                                }
+                                else {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "export_app_user",
+                                        data: {
+                                            result: "ok",
+                                            uids: res[0].uid.join(", "),
+                                            app_id: app_id,
+                                            info: "Export successful",
+                                            export_file: export_filename + ".json"
+                                        }
+                                    });
+                                    callback(null, export_filename + ".json");
+                                }
+
+                                //Now we don't have empty files.
+
+
+
+                            },
+                            function(error) {
+                                console.log(error);
+                                plugins.dispatch("/systemlogs", {
+                                    params: params,
+                                    action: "export_app_user",
+                                    data: {
+                                        result: "error",
+                                        uids: res[0].uid.join(", "),
+                                        app_id: app_id,
+                                        info: "Error during exporting files",
+                                        export_file: export_filename + ".json"
+                                    }
+                                });
+                                callDeleteExport(export_filename, params, app_id, eid, "Export failed while running commands from other plugins. Unable to clean up file system.", "Export failed while running commands from other plugins. Partially exported data deleted.", callback);
+                            }
+                        );
+                    });
+                },
+                function(error) {
+                    plugins.dispatch("/systemlogs", {
+                        params: params,
+                        action: "export_app_user",
+                        data: {
+                            result: "error",
+                            info: error,
+                            uids: res[0].uid.join(", "),
+                            app_id: app_id
+                        }
+                    });
+                    callDeleteExport(export_filename, params, app_id, eid, "Export failed while creating export files from DB. Unable to clean up file system.", "Export failed while creating export files from DB. Partially exported data deleted.", callback);
+                }
+            ).catch(err2 => {
+                plugins.dispatch("/systemlogs", {
+                    params: params,
+                    action: "export_app_user",
+                    data: {
+                        result: "error",
+                        info: err2
+                    }
+                });
+                callDeleteExport(export_filename, params, app_id, eid, "Export failed while creating export files from DB. Unable to clean up file system.", "Export failed while creating export files from DB. Partially exported data deleted.", callback);
+            });
+        }
+        else {
+            plugins.dispatch("/systemlogs", {
+                params: params,
+                action: "export_app_user",
+                data: {
+                    result: "ok",
+                    info: "There wasn't any user to export data for."
+                }
+            });
+            callback("Query didn't mach any user", "");
+        }
+    });
+};
+
+/**
+ * Fetch aggregated data from DB.
+ * @param {string} collectionName | Name of collection
+ * @param {object} aggregation | Aggregation object
+ * @return {object} | new promise
+ */
+const getAggregatedAppUsers = (collectionName, aggregation) => {
+    return new Promise((resolve, reject) => {
+        common.db.collection(collectionName).aggregate(aggregation, (err, result) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(result);
+        });
+    });
+};
+
+
+usersApi.loyalty = function(params) {
+    const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "500+"];
+    const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [50, 99], [100, 499], [500] ];
+    const collectionName = 'app_users' + params.qstring.app_id;
+    let query = params.qstring.query || {};
+
+    if (typeof query === "string") {
+        try {
+            query = JSON.parse(query);
+            plugins.dispatch("/drill/preprocess_query", {
+                query: query,
+                params
+            });
+        }
+        catch (error) {
+            query = {};
+        }
+    }
+
+    if (cohorts) {
+        var cohortQuery = cohorts.preprocessQuery(query);
+        query = Object.assign(query, cohortQuery);
+    }
+
+    // Time
+    const ts = (new Date()).getTime();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+    // Aggregations
+    const matchQuery = { '$match': query};
+    const sevenDaysMatch = { '$match': {ls: { '$gte': (ts - sevenDays) / 1000}}};
+    const thirtyDaysMatch = { '$match': {ls: { '$gte': (ts - thirtyDays) / 1000}}};
+
+    const groupBy = { "$group": {"_id": "$sc", "count": {"$sum": 1}}};
+    const sort = {'$sort': { 'index': 1}};
+
+    var switches = [];
+    var switches2 = [];
+    for (let k = 0; k &lt; ranges.length; k++) {
+        if (k === ranges.length - 1) {
+            switches.push({"case": {"$gte": ["$_id", ranges[k][0]]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$gte": ["$_id", ranges[k][0]]}, "then": k});
+        }
+        else if (ranges[k].length === 1) {
+            switches.push({"case": {"$eq": ["$_id", ranges[k][0]]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$eq": ["$_id", ranges[k][0]]}, "then": k});
+        }
+        else {
+            switches.push({"case": {"$and": [{"$gte": ["$_id", ranges[k][0]]}, {"$lte": ["$_id", ranges[k][1]]}]}, "then": rangeLabels[k]});
+            switches2.push({"case": {"$and": [{"$gte": ["$_id", ranges[k][0]]}, {"$lte": ["$_id", ranges[k][1]]}]}, "then": k});
+        }
+    }
+
+    var indexProject = {};
+
+    indexProject.$project = {
+        "_id": {"$switch": {"branches": switches, "default": ""}},
+        "index": {"$switch": {"branches": switches2, "default": ""}},
+        "count": "$count"
+    };
+    var group2 = {"$group": {"_id": "$_id", "count": {"$sum": "$count"}, "index": {"$first": "$index"}}};
+    // Promises
+    const allDataPromise = getAggregatedAppUsers(collectionName, [matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
+    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
+    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, matchQuery, groupBy, indexProject, group2, {"$match": {"_id": {"$ne": ""}}}, sort]);
+
+    Promise.all([allDataPromise, sevenDaysPromise, thirtyDaysPromise]).then(promiseResults => {
+        common.returnOutput(params, {
+            all: promiseResults[0],
+            ['7days']: promiseResults[1],
+            ['30days']: promiseResults[2]
+        });
+    }).catch(() => {
+        common.returnOutput(params, {});
+    });
+
+    return true;
+};
+
+plugins.extendModule("app_users", usersApi);
+
+module.exports = usersApi;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:35 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

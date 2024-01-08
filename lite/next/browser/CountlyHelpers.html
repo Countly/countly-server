@@ -1,0 +1,10320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>CountlyHelpers - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyDrop.html">CountlyDrop</a></li><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.addColumnSelector">addColumnSelector</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.arrayUnique">arrayUnique</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDTableColVis">changeDTableColVis</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDialogHeight">changeDialogHeight</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.clip">clip</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.closeRows">closeRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirmWithCheckbox">confirmWithCheckbox</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createDrawer">createDrawer</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.expandRows">expandRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initBreadcrumbs">initBreadcrumbs</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeMultiSelect">initializeMultiSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeSelect">initializeSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTableOptions">initializeTableOptions</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTextSelect">initializeTextSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loading">loading</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.model">model</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.newJSONEditor">newJSONEditor</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.objectWithoutProperties">objectWithoutProperties</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.openResource">openResource</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.popup">popup</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.refreshTable">refreshTable</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeDialog">removeDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeEmptyValues">removeEmptyValues</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.reopenRows">reopenRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.revealDialog">revealDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.tableExport">tableExport</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.upload">upload</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Handlebars.html">Handlebars</a><ul class='members'><li data-type='member' style='display: none;'><a href="Handlebars.html#.app-categories">app-categories</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.appIdsToNames">appIdsToNames</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-selector">date-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-time-selector">date-time-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfArray">eachOfArray</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObject">eachOfObject</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObjectValue">eachOfObjectValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.encodeURIComponent">encodeURIComponent</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.for">for</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getFormattedNumber">getFormattedNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getIdValue">getIdValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getShortNumber">getShortNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.ifCond">ifCond</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.limitString">limitString</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.prettyJSON">prettyJSON</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.replace">replace</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.round">round</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.timezones">timezones</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.toUpperCase">toUpperCase</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.withItem">withItem</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#tipsify">tipsify</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.compareVersions">compareVersions</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.divide">divide</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGauge">drawGauge</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGraph">drawGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawHorizontalStackedBars">drawHorizontalStackedBars</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawTimeGraph">drawTimeGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecondForDP">formatSecondForDP</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.localeStringToNumber">localeStringToNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.numberToLocaleString">numberToLocaleString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.pad">pad</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyManagementView.html">countlyManagementView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.afterCollapse">afterCollapse</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.beforeExpand">beforeExpand</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.config">config</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.doOnChange">doOnChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.isSaveAvailable">isSaveAvailable</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.onChange">onChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.resetTemplateData">resetTemplateData</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.savingString">savingString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.setAppId">setAppId</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.showError">showError</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.titleString">titleString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.validate">validate</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li><li><a href="global.html#setMenuItems">setMenuItems</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">CountlyHelpers</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            Namespace
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+
+    
+
+    <h4 class="name" id="CountlyHelpers">CountlyHelpers</h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Some helper functions to be used throughout all views. Includes custom popup, alert and confirm dialogs for the time being.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line6">line 6</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".addColumnSelector"><span class="type-signature type-signature-static">(static) </span>addColumnSelector<span class="signature">(dtable, config, tableName)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Adds column selector to data table</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2122">line 2122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dtable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data table jquery object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>configuration for disabling columns</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>disabled</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>object for disabled column names. Optional. If nothing set, you can disable all columns. Example: {&quot;name1&quot;:true,&quot;name2&quot;:true}</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>visible</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Default visible columns. If none set - first N are taken to not exceed max column count. If user has changed it, it gets overwritten by data stored in local storage.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxCol</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>max column count. If not set - max == all columns.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tableName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>table name. Used to create name for storage. need to be unique for every table.</p>
+<p>Example:
+CountlyHelpers.addColumnSelector(dtable,{&quot;disabled:&quot;{&quot;name1&quot;:true,&quot;name2&quot;:true},maxCol:6},&quot;myTableName&quot;);
+Safe way would be adding in &quot;fnInitComplete&quot; function:</p>
+<p>&quot;fnInitComplete&quot;: function(oSettings, json) {
+$.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+CountlyHelpers.addColumnSelector(this, {&quot;disabled&quot;:{&quot;name1&quot;:true,&quot;name2&quot;:true}, &quot;maxCol&quot;:5 }, &quot;viewsTable&quot;);
+},</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".alert"><span class="type-signature type-signature-static">(static) </span>alert<span class="signature">(msg, type, moreData)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal alert popup for quick short messages that require immediate user's attention, as error submitting form</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line669">line 669</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.alert("Some error happened", "red");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>message to display in alert popup</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>type of alert red for errors and green for success</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>moreData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>more data to display</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>image</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>image id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>alert title</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".appIdsToNames"><span class="type-signature type-signature-static">(static) </span>appIdsToNames<span class="signature">(context)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Convert array of app ids to comma separate string of app names</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2582">line 2582</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs Test1, Test2, Test3
+CountlyHelpers.appIdsToNames(["586e3216326a8b0a07b8d87f", "586e339a326a8b0a07b8ecb9", "586e3343c32cb30a01558cc3"]);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with app ids</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>list of app names (appname1, appname2)</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".arrayUnique"><span class="type-signature type-signature-static">(static) </span>arrayUnique<span class="signature">(array)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function that clean duplicates from passed array.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3693">line 3693</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>array without duplicates</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".changeDTableColVis"><span class="type-signature type-signature-static">(static) </span>changeDTableColVis<span class="signature">(config, dtable, tableName, col, visible)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>function hides column in data table and stores config in local storage</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2370">line 2370</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>config object for table</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dtable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data table object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tableName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name to use to save in local storage settings</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>col</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>column number</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>visible</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>true - if need to show</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>if changes were applied - true, if not false. Changes could not be applied if selecting this column means selecting more columns than allowed</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".changeDialogHeight"><span class="type-signature type-signature-static">(static) </span>changeDialogHeight<span class="signature">(dialog, animate)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>If contents of the popup change, you may want to resice the popup</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1392">line 1392</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+CountlyHelpers.revealDialog(dialog);
+//when content changes
+CountlyHelpers.changeDialogHeight(dialog, true)</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">jquery_object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery dialog reference</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>should resizing be animated</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".clip"><span class="type-signature type-signature-static">(static) </span>clip<span class="signature">(f<span class="signature-attributes">opt</span>, nothing<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Creates function to be used as mRender for datatables to clip long values</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2674">line 2674</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>f</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>optional function to change passed data to render and return changed object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nothing</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>text to display in cellS</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>to be used as mRender for datatables to clip long values</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".closeRows"><span class="type-signature type-signature-static">(static) </span>closeRows<span class="signature">(dTable)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Close all opened datatables rows</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2559">line 2559</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.closeRows(self.dtable);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dTable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object datatable reference</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".confirm"><span class="type-signature type-signature-static">(static) </span>confirm<span class="signature">(msg, type, callback, buttonText<span class="signature-attributes">opt</span>, moreData, testId)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup that requires confirmation input from user</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line725">line 725</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.confirm("Are you sure?", "red", function (result) {
+   if (!result) {
+       //user did not confirm, just exit
+       return true;
+   }
+   //user confirmed, do what you need to do
+});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>message to display in alert popup</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>type of alert red for errors and green for success</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>to determine result of the input</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>[0] element for cancle button text and [1] element for confirm button text</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>moreData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>more data to display</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>image</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>image id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>alert title</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>testId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>test id for ui tests</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".confirmWithCheckbox"><span class="type-signature type-signature-static">(static) </span>confirmWithCheckbox<span class="signature">(msg, type, hasCheckbox, checkboxTitle, callback, buttonText<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup that requires confirmation input from user and optional checkbox</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line104">line 104</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.confirmWithCheckbox("Are you sure?", "red", true, "Chechbox label text", function (result) {
+   if (!result) {
+       //user did not confirm, just exit
+       return true;
+   }
+   //user confirmed, do what you need to do
+});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>message to display in alert popup</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>type of alert red for errors and green for success</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hasCheckbox</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>popup has checkbox? or not.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>checkboxTitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>title of checkbox element</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>to determine result of the input</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>[0] element for cancle button text and [1] element for confirm button text</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".createDrawer"><span class="type-signature type-signature-static">(static) </span>createDrawer<span class="signature">(options)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create drawer</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line170">line 170</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var drawer = CountlyHelpers.createDrawer({
+          id: "my-id",
+          form: $('#id-of-elem'), //if using form
+          title: 'My Drawer title',
+          applyChangeTriggers: true, //add triggers
+          onUpdate: function(){
+             //check all fields here
+           },
+           resetForm: function() {
+               //empty all fields. Text fields are emptied automatically because options.preventBaseReset is not set.
+           },
+           onClose: function(callback) {
+               callback(true); //allow closing form
+               callback(false); //don't close form
+           },
+           onClosed: function() {
+               //form is closed
+           }
+       });
+//After creation drawer object is returned. Object has multiple functions:
+drawer.open() //opens drawer
+drawer.close(force); //closes drawer. force - close anyway even if there is onClose function set. (Withot validating)
+drawer.resetForm(); //resets drawer (Normally called after closing or before opening drawer)
+   </code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Options object</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Optional. Id for drawer</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>template</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Handelbars template object(optional). After creating element from template &quot;.details&quot; and &quot;.buttons&quot; are moved to drawer object. Other parts are not used.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>templateData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Data for template (optional)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>form</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) Existing html element with form. &quot;.details&quot; and &quot;.buttons&quot; are moved to drawer object. Options.form element is removed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) Title for drawer</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>root</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) Element to which drawer should be appended. If not set drawer is appended to (&quot;.widget&quot;).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>saveButtonText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) If there is only single button and there is not set any button using form or template - then passing this string sets text for save button.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>preventBaseReset</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) If true then when reseting form base reset function,which empties text fields won't be called.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>applyChangeTriggers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional)  If true - Ads event listeners on textaria and input[text],  cly-multi-select, cly-single select in form to trigger &quot;cly-drawer-form-updated&quot; on drawer. * This event callls options.onUpdate function.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onUpdate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) function called when &quot;cly-drawer-form-updated&quot; is triggered on drawer.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onClose(callback)</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onClosed(callback)</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>(optional) function called after drawer is successfully closed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Drawer object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".createMetricModel"><span class="type-signature type-signature-static">(static) </span>createMetricModel<span class="signature">(countlyMetric, metric, $, fetchValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create Countly metric model to fetch metric data from server and provide it to views</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2708">line 2708</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>window.countlyDensity = {};
+  countlyDensity.checkOS = function(os, density){
+       var lastIndex = density.toUpperCase().lastIndexOf("DPI");
+       if(os.toLowerCase() == "android" &amp;&amp; lastIndex !== -1 &amp;&amp; lastIndex === density.length - 3)
+           return true;
+       if(os.toLowerCase() == "ios" &amp;&amp; density[0] == "@")
+           return true;
+       return false;
+  };
+  CountlyHelpers.createMetricModel(window.countlyDensity, {name: "density", estOverrideMetric: "densities"}, jQuery, function(val, data, separate){
+       if(separate){
+           //request separated/unprocessed data
+           return val;
+       }
+       else{
+           //we can preprocess data and group, for example, by first letter
+           return val[0];
+       }
+  });</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>countlyMetric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>initial metric object if you want to pre provide some methods, etc</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>metric name to retrieve from server</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>$</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">jquery</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>local jquery reference</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fetchValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>default function to fetch and transform if needed value from standard metric model</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".expandRows"><span class="type-signature type-signature-static">(static) </span>expandRows<span class="signature">(dTable, getData, context)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>In some cases you may want to allow expanding rows of your datatable. To do that you must add unique id to each row via datatables fnRowCallback property</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2485">line 2485</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>function formatData(data){
+   // `data` is the original data object for the row
+   //return string to display in subcell
+   var str = '';
+	if(data){
+		str += '&lt;div class="datatablesubrow">'+
+       JSON.stringify(data)+
+       '&lt;/div>';
+   }
+   return str;
+}
+this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+     "aaData": crashData.data,
+		"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+			$(nRow).attr("id", aData._id);
+		},
+     "aoColumns": [
+			{ "mData": "ts"}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
+			{ "mData": "os", "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
+			{ "mData": "device"}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
+			{ "mData": "app_version", "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
+     ]
+ }));
+ CountlyHelpers.expandRows(this.dtable, formatData);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dTable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object datatable reference</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>this context if needed, which will be passed to getData function as second parameter</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".export"><span class="type-signature type-signature-static">(static) </span>export<span class="signature">(count, data, asDialog, exportByAPI, instance)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Displays database export dialog</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line955">line 955</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = CountlyHelpers.export(300000);
+//later when done
+CountlyHelpers.removeDialog(dialog);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>count</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>total count of documents to export</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data for export query to use when constructing url</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>asDialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>open it as dialog</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>exportByAPI</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>export from api request, export from db when set to false</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>instance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>optional. Reference to table to get correct colum names(only if there is need to select columns to export) There must be changes made in table settings to allow it. (table.addColumnExportSelector = true and each column must have columnsSelectorIndex value as field in db)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>jQuery object reference to dialog</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".formatPercentage"><span class="type-signature type-signature-static">(static) </span>formatPercentage<span class="signature">(value, decimalPlaces)</span><span class="type-signature"> &rarr; {number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Format number to percentage value</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3637">line 3637</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>number to be converted to percentage</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>decimalPlaces</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>number of decimal places to keep for percentage, default is two</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>percentage number for given value. Otherwise, returns 0 for falsy or non number values</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".generatePassword"><span class="type-signature type-signature-static">(static) </span>generatePassword<span class="signature">(length, no_special)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Generate random password</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3514">line 3514</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs 4UBHvRBG1v
+CountlyHelpers.generatePassword(10, true);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>length of the password</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>no_special</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>do not include special characters</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>password</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getBacklink"><span class="type-signature type-signature-static">(static) </span>getBacklink<span class="signature">()</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line405">line 405</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>includes url and title propertes that are set by goTo() method.
+url indicate the backlink url and title is the text that will be displayed for the backlink url</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getPeriodUrlQueryParameter"><span class="type-signature type-signature-static">(static) </span>getPeriodUrlQueryParameter<span class="signature">(period)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get currently selected period that can be used in ajax requests</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3622">line 3622</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>selected date period</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getRandomValue"><span class="type-signature type-signature-static">(static) </span>getRandomValue<span class="signature">(charSet, length)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Gets a random string from given character set string with given length</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3490">line 3490</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>charSet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>charSet string</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>length of the random string. default 1</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>random string from charset</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".goTo"><span class="type-signature type-signature-static">(static) </span>goTo<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line394">line 394</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>includes from, title and url properties. from property
+indicates the origin of view. url indicates the new url to navigate to and
+title is the text that will be dispalyed for the backlink url.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initBreadcrumbs"><span class="type-signature type-signature-static">(static) </span>initBreadcrumbs<span class="signature">(breadcrumbs, el)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function to add breadcrumbs</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3603">line 3603</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>breadcrumbs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Array of links with name and url</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DOMELement</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This is the element to which the breadcrumb will be prepended to in the beginning</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initializeMultiSelect"><span class="type-signature type-signature-static">(static) </span>initializeMultiSelect<span class="signature">(element)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Initialize countly dropdown multi select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1762">line 1762</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.initializeMultiSelect($("#my-dynamic-div"));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>element</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object reference</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initializeSelect"><span class="type-signature type-signature-static">(static) </span>initializeSelect<span class="signature">(element)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Initialize countly dropdown select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1484">line 1484</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.initializeSelect($("#my-dynamic-div"));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>element</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object reference</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initializeTableOptions"><span class="type-signature type-signature-static">(static) </span>initializeTableOptions<span class="signature">(element)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Initialize dropdown options list usually used on datatables. Firstly you need to add list with class 'cly-button-menu' to your template or add it in the view. Additionally you can add class <code>dark</code> to use dark theme.
+After that datatables last column for options should return a element with <code>cly-list-options</code> class and should have cell classes shrink and right and should not be sortable
+Then call this method in your view and you can start listening to events like:
+cly-list.click - when your cly-list-options element is clicked, passing click event as data
+cly-list.open - when list is opened, passing click event as data
+cly-list.close - when list is closed, passing click event as data
+cly-list.item - when item is clicked, passing click event as data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2064">line 2064</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Adding list to HTML template</p>
+    
+    <pre class="prettyprint"><code>&lt;div class="cly-button-menu dark cohorts-menu" tabindex="1">
+    &lt;a class="item delete-cohort" data-localize='common.delete'>&lt;/a>
+    &lt;a class="item view-cohort" data-localize='cohorts.view-users'>&lt;/a>
+&lt;/div></code></pre>
+
+        <p class="code-caption">Creating last column in datatables</p>
+    
+    <pre class="prettyprint"><code>{ "mData": function(row, type){
+    return '&lt;a class="cly-list-options">&lt;/a>';
+}, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }</code></pre>
+
+        <p class="code-caption">Listening to events</p>
+    
+    <pre class="prettyprint"><code>$(".cly-button-menu").on("cly-list.click", function(event, data){
+    var id = $(data.target).parents("tr").data("id");
+});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>element</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object reference for container</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initializeTextSelect"><span class="type-signature type-signature-static">(static) </span>initializeTextSelect<span class="signature">(element)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Initialize countly text select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3399">line 3399</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.initializeTextSelect($("#my-dynamic-div"));</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>element</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object reference</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".isJSON"><span class="type-signature type-signature-static">(static) </span>isJSON<span class="signature">(val)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Check the value which passing as parameter
+isJSON or not
+return result as boolean</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line848">line 848</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.isJSON(variable);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>val</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>value of form data</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>is this a json object?</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".isPluginEnabled"><span class="type-signature type-signature-static">(static) </span>isPluginEnabled<span class="signature">(name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>This function checks if a Countly plugin is enabled.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line19">line 19</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the plugin(s) to check for. Can be either a string or an array of strings.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>Returns true when atleast one plugin is enabled, false otherwise.</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".loadCSS"><span class="type-signature type-signature-static">(static) </span>loadCSS<span class="signature">(css, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Load CSS file</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2634">line 2634</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.loadCSS("/myplugin/stylesheets/custom.css");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>css</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>path or url to css file</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">callback</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>callback when file loaded</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".loadJS"><span class="type-signature type-signature-static">(static) </span>loadJS<span class="signature">(js, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Load JS file</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2611">line 2611</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.loadJS("/myplugin/javascripts/custom.js");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>js</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>path or url to js file</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">callback</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>callback when file loaded</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".loading"><span class="type-signature type-signature-static">(static) </span>loading<span class="signature">(msg)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Displays loading icong and returns reference to dialog so you could close it once loading is done</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line777">line 777</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = CountlyHelpers.loading("we are doing something");
+//later when done
+CountlyHelpers.removeDialog(dialog);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>message to display in loading popup</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>jQuery object reference to dialog</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".model"><span class="type-signature type-signature-static">(static) </span>model<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create new model</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line422">line 422</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".newJSONEditor"><span class="type-signature type-signature-static">(static) </span>newJSONEditor<span class="signature">(json, type<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create new model</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line512">line 512</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>json</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>json object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>classname</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>callback function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".notify"><span class="type-signature type-signature-static">(static) </span>notify<span class="signature">(msg)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display dashboard notification using Amaran JS library</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line334">line 334</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd class="yes-def tag-deprecated"><ul class="dummy"><li>Yes</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.notify({
+   message: "Main message text",
+});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>notification message object</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>title of the notification</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>main notification text</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>info</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>some additional information to display in notification</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>delay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>10000</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>delay time in miliseconds before displaying notification</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>ok</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>message type, accepted values ok, error and warning</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>position</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>top right</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>message position</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sticky</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>should message stick until closed</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearAll</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>clear all previous notifications upon showing this one</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>closeOnClick</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>should notification be automatically closed when clicked on</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onClick</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>on click listener</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>persistent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>flag to determine if notification should be displayed persistently or as a toast</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".objectWithoutProperties"><span class="type-signature type-signature-static">(static) </span>objectWithoutProperties<span class="signature">(obj, excluded)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function that creates a shallow copy of an object excluding specified fields.
+Warning: If no excluded fields specified, returns the original reference</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3726">line 3726</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Main object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>excluded</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Array of excluded fields</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Shallow copy (If no excluded fields, the original reference)</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".openResource"><span class="type-signature type-signature-static">(static) </span>openResource<span class="signature">(url)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup with external resource from provided URL in iframe. Make sure to use https version of resource for it to work on both http and https dashboard</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line651">line 651</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.openResource("http://resources.count.ly/docs");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>full absolute url to external resource to display in popup</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".parseAndShowMsg"><span class="type-signature type-signature-static">(static) </span>parseAndShowMsg<span class="signature">(msg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Legacy method for displaying notifications. User <a href="CountlyHelpers.html#.notify"><code>CountlyHelpers.notify</code></a> instead</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line62">line 62</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>msg to display</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true - if message is not defined, else returns nothing</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".popup"><span class="type-signature type-signature-static">(static) </span>popup<span class="signature">(element, custClass<span class="signature-attributes">opt</span>, isHTML<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup UI</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line628">line 628</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.popup("&lt;h1>Hello&lt;/h1>", "red", true);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>element</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>if third parameter isHTML is true, then HTML code as string is expected, else element's selector or element itself is expected and it's HTML contents will be copied into popup</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>custClass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>add custom css class to dialog for easier manipulation</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isHTML</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>changes the behavior of first parameter element</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".refreshTable"><span class="type-signature type-signature-static">(static) </span>refreshTable<span class="signature">(dTable, newDataArr)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Refresh existing datatable instance on view refresh, providing new data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2435">line 2435</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.refreshTable(self.dtable, data);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dTable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object datatable reference</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newDataArr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array with new data in same format as provided while initializing table</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".removeDialog"><span class="type-signature type-signature-static">(static) </span>removeDialog<span class="signature">(dialog)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Remove existing dialog</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1433">line 1433</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+CountlyHelpers.revealDialog(dialog);
+//when dialog not needed anymore
+CountlyHelpers.removeDialog(dialog);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">jquery_object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery dialog reference</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".removeEmptyValues"><span class="type-signature type-signature-static">(static) </span>removeEmptyValues<span class="signature">(array)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function that remove empty values from array.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3710">line 3710</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>array that contain empty values</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>array without empty values</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".removePersistentNotification"><span class="type-signature type-signature-static">(static) </span>removePersistentNotification<span class="signature">(notificationId)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Removes a notification from persistent notification list based on id.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line384">line 384</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>notificationId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>notification id</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".reopenRows"><span class="type-signature type-signature-static">(static) </span>reopenRows<span class="signature">(dTable, getData, context)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>If you allow to open/expand rows, then when refreshing table they will close again. To avoid that you must call this function on each refresh after calling <a href="CountlyHelpers.html#.refreshTable"><code>CountlyHelpers.refreshTable</code></a></p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2539">line 2539</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.refreshTable(self.dtable, data);
+CountlyHelpers.reopenRows(self.dtable, formatData);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dTable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object datatable reference</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>this context if needed, which will be passed to getData function as second parameter</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".revealDialog"><span class="type-signature type-signature-static">(static) </span>revealDialog<span class="signature">(dialog)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1365">line 1365</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+CountlyHelpers.revealDialog(dialog);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">jquery_object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>jQuery object unnattached, like cloned existing object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".sha1"><span class="type-signature type-signature-static">(static) </span>sha1<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>function sha1</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3742">line 3742</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>str</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>string to encode</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>encoded sring</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".showBlockerDialog"><span class="type-signature type-signature-static">(static) </span>showBlockerDialog<span class="signature">(msg, moreData)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup that blocks the screen and cannot be closed</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line794">line 794</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.showBlockerDialog("Some message");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>message to display in popup</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>moreData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>more data to display</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>alert title</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".showQuickstartPopover"><span class="type-signature type-signature-static">(static) </span>showQuickstartPopover<span class="signature">(content)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Display modal popup that shows quickstart guide</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line820">line 820</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>CountlyHelpers.showQuickstartDialog();</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>modal popup content</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".shuffleString"><span class="type-signature type-signature-static">(static) </span>shuffleString<span class="signature">(text)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Shuffle string using crypto.getRandomValues</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3472">line 3472</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>text</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>text to be shuffled</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>shuffled password</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".tableExport"><span class="type-signature type-signature-static">(static) </span>tableExport<span class="signature">(dtable, data, asDialog, oSettings)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Displays raw data table export dialog</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1233">line 1233</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>var dialog = CountlyHelpers.export(300000);
+//later when done
+CountlyHelpers.removeDialog(dialog);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dtable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">opject</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data for export query to use when constructing url</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>asDialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>open it as dialog</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>oSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>oSettings object of the dataTable</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>jQuery object reference to dialog</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".upload"><span class="type-signature type-signature-static">(static) </span>upload<span class="signature">(el, url, data, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Upload file by the passed optional parameters</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3586">line 3586</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>dom element</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>upload url</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>data object that will send with upload request</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback for upload result</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".validateEmail"><span class="type-signature type-signature-static">(static) </span>validateEmail<span class="signature">(email)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Validate email address</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3553">line 3553</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//outputs true
+CountlyHelpers.validateEmail("test@test.test");
+
+//outputs false
+CountlyHelpers.validateEmail("test@test");</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>email address to validate</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if valid and false if invalid</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".validatePassword"><span class="type-signature type-signature-static">(static) </span>validatePassword<span class="signature">(password)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Validate password based on settings provided via security configuration</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3563">line 3563</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>password</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>password to validate</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if valid and false if invalid</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:31 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>lib/countly.common.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">lib/countly.common.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* This module defines default model to handle users collection data
+* @module "api/lib/countly.common"
+*/
+
+/** @lends module:api/lib/countly.common */
+var countlyCommon = {},
+    moment = require('moment-timezone'),
+    underscore = require('underscore');
+
+// Private Properties
+var _period = "hour",
+    _appTimezone = "UTC",
+    _currMoment = moment();
+
+// Private Methods
+
+/**
+* Returns array with unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
+/*function getTicksBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+
+    while (dayIt &lt; endTimestamp) {
+        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= dayIt.daysInMonth() &amp;&amp; dayIt.date() === 1) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        }
+        else if (daysLeft >= (7 - dayIt.day()) &amp;&amp; dayIt.day() === 1) {
+            ticks.push(dayIt.format("YYYY.[w]W"));
+            dayIt.add(8 - dayIt.day(), "days");
+        }
+        else {
+            ticks.push(dayIt.format("YYYY.M.D"));
+            dayIt.add(1, "day");
+        }
+    }
+
+    return ticks;
+}*/
+
+/**
+* Returns array with more generalized unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
+/*function getTicksCheckBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+    while (dayIt &lt; endTimestamp) {
+        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        }
+        else {
+            ticks.push(dayIt.format("YYYY.[w]W"));
+            dayIt.add(8 - dayIt.day(), "days");
+        }
+    }
+    return ticks;
+}*/
+
+countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
+    var u = 0;
+    for (var year in uniqueMap) {
+        var yearVal = countlyCommon.getDescendantProp(dbObj, year) || {};
+        var calcYearVal = 0;
+        if (Object.keys(uniqueMap[year]).length > 0) {
+            for (var month in uniqueMap[year]) {
+                var ob = countlyCommon.getDescendantProp(dbObj, year + "." + month) || {};
+                var monthVal = ob.u || 0;
+                var calcMonthVal = 0;
+                if (Object.keys(uniqueMap[year][month]).length > 0) {
+                    for (var week in uniqueMap[year][month]) {
+                        var ob2 = countlyCommon.getDescendantProp(dbObj, year + "." + week) || {};
+                        var weekVal = ob2.u || 0;
+                        var calcWeekVal = 0;
+
+                        for (var day in uniqueMap[year][month][week]) {
+                            var ob3 = countlyCommon.getDescendantProp(dbObj, year + "." + month + "." + day) || {};
+                            calcWeekVal += ob3.u || 0;
+                        }
+                        calcMonthVal += Math.min(weekVal, calcWeekVal);
+                    }
+                }
+                else {
+                    calcMonthVal = monthVal;
+                }
+                calcYearVal += Math.min(monthVal, calcMonthVal);
+            }
+        }
+        else {
+            calcYearVal = yearVal;
+        }
+        u += Math.min((yearVal.u || 0), calcYearVal);
+    }
+    return u;
+};
+
+/** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @param {array} periodArr_pd - period array
+        * @returns {array} periods
+        */
+function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
+
+    if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+        return [];
+    }
+
+    if (Object.prototype.toString.call(_period) === '[object Array]' &amp;&amp; _period.length === 2) {
+        if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+            return [];
+        }
+    }
+
+    var weeksArray = clone(weeksArray_pd),
+        weekCounts = clone(weekCounts_pd),
+        monthsArray = clone(monthsArray_pd),
+        monthCounts = clone(monthCounts_pd),
+        periodArr = clone(periodArr_pd);
+
+    var uniquePeriods = [],
+        tmpDaysInMonth = -1,
+        tmpPrevKey = -1,
+        rejectedWeeks = [],
+        rejectedWeekDayCounts = {};
+    var key = 0;
+    var i = 0;
+    for (key in weekCounts) {
+
+        // If this is the current week we can use it
+        if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+            continue;
+        }
+
+        if (weekCounts[key] &lt; 7) {
+            for (i = 0; i &lt; weeksArray.length; i++) {
+                weeksArray[i] = weeksArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (key in monthCounts) {
+        if (tmpPrevKey !== key) {
+            if (moment().format("YYYY.M") === key) {
+                tmpDaysInMonth = moment().format("D");
+            }
+            else {
+                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+            }
+
+            tmpPrevKey = key;
+        }
+
+        if (monthCounts[key] &lt; tmpDaysInMonth) {
+            for (i = 0; i &lt; monthsArray.length; i++) {
+                monthsArray[i] = monthsArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (i = 0; i &lt; monthsArray.length; i++) {
+        if (parseInt(monthsArray[i], 10) === 0) {
+            if (parseInt(weeksArray[i], 10) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
+                uniquePeriods[i] = periodArr[i];
+            }
+            else {
+                uniquePeriods[i] = weeksArray[i];
+            }
+        }
+        else {
+            rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
+            uniquePeriods[i] = monthsArray[i];
+
+            if (rejectedWeekDayCounts[weeksArray[i]]) {
+                rejectedWeekDayCounts[weeksArray[i]].count++;
+            }
+            else {
+                rejectedWeekDayCounts[weeksArray[i]] = {
+                    count: 1,
+                    index: i
+                };
+            }
+        }
+    }
+
+    var totalWeekCounts = underscore.countBy(weeksArray, function(per) {
+        return per;
+    });
+
+    for (var weekDayCount in rejectedWeekDayCounts) {
+
+        // If the whole week is rejected continue
+        if (rejectedWeekDayCounts[weekDayCount].count === 7) {
+            continue;
+        }
+
+        // If its the current week continue
+        if (moment().format("YYYY.\\w w").replace(" ", "") === weekDayCount &amp;&amp; totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
+            continue;
+        }
+
+        // If only some part of the week is rejected we should add back daily buckets
+
+        var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
+            limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
+
+        for (i = startIndex; i &lt; limit; i++) {
+            // If there isn't already a monthly bucket for that day
+            if (parseInt(monthsArray[i]) === 0) {
+                uniquePeriods[i] = periodArr[i];
+            }
+        }
+    }
+
+    rejectedWeeks = underscore.uniq(rejectedWeeks);
+    uniquePeriods = underscore.uniq(underscore.difference(uniquePeriods, rejectedWeeks));
+
+    return uniquePeriods;
+}
+/** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @returns {array} periods
+        */
+function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd) {
+
+    if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
+        return [];
+    }
+
+    if (Object.prototype.toString.call(_period) === '[object Array]' &amp;&amp; _period.length === 2) {
+        if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
+            return [];
+        }
+    }
+
+    var weeksArray = clone(weeksArray_pd),
+        weekCounts = clone(weekCounts_pd),
+        monthsArray = clone(monthsArray_pd),
+        monthCounts = clone(monthCounts_pd);
+
+    var uniquePeriods = [],
+        tmpDaysInMonth = -1,
+        tmpPrevKey = -1;
+    var key = 0;
+    var i = 0;
+    for (key in weekCounts) {
+        if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+            continue;
+        }
+
+        if (weekCounts[key] &lt; 1) {
+            for (i = 0; i &lt; weeksArray.length; i++) {
+                weeksArray[i] = weeksArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (key in monthCounts) {
+        if (tmpPrevKey !== key) {
+            if (moment().format("YYYY.M") === key) {
+                tmpDaysInMonth = moment().format("D");
+            }
+            else {
+                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+            }
+
+            tmpPrevKey = key;
+        }
+
+        if (monthCounts[key] &lt; (tmpDaysInMonth * 0.5)) {
+            for (i = 0; i &lt; monthsArray.length; i++) {
+                monthsArray[i] = monthsArray[i].replace(key, 0);
+            }
+        }
+    }
+
+    for (i = 0; i &lt; monthsArray.length; i++) {
+        if (parseInt(monthsArray[i], 10) === 0) {
+            if (parseInt(weeksArray[i], 10) !== 0) {
+                uniquePeriods[i] = weeksArray[i];
+            }
+        }
+        else {
+            uniquePeriods[i] = monthsArray[i];
+        }
+    }
+
+    uniquePeriods = underscore.uniq(uniquePeriods);
+
+    return uniquePeriods;
+}
+
+/** Function to clone object
+        * @param {object} obj - object to clone
+        * @returns {object} cloned object
+        */
+function clone(obj) {
+    if (null === obj || "object" !== typeof obj) {
+        return obj;
+    }
+
+    var copy = "";
+    if (obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
+    }
+
+    if (obj instanceof Array) {
+        copy = [];
+        for (var i = 0, len = obj.length; i &lt; len; ++i) {
+            copy[i] = clone(obj[i]);
+        }
+        return copy;
+    }
+
+    if (obj instanceof Object) {
+        copy = {};
+        for (var attr in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+                copy[attr] = clone(obj[attr]);
+            }
+        }
+        return copy;
+    }
+}
+
+/**
+* Returns number for timestamp making sure it is 13 digits
+* @param {integer}ts -  number we need to se as timestamp
+* @returns {integer} timestamp in ms
+**/
+function fixTimestampToMilliseconds(ts) {
+    if ((ts + "").length > 13) {
+        ts = (ts + '').substring(0, 13);
+        ts = parseInt(ts, 10);
+    }
+    return ts;
+}
+
+/**
+* Returns a period object used by all time related data calculation functions
+* @param {moment} prmPeriod period to be calculated
+* @returns {timeObject} time object
+**/
+function getPeriodObject(prmPeriod) {
+    var startTimestamp, endTimestamp, periodObject, cycleDuration;
+    periodObject = {
+        start: 0,
+        end: 0,
+        currentPeriodArr: [],
+        previousPeriodArr: [],
+        dateString: "NA",
+        isSpecialPeriod: false,
+        daysInPeriod: 0,
+        periodContainsToday: true,
+        uniquePeriodArr: [],
+        uniquePeriodCheckArr: [],
+        previousUniquePeriodArr: [],
+        previousUniquePeriodCheckArr: [],
+        activePeriod: "NA",
+        previousPeriod: "NA",
+        periodMax: "NA",
+        periodMin: "NA",
+        reqMonthDbDateIds: [],
+        reqZeroDbDateIds: []
+    };
+
+    var period = prmPeriod || _period;
+
+    endTimestamp = _currMoment.clone().endOf("day");
+
+    if (period.since) {
+        period = [period.since, Date.now()];
+    }
+
+    if (period &amp;&amp; typeof period === 'string' &amp;&amp; period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            period = "30days";
+        }
+    }
+
+    if (Array.isArray(period)) {
+        if ((period[0] + "").length === 10) {
+            period[0] *= 1000;
+        }
+        if ((period[1] + "").length === 10) {
+            period[1] *= 1000;
+        }
+        var fromDate, toDate;
+
+        if (Number.isInteger(period[0]) &amp;&amp; Number.isInteger(period[1])) {
+            period[0] = fixTimestampToMilliseconds(period[0]);
+            period[1] = fixTimestampToMilliseconds(period[1]);
+            fromDate = moment(period[0]);
+            toDate = moment(period[1]);
+        }
+        else {
+            fromDate = moment(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+        }
+
+        startTimestamp = fromDate.clone().startOf("day");
+        endTimestamp = toDate.clone().endOf("day");
+        fromDate.tz(_appTimezone);
+        toDate.tz(_appTimezone);
+
+        if (fromDate.valueOf() === toDate.valueOf()) {
+            cycleDuration = moment.duration(1, "day");
+            Object.assign(periodObject, {
+                dateString: "D MMM, HH:mm",
+                periodMax: 23,
+                periodMin: 0,
+                activePeriod: fromDate.format("YYYY.M.D"),
+                previousPeriod: fromDate.clone().subtract(1, "day").format("YYYY.M.D")
+            });
+        }
+        else if (fromDate.valueOf() > toDate.valueOf()) {
+            //incorrect range - reset to 30 days
+            let nDays = 30;
+
+            startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+            endTimestamp = _currMoment.clone().endOf("day");
+
+            cycleDuration = moment.duration(nDays, "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
+        else {
+            cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
+    }
+    else if (period === "month") {
+        startTimestamp = _currMoment.clone().startOf("year");
+        cycleDuration = moment.duration(1, "year");
+        periodObject.dateString = "MMM";
+        Object.assign(periodObject, {
+            dateString: "MMM",
+            periodMax: 12,
+            periodMin: 1,
+            activePeriod: _currMoment.year(),
+            previousPeriod: _currMoment.year() - 1
+        });
+    }
+    else if (period === "day") {
+        startTimestamp = _currMoment.clone().startOf("month");
+        cycleDuration = moment.duration(1, "month");
+        periodObject.dateString = "D MMM";
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().endOf("month").date(),
+            periodMin: 1,
+            activePeriod: _currMoment.format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
+        });
+    }
+    else if (period === "prevMonth") {
+        startTimestamp = _currMoment.clone().subtract(1, "month").startOf("month");
+        endTimestamp = _currMoment.clone().subtract(1, "month").endOf("month");
+        cycleDuration = moment.duration(1, "month");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().subtract(1, "month").endOf("month").date(),
+            periodMin: 1,
+            activePeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(2, "month").format("YYYY.M")
+        });
+    }
+    else if (period === "hour") {
+        startTimestamp = _currMoment.clone().startOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: _currMoment.format("YYYY.M.D"),
+            previousPeriod: _currMoment.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (period === "yesterday") {
+        let yesterday = _currMoment.clone().subtract(1, "day");
+
+        startTimestamp = yesterday.clone().startOf("day");
+        endTimestamp = yesterday.clone().endOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "D MMM, HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: yesterday.format("YYYY.M.D"),
+            previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (/([1-9][0-9]*)days/.test(period)) {
+        let nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([1-9][0-9]*)weeks/.test(period)) {
+        const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("week").subtract((nWeeks - 1), "weeks");
+        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([1-9][0-9]*)months/.test(period)) {
+        const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("month").subtract((nMonths - 1), "months");
+        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([1-9][0-9]*)years/.test(period)) {
+        const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("year").subtract((nYears - 1), "years");
+        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        let nDays = 30;
+
+        startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+
+    Object.assign(periodObject, {
+        start: startTimestamp.valueOf(),
+        end: endTimestamp.valueOf(),
+        daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
+        periodContainsToday: (startTimestamp &lt;= _currMoment) &amp;&amp; (_currMoment &lt;= endTimestamp),
+    });
+    var uniqueMap = {};
+    var uniquePrevMap = {};
+
+
+    var date0 = startTimestamp.clone().format("YYYY.M.D");
+    date0 = date0.split(".");
+    var sY = date0[0];
+    var sM = date0[1];
+
+    var date1 = endTimestamp.clone().format("YYYY.M.D");
+    date1 = date1.split(".");
+    var eY = date1[0];
+    var eM = date1[1];
+
+    date0 = startTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+    date0 = date0.split(".");
+    var psY = date0[0];
+    var psM = date0[1];
+
+    date1 = endTimestamp.clone().subtract(cycleDuration).format("YYYY.M.D");
+    date1 = date1.split(".");
+    var peY = date1[0];
+    var peM = date1[1];
+
+
+    for (var dayIt = startTimestamp.clone(); dayIt &lt; endTimestamp; dayIt.add(1, "day")) {
+
+        var dateVal = dayIt.format("YYYY.M.D");
+        var week = Math.ceil(dayIt.format("DDD") / 7);
+        dateVal = dateVal.split(".");
+
+        uniqueMap[dateVal[0]] = uniqueMap[dateVal[0]] || {};//each year
+        if (dateVal[0] === sY || dateVal[0] === eY) {
+            uniqueMap[dateVal[0]][dateVal[1]] = uniqueMap[dateVal[0]][dateVal[1]] || {}; //each month
+            if ((dateVal[0] === sY &amp;&amp; dateVal[1] === sM) || (dateVal[0] === eY &amp;&amp; dateVal[1] === eM)) {
+                uniqueMap[dateVal[0]][dateVal[1]]["w" + week] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+            }
+        }
+
+        periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
+        periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+
+        dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
+        week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
+        dateVal = dateVal.split(".");
+
+        uniquePrevMap[dateVal[0]] = uniquePrevMap[dateVal[0]] || {};//each year
+        if (dateVal[0] === psY || dateVal[0] === peY) {
+            uniquePrevMap[dateVal[0]][dateVal[1]] = uniquePrevMap[dateVal[0]][dateVal[1]] || {}; //each month
+            if ((dateVal[0] === psY &amp;&amp; dateVal[1] === psM) || (dateVal[0] === peY &amp;&amp; dateVal[1] === peM)) {
+                uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
+                uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniquePrevMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+            }
+        }
+    }
+
+    if (periodObject.daysInPeriod === 1 &amp;&amp; periodObject.currentPeriodArr &amp;&amp; Array.isArray(periodObject.currentPeriodArr)) {
+        periodObject.activePeriod = periodObject.currentPeriodArr[0];
+    }
+
+    var currentYear = 0,
+        currWeeksArr = [],
+        currWeekCounts = {},
+        currMonthsArr = [],
+        currMonthCounts = {},
+        currPeriodArr = [],
+        prevWeeksArr = [],
+        prevWeekCounts = {},
+        prevMonthsArr = [],
+        prevMonthCounts = {},
+        prevPeriodArr = [];
+    if (periodObject.daysInPeriod !== 0) {
+        for (var i = (periodObject.daysInPeriod - 1); i > -1; i--) {
+            var currIndex = moment(endTimestamp).subtract(i, 'days'),
+                currIndexYear = currIndex.year(),
+                prevIndex = moment(endTimestamp).subtract((periodObject.daysInPeriod + i), 'days'),
+                prevYear = prevIndex.year();
+
+            currentYear = currIndexYear;
+
+            // Current period variables
+
+            var currWeek = currentYear + "." + "w" + Math.ceil(currIndex.format("DDD") / 7);
+            currWeeksArr[currWeeksArr.length] = currWeek;
+            currWeekCounts[currWeek] = (currWeekCounts[currWeek]) ? (currWeekCounts[currWeek] + 1) : 1;
+
+            var currMonth = currIndex.format("YYYY.M");
+            currMonthsArr[currMonthsArr.length] = currMonth;
+            currMonthCounts[currMonth] = (currMonthCounts[currMonth]) ? (currMonthCounts[currMonth] + 1) : 1;
+
+            currPeriodArr[currPeriodArr.length] = currIndex.format("YYYY.M.D");
+
+            // Previous period variables
+
+            var prevWeek = prevYear + "." + "w" + Math.ceil(prevIndex.format("DDD") / 7);
+            prevWeeksArr[prevWeeksArr.length] = prevWeek;
+            prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek]) ? (prevWeekCounts[prevWeek] + 1) : 1;
+
+            var prevMonth = prevIndex.format("YYYY.M");
+            prevMonthsArr[prevMonthsArr.length] = prevMonth;
+            prevMonthCounts[prevMonth] = (prevMonthCounts[prevMonth]) ? (prevMonthCounts[prevMonth] + 1) : 1;
+
+            prevPeriodArr[prevPeriodArr.length] = prevIndex.format("YYYY.M.D");
+        }
+    }
+
+    periodObject.uniquePeriodArr = getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr);
+    periodObject.uniquePeriodCheckArr = getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts);
+    periodObject.previousUniquePeriodArr = getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr);
+    periodObject.previousUniquePeriodCheckArr = getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts);
+
+    periodObject.uniqueMap = uniqueMap;
+    periodObject.uniquePrevMap = uniquePrevMap;
+
+    let zeroIDs = new Set(),
+        monthIDs = new Set();
+
+    for (let index = 0; index &lt; periodObject.currentPeriodArr.length; index++) {
+        let [year, month] = periodObject.currentPeriodArr[index].split("."),
+            [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
+
+        zeroIDs.add(year + ":0");
+        monthIDs.add(year + ":" + month);
+        zeroIDs.add(pYear + ":0");
+        monthIDs.add(pYear + ":" + pMonth);
+    }
+
+    periodObject.reqZeroDbDateIds = Array.from(zeroIDs);
+    periodObject.reqMonthDbDateIds = Array.from(monthIDs);
+
+    return periodObject;
+}
+
+// Public Properties
+/**
+* Currently selected period
+* @property {number} start - period start timestamp in miliseconds
+* @property {number} end - period end timestamp in miliseconds
+* @property {array} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+* @property {array} previousPeriodArr - array with ticks for previous period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+* @property {string} dateString - date format to use when outputting date in graphs, example D MMM, YYYY
+* @property {boolean} isSpecialPeriod - true if current period is special period, false if it is not
+* @property {number} daysInPeriod - amount of full days in selected period, example 30
+* @property {boolean} periodContainsToday - true if period contains today, false if not
+* @property {array} uniquePeriodArr - array with ticks for current period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30", ...]
+* @property {array} uniquePeriodCheckArr - array with ticks for higher buckets to current period unique value estimation, example ["2016.w51","2016.w52","2016.w53","2017.1",...]
+* @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
+* @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
+* @property {string} activePeriod - period name formatted in dateString (available in non-special periods)
+* @property {string} previousPeriod - previous period name formatted in dateString (available in non-special periods)
+* @property {number} periodMax - max value of current period tick (available in non-special periods)
+* @property {number} periodMin - min value of current period tick (available in non-special periods)
+* @property {array} reqMonthDbDateIds - metric model month document ids to query for this period
+* @property {array} reqZeroDbDateIds - metric model year document ids to query for this period
+* @example &lt;caption>Special period object (7days)&lt;/caption>
+* {
+*    "start":1487721600000,
+*    "end":1488326399000,
+*    "activePeriod":"NA",
+*    "periodMax":"NA",
+*    "periodMin":"NA",
+*    "previousPeriod":"NA",
+*    "currentPeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.2.26","2017.2.27","2017.2.28"],
+*    "previousPeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+*    "uniquePeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.w9"],
+*    "uniquePeriodCheckArr":["2017.w8","2017.w9"],
+*    "previousUniquePeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+*    "previousUniquePeriodCheckArr":["2017.w7","2017.w8"],
+*    "dateString":"D MMM",
+*    "daysInPeriod":7,
+*    "isSpecialPeriod":true,
+*    "reqMonthDbDateIds":["2017:2"],
+*    "reqZeroDbDateIds":["2017:0"],
+*    "periodContainsToday":true
+* }
+* @example &lt;caption>Simple period object (today period - hour)&lt;/caption>
+* {
+*    "start":1488240000000,
+*    "end":1488326399000,
+*    "activePeriod":"2017.2.28",
+*    "periodMax":11,
+*    "periodMin":0,
+*    "previousPeriod":"2017.2.27",
+*    "currentPeriodArr":["2017.2.28"],
+*    "previousPeriodArr":["2017.2.27"],
+*    "uniquePeriodArr":[],
+*    "uniquePeriodCheckArr":[],
+*    "previousUniquePeriodArr":[],
+*    "previousUniquePeriodCheckArr":[],
+*    "dateString":"HH:mm",
+*    "daysInPeriod":1,
+*    "isSpecialPeriod":false,
+*    "reqMonthDbDateIds":["2017:2"],
+*    "reqZeroDbDateIds":["2017:0"],
+*    "periodContainsToday":true
+* }
+*/
+countlyCommon.periodObj = getPeriodObject();
+
+// Public Methods
+
+/**
+* Change timezone of internal Date object
+* @param {string} appTimezone - name of the timezone
+*/
+countlyCommon.setTimezone = function(appTimezone) {
+    if (appTimezone &amp;&amp; appTimezone.length) {
+        _appTimezone = appTimezone;
+        _currMoment = moment();
+        _currMoment.tz(appTimezone);
+        countlyCommon.periodObj = getPeriodObject();
+    }
+};
+
+/**
+* Change currently selected period
+* @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+*/
+countlyCommon.setPeriod = function(period) {
+    _period = period;
+    countlyCommon.periodObj = getPeriodObject();
+};
+
+/**
+* Calculates the percent change between previous and current values.
+* @param {number} previous - data for previous period
+* @param {number} current - data for current period
+* @returns {object} in the following format {"percent": "20%", "trend": "u"}
+* @example
+*   //outputs {"percent":"100%","trend":"u"}
+*   countlyCommon.getPercentChange(100, 200);
+*/
+countlyCommon.getPercentChange = function(previous, current) {
+    var pChange = 0,
+        trend = "";
+
+    if (previous === 0) {
+        pChange = "NA";
+        trend = "u"; //upward
+    }
+    else if (current === 0) {
+        pChange = "∞";
+        trend = "d"; //downward
+    }
+    else {
+        var change = (((current - previous) / previous) * 100).toFixed(1);
+        pChange = countlyCommon.getShortNumber(change) + "%";
+
+        if (change &lt; 0) {
+            trend = "d";
+        }
+        else {
+            trend = "u";
+        }
+    }
+
+    return {
+        "percent": pChange,
+        "trend": trend
+    };
+};
+
+/**
+* Fetches nested property values from an obj.
+* @param {object} obj - standard countly metric object
+* @param {string} desc - dot separate path to fetch from object
+* @returns {object} fetched object from provided path
+* @example &lt;caption>Path found&lt;/caption>
+* //outputs {"u":20,"t":20,"n":5}
+* countlyCommon.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
+*/
+countlyCommon.getDescendantProp = function(obj, desc) {
+    desc = String(desc);
+
+    if (desc.indexOf(".") === -1) {
+        return obj[desc];
+    }
+
+    var arr = desc.split(".");
+    while (arr.length &amp;&amp; (obj = obj[arr.shift()])) {
+        //operation done in check
+    }
+
+    return obj;
+};
+
+/**
+* Extract range data from standard countly metric data model
+* @param {object} db - countly standard metric data object
+* @param {string} propertyName - name of the property to extract
+* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {function} explainRange - function to convert range/bucket index to meaningful label
+* @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+* @example &lt;caption>Extracting session frequency from users collection&lt;/caption>
+*    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+*    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlySession.explainFrequencyRange);
+*/
+countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainRange) {
+
+    countlyCommon.periodObj = getPeriodObject();
+
+    var dataArr = [],
+        dataArrCounter = 0,
+        rangeTotal,
+        total = 0;
+
+    if (!rangeArray) {
+        return dataArr;
+    }
+
+    for (let j = 0; j &lt; rangeArray.length; j++) {
+
+        rangeTotal = 0;
+
+        if (!countlyCommon.periodObj.isSpecialPeriod) {
+            let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + propertyName);
+
+            if (tmp_x &amp;&amp; tmp_x[rangeArray[j]]) {
+                rangeTotal += tmp_x[rangeArray[j]];
+            }
+
+            if (rangeTotal !== 0) {
+                dataArr[dataArrCounter] = {};
+                dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
+                dataArr[dataArrCounter].t = rangeTotal;
+
+                total += rangeTotal;
+                dataArrCounter++;
+            }
+        }
+        else {
+            var tmpRangeTotal = 0;
+
+            for (let i = 0; i &lt; (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
+                let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
+
+                if (tmp_x &amp;&amp; tmp_x[rangeArray[j]]) {
+                    rangeTotal += tmp_x[rangeArray[j]];
+                }
+            }
+
+            for (let i = 0; i &lt; (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
+                let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
+
+                if (tmp_x &amp;&amp; tmp_x[rangeArray[j]]) {
+                    tmpRangeTotal += tmp_x[rangeArray[j]];
+                }
+            }
+
+            if (rangeTotal > tmpRangeTotal) {
+                rangeTotal = tmpRangeTotal;
+            }
+
+            if (rangeTotal !== 0) {
+                dataArr[dataArrCounter] = {};
+                dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
+                dataArr[dataArrCounter].t = rangeTotal;
+
+                total += rangeTotal;
+                dataArrCounter++;
+            }
+        }
+    }
+
+    for (let j = 0; j &lt; dataArr.length; j++) {
+        dataArr[j].percent = ((dataArr[j].t / total) * 100).toFixed(1);
+    }
+
+    dataArr.sort(function(a, b) {
+        return -(a.t - b.t);
+    });
+
+    return dataArr;
+};
+
+/**
+* Extract single level data without metrics/segments, like total user data from users collection
+* @param {object} db - countly standard metric data object
+* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} chartData - prefill chart data with labels, colors, etc
+* @param {object} dataProperties - describing which properties and how to extract
+* @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
+* @example &lt;caption>Extracting total users data from users collection&lt;/caption>
+* countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
+*      { data:[], label:"Total Users" }
+*  ], [
+*      {
+*          name:"t",
+*          func:function (dataObj) {
+*              return dataObj["u"]
+*          }
+*      }
+*  ]);
+*  @example &lt;caption>Returned data&lt;/caption>
+* {"chartDP":[
+*    {
+*        "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
+*        "label":"Total Sessions",
+*        "color":"#DDDDDD",
+*        "mode":"ghost"
+*    },
+*    {
+*        "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
+*        "label":"Total Sessions",
+*        "color":"#333933"
+*    }
+*  ],
+*  "chartData":[
+*    {"date":"22 Dec, 2016","pt":0,"t":6},
+*    {"date":"23 Dec, 2016","pt":0,"t":14},
+*    {"date":"24 Dec, 2016","pt":0,"t":11},
+*    {"date":"25 Dec, 2016","pt":0,"t":18},
+*    {"date":"26 Dec, 2016","pt":0,"t":10},
+*    {"date":"27 Dec, 2016","pt":0,"t":32},
+*    {"date":"28 Dec, 2016","pt":0,"t":53},
+*    {"date":"29 Dec, 2016","pt":0,"t":55},
+*    {"date":"30 Dec, 2016","pt":0,"t":71},
+*    {"date":"31 Dec, 2016","pt":0,"t":82},
+*    {"date":"1 Jan, 2017","pt":0,"t":74},
+*    {"date":"2 Jan, 2017","pt":0,"t":69},
+*    {"date":"3 Jan, 2017","pt":0,"t":60},
+*    {"date":"4 Jan, 2017","pt":0,"t":17},
+*    {"date":"5 Jan, 2017","pt":0,"t":6},
+*    {"date":"6 Jan, 2017","pt":12,"t":3}
+*  ],
+*  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
+* }
+*/
+countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties) {
+
+    countlyCommon.periodObj = getPeriodObject();
+
+    var periodMin = countlyCommon.periodObj.periodMin,
+        periodMax = (countlyCommon.periodObj.periodMax + 1),
+        dataObj = {},
+        formattedDate = "",
+        tableData = [],
+        propertyNames = underscore.pluck(dataProperties, "name"),
+        propertyFunctions = underscore.pluck(dataProperties, "func"),
+        currOrPrevious = underscore.pluck(dataProperties, "period"),
+        activeDate,
+        activeDateArr;
+
+    for (var j = 0; j &lt; propertyNames.length; j++) {
+        if (currOrPrevious[j] === "previous") {
+            if (countlyCommon.periodObj.isSpecialPeriod) {
+                periodMin = 0;
+                periodMax = countlyCommon.periodObj.previousPeriodArr.length;
+                activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+            }
+            else {
+                activeDate = countlyCommon.periodObj.previousPeriod;
+            }
+        }
+        else {
+            if (countlyCommon.periodObj.isSpecialPeriod) {
+                periodMin = 0;
+                periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+                activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+            }
+            else {
+                activeDate = countlyCommon.periodObj.activePeriod;
+            }
+        }
+
+        for (var i = periodMin; i &lt; periodMax; i++) {
+
+            if (!countlyCommon.periodObj.isSpecialPeriod) {
+
+                if (countlyCommon.periodObj.periodMin === 0) {
+                    formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                }
+                else if (("" + activeDate).indexOf(".") === -1) {
+                    formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+                }
+                else {
+                    formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                }
+
+                dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
+            }
+            else {
+                formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
+            }
+
+            dataObj = clearFunction(dataObj);
+
+            if (!tableData[i]) {
+                tableData[i] = {};
+            }
+
+            tableData[i].date = formattedDate.format(countlyCommon.periodObj.dateString);
+
+            var propertyValue;
+            if (propertyFunctions[j]) {
+                propertyValue = propertyFunctions[j](dataObj);
+            }
+            else {
+                propertyValue = dataObj[propertyNames[j]];
+            }
+
+            chartData[j].data[chartData[j].data.length] = [i, propertyValue];
+            tableData[i][propertyNames[j]] = propertyValue;
+        }
+    }
+
+    var keyEvents = [];
+
+    for (var k = 0; k &lt; chartData.length; k++) {
+        var flatChartData = underscore.flatten(chartData[k].data);
+        var chartVals = underscore.reject(flatChartData, function(context, value) {
+            return value % 2 === 0;
+        });
+
+        keyEvents[k] = {};
+        keyEvents[k].min = underscore.min(chartVals);
+        keyEvents[k].max = underscore.max(chartVals);
+    }
+
+    return {
+        "chartDP": chartData,
+        "chartData": underscore.compact(tableData),
+        "keyEvents": keyEvents
+    };
+};
+
+/**
+ * Extract single level data without metrics/segments, like total user data from users collection
+ * @memberof countlyCommon
+ * @param {object} db - countly standard metric data object
+ * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+ * @param {object} chartData - prefill chart data with labels, colors, etc
+ * @param {object} dataProperties - describing which properties and how to extract
+ * @param {string}  metric  - metric to select
+ * @param {boolean} disableHours - disable hourly data for graphs
+ * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
+ * @example &lt;caption>Extracting total users data from users collection&lt;/caption>
+ * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
+ *      { data:[], label:"Total Users" }
+ *  ], [
+ *      {
+ *          name:"t",
+ *          func:function (dataObj) {
+ *              return dataObj["u"]
+ *          }
+ *      }
+ *  ]);
+ *  @example &lt;caption>Returned data&lt;/caption>
+ * {"chartDP":[
+ *    {
+ *        "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
+ *        "label":"Total Sessions",
+ *        "color":"#DDDDDD",
+ *        "mode":"ghost"
+ *    },
+ *    {
+ *        "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
+ *        "label":"Total Sessions",
+ *        "color":"#333933"
+ *    }
+ *  ],
+ *  "chartData":[
+ *    {"date":"22 Dec, 2016","pt":0,"t":6},
+ *    {"date":"23 Dec, 2016","pt":0,"t":14},
+ *    {"date":"24 Dec, 2016","pt":0,"t":11},
+ *    {"date":"25 Dec, 2016","pt":0,"t":18},
+ *    {"date":"26 Dec, 2016","pt":0,"t":10},
+ *    {"date":"27 Dec, 2016","pt":0,"t":32},
+ *    {"date":"28 Dec, 2016","pt":0,"t":53},
+ *    {"date":"29 Dec, 2016","pt":0,"t":55},
+ *    {"date":"30 Dec, 2016","pt":0,"t":71},
+ *    {"date":"31 Dec, 2016","pt":0,"t":82},
+ *    {"date":"1 Jan, 2017","pt":0,"t":74},
+ *    {"date":"2 Jan, 2017","pt":0,"t":69},
+ *    {"date":"3 Jan, 2017","pt":0,"t":60},
+ *    {"date":"4 Jan, 2017","pt":0,"t":17},
+ *    {"date":"5 Jan, 2017","pt":0,"t":6},
+ *    {"date":"6 Jan, 2017","pt":12,"t":3}
+ *  ],
+ *  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
+ * }
+ */
+countlyCommon.extractStackedBarData = function(db, clearFunction, chartData, dataProperties, metric, disableHours) {
+    if (metric) {
+        metric = "." + metric;
+    }
+    else {
+        metric = "";
+    }
+    countlyCommon.periodObj = getPeriodObject();
+
+    var periodMin = countlyCommon.periodObj.periodMin,
+        periodMax = (countlyCommon.periodObj.periodMax + 1),
+        dataObj = {},
+        formattedDate = "",
+        tableData = [],
+        propertyNames = underscore.pluck(dataProperties, "name"),
+        propertyFunctions = underscore.pluck(dataProperties, "func"),
+        currOrPrevious = underscore.pluck(dataProperties, "period"),
+        activeDate,
+        activeDateArr,
+        dateString = countlyCommon.periodObj.dateString;
+    var previousDateArr = [];
+
+    if (countlyCommon.periodObj.daysInPeriod === 1 &amp;&amp; disableHours) {
+        periodMax = 1;
+        dateString = "D MMM";
+    }
+
+    for (var j = 0; j &lt; propertyNames.length; j++) {
+        if (currOrPrevious[j] === "previous") {
+            if (countlyCommon.periodObj.daysInPeriod === 1 &amp;&amp; !disableHours) {
+                periodMin = 0;
+                periodMax = 24;
+                activeDate = countlyCommon.periodObj.previousPeriodArr[0];
+            }
+            else {
+                if (countlyCommon.periodObj.isSpecialPeriod) {
+                    periodMin = 0;
+                    periodMax = countlyCommon.periodObj.previousPeriodArr.length;
+                    activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                }
+                else {
+                    activeDate = countlyCommon.periodObj.previousPeriod;
+                    activeDateArr = countlyCommon.periodObj.previousPeriodArr;
+                }
+            }
+        }
+        else if (currOrPrevious[j] === "previousThisMonth") {
+            //get first date of current month
+            var date = new Date();
+            var lastDay = new Date(date.getFullYear(), date.getMonth(), 1);
+
+            // count of days of the current month
+            var currentMonthCount = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+            // get date of currenthMonthCount days ago
+            var firstDay = new Date(lastDay.getTime());
+            firstDay.setDate(lastDay.getDate() - currentMonthCount);
+
+            // get an array between two date
+            for (var arr = [], dt = new Date(firstDay); dt &lt;= new Date(lastDay); dt.setDate(dt.getDate() + 1)) {
+                arr.push(dt.getFullYear() + '.' + (dt.getMonth() + 1) + '.' + dt.getDate());
+            }
+            previousDateArr = arr;
+        }
+        else {
+            if (countlyCommon.periodObj.isSpecialPeriod) {
+                if (countlyCommon.periodObj.daysInPeriod === 1 &amp;&amp; !disableHours) {
+                    periodMin = 0;
+                    periodMax = 24;
+                    activeDate = countlyCommon.periodObj.currentPeriodArr[0];
+                }
+                else {
+                    periodMin = 0;
+                    periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+                    activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                }
+            }
+            else {
+                activeDate = countlyCommon.periodObj.activePeriod;
+                activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+            }
+        }
+        if (currOrPrevious[j] === "previousThisMonth") {
+            for (var p = 0, counter_ = 0; p &lt; previousDateArr.length - 1; p++, counter_++) {
+                formattedDate = moment((previousDateArr[p]).replace(/\./g, "/"), "YYYY/MM/DD");
+                dataObj = countlyCommon.getDescendantProp(db, previousDateArr[p] + metric);
+                dataObj = clearFunction(dataObj);
+
+                if (!tableData[counter_]) {
+                    tableData[counter_] = {};
+                }
+
+                tableData[counter_].date = formattedDate.format(dateString);
+                var propertyValue_ = "";
+                if (propertyFunctions[j]) {
+                    propertyValue_ = propertyFunctions[j](dataObj);
+                }
+                else {
+                    propertyValue_ = dataObj[propertyNames[j]];
+                }
+
+                chartData[j].data[chartData[j].data.length] = [counter_, propertyValue_];
+                tableData[counter_][propertyNames[j]] = propertyValue_;
+            }
+        }
+        else {
+            for (var i = periodMin, counter = 0; i &lt; periodMax; i++, counter++) {
+                if ((!countlyCommon.periodObj.isSpecialPeriod &amp;&amp; !disableHours) || (!countlyCommon.periodObj.isSpecialPeriod &amp;&amp; disableHours &amp;&amp; countlyCommon.periodObj.daysInPeriod !== 1)) {
+                    if (countlyCommon.periodObj.periodMin === 0) {
+                        formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                    }
+                    else if (("" + activeDate).indexOf(".") === -1) {
+                        formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+                    }
+                    else {
+                        formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                    }
+
+                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                }
+                else if (countlyCommon.periodObj.daysInPeriod === 1 &amp;&amp; !disableHours) {
+                    formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                }
+                else {
+                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                    dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
+                }
+
+                dataObj = clearFunction(dataObj);
+
+                if (!tableData[counter]) {
+                    tableData[counter] = {};
+                }
+
+                tableData[counter].date = formattedDate.format(dateString);
+                var propertyValue = "";
+                if (propertyFunctions[j]) {
+                    propertyValue = propertyFunctions[j](dataObj);
+                }
+                else {
+                    propertyValue = dataObj[propertyNames[j]];
+                }
+
+                chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                tableData[counter][propertyNames[j]] = propertyValue;
+            }
+        }
+    }
+
+    var keyEvents = [];
+
+    for (var k = 0; k &lt; chartData.length; k++) {
+        var flatChartData = underscore.flatten(chartData[k].data);
+        var chartVals = underscore.reject(flatChartData, function(context, value) {
+            return value % 2 === 0;
+        });
+        keyEvents[k] = {};
+        keyEvents[k].min = underscore.min(chartVals);
+        keyEvents[k].max = underscore.max(chartVals);
+    }
+
+    return { "chartDP": chartData, "chartData": underscore.compact(tableData), "keyEvents": keyEvents };
+};
+
+/**
+* Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines
+* @param {object} data - countly metric model data
+* @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
+* @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} periodObject - period object override
+* @returns {object} object with sparkleline data for each property
+* @example
+* var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
+*     "total-sessions": "t",
+*     "new-users": "n",
+*     "total-users": "u",
+*     "total-duration": "d",
+*     "events": "e",
+*     "returning-users": function(tmp_x){return Math.max(tmp_x["u"] - tmp_x["n"], 0);},
+*     "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] === 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
+*     "avg-events": function(tmp_x){return (tmp_x["u"] === 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
+* }, countlySession.clearObject);
+* //outputs
+* {
+*   "total-sessions":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+*   "new-users":"24,30,25,20,16,18,11,7,17,18,20,18,17,11,15,15,6,11,6,16,13,14,12,10,7,4,8,9,2,2",
+*   "total-users":"45,54,50,44,37,18,11,7,17,27,36,39,41,36,39,36,6,11,6,16,22,30,33,34,32,29,29,9,2,2",
+*   "total-duration":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+*   "events":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+*   "returning-users":"21,24,25,24,21,0,0,0,0,9,16,21,24,25,24,21,0,0,0,0,9,16,21,24,25,25,21,0,0,0",
+*   "avg-duration-per-session":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+*   "avg-events":"1.6222222222222222,1.5555555555555556,1.6,1.6363636363636365,1.6486486486486487,1,1,1,1,1,1.8333333333333333,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.4137931034482758,1,1,1,1"
+* }
+*/
+countlyCommon.getSparklineData = function(data, props, clearObject, periodObject) {
+    var _periodObj = periodObject || countlyCommon.periodObj;
+    var sparkLines = {};
+    for (let p in props) {
+        sparkLines[p] = [];
+    }
+
+    if (!_periodObj.isSpecialPeriod) {
+        for (let i = _periodObj.periodMin; i &lt; (_periodObj.periodMax + 1); i++) {
+            let tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
+            tmp_x = clearObject(tmp_x);
+
+            for (let p in props) {
+                if (typeof props[p] === "string") {
+                    sparkLines[p].push(tmp_x[props[p]]);
+                }
+                else if (typeof props[p] === "function") {
+                    sparkLines[p].push(props[p](tmp_x));
+                }
+            }
+        }
+    }
+    else {
+        for (let i = 0; i &lt; (_periodObj.currentPeriodArr.length); i++) {
+            let tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
+            tmp_x = clearObject(tmp_x);
+
+            for (let p in props) {
+                if (typeof props[p] === "string") {
+                    sparkLines[p].push(tmp_x[props[p]]);
+                }
+                else if (typeof props[p] === "function") {
+                    sparkLines[p].push(props[p](tmp_x));
+                }
+            }
+        }
+    }
+
+    for (let key in sparkLines) {
+        sparkLines[key] = sparkLines[key].join(",");
+    }
+
+    return sparkLines;
+};
+
+/**
+* Extract two level data with metrics/segments, like total user data from carriers collection
+* @param {object} db - countly standard metric data object
+* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} dataProperties - describing which properties and how to extract
+* @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @param {string=} period - period to override
+* @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
+* @example &lt;caption>Extracting carriers data from carriers collection&lt;/caption>
+* var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&amp;t", "Verizon"], countlyCarrier.clearObject, [
+*      {
+*          name:"carrier",
+*          func:function (rangeArr, dataObj) {
+*              return rangeArr;
+*          }
+*      },
+*      { "name":"t" },
+*      { "name":"u" },
+*      { "name":"n" }
+* ]);
+* @example &lt;caption>Return data&lt;/caption>
+* {"chartData":['
+*    {"carrier":"At&amp;t","t":71,"u":62,"n":36},
+*    {"carrier":"Verizon","t":66,"u":60,"n":30}
+* ]}
+*/
+countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj, period) {
+    var periodObj = null;
+
+    if (typeof period !== 'undefined' &amp;&amp; period) {
+        periodObj = period;
+    }
+    else {
+        countlyCommon.periodObj = getPeriodObject();
+        periodObj = countlyCommon.periodObj;
+    }
+
+    if (!rangeArray) {
+        return {"chartData": tableData};
+    }
+    var periodMin = 0,
+        periodMax = 0,
+        dataObj = {},
+        tableData = [],
+        propertyNames = underscore.pluck(dataProperties, "name"),
+        propertyFunctions = underscore.pluck(dataProperties, "func"),
+        propertyValue = 0;
+
+    if (!periodObj.isSpecialPeriod) {
+        periodMin = periodObj.periodMin;
+        periodMax = (periodObj.periodMax + 1);
+    }
+    else {
+        periodMin = 0;
+        periodMax = periodObj.currentPeriodArr.length;
+    }
+
+    var tableCounter = 0;
+
+    if (!periodObj.isSpecialPeriod) {
+        for (let j = 0; j &lt; rangeArray.length; j++) {
+            dataObj = countlyCommon.getDescendantProp(db, periodObj.activePeriod + "." + rangeArray[j]);
+
+            if (!dataObj) {
+                continue;
+            }
+
+            dataObj = clearFunction(dataObj);
+
+            let propertySum = 0,
+                tmpPropertyObj = {};
+
+            for (let k = 0; k &lt; propertyNames.length; k++) {
+
+                if (propertyFunctions[k]) {
+                    propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
+                }
+                else {
+                    propertyValue = dataObj[propertyNames[k]];
+                }
+
+                if (typeof propertyValue !== 'string') {
+                    propertySum += propertyValue;
+                }
+
+                tmpPropertyObj[propertyNames[k]] = propertyValue;
+            }
+
+            if (propertySum > 0) {
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
+            }
+        }
+    }
+    else {
+
+        for (let j = 0; j &lt; rangeArray.length; j++) {
+
+            let tmpPropertyObj = {},
+                tmp_x = {};
+
+            for (let i = periodMin; i &lt; periodMax; i++) {
+                dataObj = countlyCommon.getDescendantProp(db, periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
+
+                if (!dataObj) {
+                    continue;
+                }
+
+                dataObj = clearFunction(dataObj);
+
+                for (let k = 0; k &lt; propertyNames.length; k++) {
+
+                    if (propertyNames[k] === "u") {
+                        propertyValue = 0;
+                    }
+                    else if (propertyFunctions[k]) {
+                        propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
+                    }
+                    else {
+                        propertyValue = dataObj[propertyNames[k]];
+                    }
+
+                    if (!tmpPropertyObj[propertyNames[k]]) {
+                        tmpPropertyObj[propertyNames[k]] = 0;
+                    }
+
+                    if (typeof propertyValue === 'string') {
+                        tmpPropertyObj[propertyNames[k]] = propertyValue;
+                    }
+                    else {
+                        tmpPropertyObj[propertyNames[k]] += propertyValue;
+                    }
+                }
+            }
+
+            if (propertyNames.indexOf("u") !== -1 &amp;&amp; Object.keys(tmpPropertyObj).length) {
+                if (totalUserOverrideObj &amp;&amp; typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
+
+                    tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
+
+                }
+                else {
+                    var tmpUniqVal = 0,
+                        tmpUniqValCheck = 0,
+                        tmpCheckVal = 0;
+
+                    for (let l = 0; l &lt; (periodObj.uniquePeriodArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                        if (!tmp_x) {
+                            continue;
+                        }
+                        tmp_x = clearFunction(tmp_x);
+                        propertyValue = tmp_x.u;
+
+                        if (typeof propertyValue === 'string') {
+                            tmpPropertyObj.u = propertyValue;
+                        }
+                        else {
+                            tmpUniqVal += propertyValue;
+                            tmpPropertyObj.u += propertyValue;
+                        }
+                    }
+
+                    for (let l = 0; l &lt; (periodObj.uniquePeriodCheckArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                        if (!tmp_x) {
+                            continue;
+                        }
+                        tmp_x = clearFunction(tmp_x);
+                        tmpCheckVal = tmp_x.u;
+
+                        if (typeof tmpCheckVal !== 'string') {
+                            tmpUniqValCheck += tmpCheckVal;
+                        }
+                    }
+
+                    if (tmpUniqVal > tmpUniqValCheck) {
+                        tmpPropertyObj.u = tmpUniqValCheck;
+                    }
+                }
+
+                // Total users can't be less than new users
+                if (tmpPropertyObj.u &lt; tmpPropertyObj.n) {
+                    tmpPropertyObj.u = tmpPropertyObj.n;
+                }
+
+                // Total users can't be more than total sessions
+                if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                    tmpPropertyObj.u = tmpPropertyObj.t;
+                }
+            }
+
+            tableData[tableCounter] = {};
+            tableData[tableCounter] = tmpPropertyObj;
+            tableCounter++;
+        }
+    }
+
+    if (propertyNames.indexOf("u") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.u;
+        });
+    }
+    else if (propertyNames.indexOf("t") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.t;
+        });
+    }
+    else if (propertyNames.indexOf("c") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.c;
+        });
+    }
+
+    for (let i = 0; i &lt; tableData.length; i++) {
+        if (underscore.isEmpty(tableData[i])) {
+            tableData[i] = null;
+        }
+    }
+
+    return {"chartData": underscore.compact(tableData)};
+};
+
+
+/**
+* Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+* @param {object} db - countly standard metric data object
+* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+* @param {number} maxItems - amount of items to return, default 3, if -1 return all
+* @param {string=} metric - metric to output and use in sorting, default "t"
+* @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+* @param {string} period - period to extract data from
+* @returns {array} array with top 3 values
+* @example &lt;caption>Return data&lt;/caption>
+* [
+*    {"name":"iOS","percent":35},
+*    {"name":"Android","percent":33},
+*    {"name":"Windows Phone","percent":32}
+* ]
+*/
+countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj, fixBarSegmentData, period) {
+    metric = metric || "t";
+    maxItems = maxItems || 3;
+    fetchFunction = fetchFunction || function(rangeArr) {
+        return rangeArr;
+    };
+    var dataProps = [
+        {
+            name: "range",
+            func: fetchFunction
+        },
+        { "name": metric }
+    ];
+        //include other default metrics for data correction
+    if (metric === "u") {
+        dataProps.push({name: "n"});
+        dataProps.push({name: "t"});
+    }
+    if (metric === "n") {
+        dataProps.push({name: "u"});
+    }
+    var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj, period);
+
+    if (fixBarSegmentData) {
+        rangeData = fixBarSegmentData(rangeData);
+    }
+
+    rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
+    rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
+        return -obj[metric];
+    });
+    var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
+        rangeTotal = underscore.pluck(rangeData.chartData, metric),
+        barData = [],
+        sum = 0,
+        totalPercent = 0;
+
+    rangeTotal.forEach(function(r) {
+        sum += r;
+    });
+
+    for (let i = rangeNames.length - 1; i >= 0; i--) {
+        var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 1);
+        totalPercent += percent;
+
+        barData[i] = {
+            "name": rangeNames[i],
+            value: rangeTotal[i],
+            "percent": percent
+        };
+    }
+
+    barData = countlyCommon.fixPercentageDelta(barData, totalPercent);
+
+    if (rangeNames.length &lt; maxItems) {
+        maxItems = rangeNames.length;
+    }
+
+    if (maxItems !== -1) {
+        barData = barData.slice(0, maxItems);
+    }
+
+    return underscore.sortBy(barData, function(obj) {
+        return -obj.value;
+    });
+};
+
+/**
+* Shortens the given number by adding K (thousand) or M (million) postfix. K is added only if the number is bigger than 10000, etc.
+* @param {number} number - number to shorten
+* @returns {string} shorter representation of number
+* @example
+* //outputs 10K
+* countlyCommon.getShortNumber(10000);
+*/
+countlyCommon.getShortNumber = function(number) {
+
+    var tmpNumber = "";
+
+    if (number >= 1000000 || number &lt;= -1000000) {
+        tmpNumber = ((number / 1000000).toFixed(1).replace(".0", "")) + "M";
+    }
+    else if (number >= 10000 || number &lt;= -10000) {
+        tmpNumber = ((number / 1000).toFixed(1).replace(".0", "")) + "K";
+    }
+    else {
+        number += "";
+        tmpNumber = number.replace(".0", "");
+    }
+
+    return tmpNumber;
+};
+
+/**
+* Getting the date range shown on the dashboard like 1 Aug - 30 Aug, using {@link countlyCommon.periodObj) dateString property which holds the date format.
+* @returns {string} string with  formatted date range as 1 Aug - 30 Aug
+*/
+countlyCommon.getDateRange = function() {
+
+    countlyCommon.periodObj = getPeriodObject();
+    var formattedDateStart, formattedDateEnd;
+    if (!countlyCommon.periodObj.isSpecialPeriod) {
+        if (countlyCommon.periodObj.dateString === "HH:mm") {
+            formattedDateStart = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm");
+            formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
+
+            var nowMin = _currMoment.format("mm");
+            formattedDateEnd.add(nowMin, "minutes");
+
+        }
+        else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
+            formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+            formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes");
+        }
+        else {
+            formattedDateStart = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D");
+            formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D");
+        }
+    }
+    else {
+        formattedDateStart = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+        formattedDateEnd = moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D");
+    }
+
+    return formattedDateStart.format(countlyCommon.periodObj.dateString) + " - " + formattedDateEnd.format(countlyCommon.periodObj.dateString);
+};
+
+/**
+* Extract single level data without metrics/segments, like total user data from users collection
+* @param {object} db - countly standard metric data object
+* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} dataProperties - describing which properties and how to extract
+* @param {module:api/lib/countly.common.periodObj} periodObject - period object override to use for extracting data
+* @returns {array} object to use in timeline graph
+* @example &lt;caption>Extracting total users data from users collection&lt;/caption>
+* countlyCommon.extractData(_sessionDb, countlySession.clearObject, [
+*     { name:"t" },
+*     { name:"n" },
+*     { name:"u" },
+*     { name:"d" },
+*     { name:"e" }
+* ]);
+* @example &lt;caption>Returned data&lt;/caption>
+* [
+*    {"_id":"2017-1-30","t":6,"n":6,"u":6,"d":0,"e":6},
+*    {"_id":"2017-1-31","t":2,"n":2,"u":2,"d":0,"e":2},
+*    {"_id":"2017-2-1","t":5,"n":5,"u":5,"d":0,"e":5},
+*    {"_id":"2017-2-2","t":5,"n":5,"u":5,"d":0,"e":5},
+*    {"_id":"2017-2-3","t":8,"n":8,"u":8,"d":0,"e":8},
+*    {"_id":"2017-2-4","t":7,"n":7,"u":7,"d":0,"e":7},
+*    {"_id":"2017-2-5","t":6,"n":6,"u":6,"d":0,"e":6},
+*    {"_id":"2017-2-6","t":5,"n":5,"u":5,"d":0,"e":5},
+*    {"_id":"2017-2-7","t":6,"n":6,"u":6,"d":0,"e":6},
+*    {"_id":"2017-2-8","t":5,"n":5,"u":5,"d":0,"e":5},
+*    {"_id":"2017-2-9","t":4,"n":4,"u":4,"d":0,"e":4},
+*    {"_id":"2017-2-10","t":6,"n":6,"u":6,"d":0,"e":6},
+*    {"_id":"2017-2-11","t":8,"n":8,"u":8,"d":0,"e":8},
+*    {"_id":"2017-2-12","t":3,"n":3,"u":3,"d":0,"e":3},
+*    {"_id":"2017-2-13","t":8,"n":6,"u":7,"d":0,"e":8},
+*    {"_id":"2017-2-14","t":7,"n":7,"u":7,"d":0,"e":7},
+*    {"_id":"2017-2-15","t":4,"n":4,"u":4,"d":0,"e":4},
+*    {"_id":"2017-2-16","t":2,"n":2,"u":2,"d":0,"e":2},
+*    {"_id":"2017-2-17","t":4,"n":4,"u":4,"d":0,"e":4},
+*    {"_id":"2017-2-18","t":14,"n":14,"u":14,"d":0,"e":14},
+*    {"_id":"2017-2-19","t":20,"n":11,"u":20,"d":0,"e":20},
+*    {"_id":"2017-2-20","t":25,"n":9,"u":25,"d":0,"e":25},
+*    {"_id":"2017-2-21","t":33,"n":12,"u":33,"d":0,"e":33},
+*    {"_id":"2017-2-22","t":36,"n":12,"u":36,"d":0,"e":36},
+*    {"_id":"2017-2-23","t":37,"n":12,"u":37,"d":0,"e":37},
+*    {"_id":"2017-2-24","t":29,"n":5,"u":29,"d":0,"e":29},
+*    {"_id":"2017-2-25","t":28,"n":7,"u":28,"d":0,"e":28},
+*    {"_id":"2017-2-26","t":3,"n":3,"u":3,"d":0,"e":3},
+*    {"_id":"2017-2-27","t":3,"n":3,"u":3,"d":0,"e":3},
+*    {"_id":"2017-2-28","t":7,"n":7,"u":7,"d":0,"e":7}
+* ]
+*/
+countlyCommon.extractData = function(db, clearFunction, dataProperties, periodObject) {
+
+    var localPeriodObj = periodObject || getPeriodObject();
+    var periodMin = localPeriodObj.periodMin,
+        periodMax = (localPeriodObj.periodMax + 1),
+        dataObj = {},
+        formattedDate = "",
+        tableData = [],
+        propertyNames = underscore.pluck(dataProperties, "name"),
+        propertyFunctions = underscore.pluck(dataProperties, "func"),
+        currOrPrevious = underscore.pluck(dataProperties, "period"),
+        activeDate,
+        activeDateArr;
+
+    for (var j = 0; j &lt; propertyNames.length; j++) {
+        if (currOrPrevious[j] === "previous") {
+            if (localPeriodObj.isSpecialPeriod) {
+                periodMin = 0;
+                periodMax = localPeriodObj.previousPeriodArr.length;
+                activeDateArr = localPeriodObj.previousPeriodArr;
+            }
+            else {
+                activeDate = localPeriodObj.previousPeriod;
+            }
+        }
+        else {
+            if (localPeriodObj.isSpecialPeriod) {
+                periodMin = 0;
+                periodMax = localPeriodObj.currentPeriodArr.length;
+                activeDateArr = localPeriodObj.currentPeriodArr;
+            }
+            else {
+                activeDate = localPeriodObj.activePeriod;
+            }
+        }
+        var dateString = "";
+        for (var i = periodMin; i &lt; periodMax; i++) {
+
+            if (!localPeriodObj.isSpecialPeriod) {
+
+                if (localPeriodObj.periodMin === 0) {
+                    dateString = "YYYY-M-D H:00";
+                    formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                }
+                else if (("" + activeDate).indexOf(".") === -1) {
+                    dateString = "YYYY-M";
+                    formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+                }
+                else {
+                    dateString = "YYYY-M-D";
+                    formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                }
+
+                dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
+            }
+            else {
+                dateString = "YYYY-M-D";
+                formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
+            }
+
+            dataObj = clearFunction(dataObj);
+
+            if (!tableData[i]) {
+                tableData[i] = {};
+            }
+
+            tableData[i]._id = formattedDate.format(dateString);
+            var propertyValue;
+            if (propertyFunctions[j]) {
+                propertyValue = propertyFunctions[j](dataObj);
+            }
+            else {
+                propertyValue = dataObj[propertyNames[j]];
+            }
+            tableData[i][propertyNames[j]] = propertyValue;
+        }
+    }
+
+    return underscore.compact(tableData);
+};
+
+/**
+* Extract metrics data break down by segments, like total user by carriers
+* @param {object} db - countly standard metric data object
+* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {object} dataProperties - describing which properties and how to extract
+* @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @returns {array} object to use in timeline graph
+* @example &lt;caption>Extracting total users data from users collection&lt;/caption>
+* countlyCommon.extractData(countlyCarriers.getDb(), countlyCarriers.getMeta(), countlyCarriers.clearObject, [
+*     {
+*         name:"carriers",
+*         func:function (rangeArr, dataObj) {
+*             return rangeArr;
+*         }
+*     },
+*     { "name":"t" },
+*     { "name":"n" },
+*     { "name":"u" }
+* ]);
+* @example &lt;caption>Returned data&lt;/caption>
+* [
+*    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+*    {"_id":"Tele2","t":32,"n":19,"u":31},
+*    {"_id":"\tAt&amp;amp;t","t":32,"n":20,"u":31},
+*    {"_id":"O2","t":26,"n":19,"u":26},
+*    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+*    {"_id":"Turkcell","t":23,"n":11,"u":23},
+*    {"_id":"Telus","t":22,"n":15,"u":22},
+*    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+*    {"_id":"Verizon","t":21,"n":11,"u":21},
+*    {"_id":"Sprint","t":21,"n":11,"u":20},
+*    {"_id":"Vodafone","t":22,"n":12,"u":19},
+*    {"_id":"Orange","t":18,"n":12,"u":18},
+*    {"_id":"T-mobile","t":17,"n":9,"u":17},
+*    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+* ]
+*/
+countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
+
+    countlyCommon.periodObj = getPeriodObject();
+
+    var tableData = [];
+    if (!rangeArray) {
+        return tableData;
+    }
+    var periodMin = 0,
+        periodMax = 0,
+        dataObj = {},
+        propertyNames = underscore.pluck(dataProperties, "name"),
+        propertyFunctions = underscore.pluck(dataProperties, "func"),
+        propertyValue = 0;
+
+    if (!countlyCommon.periodObj.isSpecialPeriod) {
+        periodMin = countlyCommon.periodObj.periodMin;
+        periodMax = (countlyCommon.periodObj.periodMax + 1);
+    }
+    else {
+        periodMin = 0;
+        periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+    }
+
+    var tableCounter = 0;
+
+    if (!countlyCommon.periodObj.isSpecialPeriod) {
+        for (let j = 0; j &lt; rangeArray.length; j++) {
+            dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
+
+            if (!dataObj) {
+                continue;
+            }
+
+            dataObj = clearFunction(dataObj);
+
+            let propertySum = 0,
+                tmpPropertyObj = {};
+
+            for (let k = 0; k &lt; propertyNames.length; k++) {
+
+                if (propertyFunctions[k]) {
+                    propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
+                }
+                else {
+                    propertyValue = dataObj[propertyNames[k]];
+                }
+
+                if (typeof propertyValue !== 'string') {
+                    propertySum += propertyValue;
+                }
+                if (propertyFunctions[k]) {
+                    tmpPropertyObj._id = propertyValue;
+                }
+                else {
+                    tmpPropertyObj[propertyNames[k]] = propertyValue;
+                }
+            }
+
+            if (propertySum > 0) {
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
+            }
+        }
+    }
+    else {
+
+        for (let j = 0; j &lt; rangeArray.length; j++) {
+
+            let tmpPropertyObj = {},
+                tmp_x = {};
+
+            for (let i = periodMin; i &lt; periodMax; i++) {
+                dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
+
+                if (!dataObj) {
+                    continue;
+                }
+
+                dataObj = clearFunction(dataObj);
+
+                for (let k = 0; k &lt; propertyNames.length; k++) {
+
+                    if (propertyNames[k] === "u") {
+                        propertyValue = 0;
+                    }
+                    else if (propertyFunctions[k]) {
+                        propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
+                    }
+                    else {
+                        propertyValue = dataObj[propertyNames[k]];
+                    }
+
+                    if (propertyFunctions[k]) {
+                        tmpPropertyObj._id = propertyValue;
+                    }
+                    else {
+                        if (!tmpPropertyObj[propertyNames[k]]) {
+                            tmpPropertyObj[propertyNames[k]] = 0;
+                        }
+
+                        if (typeof propertyValue === 'string') {
+                            tmpPropertyObj[propertyNames[k]] = propertyValue;
+                        }
+                        else {
+                            tmpPropertyObj[propertyNames[k]] += propertyValue;
+                        }
+                    }
+                }
+            }
+
+            if (propertyNames.indexOf("u") !== -1 &amp;&amp; Object.keys(tmpPropertyObj).length) {
+                if (totalUserOverrideObj &amp;&amp; typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
+
+                    tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
+
+                }
+                else {
+                    var tmpUniqVal = 0,
+                        tmpUniqValCheck = 0,
+                        tmpCheckVal = 0;
+
+                    for (let l = 0; l &lt; (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                        if (!tmp_x) {
+                            continue;
+                        }
+                        tmp_x = clearFunction(tmp_x);
+                        propertyValue = tmp_x.u;
+
+                        if (typeof propertyValue === 'string') {
+                            tmpPropertyObj.u = propertyValue;
+                        }
+                        else {
+                            tmpUniqVal += propertyValue;
+                            tmpPropertyObj.u += propertyValue;
+                        }
+                    }
+
+                    for (let l = 0; l &lt; (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                        if (!tmp_x) {
+                            continue;
+                        }
+                        tmp_x = clearFunction(tmp_x);
+                        tmpCheckVal = tmp_x.u;
+
+                        if (typeof tmpCheckVal !== 'string') {
+                            tmpUniqValCheck += tmpCheckVal;
+                        }
+                    }
+
+                    if (tmpUniqVal > tmpUniqValCheck) {
+                        tmpPropertyObj.u = tmpUniqValCheck;
+                    }
+                }
+
+                // Total users can't be less than new users
+                if (tmpPropertyObj.u &lt; tmpPropertyObj.n) {
+                    tmpPropertyObj.u = tmpPropertyObj.n;
+                }
+
+                // Total users can't be more than total sessions
+                if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                    tmpPropertyObj.u = tmpPropertyObj.t;
+                }
+            }
+
+            tableData[tableCounter] = {};
+            tableData[tableCounter] = tmpPropertyObj;
+            tableCounter++;
+        }
+    }
+
+    if (propertyNames.indexOf("u") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.u;
+        });
+    }
+    else if (propertyNames.indexOf("t") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.t;
+        });
+    }
+    else if (propertyNames.indexOf("c") !== -1) {
+        tableData = underscore.sortBy(tableData, function(obj) {
+            return -obj.c;
+        });
+    }
+
+    for (var i = 0; i &lt; tableData.length; i++) {
+        if (underscore.isEmpty(tableData[i])) {
+            tableData[i] = null;
+        }
+    }
+
+    return underscore.compact(tableData);
+};
+
+/**
+* Format duration into highest unit of how much time have passed. Used in big numbers
+* @param {number} timespent - amount in seconds or miliseconds passed since some reference point
+* @returns {string} formated time with how much highest units passed
+* @example
+* //outputs 2824.7 yrs
+* countlyCommon.timeString(1484654066);
+*/
+countlyCommon.timeString = function(timespent) {
+    if (timespent.toString().length === 13) {
+        timespent = Math.round(timespent / 1000);
+    }
+    var timeSpentString = (timespent.toFixed(1)) + " min";
+
+    if (timespent >= 142560) {
+        timeSpentString = (timespent / 525600).toFixed(1) + " years";
+    }
+    else if (timespent >= 1440) {
+        timeSpentString = (timespent / 1440).toFixed(1) + " days";
+    }
+    else if (timespent >= 60) {
+        timeSpentString = (timespent / 60).toFixed(1) + " hours";
+    }
+    return timeSpentString;
+};
+
+/**
+* Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments
+* @param {object} data - countly metric model data
+* @param {array} properties - array of all properties to extract
+* @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
+* @param {object} totalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
+* @param {object} prevTotalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden for previous period
+* @param {object} periodObject period object override for calculation
+* @returns {object} dashboard data object
+* @example
+* countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
+* //outputs
+* {
+*      "t":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+*      "n":{"total":402,"prev-total":255,"change":"57.6%","trend":"u"},
+*      "u":{"total":423,"prev-total":255,"change":"75.7%","trend":"u","isEstimate":false},
+*      "d":{"total":0,"prev-total":0,"change":"NA","trend":"u"},
+*      "e":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+*      "p":{"total":103,"prev-total":29,"change":"255.2%","trend":"u","isEstimate":true},
+*      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
+* }
+*/
+countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj, prevTotalUserOverrideObj, periodObject) {
+    /**
+    * Clear object, bu nulling out predefined properties, that does not exist
+    * @param {object} obj - object to clear
+    * @returns {object} cleard objects
+    **/
+    function clearObject(obj) {
+        if (obj) {
+            for (let i = 0; i &lt; properties.length; i++) {
+                if (!obj[properties[i]]) {
+                    obj[properties[i]] = 0;
+                }
+            }
+        }
+        else {
+            obj = {};
+            for (let i = 0; i &lt; properties.length; i++) {
+                obj[properties[i]] = 0;
+            }
+        }
+
+        return obj;
+    }
+
+    var _periodObj = periodObject || countlyCommon.periodObj,
+        dataArr = {},
+        tmp_x,
+        tmp_y,
+        tmpUniqObj,
+        tmpPrevUniqObj,
+        current = {},
+        previous = {},
+        currentCheck = {},
+        previousCheck = {},
+        change = {},
+        isEstimate = false;
+
+    for (let i = 0; i &lt; properties.length; i++) {
+        current[properties[i]] = 0;
+        previous[properties[i]] = 0;
+        currentCheck[properties[i]] = 0;
+        previousCheck[properties[i]] = 0;
+    }
+
+    if (_periodObj.isSpecialPeriod) {
+        isEstimate = true;
+        for (let j = 0; j &lt; (_periodObj.currentPeriodArr.length); j++) {
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
+            tmp_x = clearObject(tmp_x);
+            for (let i = 0; i &lt; properties.length; i++) {
+                if (unique.indexOf(properties[i]) === -1) {
+                    current[properties[i]] += tmp_x[properties[i]];
+                }
+            }
+        }
+
+        for (let j = 0; j &lt; (_periodObj.previousPeriodArr.length); j++) {
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
+            tmp_y = clearObject(tmp_y);
+            for (let i = 0; i &lt; properties.length; i++) {
+                if (unique.indexOf(properties[i]) === -1) {
+                    previous[properties[i]] += tmp_y[properties[i]];
+                }
+            }
+        }
+
+        //deal with unique values separately
+        for (let j = 0; j &lt; (_periodObj.uniquePeriodArr.length); j++) {
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
+            tmp_x = clearObject(tmp_x);
+            for (let i = 0; i &lt; unique.length; i++) {
+                current[unique[i]] += tmp_x[unique[i]];
+            }
+        }
+
+        for (let j = 0; j &lt; (_periodObj.previousUniquePeriodArr.length); j++) {
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+            tmp_y = clearObject(tmp_y);
+            for (let i = 0; i &lt; unique.length; i++) {
+                previous[unique[i]] += tmp_y[unique[i]];
+            }
+        }
+
+        //recheck unique values with larger buckets
+        for (let j = 0; j &lt; (_periodObj.uniquePeriodCheckArr.length); j++) {
+            tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
+            tmpUniqObj = clearObject(tmpUniqObj);
+            for (let i = 0; i &lt; unique.length; i++) {
+                currentCheck[unique[i]] += tmpUniqObj[unique[i]];
+            }
+        }
+
+        for (let j = 0; j &lt; (_periodObj.previousUniquePeriodCheckArr.length); j++) {
+            tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodCheckArr[j]);
+            tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
+            for (let i = 0; i &lt; unique.length; i++) {
+                previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
+            }
+        }
+
+        //check if we should overwrite uniques
+        for (let i = 0; i &lt; unique.length; i++) {
+            if (current[unique[i]] > currentCheck[unique[i]]) {
+                current[unique[i]] = currentCheck[unique[i]];
+            }
+
+            if (previous[unique[i]] > previousCheck[unique[i]]) {
+                previous[unique[i]] = previousCheck[unique[i]];
+            }
+        }
+
+    }
+    else {
+        tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
+        tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
+        tmp_x = clearObject(tmp_x);
+        tmp_y = clearObject(tmp_y);
+
+        for (let i = 0; i &lt; properties.length; i++) {
+            current[properties[i]] = tmp_x[properties[i]];
+            previous[properties[i]] = tmp_y[properties[i]];
+        }
+    }
+
+    //check if we can correct data using total users correction
+    if (totalUserOverrideObj) {
+        for (let i = 0; i &lt; unique.length; i++) {
+            if (typeof current[unique[i]] !== "undefined" &amp;&amp; typeof totalUserOverrideObj[unique[i]] !== "undefined" &amp;&amp; totalUserOverrideObj[unique[i]]) {
+                current[unique[i]] = totalUserOverrideObj[unique[i]];
+            }
+        }
+    }
+
+    if (prevTotalUserOverrideObj) {
+        for (let i = 0; i &lt; unique.length; i++) {
+            if (typeof previous[unique[i]] !== "undefined" &amp;&amp; typeof prevTotalUserOverrideObj[unique[i]] !== "undefined" &amp;&amp; prevTotalUserOverrideObj[unique[i]]) {
+                previous[unique[i]] = prevTotalUserOverrideObj[unique[i]];
+            }
+        }
+    }
+
+    // Total users can't be less than new users
+    if (typeof current.u !== "undefined" &amp;&amp; typeof current.n !== "undefined" &amp;&amp; current.u &lt; current.n) {
+        if (totalUserOverrideObj &amp;&amp; typeof totalUserOverrideObj.u !== "undefined") {
+            current.n = current.u;
+        }
+        else {
+            current.u = current.n;
+        }
+    }
+
+    // Total users can't be more than total sessions
+    if (typeof current.u !== "undefined" &amp;&amp; typeof current.t !== "undefined" &amp;&amp; current.u > current.t) {
+        current.u = current.t;
+    }
+
+    for (let i = 0; i &lt; properties.length; i++) {
+        change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
+        dataArr[properties[i]] = {
+            "total": current[properties[i]],
+            "prev-total": previous[properties[i]],
+            "change": change[properties[i]].percent,
+            "trend": change[properties[i]].trend
+        };
+        if (unique.indexOf(properties[i]) !== -1) {
+            dataArr[properties[i]].is_estimate = isEstimate;
+        }
+    }
+
+    //check if we can correct data using total users correction
+    if (totalUserOverrideObj) {
+        for (let i = 0; i &lt; unique.length; i++) {
+            if (dataArr[unique[i]] &amp;&amp; typeof totalUserOverrideObj[unique[i]] !== "undefined") {
+                dataArr[unique[i]].is_estimate = false;
+            }
+        }
+    }
+
+    return dataArr;
+};
+
+/**
+* Get timestamp query range based on request data using period and app's timezone
+* @param {params} params - params object
+* @param {boolean} inSeconds - if true will output result in seconds, else in miliseconds
+* @returns {object} mongodb query object with preset ts field to be queried
+* @example
+* countlyCommon.getTimestampRangeQuery(params, true)
+* //outputs
+* {
+*    $gte:1488259482,
+*    $lte:1488279482
+* }
+*/
+countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
+    var periodObj = countlyCommon.getPeriodObj(params);
+    var now = (params.time &amp;&amp; params.time.now) ? params.time.now : moment();
+    //create current period array if it does not exist
+    if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length === 0) {
+        periodObj.currentPeriodArr = [];
+
+        //create a period array that starts from the beginning of the current year until today
+        if (params.qstring.period === "month") {
+            for (let i = 0; i &lt; (now.getMonth() + 1); i++) {
+                var daysInMonth = moment().month(i).daysInMonth();
+
+                for (let j = 0; j &lt; daysInMonth; j++) {
+                    periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
+
+                    // If current day of current month, just break
+                    if ((i === now.getMonth()) &amp;&amp; (j === (now.getDate() - 1))) {
+                        break;
+                    }
+                }
+            }
+        }
+        //create a period array that starts from the beginning of the current month until today
+        else if (params.qstring.period === "day") {
+            for (let i = 0; i &lt; now.getDate(); i++) {
+                periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
+            }
+        }
+        //create one day period array
+        else {
+            periodObj.currentPeriodArr.push(periodObj.activePeriod);
+        }
+    }
+    var tmpArr;
+    var ts = {};
+
+    tmpArr = periodObj.currentPeriodArr[0].split(".");
+    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+    if (params.appTimezone) {
+        ts.$gte.tz(params.appTimezone);
+    }
+    if (inSeconds) {
+        ts.$gte = ts.$gte.valueOf() / 1000 - ts.$gte.utcOffset() * 60;
+    }
+    else {
+        ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
+    }
+
+    tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+    if (params.appTimezone) {
+        ts.$lt.tz(params.appTimezone);
+    }
+    if (inSeconds) {
+        ts.$lt = ts.$lt.valueOf() / 1000 - ts.$lt.utcOffset() * 60;
+    }
+    else {
+        ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
+    }
+    return ts;
+};
+
+/**
+* Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
+* @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
+* @param {string} metric - metric name to merge
+* @returns {object} chartData object with same metrics summed up
+* @example &lt;caption>Sample input&lt;/caption>
+*    {"chartData":[
+*        {"metric":"Test","t":71,"u":62,"n":36},
+*        {"metric":"Test1","t":66,"u":60,"n":30},
+*        {"metric":"Test","t":2,"u":3,"n":4}
+*    ]}
+* @example &lt;caption>Sample output&lt;/caption>
+*    {"chartData":[
+*        {"metric":"Test","t":73,"u":65,"n":40},
+*        {"metric":"Test1","t":66,"u":60,"n":30}
+*    ]}
+*/
+countlyCommon.mergeMetricsByName = function(chartData, metric) {
+    var uniqueNames = {},
+        data;
+    for (var i = 0; i &lt; chartData.length; i++) {
+        data = chartData[i];
+        if (data[metric] &amp;&amp; !uniqueNames[data[metric]]) {
+            uniqueNames[data[metric]] = data;
+        }
+        else {
+            for (var key in data) {
+                if (typeof data[key] === "string") {
+                    if (uniqueNames[data[metric]]) {
+                        uniqueNames[data[metric]][key] = data[key];
+                    }
+                }
+                else if (typeof data[key] === "number") {
+                    if (uniqueNames[data[metric]]) {
+                        if (!uniqueNames[data[metric]][key]) {
+                            uniqueNames[data[metric]][key] = 0;
+                        }
+                        uniqueNames[data[metric]][key] += data[key];
+                    }
+                }
+            }
+        }
+    }
+
+    return underscore.values(uniqueNames);
+};
+
+/**
+* Joined 2 arrays into one removing all duplicated values
+* @param {array} x - first array
+* @param {array} y - second array
+* @returns {array} new array with only unique values from x and y
+* @example
+* //outputs [1,2,3]
+* countlyCommon.union([1,2],[2,3]);
+*/
+countlyCommon.union = function(x, y) {
+    if (!x) {
+        return y;
+    }
+    else if (!y) {
+        return x;
+    }
+
+    var obj = {};
+    for (let i = x.length - 1; i >= 0; --i) {
+        obj[x[i]] = true;
+    }
+
+    for (let i = y.length - 1; i >= 0; --i) {
+        obj[y[i]] = true;
+    }
+
+    var res = [];
+
+    for (let k in obj) {
+        res.push(k);
+    }
+
+    return res;
+};
+
+/**
+* Encode value to be passed to db as key, encoding $ symbol to &amp;#36; if it is first and all . (dot) symbols to &amp;#46; in the string
+* @param {string} str - value to encode
+* @returns {string} encoded string
+*/
+countlyCommon.encode = function(str) {
+    return str.replace(/^\$/g, "&amp;#36;").replace(/\./g, '&amp;#46;').replace(/\u0000/g, "&amp;#9647");
+};
+
+/**
+* Decode value from db, decoding first &amp;#36; to $ and all &amp;#46; to . (dots). Decodes also url encoded values as &amp;amp;#36;.
+* @param {string} str - value to decode
+* @returns {string} decoded string
+*/
+countlyCommon.decode = function(str) {
+    return str.replace(/^&amp;#36;/g, "$").replace(/^&amp;amp;#36;/g, '$').replace(/&amp;#46;/g, '.').replace(/&amp;amp;#46;/g, '.').replace(/&amp;#9647/g, '\u0000');
+};
+
+/**
+* Get period object in atomic way from params,
+* getting params.qstring.period for period
+* and params.appTimezone for timezone
+* @param {params} params - params object with app timezone and period
+* @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
+* @returns {module:api/lib/countly.common.periodObj} period object
+*/
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
+    let appTimezone = params.appTimezone || (params.app &amp;&amp; params.app.timezone);
+
+    params.qstring.period = params.qstring.period || defaultPeriod;
+    if (params.qstring.period &amp;&amp; typeof params.qstring.period === "string" &amp;&amp; params.qstring.period.indexOf(",") !== -1) {
+        try {
+            params.qstring.period = JSON.parse(params.qstring.period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            params.qstring.period = defaultPeriod;
+        }
+    }
+    _period = params.qstring.period;
+
+    if (appTimezone &amp;&amp; appTimezone.length) {
+        _appTimezone = appTimezone;
+
+        _currMoment = moment().tz(appTimezone);
+        _currMoment.tz(appTimezone);
+    }
+
+    countlyCommon.periodObj = getPeriodObject();
+    return countlyCommon.periodObj;
+};
+
+/**
+* Validate email address
+* @param {string} email - email address to validate
+* @returns {boolean} true if valid and false if invalid
+* @example
+* //outputs true
+* countlyCommon.validateEmail("test@test.test");
+*
+* //outputs false
+* countlyCommon.validateEmail("test@test");
+*/
+countlyCommon.validateEmail = function(email) {
+    var re = /[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+    return re.test(email);
+};
+
+/**
+* Round to provided number of digits
+* @memberof countlyCommon
+* @param {number} num - number to round
+* @param {number} digits - amount of digits to round to
+* @returns {number} rounded number
+* @example
+* //outputs 1.235
+* countlyCommon.round(1.2345, 3);
+*/
+countlyCommon.round = function(num, digits) {
+    digits = Math.pow(10, digits || 0);
+    return Math.round(num * digits) / digits;
+};
+
+/**
+ * Function to fix percentage difference
+ * @param  {Array} items - All items
+ * @param  {Number} totalPercent - Total percentage so far
+ * @returns {Array} items
+ */
+countlyCommon.fixPercentageDelta = function(items, totalPercent) {
+    if (!items.length) {
+        return items;
+    }
+
+    var deltaFixEl = 0;
+    if (totalPercent &lt; 100) {
+        //Add the missing delta to the first value
+        deltaFixEl = 0;
+    }
+    else if (totalPercent > 100) {
+        //Subtract the extra delta from the last value
+        deltaFixEl = items.length - 1;
+    }
+
+    items[deltaFixEl].percent += 100 - totalPercent;
+    items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 1);
+
+    return items;
+};
+
+/**
+* Calculate period function
+* @param {object} period - given period
+* @returns {object} returns {@link countlyCommon.periodObj}
+*/
+countlyCommon.calculatePeriodObject = function(period) {
+    return getPeriodObject(period);
+};
+
+/**
+ * Function that increments strings alphabetically.
+ * @param {string} str - string that next character will be calculated
+ * @return {string} - calculated string
+ */
+countlyCommon.stringIncrement = function(str) {
+    let carry = 1;
+    let res = '';
+
+    for (let i = str.length - 1; i >= 0; i--) {
+        let char = str.toUpperCase().charCodeAt(i);
+        char += carry;
+        if (char > 90) {
+            char = 65;
+            carry = 1;
+        }
+        else {
+            carry = 0;
+        }
+        res = String.fromCharCode(char) + res;
+        if (!carry) {
+            res = str.substring(0, i) + res;
+            break;
+        }
+    }
+    if (carry) {
+        res = 'A' + res;
+    }
+    return res;
+};
+/**
+* Format timestamp to ddd, D MMM YYYY HH:mm:ss if format is not provided
+* @param {number} timestamp - timestamp in seconds or miliseconds
+* @param {string} format - format to use
+* @returns {string} formated time and date
+* @example
+* //outputs Thu, 23 Jun 2022 19:20:25
+* countlyCommon.formatTime(1658673625);
+*/
+countlyCommon.formatTime = function(timestamp, format) {
+    if (Math.round(timestamp).toString().length === 10) {
+        timestamp *= 1000;
+    }
+    var ft = format || "ddd, D MMM YYYY HH:mm:ss";
+    var target = new Date(timestamp);
+    var tooltip = moment(target).format(ft);
+    return tooltip;
+};
+
+
+module.exports = countlyCommon;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 19:21:35 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
