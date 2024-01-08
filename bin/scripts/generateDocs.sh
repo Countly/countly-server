@@ -7,7 +7,7 @@ GITHUB_BRANCH=${GITHUB_REF##*/}
 echo "$GITHUB_HEAD_REF"
 echo "Ref: $GITHUB_REF  Branch: $GITHUB_BRANCH  Repo: $GITHUB_REPOSITORY"
 
-if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_BRANCH" == "master" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
 
 echo "Action qualifies to be checked"
 
