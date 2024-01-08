@@ -959,7 +959,19 @@
             },
             setWidget: function(state) {
                 var self = this;
-                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state) }, function() {
+                var finalizedTargeting = null;
+                var target_pages = this.widget.target_pages === "-" ? [] : this.widget.target_pages;
+                if (this.cohortsEnabled) {
+                    var exported = this.widget.targeting;
+                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
+                        finalizedTargeting = Object.assign({}, {
+                            user_segmentation: JSON.stringify(exported.user_segmentation),
+                            steps: JSON.stringify(exported.steps)
+                        });
+                    }
+
+                }
+                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting }, function() {
                     self.widget.is_active = (state ? "true" : "false");
                     self.widget.status = state;
 

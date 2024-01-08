@@ -375,80 +375,93 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
         nuid = newUser.uid;
 
     if (ouid && nuid) {
-        log.d(`Merging push data of ${ouid} into ${nuid}`);
-        common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
-            if (err || !users) {
-                log.e('Couldn\'t load users to merge', err);
-                return;
-            }
+        return new Promise(function(resolve, reject) {
+            log.d(`Merging push data of ${ouid} into ${nuid}`);
+            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
+                if (err || !users) {
+                    log.e('Couldn\'t load users to merge', err);
+                    reject();
+                    return;
+                }
 
-            let ou = users.filter(u => u._id === ouid)[0],
-                nu = users.filter(u => u._id === nuid)[0],
-                update = {},
-                opts = {};
+                let ou = users.filter(u => u._id === ouid)[0],
+                    nu = users.filter(u => u._id === nuid)[0],
+                    update = {},
+                    opts = {};
 
-            if (ou && nu) {
-                log.d('Merging %j into %j', ou, nu);
-                if (ou.tk && Object.keys(ou.tk).length) {
-                    update.$set = {};
+                if (ou && nu) {
+                    log.d('Merging %j into %j', ou, nu);
+                    if (ou.tk && Object.keys(ou.tk).length) {
+                        update.$set = {};
+                        for (let k in ou.tk) {
+                            update.$set['tk.' + k] = ou.tk[k];
+                            newUser['tk' + k] = oldUser['tk' + k];
+                        }
+                    }
+                    if (ou.msgs && ou.msgs.length) {
+                        let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
+                            msgs = [];
+
+                        ou.msgs.forEach(m => {
+                            if (ids.indexOf(m[0].toString()) === -1) {
+                                msgs.push(m);
+                            }
+                        });
+
+                        if (msgs.length) {
+                            update.$push = {msgs: {$each: msgs}};
+                        }
+                    }
+                }
+                else if (ou && Object.keys(ou).length > 1 && !nu) {
+                    log.d('No new uid, setting old');
+                    update.$set = ou;
+                    opts.upsert = true;
+                    delete update.$set._id;
                     for (let k in ou.tk) {
-                        update.$set['tk.' + k] = ou.tk[k];
                         newUser['tk' + k] = oldUser['tk' + k];
                     }
                 }
-                if (ou.msgs && ou.msgs.length) {
-                    let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
-                        msgs = [];
-
-                    ou.msgs.forEach(m => {
-                        if (ids.indexOf(m[0].toString()) === -1) {
-                            msgs.push(m);
+                else if (ou && Object.keys(ou).length === 1 && !nu) {
+                    log.d('Empty old uid, nothing to merge');
+                }
+                else if (!ou && nu) {
+                    log.d('No old uid, nothing to merge');
+                }
+                else {
+                    log.d('Nothing to merge at all');
+                }
+                if (ou) {
+                    log.d('Removing old push data for %s', ouid);
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
+                }
+                if (Object.keys(update).length) {
+                    log.d('Updating push data for %s: %j', nuid, update);
+                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, function(ee) {
+                        if (ee) {
+                            log.e('Error while updating new uid with push data', ee);
+                            reject();
+                        }
+                        else {
+                            resolve();
+                            setTimeout(() => {
+                                common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
+                                    if (er) {
+                                        log.e('Error while loading user', er);
+                                    }
+                                    else if (!user) {
+                                        log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
+                                        common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
+                                    }
+                                });
+                            }, 10000);
                         }
                     });
-
-                    if (msgs.length) {
-                        update.$push = {msgs: {$each: msgs}};
-                    }
                 }
-            }
-            else if (ou && Object.keys(ou).length > 1 && !nu) {
-                log.d('No new uid, setting old');
-                update.$set = ou;
-                opts.upsert = true;
-                delete update.$set._id;
-                for (let k in ou.tk) {
-                    newUser['tk' + k] = oldUser['tk' + k];
+                else {
+                    resolve();
                 }
-            }
-            else if (ou && Object.keys(ou).length === 1 && !nu) {
-                log.d('Empty old uid, nothing to merge');
-            }
-            else if (!ou && nu) {
-                log.d('No old uid, nothing to merge');
-            }
-            else {
-                log.d('Nothing to merge at all');
-            }
-
-            if (ou) {
-                log.d('Removing old push data for %s', ouid);
-                common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
-            }
-            if (Object.keys(update).length) {
-                log.d('Updating push data for %s: %j', nuid, update);
-                common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, e => e && log.e('Error while updating new uid with push data', e));
-                setTimeout(() => {
-                    common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
-                        if (er) {
-                            log.e('Error while loading user', er);
-                        }
-                        else if (!user) {
-                            log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
-                            common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
-                        }
-                    });
-                }, 10000);
-            }
+            });
         });
     }
 };

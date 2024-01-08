@@ -194,6 +194,7 @@ function generateQRCode(username, secret, callback) {
                         try {
                             const secretToken = member.two_factor_auth && member.two_factor_auth.secret_token ? apiUtils.decrypt(member.two_factor_auth.secret_token) : req.body.secret_token;
 
+                            req.session.otp = req.body.auth_code;
                             if (GA.check(req.body.auth_code, secretToken)) {
                                 if (req.body.secret_token) {
                                     countlyDb.collection("members").findAndModify(
