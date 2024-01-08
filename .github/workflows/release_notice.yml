@@ -35,5 +35,5 @@ jobs:
           title: New ${{ github.repository }} version ${{ github.event.release.tag_name }} published by ${{ github.actor }}
           description: |
             Release URL: ${{ github.event.release.html_url }}
-            Click [here](https://github.com/Countly/countly-server/blob/master/CHANGELOG.md) to view the change log.
+            Click [here](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) to view the change log.
             `${{ github.event.release.body }}`
