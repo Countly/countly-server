@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/data/fetch.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/data/fetch.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* This module is meant from fetching data from db and processing and outputting
+* @module api/parts/data/fetch
+*/
+
+const { getAdminApps, getUserApps } = require('../../utils/rights.js');
+
+/** @lends module:api/parts/data/fetch */
+var fetch = {},
+    common = require('./../../utils/common.js'),
+    moment = require('moment-timezone'),
+    async = require('async'),
+    countlyModel = require('../../lib/countly.model.js'),
+    countlySession = countlyModel.load("users"),
+    countlyCarrier = countlyModel.load("carriers"),
+    countlyDeviceDetails = countlyModel.load("device_details"),
+    countlyLocation = countlyModel.load("countries"),
+    countlyEvents = countlyModel.load("event"),
+    countlyCommon = require('../../lib/countly.common.js'),
+    _ = require('underscore'),
+    crypto = require('crypto'),
+    usage = require('./usage.js'),
+    STATUS_MAP = require('../jobs/job').STATUS_MAP,
+    plugins = require('../../../plugins/pluginManager.js');
+
+/**
+* Prefetch event data, either by provided key or first event in the list and output result to browser
+* @param {string} collection - event key
+* @param {params} params - params object
+**/
+fetch.prefetchEventData = function(collection, params) {
+    if (!params.qstring.event) {
+        common.readBatcher.getOne("events", { '_id': params.app_id }, (err, result) => {
+            if (result &amp;&amp; result.list) {
+                if (result.order &amp;&amp; result.order.length) {
+                    for (let i = 0; i &lt; result.order.length; i++) {
+                        if (result.order[i].indexOf("[CLY]") !== 0) {
+                            collection = result.order[i];
+                            break;
+                        }
+                    }
+                }
+                else {
+                    result.list.sort();
+                    for (let i = 0; i &lt; result.list.length; i++) {
+                        if (result.list[i].indexOf("[CLY]") !== 0) {
+                            collection = result.list[i];
+                            break;
+                        }
+                    }
+                }
+
+                var collectionName = "events" + crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
+                fetch.fetchTimeObj(collectionName, params, true);
+            }
+            else {
+                common.returnOutput(params, {});
+            }
+        });
+    }
+    else {
+        var collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
+        fetch.fetchTimeObj(collectionName, params, true);
+    }
+};
+
+/**
+* Fetch specific event data and output to browser
+* @param {string} collection - event key
+* @param {params} params - params object
+**/
+fetch.fetchEventData = function(collection, params) {
+    var fetchFields = {};
+
+    if (params.qstring.action === "refresh") {
+        fetchFields[params.time.daily] = 1;
+        fetchFields.meta = 1;
+    }
+
+    if (params.qstring.date === "today") {
+        fetchFields[params.time.daily + "." + common.dbMap.count] = 1;
+        fetchFields[params.time.daily + "." + common.dbMap.sum] = 1;
+        fetchFields[params.time.daily + "." + common.dbMap.dur] = 1;
+    }
+
+    var idToFetch = params.qstring.segmentation || "no-segment";
+
+    common.db.collection(collection).findOne({ _id: idToFetch }, fetchFields, function(err, result) {
+        if (err || !result) {
+            result = {};
+            result[moment().year()] = {};
+        }
+
+        common.returnOutput(params, result);
+    });
+};
+
+
+/**
+* The return the event groups data by _id.
+* @param {Object} params - params object
+* @param {string} params._id - The id of the event group id.
+**/
+fetch.fetchEventGroupById = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const { qstring: { _id } } = params;
+    common.db.collection(COLLECTION_NAME).findOne({ _id }, function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* The return the event groups data by app_id.
+* @param {Object} params - params object
+* @param {string} params.app_id - The id of the event group of application id.
+**/
+fetch.fetchEventGroups = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const { qstring: { app_id } } = params;
+    common.db.collection(COLLECTION_NAME).find({ app_id }).sort({ 'order': 1 }).toArray(function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* The return the merged event data for event groups.
+* @param {Object} params - params object
+**/
+fetch.fetchMergedEventGroups = function(params) {
+    const { qstring: { event } } = params;
+    fetch.getMergedEventGroups(params, event, {}, function(result) {
+        common.returnOutput(params, result);
+    });
+};
+
+
+/**
+* The return the merged event data for event groups.
+* @param {params} params - params object with app_id and date
+* @param {string} event - id of event group
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getMergedEventGroups = function(params, event, options, callback) {
+    const COLLECTION_NAME = "event_groups";
+    common.db.collection(COLLECTION_NAME).findOne({ _id: event }, function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        options = options || {};
+        options.event_groups = true;
+        // options.segmentation = result.segments;
+
+        fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
+            callback(resultMergedEvents);
+        });
+    });
+};
+
+/**
+* Get merged data from multiple events in standard data model and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchMergedEventData = function(params) {
+    fetch.getMergedEventData(params, params.qstring.events, {}, function(result) {
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* Get merged data from multiple events in standard data model
+* @param {params} params - params object with app_id and date
+* @param {array} events - array with event keys
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getMergedEventData = function(params, events, options, callback) {
+    var eventKeysArr = [];
+
+    for (let i = 0; i &lt; events.length; i++) {
+        eventKeysArr.push(events[i] + params.app_id);
+    }
+
+    if (!eventKeysArr.length) {
+        callback({});
+    }
+    else {
+        async.map(eventKeysArr, getEventData, function(err, allEventData) {
+            var mergedEventOutput = {};
+            let meta = {};
+
+            for (let i = 0; i &lt; allEventData.length; i++) {
+
+                // delete allEventData[i].meta;
+
+                for (let levelOne in allEventData[i]) {
+                    if (typeof allEventData[i][levelOne] !== 'object') {
+                        if (mergedEventOutput[levelOne]) {
+                            mergedEventOutput[levelOne] += allEventData[i][levelOne];
+                        }
+                        else {
+                            mergedEventOutput[levelOne] = allEventData[i][levelOne];
+                        }
+                    }
+                    else {
+                        for (let levelTwo in allEventData[i][levelOne]) {
+                            if (!mergedEventOutput[levelOne]) {
+                                mergedEventOutput[levelOne] = {};
+                            }
+
+                            if (typeof allEventData[i][levelOne][levelTwo] !== 'object') {
+                                if (mergedEventOutput[levelOne][levelTwo]) {
+                                    mergedEventOutput[levelOne][levelTwo] += allEventData[i][levelOne][levelTwo];
+                                }
+                                else {
+                                    mergedEventOutput[levelOne][levelTwo] = allEventData[i][levelOne][levelTwo];
+                                }
+                            }
+                            else {
+                                for (let levelThree in allEventData[i][levelOne][levelTwo]) {
+                                    if (!mergedEventOutput[levelOne][levelTwo]) {
+                                        mergedEventOutput[levelOne][levelTwo] = {};
+                                    }
+
+                                    if (typeof allEventData[i][levelOne][levelTwo][levelThree] !== 'object') {
+                                        if (mergedEventOutput[levelOne][levelTwo][levelThree]) {
+                                            mergedEventOutput[levelOne][levelTwo][levelThree] += allEventData[i][levelOne][levelTwo][levelThree];
+                                        }
+                                        else {
+                                            mergedEventOutput[levelOne][levelTwo][levelThree] = allEventData[i][levelOne][levelTwo][levelThree];
+                                        }
+                                    }
+                                    else {
+                                        for (let levelFour in allEventData[i][levelOne][levelTwo][levelThree]) {
+                                            if (!mergedEventOutput[levelOne][levelTwo][levelThree]) {
+                                                mergedEventOutput[levelOne][levelTwo][levelThree] = {};
+                                            }
+
+                                            if (typeof allEventData[i][levelOne][levelTwo][levelThree][levelFour] !== 'object') {
+                                                if (mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
+                                                    mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] += allEventData[i][levelOne][levelTwo][levelThree][levelFour];
+                                                }
+                                                else {
+                                                    mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = allEventData[i][levelOne][levelTwo][levelThree][levelFour];
+                                                }
+                                            }
+                                            else {
+                                                for (let levelFive in allEventData[i][levelOne][levelTwo][levelThree][levelFour]) {
+                                                    if (!mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
+                                                        mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = {};
+                                                    }
+
+                                                    if (mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive]) {
+                                                        mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive] += allEventData[i][levelOne][levelTwo][levelThree][levelFour][levelFive];
+                                                    }
+                                                    else {
+                                                        mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive] = allEventData[i][levelOne][levelTwo][levelThree][levelFour][levelFive];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            meta = allEventData.map(x => x.meta).reduce((acc, x) => {
+                for (var key in x) {
+                    if (acc[key]) {
+                        acc[key] = acc[key].concat(x[key]);
+                    }
+                    else {
+                        acc[key] = x[key];
+                    }
+                }
+                return acc;
+            }, {});
+
+            //make meta with unique values only
+            for (let i in meta) {
+                meta[i] = [...new Set(meta[i])];
+            }
+
+            /*const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
+                for (const segment in dummyMeta) {
+                    const _segments = "segments";
+                    if (segment === _segments) {
+                        continue;
+                    }
+                    if (sourceSegments.includes(segment)) {
+                        dummyMeta[_segments] = Array.from(new Set([...dummyMeta[_segments], segment]));
+                    }
+                    else {
+                        delete dummyMeta[segment];
+                    }
+                }
+                return dummyMeta;
+            };*/
+
+            callback({ ...mergedEventOutput, "meta": meta });
+        });
+    }
+
+    /**
+    * Get event data from database
+    * @param {string} eventKey - event keys
+    * @param {function} done - function to call when data fetched
+    **/
+    function getEventData(eventKey, done) {
+        var collectionName = "events" + crypto.createHash('sha1').update(eventKey).digest('hex');
+        fetchTimeObj(collectionName, params, true, options, function(output) {
+            done(null, output || {});
+        });
+    }
+};
+
+/**
+* Get collection data for specific app and output to browser
+* @param {string} collection - collection name
+* @param {params} params - params object
+**/
+fetch.fetchCollection = function(collection, params) {
+    common.db.collection(collection).findOne({ '_id': params.app_id }, function(err, result) {
+        if (!result) {
+            result = {};
+        }
+
+        if (result &amp;&amp; collection === 'events') {
+            if (result.list) {
+                result.list = _.filter(result.list, function(l) {
+                    return l.indexOf('[CLY]') !== 0;
+                });
+            }
+            if (result.segments) {
+                for (let i in result.segments) {
+                    if (i.indexOf('[CLY]') === 0) {
+                        delete result.segments[i];
+                    }
+                }
+            }
+            const pluginsGetConfig = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true);
+            result.limits = {
+                event_limit: pluginsGetConfig.event_limit,
+                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+            };
+        }
+
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* Get time data for specific metric by collection and output to browser
+* @param {string} collection - collection name
+* @param {params} params - params object
+**/
+fetch.fetchTimeData = function(collection, params) {
+
+    var fetchFields = {};
+
+    if (params.qstring.action === "refresh") {
+        fetchFields[params.time.yearly + "." + common.dbMap.unique] = 1;
+        fetchFields[params.time.monthly + "." + common.dbMap.unique] = 1;
+        fetchFields[params.time.weekly + "." + common.dbMap.unique] = 1;
+        fetchFields[params.time.daily] = 1;
+        fetchFields.meta = 1;
+    }
+
+    common.db.collection(collection).findOne({ '_id': params.app_id }, fetchFields, function(err, result) {
+        if (!result) {
+            result = {};
+            result[moment.year()] = {};
+        }
+
+        common.returnOutput(params, result);
+    });
+};
+
+
+/**
+* Get data for dashboard api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchDashboard = function(params) {
+    params.qstring.period = params.qstring.period || "30days";
+
+    fetchTimeObj('users', params, false, function(usersDoc) {
+        fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
+            fetchTimeObj('carriers', params, false, function(carriersDoc) {
+                var periods = [
+                    {
+                        period: "30days",
+                        out: "30days"
+                    },
+                    {
+                        period: "7days",
+                        out: "7days"
+                    },
+                    {
+                        period: "hour",
+                        out: "today"
+                    }
+                ];
+
+                if (params.qstring.period !== "30days") {
+                    periods = [{
+                        period: params.qstring.period,
+                        out: params.qstring.period
+                    }];
+                }
+
+                countlyCommon.setTimezone(params.appTimezone);
+                countlySession.setDb(usersDoc || {});
+                countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                countlyCarrier.setDb(carriersDoc || {});
+
+                async.map(periods, function(period, callback) {
+                    params.qstring.period = period.period;
+
+                    fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                        countlyCommon.setPeriod(period.period);
+
+                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+
+                        var data = {
+                            out: period.out,
+                            data: {
+                                dashboard: countlySession.getSessionData(),
+                                top: {
+                                    platforms: countlyDeviceDetails.getBars("os"),
+                                    resolutions: countlyDeviceDetails.getBars("resolutions"),
+                                    carriers: countlyCarrier.getBars("carriers"),
+                                    users: countlySession.getBars()
+                                },
+                                period: countlyCommon.getDateRange()
+                            }
+                        };
+
+                        callback(null, data);
+                    });
+                },
+                function(err, output) {
+                    var processedOutput = {};
+
+                    for (var i = 0; i &lt; output.length; i++) {
+                        processedOutput[output[i].out] = output[i].data;
+                    }
+
+                    common.returnOutput(params, processedOutput);
+                });
+            });
+        });
+    });
+};
+
+/**
+* Get data for old all apps api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchAllApps = function(params) {
+    var filter = {};
+
+    if (params.qstring.filter) {
+        try {
+            filter = JSON.parse(params.qstring.filter);
+        }
+        catch (ex) {
+            filter = {};
+        }
+    }
+
+    if (!params.member.global_admin) {
+        let apps = {};
+        let adminApps = getAdminApps(params.member);
+        let userApps = getUserApps(params.member);
+
+        for (let i = 0; i &lt; adminApps.length; i++) {
+            if (adminApps[i] === "") {
+                continue;
+            }
+            apps[adminApps[i]] = true;
+        }
+
+        for (let i = 0; i &lt; userApps.length; i++) {
+            if (userApps[i] === "") {
+                continue;
+            }
+            apps[userApps[i]] = true;
+        }
+
+        var fromApps = [];
+        for (let i in apps) {
+            fromApps.push(common.db.ObjectID(i));
+        }
+        filter._id = { '$in': fromApps };
+    }
+    common.db.collection("apps").find(filter, {
+        _id: 1,
+        name: 1
+    }).toArray(function(err, apps) {
+
+        /**
+        * Extract chart data from document object
+        * @param {object} db - document object from db
+        * @param {object} props - property object with name and func
+        * @returns {object} extracted chart data
+        **/
+        function extractData(db, props) {
+            var chartData = [
+                    {
+                        data: [],
+                        label: "",
+                        color: '#333933'
+                    }
+                ],
+                dataProps = [];
+            dataProps.push(props);
+            return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
+        }
+
+        /**
+        * Set app id to params object
+        * @param {string} inAppId - app id
+        **/
+        function setAppId(inAppId) {
+            params.app_id = inAppId + "";
+        }
+
+        countlyCommon.setTimezone(params.appTimezone);
+
+        async.map(apps, function(app, callback) {
+            setAppId(app._id);
+
+            fetchTimeObj('users', params, false, function(usersDoc) {
+
+                // We need to set app_id once again here because after the callback
+                // it is reset to it's original value
+                setAppId(app._id);
+
+                fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                    countlySession.setDb(usersDoc || {});
+                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+
+                    var sessionData = countlySession.getSessionData();
+                    var charts = {
+                        "total-users": extractData(usersDoc || {}, {
+                            name: "t",
+                            func: function(dataObj) {
+                                return dataObj.u;
+                            }
+                        }),
+                        "new-users": extractData(usersDoc || {}, { name: "n" }),
+                        "total-sessions": extractData(usersDoc || {}, { name: "t" }),
+                        "time-spent": extractData(usersDoc || {}, {
+                            name: "average",
+                            func: function(dataObj) {
+                                return ((dataObj.t === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                            }
+                        }),
+                        "total-time-spent": extractData(usersDoc || {}, {
+                            name: "t",
+                            func: function(dataObj) {
+                                return ((dataObj.d / 60).toFixed(1));
+                            }
+                        }),
+                        "avg-events-served": extractData(usersDoc || {}, {
+                            name: "average",
+                            func: function(dataObj) {
+                                return ((dataObj.u === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
+                            }
+                        })
+                    };
+
+                    var data = {
+                        _id: app._id,
+                        name: app.name,
+                        test: "1",
+                        sessions: sessionData.total_sessions,
+                        users: sessionData.total_users,
+                        newusers: sessionData.new_users,
+                        duration: sessionData.total_time,
+                        avgduration: sessionData.avg_time,
+                        charts: charts
+                    };
+
+                    callback(null, data);
+                });
+            });
+        },
+        function(err2, res) {
+            common.returnOutput(params, res);
+        });
+    });
+};
+
+/**
+* Calls aggregation query to calculate top three values based on 't' in given collection
+* @param {params} params - params object
+* @param {string} collection - collection name
+* @param {function} callback - callback function
+**/
+function getDataforTops(params, collection, callback) {
+    var periodObj = countlyCommon.getPeriodObj(params);
+    var pipeline = [];
+
+    var period = params.qstring.period || 'month'; //month is default
+    var matchStage = {};
+    var selectMap = {};
+    var curday = "";
+    var curmonth = "";
+    var first_month = "";
+    var last_month = "";
+    if (period === "day") {
+        matchStage = { '_id': { $regex: params.app_id + "_" + periodObj.activePeriod + "" } };
+    }
+    else if (period === "month") {
+        matchStage = { '_id': { $regex: params.app_id + "_" + periodObj.activePeriod + "" } };
+    }
+    else if (period === "hour" || period === "yesterday") {
+        var this_date = periodObj.activePeriod.split(".");
+        curmonth = this_date[0] + ":" + this_date[1];
+        curday = this_date[2];
+        matchStage = { '_id': { $regex: params.app_id + "_" + curmonth + "" } };
+    }
+    else { // days or timestamps
+        var last_pushed = "";
+        var month_array = [];
+        first_month = periodObj.currentPeriodArr[0].split(".");
+        first_month = first_month[0] + ":" + first_month[1];
+
+        last_month = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+        last_month = last_month[0] + ":" + last_month[1];
+        for (let i = 0; i &lt; periodObj.currentPeriodArr.length; i++) {
+            let kk = periodObj.currentPeriodArr[i].split(".");
+            if (!selectMap[kk[0] + ":" + kk[1]]) {
+                selectMap[kk[0] + ":" + kk[1]] = [];
+            }
+            selectMap[kk[0] + ":" + kk[1]].push(kk[2]);
+            if (last_pushed === "" || last_pushed !== kk[0] + ":" + kk[1]) {
+                last_pushed = kk[0] + ":" + kk[1];
+                month_array.push({ "_id": { $regex: params.app_id + "_" + kk[0] + ":" + kk[1] } });
+            }
+        }
+        matchStage = { $or: month_array };
+    }
+    pipeline.push({ $match: matchStage });
+
+    if (period === "hour" || period === "yesterday") {
+        pipeline.push({ $project: { d: { $objectToArray: "$d." + curday } } });
+        pipeline.push({ $unwind: "$d" });
+        pipeline.push({ $group: { _id: "$d.k", "t": { $sum: "$d.v.t" } } });
+    }
+    else if (period === "month" || period === "day") {
+        pipeline.push({ $project: { d: { $objectToArray: "$d" } } });
+        pipeline.push({ $unwind: "$d" });
+        pipeline.push({ $project: { d: { $objectToArray: "$d.v" } } });
+        pipeline.push({ $unwind: "$d" });
+        pipeline.push({ $group: { _id: "$d.k", "t": { $sum: "$d.v.t" } } });
+    }
+    else {
+        var branches = [];
+        branches.push({ case: { $eq: ["$m", first_month] }, then: { $in: ["$$key.k", selectMap[first_month]] } });
+        if (first_month !== last_month) {
+            branches.push({ case: { $eq: ["$m", last_month] }, then: { $in: ["$$key.k", selectMap[last_month]] } });
+        }
+
+        var rules = { $switch: { branches: branches, default: true } };
+        pipeline.push({
+            $project: {
+                d: {
+                    $filter: {
+                        input: { $objectToArray: "$d" },
+                        as: "key",
+                        cond: rules
+                    }
+                }
+            }
+        });
+        pipeline.push({ $unwind: "$d" });
+        pipeline.push({ $project: { d: { $objectToArray: "$d.v" } } });
+        pipeline.push({ $unwind: "$d" });
+        pipeline.push({ $group: { _id: "$d.k", "t": { $sum: "$d.v.t" } } });
+    }
+    pipeline.push({ $sort: { "t": -1 } }); //sort values
+    // pipeline.push({$limit: 3}); //limit count
+
+    common.db.collection(collection).aggregate(pipeline, { allowDiskUse: true }, function(err, res) {
+        callback(res || []);
+    });
+}
+
+/**
+* Get data for tops api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchTop = function(params) {
+    var obj = {};
+    var allMetrics = usage.getPredefinedMetrics(params, obj);
+    if (params.qstring.metric) {
+        let metric = params.qstring.metric;
+        fetchData(params, allMetrics, metric, function(res) {
+            common.returnOutput(params, res);
+        });
+    }
+    else if (params.qstring.metrics) {
+        if (typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (ex) {
+                console.log("Error parsing metrics", params.qstring.metrics);
+                params.qstring.metrics = [];
+            }
+        }
+        if (params.qstring.metrics.length) {
+            var data = {};
+            async.each(params.qstring.metrics, function(metric, done) {
+                fetchData(params, allMetrics, metric, function(res) {
+                    data[metric] = res;
+                    done();
+                });
+            }, function() {
+                common.returnOutput(params, data);
+            });
+        }
+        else {
+            common.returnOutput(params, {});
+        }
+    }
+};
+
+/**
+* Get data for tops api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchTops = function(params) {
+    if (params.qstring.metric || params.qstring.metrics) {
+        fetch.fetchTop(params);
+    }
+    else {
+        fetchTimeObj('users', params, false, function(usersDoc) {
+            fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
+                fetchTimeObj('carriers', params, false, function(carriersDoc) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    countlySession.setDb(usersDoc || {});
+                    countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                    countlyCarrier.setDb(carriersDoc || {});
+                    countlyLocation.setDb(usersDoc || {});
+
+                    var output = {
+                        platforms: countlyDeviceDetails.getBars("os"),
+                        resolutions: countlyDeviceDetails.getBars("resolutions"),
+                        carriers: countlyCarrier.getBars("carriers"),
+                        countries: countlyLocation.getBars("countries")
+                    };
+
+                    common.returnOutput(params, output);
+                });
+            });
+        });
+    }
+};
+
+/**
+* Get data for countries api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchCountries = function(params) {
+    params.qstring.period = "30days";
+
+    fetchTimeObj('users', params, false, function(locationsDoc) {
+        var periods = [
+            {
+                period: "30days",
+                out: "30days"
+            },
+            {
+                period: "7days",
+                out: "7days"
+            },
+            {
+                period: "hour",
+                out: "today"
+            }
+        ];
+
+        countlyCommon.setTimezone(params.appTimezone);
+        countlyLocation.setDb(locationsDoc || {});
+
+        async.map(periods, function(period, callback) {
+            params.qstring.period = period.period;
+
+            fetch.getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
+                countlyCommon.setPeriod(period.period);
+
+                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+
+                var data = {
+                    out: period.out,
+                    data: countlyLocation.getLocationData({
+                        maxCountries: 10,
+                        sort: "new"
+                    })
+                };
+
+                callback(null, data);
+            });
+        },
+        function(err, output) {
+            var processedOutput = {};
+
+            for (let i = 0; i &lt; output.length; i++) {
+                processedOutput[output[i].out] = output[i].data;
+            }
+
+            common.returnOutput(params, processedOutput);
+        });
+    });
+};
+
+/**
+* Get session data and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchSessions = function(params) {
+    fetchTimeObj('users', params, false, function(usersDoc) {
+        countlySession.setDb(usersDoc || {});
+        common.returnOutput(params, countlySession.getSubperiodData());
+    });
+};
+
+/**
+* Get loyalty ranges data and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchLoyalty = function(params) {
+    fetchTimeObj("users", params, false, function(doc) {
+        var _meta = [];
+        if (doc.meta) {
+            _meta = (doc.meta['l-ranges']) ? doc.meta['l-ranges'] : [];
+        }
+        var chartData = countlyCommon.extractRangeData(doc, "l", _meta, function(index) {
+            return index;
+        });
+
+        common.returnOutput(params, chartData);
+    });
+};
+
+/**
+* Get frequency ranges data and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchFrequency = function(params) {
+    fetchTimeObj("users", params, false, function(doc) {
+        var _meta = [];
+        if (doc.meta) {
+            _meta = (doc.meta['f-ranges']) ? doc.meta['f-ranges'] : [];
+        }
+        var chartData = countlyCommon.extractRangeData(doc, "f", _meta, function(index) {
+            return index;
+        });
+
+        common.returnOutput(params, chartData);
+    });
+};
+
+/**
+* Get durations ranges data and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchDurations = function(params) {
+    fetchTimeObj("users", params, false, function(doc) {
+        var _meta = [];
+        if (doc.meta) {
+            _meta = (doc.meta['d-ranges']) ? doc.meta['d-ranges'] : [];
+        }
+        var chartData = countlyCommon.extractRangeData(doc, "ds", _meta, function(index) {
+            return index;
+        });
+
+        common.returnOutput(params, chartData);
+    });
+};
+
+/**
+* Get metric segment data from database, merging year and month and splitted docments together and breaking down data by segment
+* @param {params} params - params object with app_id and date
+* @param {string} metric - name of the collection where to get data from
+* @param {object} totalUsersMetric - data from total users api request to correct unique user values
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @example &lt;caption>Retrieved data&lt;/caption>
+* [
+*    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+*    {"_id":"Tele2","t":32,"n":19,"u":31},
+*    {"_id":"\tAt&amp;amp;t","t":32,"n":20,"u":31},
+*    {"_id":"O2","t":26,"n":19,"u":26},
+*    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+*    {"_id":"Turkcell","t":23,"n":11,"u":23},
+*    {"_id":"Telus","t":22,"n":15,"u":22},
+*    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+*    {"_id":"Verizon","t":21,"n":11,"u":21},
+*    {"_id":"Sprint","t":21,"n":11,"u":20},
+*    {"_id":"Vodafone","t":22,"n":12,"u":19},
+*    {"_id":"Orange","t":18,"n":12,"u":18},
+*    {"_id":"T-mobile","t":17,"n":9,"u":17},
+*    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+* ]
+*/
+fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
+    fetch.getMetricWithOptions(params, metric, totalUsersMetric, {}, callback);
+};
+
+/**
+* Get metric segment data from database with options, merging year and month and splitted docments together and breaking down data by segment
+* @param {params} params - params object with app_id and date
+* @param {string} metric - name of the collection where to get data from
+* @param {object} totalUsersMetric - data from total users api request to correct unique user values
+* @param {object=} fetchTimeOptions - additional optional settings
+* @param {object=} fetchTimeOptions.db - database connection to use, by default will try to use common.db
+* @param {string=} fetchTimeOptions.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} fetchTimeOptions.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} fetchTimeOptions.levels - describes which metrics to expect on which levels
+* @param {array=} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @example &lt;caption>Retrieved data&lt;/caption>
+* [
+*    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+*    {"_id":"Tele2","t":32,"n":19,"u":31},
+*    {"_id":"\tAt&amp;amp;t","t":32,"n":20,"u":31},
+*    {"_id":"O2","t":26,"n":19,"u":26},
+*    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+*    {"_id":"Turkcell","t":23,"n":11,"u":23},
+*    {"_id":"Telus","t":22,"n":15,"u":22},
+*    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+*    {"_id":"Verizon","t":21,"n":11,"u":21},
+*    {"_id":"Sprint","t":21,"n":11,"u":20},
+*    {"_id":"Vodafone","t":22,"n":12,"u":19},
+*    {"_id":"Orange","t":18,"n":12,"u":18},
+*    {"_id":"T-mobile","t":17,"n":9,"u":17},
+*    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+* ]
+*/
+fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTimeOptions, callback) {
+    var queryMetric = params.qstring.metric || metric;
+    countlyCommon.setTimezone(params.appTimezone);
+    if (params.qstring.period) {
+        countlyCommon.setPeriod(params.qstring.period);
+    }
+    fetchTimeObj(metric, params, false, fetchTimeOptions, function(doc) {
+        var clearMetricObject = function(obj) {
+            if (obj) {
+                if (!obj.t) {
+                    obj.t = 0;
+                }
+                if (!obj.n) {
+                    obj.n = 0;
+                }
+                if (!obj.u) {
+                    obj.u = 0;
+                }
+            }
+            else {
+                obj = {
+                    "t": 0,
+                    "n": 0,
+                    "u": 0
+                };
+            }
+
+            return obj;
+        };
+
+        if (doc.meta &amp;&amp; doc.meta[queryMetric]) {
+            fetch.getTotalUsersObjWithOptions(totalUsersMetric, params, { db: fetchTimeOptions.db }, function(dbTotalUsersObj) {
+                var data = countlyCommon.extractMetric(doc, doc.meta[queryMetric], clearMetricObject, [
+                    {
+                        name: queryMetric,
+                        func: function(rangeArr) {
+                            return rangeArr;
+                        }
+                    },
+                    { "name": "t" },
+                    { "name": "n" },
+                    { "name": "u" }
+                ], fetch.formatTotalUsersObj(dbTotalUsersObj));
+
+                if (callback) {
+                    callback(data);
+                }
+            });
+        }
+        else if (callback) {
+            callback([]);
+        }
+    });
+};
+
+
+/**
+* Get collection and metric name from metric string
+* @param {string} metric - metric/segment name
+* @return {Array} array with collection, metric, model object
+**/
+fetch.metricToCollection = function(metric) {
+    switch (metric) {
+    case 'locations':
+    case 'countries':
+        return ['users', "countries", countlyLocation];
+    case 'sessions':
+    case 'users':
+        return ['users', null, countlySession];
+    case 'app_versions':
+        return ["device_details", "app_versions", countlyDeviceDetails];
+    case 'os':
+    case 'platforms':
+        return ["device_details", "os", countlyDeviceDetails];
+    case 'os_versions':
+    case 'platform_version':
+        return ["device_details", "os_versions", countlyDeviceDetails];
+    case 'resolutions':
+        return ["device_details", "resolutions", countlyDeviceDetails];
+    case 'device_type':
+        return ["device_details", "device_type", countlyDeviceDetails];
+    case 'device_details':
+        return ['device_details', null, countlyDeviceDetails];
+    case 'devices':
+        return ['devices', "devices", null];
+    case 'manufacturers':
+        return ["devices", "manufacturers", null];
+    case 'cities':
+        return ["cities", "cities"];
+    default:
+        var data = { metric: metric, data: [metric, null] };
+        plugins.dispatch("/metric/collection", data);
+        return data.data;
+    }
+};
+
+/**
+* Get metric data for metric api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchMetric = function(params) {
+    var output = function(data) {
+        common.returnOutput(params, data);
+    };
+    if (!params.qstring.metric) {
+        common.returnMessage(params, 400, 'Must provide metric');
+    }
+    else {
+        var metrics = fetch.metricToCollection(params.qstring.metric);
+        if (metrics[0]) {
+            fetch.getMetric(params, metrics[0], metrics[1], output);
+        }
+        else {
+            common.returnOutput(params, []);
+        }
+
+    }
+};
+
+/**
+* Get events overview data for overview api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchDataEventsOverview = function(params) {
+    var ob = {
+        app_id: params.qstring.app_id,
+        appTimezone: params.appTimezone,
+        qstring: { period: params.qstring.period },
+        time: common.initTimeObj(params.qstring.timezone, params.qstring.timestamp)
+    };
+
+    var map = {};
+    for (var k in params.qstring.events) {
+        map[params.qstring.events[k]] = { "key": params.qstring.events[k] };
+    }
+
+    //get eventgroups information(because we dont know which is what)
+    common.db.collection("event_groups").find({ "_id": { "$in": params.qstring.events } }).toArray(function(err, eventgroups) {
+        if (err) {
+            console.log(err);
+        }
+        for (var n = 0; n &lt; eventgroups.length; n++) {
+            map[eventgroups[n]._id] = { key: eventgroups[n]._id, is_event_group: true, source_events: eventgroups[n].source_events };
+        }
+
+        var events = [];
+        for (var z in map) {
+            events.push(map[z]);
+        }
+
+        if (Array.isArray(params.qstring.events)) {
+            var data = {};
+            async.each(events, function(event, done) {
+                if (event.is_event_group) {
+                    data[event.key] = {};
+                    let options = {};
+                    options.event_groups = true;
+                    // options.segmentation = result.segments;
+                    fetch.getMergedEventData(params, event.source_events, options, function(resultMergedEvents) {
+                        countlyEvents.setDb(resultMergedEvents || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+
+                        done();
+                    });
+                }
+                else {
+                    var collectionName = "events" + crypto.createHash('sha1').update(event.key + params.qstring.app_id).digest('hex');
+                    fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
+                        countlyEvents.setDb(doc || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+                        done();
+                    });
+                }
+            },
+            function() {
+                common.returnOutput(params, data);
+            });
+        }
+        else {
+            common.returnOutput(params, {});
+        }
+    });
+};
+
+/**
+* Get top events data
+* @param {params} params - params object
+**/
+
+fetch.fetchDataTopEvents = function(params) {
+    const {
+        qstring: { app_id, period, limit, filter }
+    } = params;
+    const collectionName = "top_events";
+    const _app_id = common.db.ObjectID(app_id);
+    common.db.collection(collectionName).findOne({ period, app_id: _app_id }, function(error, result) {
+        if (error || !result) {
+            return common.returnOutput(params, false);
+        }
+        else {
+            if (filter) {
+                if (filter === "duration") {
+                    const { data, _id, ts, totalCount } = result;
+                    let _data = Object.keys(data).map(function(key) {
+                        const decodeKey = countlyCommon.decode(key);
+                        const { total, change, trend } = data[key].data.duration;
+                        return { name: decodeKey, duration: total, trend: trend, change: change };
+                    });
+                    const sortByDuration = _data.sort((a, b) => b.duration - a.duration).slice(0, limit);
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByDuration });
+                }
+                else if (filter === "sum") {
+                    const { data, _id, ts, totalCount } = result;
+                    let _data = Object.keys(data).map(function(key) {
+                        const decodeKey = countlyCommon.decode(key);
+                        const { total, change, trend } = data[key].data.sum;
+                        return { name: decodeKey, sum: total, trend: trend, change: change };
+                    });
+                    const sortBySum = _data.sort((a, b) => b.sum - a.sum).slice(0, limit);
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortBySum });
+                }
+                else {
+                    const { data, _id, ts, totalCount } = result;
+                    let _data = Object.keys(data).map(function(key) {
+                        const decodeKey = countlyCommon.decode(key);
+                        const { total, change, trend } = data[key].data.count;
+                        return { name: decodeKey, count: total, trend: trend, change: change };
+                    });
+                    const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByCount });
+                }
+            }
+            const { data, _id, ts, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount } = result;
+            let _data = Object.keys(data).map(function(key) {
+                const decodeKey = countlyCommon.decode(key);
+                return {
+                    name: decodeKey,
+                    count: (data[key].data.count &amp;&amp; data[key].data.count.total) || 0,
+                    sum: (data[key].data.sum &amp;&amp; data[key].data.sum.total) || 0,
+                    duration: (data[key].data.duration &amp;&amp; data[key].data.duration.total) || 0
+                };
+            });
+            const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
+            common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount });
+        }
+    }
+    );
+};
+
+
+
+/**
+* Get events data for events pi output to browser
+* @param {params} params - params object
+* @returns {void} void
+**/
+fetch.fetchEvents = function(params) {
+    if (params.qstring.event &amp;&amp; params.qstring.event.length) {
+        let collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
+        fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+            countlyEvents.setDb(doc || {});
+            if (params.qstring.segmentation &amp;&amp; params.qstring.segmentation !== "no-segment") {
+                common.returnOutput(params, countlyEvents.getSegmentedData(params.qstring.segmentation));
+            }
+            else {
+                common.returnOutput(params, countlyEvents.getSubperiodData());
+            }
+        });
+    }
+    else if (params.qstring.events &amp;&amp; params.qstring.events.length) {
+        if (typeof params.qstring.events === "string") {
+            try {
+                params.qstring.events = JSON.parse(params.qstring.events);
+                if (typeof params.qstring.events === "string") {
+                    params.qstring.events = [params.qstring.events];
+                }
+            }
+            catch (ex) {
+                common.returnMessage(params, 400, 'Must provide valid array with event keys as events param.');
+                return false;
+            }
+        }
+        if (Array.isArray(params.qstring.events)) {
+            var data = {};
+            async.each(params.qstring.events, function(event, done) {
+                let collectionName = "events" + crypto.createHash('sha1').update(event + params.app_id).digest('hex');
+                fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+                    countlyEvents.setDb(doc || {});
+                    if (params.qstring.segmentation &amp;&amp; params.qstring.segmentation !== "no-segment") {
+                        data[event] = countlyEvents.getSegmentedData(params.qstring.segmentation);
+                    }
+                    else {
+                        data[event] = countlyEvents.getSubperiodData();
+                    }
+                    done();
+                });
+            }, function() {
+                common.returnOutput(params, data);
+            });
+        }
+    }
+    else {
+        common.returnMessage(params, 400, 'Must provide event or events');
+    }
+};
+
+/**
+* Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together and output to browser
+* @param {string} collection - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+* @param {boolean} isCustomEvent - if value we are fetching for custom event or standard metric
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+*/
+fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
+    fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
+        common.returnOutput(params, output);
+    });
+};
+
+/**
+* Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together
+* @param {string} collection - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getTimeObj = function(collection, params, options, callback) {
+    fetchTimeObj(collection, params, null, options, callback);
+};
+
+/**
+* Get Countly standard data model from database for events, merging year and month and splitted docments together
+* @param {string} collection - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getTimeObjForEvents = function(collection, params, options, callback) {
+    fetchTimeObj(collection, params, true, options, callback);
+};
+
+/**
+* Get data for estimating total users count if period contains today and output to browser
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.fetchTotalUsersObj = function(metric, params) {
+    fetch.getTotalUsersObj(metric, params, function(output) {
+        common.returnOutput(params, output);
+    });
+};
+
+/**
+* Get data for estimating total users count if period contains today
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getTotalUsersObj = function(metric, params, callback) {
+    fetch.getTotalUsersObjWithOptions(metric, params, {}, callback);
+};
+
+/**
+* Get data for estimating total users count allowing plugins to add their own data
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @returns {void} void
+*/
+fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) {
+    if (typeof options === "undefined") {
+        options = {};
+    }
+
+    if (typeof options.db === "undefined") {
+        options.db = common.db;
+    }
+
+    if (!plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).total_users) {
+        return callback([]);
+    }
+    var periodObj = countlyCommon.getPeriodObj(params, "30days");
+
+    /*
+            List of shortcodes in app_users document for different metrics
+    */
+    var shortcodesForMetrics = {
+        "devices": "d",
+        "device_type": "dt",
+        "app_versions": "av",
+        "os": "p",
+        "platforms": "p",
+        "os_versions": "pv",
+        "platform_versions": "pv",
+        "resolutions": "r",
+        "countries": "cc",
+        "cities": "cty",
+        "carriers": "c"
+    };
+
+    if (!params.time) {
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+    }
+
+    /*
+        Aggregation query uses this variable for $match operation
+        We skip uid-sequence document and filter results by last session timestamp
+    */
+    var match = { ls: countlyCommon.getTimestampRangeQuery(params, true) };
+
+    /*
+        Let plugins register their short codes and match queries
+    */
+    plugins.dispatch("/o/method/total_users", {
+        shortcodesForMetrics: shortcodesForMetrics,
+        match: match
+    });
+
+    var ob = { params: params, period: periodObj, metric: metric, options: options, result: [], shortcodesForMetrics: shortcodesForMetrics, match: match };
+
+    plugins.dispatch("/estimation/correction", ob, function() {
+        /*
+                If no plugin has returned any estimation corrections then
+                this API endpoint /o?method=total_users should only be used if
+                selected period contains today
+        */
+        if (ob.result.length === 0 &amp;&amp; periodObj.periodContainsToday) {
+
+            /*
+                Aggregation query uses this variable for $group operation
+                If there is no corresponding shortcode default is to count all
+                users in this period
+            */
+            var groupBy = (shortcodesForMetrics[metric]) ? "$" + shortcodesForMetrics[metric] : "users";
+
+            /*
+                In app users we store city information even if user is not from
+                the selected timezone country of the app. We $match to get city
+                information only for users in app's configured country
+            */
+            if (metric === "cities") {
+                match.cc = params.app_cc;
+            }
+
+            if (groupBy === "users") {
+                options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
+                    if (!error &amp;&amp; appUsersDbResult) {
+                        callback([{ "_id": "users", "u": appUsersDbResult }]);
+                    }
+                    else {
+                        callback([]);
+                    }
+                });
+            }
+            else {
+
+                options.db.collection("app_users" + params.app_id).aggregate([
+                    { $match: match },
+                    {
+                        $group: {
+                            _id: groupBy,
+                            u: { $sum: 1 }
+                        }
+                    }
+                ], { allowDiskUse: true }, function(error, appUsersDbResult) {
+
+                    if (appUsersDbResult &amp;&amp; plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).metric_changes &amp;&amp; shortcodesForMetrics[metric]) {
+
+                        var metricChangesMatch = { ts: countlyCommon.getTimestampRangeQuery(params, true) };
+
+                        metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
+
+                        /*
+                            We track changes to metrics such as app version in metric_changesAPPID collection;
+                            { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
+
+                            While returning a total user result for any metric, we check metric_changes to see
+                            if any metric change happened in the selected period and include this in the result
+                        */
+                        options.db.collection("metric_changes" + params.app_id).aggregate([
+                            { $match: metricChangesMatch },
+                            {
+                                $group: {
+                                    _id: '$' + shortcodesForMetrics[metric] + ".o",
+                                    uniqDeviceIds: { $addToSet: '$uid' }
+                                }
+                            },
+                            {
+                                $project: {
+                                    _id: "$_id",
+                                    u: { $size: "$uniqDeviceIds" }
+                                }
+                            }
+                        ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
+
+                            if (metricChangesDbResult) {
+                                var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
+
+                                for (let i = 0; i &lt; metricChangesDbResult.length; i++) {
+                                    var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
+
+                                    if (itemIndex === -1) {
+                                        appUsersDbResult.push(metricChangesDbResult[i]);
+                                    }
+                                    else {
+                                        appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
+                                    }
+                                }
+                            }
+                            callback(appUsersDbResult || {});
+                        });
+                    }
+                    else {
+                        callback(appUsersDbResult || {});
+                    }
+                });
+            }
+        }
+        else {
+            callback(ob.result);
+        }
+    });
+};
+
+/**
+* Format total users object based on propeties it has (converting short metric values to long proper ones, etc)
+* @param {object} obj - total users object
+* @param {string} forMetric - for which metric to format result
+* @param {boolean} prev - get data for previous period, if available
+* @returns {object} total users object with formated values
+**/
+fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
+    var tmpObj = {},
+        processingFunction;
+
+    switch (forMetric) {
+    case "devices":
+        //processingFunction = countlyDevice.getDeviceFullName;
+        break;
+    }
+
+    if (obj) {
+        for (let i = 0; i &lt; obj.length; i++) {
+            var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
+
+            if (prev) {
+                tmpObj[tmpKey] = obj[i].pu || 0;
+            }
+            else {
+                tmpObj[tmpKey] = obj[i].u;
+            }
+        }
+    }
+
+    return tmpObj;
+};
+
+/**
+* Fetch db data in standard format
+* @param {string} collection - from which collection to fetch
+* @param {params} params - params object
+* @param {boolean} isCustomEvent - if we are fetching custom event or not
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - to call when fetch done
+**/
+function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
+    if (typeof options === "function") {
+        callback = options;
+        options = {};
+    }
+
+    if (typeof options === "undefined") {
+        options = {};
+    }
+
+    if (typeof options.db === "undefined") {
+        options.db = common.db;
+    }
+
+    if (typeof options.unique === "undefined") {
+        options.unique = common.dbUniqueMap[collection] || common.dbUniqueMap["*"];
+    }
+
+    if (!Array.isArray(options.unique)) {
+        options.unique = [options.unique];
+    }
+
+    if (typeof options.id === "undefined") {
+        options.id = params.app_id;
+    }
+
+    if (typeof options.levels === "undefined") {
+        options.levels = {};
+    }
+
+    if (typeof options.levels.daily === "undefined") {
+        options.levels.daily = [];
+    }
+
+    if (typeof options.levels.monthly === "undefined") {
+        options.levels.monthly = [];
+    }
+
+    if (params.qstring.fullRange) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + options.id + ".*" } }).toArray(function(err1, data) {
+            callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
+        });
+    }
+    else if (params.qstring.action === "refresh") {
+        var dbDateIds = common.getDateIds(params),
+            fetchFromZero = {},
+            fetchFromMonth = {};
+
+        if (isCustomEvent) {
+            fetchFromZero.meta = 1;
+            fetchFromZero.meta_v2 = 1;
+            fetchFromZero.m = 1;
+            fetchFromMonth["d." + params.time.day] = 1;
+            fetchFromMonth.m = 1;
+        }
+        else {
+            fetchFromZero.meta = 1;
+            fetchFromZero.meta_v2 = 1;
+            fetchFromZero.m = 1;
+            fetchFromMonth.m = 1;
+            fetchFromMonth["d." + params.time.day] = 1;
+
+            for (let i = 0; i &lt; options.unique.length; i++) {
+                fetchFromZero["d." + options.unique[i]] = 1;
+                fetchFromZero["d." + params.time.month + "." + options.unique[i]] = 1;
+                fetchFromMonth["d.w" + params.time.weekly + "." + options.unique[i]] = 1;
+            }
+
+
+            if (collection === 'users') {
+                fetchFromZero["d." + common.dbMap.frequency] = 1;
+                fetchFromZero["d." + common.dbMap.loyalty] = 1;
+                fetchFromZero["d." + params.time.month + "." + common.dbMap.frequency] = 1;
+                fetchFromZero["d." + params.time.month + "." + common.dbMap.loyalty] = 1;
+
+                fetchFromMonth["d.w" + params.time.weekly + "." + common.dbMap.frequency] = 1;
+                fetchFromMonth["d.w" + params.time.weekly + "." + common.dbMap.loyalty] = 1;
+            }
+        }
+
+        var zeroIdToFetch = "",
+            monthIdToFetch = "";
+
+        if (isCustomEvent) {
+            let segment = params.qstring.segmentation || "no-segment";
+
+            zeroIdToFetch = "no-segment_" + dbDateIds.zero;
+            monthIdToFetch = segment + "_" + dbDateIds.month;
+        }
+        else {
+            zeroIdToFetch = options.id + "_" + dbDateIds.zero;
+            monthIdToFetch = options.id + "_" + dbDateIds.month;
+        }
+
+        var zeroDocs = [zeroIdToFetch];
+        var monthDocs = [monthIdToFetch];
+        if (!(options &amp;&amp; options.dontBreak)) {
+            for (let i = 0; i &lt; common.base64.length; i++) {
+                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
+                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+            }
+        }
+
+        options.db.collection(collection).find({ '_id': { $in: zeroDocs } }, fetchFromZero).toArray(function(err1, zeroObject) {
+            options.db.collection(collection).find({ '_id': { $in: monthDocs } }, fetchFromMonth).toArray(function(err2, monthObject) {
+                zeroObject = zeroObject || [];
+                monthObject = monthObject || [];
+                callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels, params.truncateEventValuesList));
+            });
+        });
+    }
+    else {
+        var periodObj = countlyCommon.getPeriodObj(params, "30days"),
+            documents = [];
+
+        if (isCustomEvent) {
+            let segment = params.qstring.segmentation || "no-segment";
+
+            for (let i = 0; i &lt; periodObj.reqZeroDbDateIds.length; i++) {
+                documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                if (!(options &amp;&amp; options.dontBreak)) {
+                    for (let m = 0; m &lt; common.base64.length; m++) {
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+            }
+
+            for (let i = 0; i &lt; periodObj.reqMonthDbDateIds.length; i++) {
+                documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
+                if (!(options &amp;&amp; options.dontBreak)) {
+                    for (let m = 0; m &lt; common.base64.length; m++) {
+                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+            }
+        }
+        else {
+            for (let i = 0; i &lt; periodObj.reqZeroDbDateIds.length; i++) {
+                documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
+                if (!(options &amp;&amp; options.dontBreak)) {
+                    for (let m = 0; m &lt; common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+            }
+
+            for (let i = 0; i &lt; periodObj.reqMonthDbDateIds.length; i++) {
+                documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
+                if (!(options &amp;&amp; options.dontBreak)) {
+                    for (let m = 0; m &lt; common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+            }
+        }
+
+        options.db.collection(collection).find({ '_id': { $in: documents } }, {}).toArray(function(err, dataObjects) {
+            callback(getMergedObj(dataObjects, false, options.levels, params.truncateEventValuesList));
+        });
+    }
+
+    /**
+    * Deep merge of two objects
+    * @param {object} ob1 - first object to merge
+    * @param {object} ob2 - second object to merge
+    * @returns {object} merged first object
+    **/
+    function deepMerge(ob1, ob2) {
+        for (let i in ob2) {
+            if (typeof ob1[i] === "undefined") {
+                ob1[i] = ob2[i];
+            }
+            else if (ob1[i] &amp;&amp; typeof ob1[i] === "object") {
+                ob1[i] = deepMerge(ob1[i], ob2[i]);
+            }
+            else {
+                ob1[i] += ob2[i];
+            }
+        }
+        return ob1;
+    }
+
+    /**
+     *  Object to clear
+     *  @param {object} ob - zero document
+     */
+    function clearNoneUnique(ob) {
+        for (var i in ob) {
+            if (i === "meta") {
+                continue;
+            }
+            if (ob[i] &amp;&amp; typeof ob[i] === "object" &amp;&amp; options.unique.indexOf(i) === -1) {
+                clearNoneUnique(ob[i]);
+            }
+            else if (options.unique.indexOf(i) === -1) {
+                delete ob[i];
+            }
+        }
+    }
+
+    /**    
+    * Merge multiple db documents into one
+    * @param {array} dataObjects - array with db documents
+    * @param {boolean} isRefresh - is it refresh data only for today
+    * @param {object=} levels - describes which metrics to expect on which levels
+    * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {boolean} truncateEventValuesList - if true, then will limit returned segment value count in meta.
+    * @returns {object} merged object
+    **/
+    function getMergedObj(dataObjects, isRefresh, levels, truncateEventValuesList) {
+        var mergedDataObj = {};
+        if (dataObjects) {
+            for (let i = 0; i &lt; dataObjects.length; i++) {
+                if (!dataObjects[i] || !dataObjects[i].m) {
+                    continue;
+                }
+
+                var mSplit = dataObjects[i].m.split(":"),
+                    year = mSplit[0],
+                    month = mSplit[1];
+
+                if (!mergedDataObj[year]) {
+                    mergedDataObj[year] = {};
+                }
+
+                if (parseInt(month) === 0) {
+                    //old meta merge
+                    if (mergedDataObj.meta) {
+                        for (let metaEl in dataObjects[i].meta) {
+                            if (mergedDataObj.meta[metaEl]) {
+                                mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], dataObjects[i].meta[metaEl]);
+                            }
+                            else {
+                                mergedDataObj.meta[metaEl] = dataObjects[i].meta[metaEl];
+                            }
+                        }
+                    }
+                    else {
+                        mergedDataObj.meta = dataObjects[i].meta || {};
+                    }
+
+                    //new meta merge as hash tables
+                    if (dataObjects[i].meta_v2) {
+                        for (let metaEl in dataObjects[i].meta_v2) {
+                            if (mergedDataObj.meta[metaEl]) {
+                                mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], Object.keys(dataObjects[i].meta_v2[metaEl]));
+                            }
+                            else {
+                                mergedDataObj.meta[metaEl] = Object.keys(dataObjects[i].meta_v2[metaEl]);
+                            }
+                        }
+                    }
+                    clearNoneUnique(dataObjects[i].d || {});
+                    if (mergedDataObj[year]) {
+                        mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i].d);
+                    }
+                    else {
+                        mergedDataObj[year] = dataObjects[i].d || {};
+                    }
+                }
+                else {
+                    if (mergedDataObj[year][month]) {
+                        mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i].d);
+                    }
+                    else {
+                        mergedDataObj[year][month] = dataObjects[i].d || {};
+                    }
+
+                    if (!isRefresh) {
+                        for (let day in dataObjects[i].d) {
+                            if (options.unique.indexOf(day) !== -1) {
+                                continue;
+                            }
+                            for (let prop in dataObjects[i].d[day]) {
+                                if (options.unique.indexOf(prop) !== -1 || prop &lt;= 23 &amp;&amp; prop >= 0) {
+                                    continue;
+                                }
+
+                                if (typeof dataObjects[i].d[day][prop] === 'object') {
+                                    for (let secondLevel in dataObjects[i].d[day][prop]) {
+                                        if ((levels.daily.length) ? levels.daily.indexOf(secondLevel) !== -1 : options.unique.indexOf(secondLevel) === -1) {
+                                            if (!mergedDataObj[year][month][prop]) {
+                                                mergedDataObj[year][month][prop] = {};
+                                            }
+
+                                            if (mergedDataObj[year][month][prop][secondLevel]) {
+                                                mergedDataObj[year][month][prop][secondLevel] += dataObjects[i].d[day][prop][secondLevel];
+                                            }
+                                            else {
+                                                mergedDataObj[year][month][prop][secondLevel] = dataObjects[i].d[day][prop][secondLevel];
+                                            }
+
+                                            if (!mergedDataObj[year][prop]) {
+                                                mergedDataObj[year][prop] = {};
+                                            }
+
+                                            if (mergedDataObj[year][prop][secondLevel]) {
+                                                mergedDataObj[year][prop][secondLevel] += dataObjects[i].d[day][prop][secondLevel];
+                                            }
+                                            else {
+                                                mergedDataObj[year][prop][secondLevel] = dataObjects[i].d[day][prop][secondLevel];
+                                            }
+                                        }
+                                    }
+                                }
+                                else if ((levels.monthly.length) ? levels.monthly.indexOf(prop) !== -1 : options.unique.indexOf(prop) === -1) {
+
+                                    if (mergedDataObj[year][month][prop]) {
+                                        mergedDataObj[year][month][prop] += dataObjects[i].d[day][prop];
+                                    }
+                                    else {
+                                        mergedDataObj[year][month][prop] = dataObjects[i].d[day][prop];
+                                    }
+
+                                    if (mergedDataObj[year][prop]) {
+                                        mergedDataObj[year][prop] += dataObjects[i].d[day][prop];
+                                    }
+                                    else {
+                                        mergedDataObj[year][prop] = dataObjects[i].d[day][prop];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
+            for (let i in mergedDataObj.meta) {
+                for (var p = 0; p &lt; mergedDataObj.meta[i].length; p++) {
+                    if (mergedDataObj.meta[i][p] &amp;&amp; typeof mergedDataObj.meta[i][p] === 'string') {
+                        mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&amp;quot;');
+                    }
+                }
+            }
+            //truncate large meta on refresh		
+            if (isRefresh) {
+                var metric_length = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).metric_limit;
+                if (metric_length > 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > metric_length) {
+                            delete mergedDataObj.meta[i]; //don't  return if there is more than limit
+                        }
+                    }
+                }
+            }
+            else {
+                if (truncateEventValuesList === true) {
+                    var value_length = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true).event_segmentation_value_limit;
+                    if (value_length > 0) {
+                        for (let i in mergedDataObj.meta) {
+                            if (mergedDataObj.meta[i].length > value_length) {
+                                mergedDataObj.meta[i].splice(value_length); //removes some elements if there is more than set limit
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return mergedDataObj;
+    }
+}
+
+/**
+* Get period and out it to browser
+* @param {string} coll - collection, this is not used, but more for compliance with validation functions
+* @param {params} params - params object
+**/
+fetch.getPeriodObj = function(coll, params) {
+    common.returnOutput(params, countlyCommon.getPeriodObj(params, "30days"));
+};
+
+/**
+* Returns the union of two arrays
+* @param {array} x - array 1
+* @param {array} y - array 2
+* @returns {array} merged array
+**/
+function union(x, y) {
+    var obj = {};
+    for (let i = x.length - 1; i >= 0; --i) {
+        obj[x[i]] = true;
+    }
+
+    for (let i = y.length - 1; i >= 0; --i) {
+        obj[y[i]] = true;
+    }
+
+    var res = [];
+
+    for (let k in obj) {
+        res.push(k);
+    }
+
+    return res;
+}
+
+/**
+* Get data for jobs listing for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.fetchJobs = async function(metric, params) {
+    try {
+        if (params.qstring.name) {
+            await fetch.jobDetails(metric, params);
+        }
+        else {
+            await fetch.alljobs(metric, params);
+        }
+    }
+    catch (e) {
+        console.log(e);
+        common.returnOutput(params, 500, "Fetching jobs failed");
+    }
+};
+
+/**
+* Get all jobs grouped by job name for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.alljobs = async function(metric, params) {
+    const columns = ["name", "schedule", "next", "finished", "status", "total"];
+    let sort = {};
+    let total = await common.db.collection('jobs').aggregate([
+        {
+            $group: { _id: "$name" }
+        },
+        {
+            $count: 'total'
+        }
+    ]).toArray();
+    total = total.length > 0 ? total[0].total : 0;
+    const pipeline = [
+        {
+            $sort: {
+                finished: -1
+            }
+        },
+        {
+            $group: {
+                _id: "$name",
+                name: { $first: "$name" },
+                status: { $first: "$status" },
+                schedule: { $first: "$schedule" },
+                next: { $first: "$next" },
+                finished: { $first: "$finished" },
+                total: { $sum: 1 },
+                rowId: { $first: "$_id" }
+            }
+        }
+    ];
+    if (params.qstring.sSearch) {
+        var rr;
+        try {
+            rr = new RegExp(params.qstring.sSearch, "i");
+            pipeline.unshift({
+                $match: { name: { $regex: rr } }
+            });
+        }
+        catch (e) {
+            console.log('Could not use as regex:' + params.qstring.sSearch);
+        }
+    }
+    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
+};
+
+/**
+* Get all documents for a given job name
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.jobDetails = async function(metric, params) {
+    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
+    let sort = {};
+    const total = await common.db.collection('jobs').count({ name: params.qstring.name });
+    const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
+};
+
+
+/**
+ * Fetch data for tops
+ * @param {params} params - params object
+ * @param  {Array} allMetrics - All metrics array
+ * @param  {String} metric - metric to fetch data for
+ * @param  {Function} cb - callback function
+ */
+function fetchData(params, allMetrics, metric, cb) {
+    var metrics = fetch.metricToCollection(metric);
+    var countInCol = 1;
+    if (metrics[0]) {
+        for (let i = 0; i &lt; allMetrics.length; i++) {
+            if (allMetrics[i].db === metrics[0]) {
+                countInCol = allMetrics[i].metrics.length;
+                break;
+            }
+        }
+
+        var model;
+        if (metrics[2] &amp;&amp; typeof metrics[2] === "object") {
+            model = metrics[2];
+        }
+        else if (typeof metrics[2] === "string" &amp;&amp; metrics[2].length) {
+            model = countlyModel.load(metrics[2]);
+        }
+        else {
+            model = countlyModel.load(metrics[0]);
+        }
+        if (metrics[0] === metric &amp;&amp; countInCol === 1) {
+            getDataforTops(params, metrics[0], function(items) {
+                items = items || [];
+                if (items) {
+                    if (model.fixBarSegmentData) {
+                        var chData = { chartData: items };
+                        chData = model.fixBarSegmentData(params, chData);
+                        items = chData.chartData;
+                    }
+
+                    var total = 0, totalPercent = 0;
+                    for (let k = 0; k &lt; items.length; k++) {
+                        items[k].value = items[k].t;
+                        items[k].name = items[k]._id;
+                        total = total + items[k].value;
+                    }
+
+                    items = _.sortBy(items, function(obj) {
+                        return -obj.value;
+                    });
+
+                    for (let k = items.length - 1; k >= 0; k--) {
+                        items[k].percent = countlyCommon.round(items[k].t * 100 / total, 1);
+                        totalPercent += items[k].percent;
+                    }
+
+                    items = countlyCommon.fixPercentageDelta(items, totalPercent);
+
+                    for (let k = 0; k &lt; items.length; k++) {
+                        items[k].name = model.fetchValue(items[k].name);
+                    }
+
+                    items = items.slice(0, 3);
+                }
+
+                cb(items);
+            });
+        }
+        else {
+            fetchTimeObj(metrics[0], params, false, function(db) {
+                fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                    model.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+                    var sgMetric = "t";
+                    if (metrics[1] === "os" || metrics[1] === "browser") {
+                        sgMetric = "u";
+                    }
+                    countlyCommon.setTimezone(params.appTimezone);
+                    model.setDb(db || {});
+                    cb(model.getBars(metrics[1] || metrics[0], 3, sgMetric));
+                });
+            });
+        }
+    }
+    else {
+        cb([]);
+    }
+}
+
+module.exports = fetch;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:55:28 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>utils/countlyFs.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="CacheMaster.html">CacheMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheMaster.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#init">init</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheMaster.html#write">write</a></li></ul></li><li><a href="CacheWorker.html">CacheWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CacheWorker.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#has">has</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#read">read</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#start">start</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#stop">stop</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#update">update</a></li><li data-type='method' style='display: none;'><a href="CacheWorker.html#write">write</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="ClearJob.html">ClearJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearJob.html#run">run</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IPCTestJob.html">IPCTestJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCTestJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="IPCTestJob.html#run">run</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getData">getData</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="StreamedCollection.html">StreamedCollection</a><ul class='methods'><li data-type='method' style='display: none;'><a href="StreamedCollection.html#close">close</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#put">put</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#start">start</a></li><li data-type='method' style='display: none;'><a href="StreamedCollection.html#stop">stop</a></li></ul></li><li><a href="Test.html">Test</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Test.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="Test.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Test.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TestResource.html">TestResource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="TestResource.html#start">start</a></li></ul></li><li></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getEventsCount">getEventsCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.fileStorage">fileStorage</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mail">mail</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.reloadConfigAfter">reloadConfigAfter</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.alljobs">alljobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchJobs">fetchJobs</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.jobDetails">jobDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbext">dbext</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.plugins">plugins</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkDatabaseConfigMatch">checkDatabaseConfigMatch</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.decode_html">decode_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.equal">equal</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.escape_html">escape_html</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.licenseAssign">licenseAssign</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.mergeQuery">mergeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.p">p</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.parseSequence">parseSequence</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMeasurement">recordCustomMeasurement</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnRaw">returnRaw</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.reviver">reviver</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeFilename">sanitizeFilename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sanitizeHTML">sanitizeHTML</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.setCustomMetric">setCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.trimWhitespaceStartEnd">trimWhitespaceStartEnd</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~f">f</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~id">id</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~sub">sub</a></li></ul></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#APICallback">APICallback</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createCollection">createCollection</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#timeObject">timeObject</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">utils/countlyFs.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Module to abstract storing files on hard drive or in a shared system between multiple countly instances, currently based on GridFS
+* @module api/utils/countlyFs
+*/
+
+/** @lends module:api/utils/countlyFs */
+var countlyFs = {};
+
+var GridFSBucket = require("mongodb").GridFSBucket;
+var Readable = require('stream').Readable;
+var fs = require("fs");
+var path = require("path");
+var config = require("../config.js");
+var db;
+var log = require('./log.js')('core:fs');
+
+/**
+* Direct GridFS methods
+*/
+countlyFs.gridfs = {};
+
+(function(ob) {
+    /**
+    * Generic save function for data in gridfs
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {stream} readStream - stream where to get file content
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    **/
+    function save(category, filename, readStream, options, callback) {
+        log.d("saving file", filename);
+        var bucket = new GridFSBucket(db, { bucketName: category });
+        var uploadStream;
+        var id = options.id;
+        delete options.id;
+        delete options.writeMode;
+        if (typeof id === "string") {
+            uploadStream = bucket.openUploadStreamWithId(id, filename, options);
+        }
+        else {
+            uploadStream = bucket.openUploadStream(filename, options);
+        }
+        uploadStream.once('finish', function() {
+            log.d("file saved", filename);
+            if (callback) {
+                callback(null);
+            }
+        });
+        uploadStream.on('error', function(error) {
+            log.d("error saving file", filename, error);
+            if (callback) {
+                callback(error);
+            }
+        });
+        readStream.pipe(uploadStream);
+    }
+
+    /**
+    * Preprocessing hook before saving data
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @param {function} done - function called hook is done
+    **/
+    function beforeSave(category, filename, options, callback, done) {
+        log.d("checking file", filename);
+        ob.getId(category, filename, function(err, res) {
+            log.d("file state", filename, err, res);
+            if (options.forceClean) {
+                ob.clearFile(category, filename, done);
+            }
+            else if (!err) {
+                if (!res || options.writeMode === "version") {
+                    done();
+                }
+                else if (options.writeMode === "overwrite") {
+                    var bucket = new GridFSBucket(db, { bucketName: category });
+                    log.d("deleting file", filename);
+                    bucket.delete(res, function(error) {
+                        log.d("deleted", filename, error);
+                        if (!error) {
+                            setTimeout(done, 1);
+                        }
+                        else if (callback) {
+                            callback(error);
+                        }
+                    });
+                }
+                else {
+                    if (callback) {
+                        callback(new Error("File already exists"), res);
+                    }
+                }
+            }
+            else {
+                if (callback) {
+                    callback(err, res);
+                }
+            }
+        });
+    }
+
+    /**
+    * Get file's id
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @example
+    * countlyFs.getId("test", "./CHANGELOG.md", function(err, exists){
+    *   if(exists)
+    *       console.log("File exists");
+    * });
+    */
+    ob.getId = function(category, filename, callback) {
+        db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
+            if (callback) {
+                callback(err, (res &amp;&amp; res._id) ? res._id : false);
+            }
+        });
+    };
+
+    /**
+    * Check if file exists
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+    * @example
+    * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
+    *   if(exists)
+    *       console.log("File exists");
+    * });
+    */
+    ob.exists = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+        var query = {};
+        if (options.id) {
+            query._id = options.id;
+        }
+        else {
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category + ".files").findOne(query, {_id: 1}, function(err, res) {
+            if (callback) {
+                callback(err, (res &amp;&amp; res._id) ? true : false);
+            }
+        });
+    };
+
+    /**
+    * Save file in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
+    *   console.log("Storing file finished", err);
+    * });
+    */
+    ob.saveFile = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var filename = dest.split(path.sep).pop();
+        beforeSave(category, filename, options, callback, function() {
+            save(category, filename, fs.createReadStream(source), options, callback);
+        });
+    };
+
+    /**
+    * Save string data in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} data - data to save
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
+    *   console.log("Storing data finished", err);
+    * });
+    */
+    ob.saveData = function(category, dest, data, options, callback) {
+        var filename = dest.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+        beforeSave(category, filename, options, callback, function() {
+            var readStream = new Readable;
+            readStream.push(data);
+            readStream.push(null);
+            save(category, filename, readStream, options, callback);
+        });
+    };
+
+    /**
+    * Save file from stream in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {stream} readStream - stream where to get file content
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
+    *   console.log("Storing stream finished", err);
+    * });
+    */
+    ob.saveStream = function(category, dest, readStream, options, callback) {
+        var filename = dest.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+        beforeSave(category, filename, options, callback, function() {
+            save(category, filename, readStream, options, callback);
+        });
+    };
+
+    /**
+    * Rename existing file
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.rename = function(category, dest, source, options, callback) {
+        var newname = dest.split(path.sep).pop();
+        var oldname = source.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        if (options.id) {
+            let bucket = new GridFSBucket(db, { bucketName: category });
+            bucket.rename(options.id, newname, function(error) {
+                if (callback) {
+                    callback(error);
+                }
+            });
+        }
+        else {
+            db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
+                if (!err) {
+                    if (res &amp;&amp; res._id) {
+                        let bucket = new GridFSBucket(db, { bucketName: category });
+                        bucket.rename(res._id, newname, function(error) {
+                            if (callback) {
+                                callback(error);
+                            }
+                        });
+                    }
+                    else {
+                        if (callback) {
+                            callback(new Error("File does not exist"));
+                        }
+                    }
+                }
+                else {
+                    if (callback) {
+                        callback(err);
+                    }
+                }
+            });
+        }
+    };
+
+    /**
+    * Delete file from shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.deleteFile("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.deleteFile = function(category, dest, options, callback) {
+        var filename = dest.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        if (options.id) {
+            ob.deleteFileById(category, options.id, callback);
+        }
+        else {
+            db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
+                if (!err) {
+                    if (res &amp;&amp; res._id) {
+                        ob.deleteFileById(category, res._id, callback);
+                    }
+                    else {
+                        if (callback) {
+                            callback(new Error("File does not exist"));
+                        }
+                    }
+                }
+                else {
+                    if (callback) {
+                        callback(err);
+                    }
+                }
+            });
+        }
+    };
+
+    /**
+    * Delete all files from collection/category
+    * @param {string} category - collection of files to delete
+    * @param {string} dest - directory destination
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.deleteAll("test", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.deleteAll = function(category, dest, callback) {
+        var bucket = new GridFSBucket(db, { bucketName: category });
+        bucket.drop(function(error) {
+            if (callback) {
+                callback(error);
+            }
+        });
+    };
+
+    /**
+    * Get stream for file
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+    * @example
+    * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
+    *   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
+    *   stream.pipe(writeStream);
+    * });
+    */
+    ob.getStream = function(category, dest, options, callback) {
+        var filename = dest.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        if (callback) {
+            if (options.id) {
+                ob.getStreamById(category, options.id, callback);
+            }
+            else {
+                var bucket = new GridFSBucket(db, { bucketName: category });
+                callback(null, bucket.openDownloadStreamByName(filename));
+            }
+        }
+    };
+
+    /**
+    * Get file data
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getData("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    ob.getData = function(category, dest, options, callback) {
+        var filename = dest.split(path.sep).pop();
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        if (options.id) {
+            ob.getDataById(category, options.id, callback);
+        }
+        else {
+            var bucket = new GridFSBucket(db, { bucketName: category });
+            var downloadStream = bucket.openDownloadStreamByName(filename);
+            downloadStream.on('error', function(error) {
+                if (callback) {
+                    callback(error, null);
+                }
+            });
+
+            var str = '';
+            downloadStream.on('data', function(data) {
+                str += data.toString('utf8');
+            });
+
+            downloadStream.on('end', function() {
+                if (callback) {
+                    callback(null, str);
+                }
+            });
+        }
+    };
+
+    /**
+    * Get file size
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getSize("test", "AGPLv3", function(err, size){
+    *   console.log("Retrieved", err, size); 
+    * });
+    */
+    ob.getSize = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var query = {};
+        if (options.id) {
+            query._id = options.id;
+        }
+        else {
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category + ".files").findOne(query, {length: 1}, function(err, res) {
+            if (callback) {
+                callback(err, (res &amp;&amp; res.length) ? res.length : 0);
+            }
+        });
+    };
+
+    /**
+    * Get file stats
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getStats("test", "AGPLv3", function(err, stats){
+    *   console.log("Retrieved", err, stats); 
+    * });
+    */
+    ob.getStats = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var query = {};
+        if (options.id) {
+            query._id = options.id;
+        }
+        else {
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category + ".files").findOne(query, {}, function(err, res) {
+            if (callback) {
+                var stats = {};
+                stats.size = (res &amp;&amp; res.length) ? res.length : 0;
+                stats.blksize = (res &amp;&amp; res.chunkSize) ? res.chunkSize : 0;
+                stats.atimeMs = (res &amp;&amp; res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.mtimeMs = (res &amp;&amp; res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.ctimeMs = (res &amp;&amp; res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.birthtimeMs = (res &amp;&amp; res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.atime = (res &amp;&amp; res.uploadDate) ? res.uploadDate : new Date();
+                stats.mtime = (res &amp;&amp; res.uploadDate) ? res.uploadDate : new Date();
+                stats.ctime = (res &amp;&amp; res.uploadDate) ? res.uploadDate : new Date();
+                stats.birthtime = (res &amp;&amp; res.uploadDate) ? res.uploadDate : new Date();
+                callback(err, stats);
+            }
+        });
+    };
+
+    /**
+    * Get file data by file id
+    * @param {string} category - collection from where to read data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getDataById("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    ob.getDataById = function(category, id, callback) {
+        var bucket = new GridFSBucket(db, { bucketName: category });
+        var downloadStream = bucket.openDownloadStream(id);
+        downloadStream.on('error', function(error) {
+            if (callback) {
+                callback(error, null);
+            }
+        });
+
+        var str = '';
+        downloadStream.on('data', function(data) {
+            str += data.toString('utf8');
+        });
+
+        downloadStream.on('end', function() {
+            if (callback) {
+                callback(null, str);
+            }
+        });
+    };
+
+    /**
+    * Get file stream by file id
+    * @param {string} category - collection from where to read data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getStreamById("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    ob.getStreamById = function(category, id, callback) {
+        if (callback) {
+            var bucket = new GridFSBucket(db, { bucketName: category });
+            callback(null, bucket.openDownloadStream(id));
+        }
+    };
+
+    /**
+    * Delete file by id from shared system
+    * @param {string} category - collection where to store data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.deleteFileById("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.deleteFileById = function(category, id, callback) {
+        var bucket = new GridFSBucket(db, { bucketName: category });
+        bucket.delete(id, function(error) {
+            if (callback) {
+                callback(error);
+            }
+        });
+    };
+
+    /**
+    * Force clean file if there were errors inserting or deleting previously
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.clearFile("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.clearFile = function(category, filename, callback) {
+        db.collection(category + ".files").deleteMany({ filename: filename }, function(err1, res1) {
+            log.d("deleting files", category, { filename: filename }, err1, res1 &amp;&amp; res1.result);
+            db.collection(category + ".chunks").deleteMany({ files_id: filename }, function(err2, res2) {
+                log.d("deleting chunks", category, { files_id: filename }, err1, res2 &amp;&amp; res2.result);
+                if (callback) {
+                    callback(err1 || err2);
+                }
+            });
+        });
+    };
+
+    /**
+    * Get handler for filesystem, which in case of GridFS is database connection
+    * @returns {object} databse connection
+    * @example
+    * var db = countlyFs.getHandler();
+    * db.close();
+    */
+    ob.getHandler = function() {
+        return db;
+    };
+
+    /**
+    * Set handler for filesystem, which in case of GridFS is database connection
+    * @param {object} dbCon - database connection
+    */
+    ob.setHandler = function(dbCon) {
+        db = dbCon;
+    };
+
+}(countlyFs.gridfs));
+
+/**
+* Direct FS methods
+*/
+countlyFs.fs = {};
+(function(ob) {
+    /**
+    * Check if file exists
+    * @param {string} category - collection where to store data
+    * @param {string} dest - destination of file
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+    * @example
+    * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
+    *   if(exists)
+    *       console.log("File exists");
+    * });
+    */
+    ob.exists = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.exists(dest, function(exists) {
+            if (callback) {
+                callback(null, exists);
+            }
+        });
+    };
+
+    /**
+    * Save file in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
+    *   console.log("Storing file finished", err);
+    * });
+    */
+    ob.saveFile = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var is = fs.createReadStream(source);
+        var os = fs.createWriteStream(dest);
+        is.pipe(os);
+        is.on('end', function() {});
+        if (callback) {
+            os.on('finish', callback);
+        }
+    };
+
+    /**
+    * Save string data in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} data - data to save
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
+    *   console.log("Storing data finished", err);
+    * });
+    */
+    ob.saveData = function(category, dest, data, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.writeFile(dest, data, function(err) {
+            if (callback) {
+                callback(err);
+            }
+        });
+    };
+
+    /**
+    * Save file from stream in shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {stream} is - stream where to get file content
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
+    *   console.log("Storing stream finished", err);
+    * });
+    */
+    ob.saveStream = function(category, dest, is, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var os = fs.createWriteStream(dest);
+        is.pipe(os);
+        is.on('end', function() {});
+        os.on('finish', function() {
+            if (callback) {
+                callback();
+            }
+        });
+    };
+
+    /**
+    * Rename existing file
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.rename = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.rename(source, dest, function(err) {
+            if (callback) {
+                callback(err);
+            }
+        });
+    };
+
+    /**
+    * Delete file from shared system
+    * @param {string} category - collection where to store data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.deleteFile("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.deleteFile = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.unlink(dest, function(err) {
+            if (callback) {
+                callback(err);
+            }
+        });
+
+    };
+
+    /**
+    * Get stream for file
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+    * @example
+    * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
+    *   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
+    *   stream.pipe(writeStream);
+    * });
+    */
+    ob.getStream = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        var rstream = fs.createReadStream(dest);
+        if (callback) {
+            callback(null, rstream);
+        }
+    };
+
+    /**
+    * Get file data
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getData("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    ob.getData = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.readFile(dest, 'utf8', function(err, data) {
+            if (callback) {
+                callback(err, data);
+            }
+        });
+    };
+
+    /**
+    * Get file size
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getSize("test", "AGPLv3", function(err, size){
+    *   console.log("Retrieved", err, size); 
+    * });
+    */
+    ob.getSize = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.stat(dest, function(err, stats) {
+            if (callback) {
+                callback(err, stats.size);
+            }
+        });
+    };
+
+    /**
+    * Get file stats
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getStats("test", "AGPLv3", function(err, stats){
+    *   console.log("Retrieved", err, stats); 
+    * });
+    */
+    ob.getStats = function(category, dest, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = null;
+        }
+        if (!options) {
+            options = {};
+        }
+
+        fs.stat(dest, function(err, stats) {
+            if (callback) {
+                callback(err, stats);
+            }
+        });
+    };
+
+    /**
+    * Get handler for filesystem, which in case of GridFS is database connection
+    * @returns {object} databse connection
+    * @example
+    * var db = countlyFs.getHandler();
+    * db.close();
+    */
+    ob.getHandler = function() {
+        return db;
+    };
+
+    /**
+    * Set handler for filesystem, which in case of GridFS is database connection
+    * @param {object} dbCon - database connection
+    */
+    ob.setHandler = function(dbCon) {
+        db = dbCon;
+    };
+
+}(countlyFs.fs));
+
+/**
+* Check if file exists
+* @param {string} category - collection where to store data for gridfs
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+* @example
+* countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
+*   if(exists)
+*       console.log("File exists");
+* });
+*/
+countlyFs.exists = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.exists.apply(handler, arguments);
+};
+
+/**
+* Save file in shared system
+* @param {string} category - collection where to store data
+* @param {string} dest - file's destination
+* @param {string} source - source file
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+* @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+* @param {object} options.metadata - Optional object to store in the file document's metadata field
+* @param {string} options.contentType - Optional string to store in the file document's contentType field
+* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @example
+* countlyFs.saveFile("test", "./CHANGELOG", "./CHANGELOG.md", function(err){
+*   console.log("Storing file finished", err);
+* });
+*/
+countlyFs.saveFile = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.saveFile.apply(handler, arguments);
+};
+
+/**
+* Save string data in shared system
+* @param {string} category - collection where to store data
+* @param {string} dest - file's destination
+* @param {string} data - data to save
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+* @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+* @param {object} options.metadata - Optional object to store in the file document's metadata field
+* @param {string} options.contentType - Optional string to store in the file document's contentType field
+* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @example
+* countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
+*   console.log("Storing data finished", err);
+* });
+*/
+countlyFs.saveData = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.saveData.apply(handler, arguments);
+};
+
+/**
+* Save file from stream in shared system
+* @param {string} category - collection where to store data
+* @param {string} dest - file's destination
+* @param {stream} readStream - stream where to get file content
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+* @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+* @param {object} options.metadata - Optional object to store in the file document's metadata field
+* @param {string} options.contentType - Optional string to store in the file document's contentType field
+* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
+* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @example
+* countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
+*   console.log("Storing stream finished", err);
+* });
+*/
+countlyFs.saveStream = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.saveStream.apply(handler, arguments);
+};
+
+/**
+* Move or Rename existing file
+* @param {string} category - collection where to store data
+* @param {string} dest - file's destination
+* @param {string} source - source file
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+* @example
+* countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
+*   console.log("Finished", err);
+* });
+*/
+countlyFs.rename = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.rename.apply(handler, arguments);
+};
+
+/**
+* Delete file from shared system
+* @param {string} category - collection where to store data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+* @example
+* countlyFs.deleteFile("test", "AGPLv3", function(err){
+*   console.log("Finished", err);
+* });
+*/
+countlyFs.deleteFile = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.deleteFile.apply(handler, arguments);
+};
+
+/**
+* Get stream for file
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+* @example
+* countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
+*   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
+*   stream.pipe(writeStream);
+* });
+*/
+countlyFs.getStream = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getStream.apply(handler, arguments);
+};
+
+/**
+* Get file data
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when retrieving file was completed or errored, providing error object as first param and filedata as second
+* @example
+* countlyFs.getData("test", "AGPLv3", function(err, data){
+*   console.log("Retrieved", err, data); 
+* });
+*/
+countlyFs.getData = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getData.apply(handler, arguments);
+};
+
+/**
+* Get file size
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @example
+* countlyFs.getSize("test", "AGPLv3", function(err, size){
+*   console.log("Retrieved", err, size); 
+* });
+*/
+countlyFs.getSize = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getSize.apply(handler, arguments);
+};
+
+/**
+* Get file stats
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @example
+* countlyFs.getStats("test", "AGPLv3", function(err, stats){
+*   //similar to fs.stat object
+*   console.log("Retrieved", err, stats); 
+* });
+*/
+countlyFs.getStats = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getStats.apply(handler, arguments);
+};
+
+/**
+* Get handler for connection to close it, for stopping separate scripts
+* @returns {object} databse connection
+* @example
+* var db = countlyFs.getHandler();
+* db.close();
+*/
+countlyFs.getHandler = function() {
+    var handler = this[config.fileStorage] || this.fs;
+    return handler.getHandler();
+};
+
+/**
+* Set handler for connection
+* @param {object} dbCon - database connection
+*/
+countlyFs.setHandler = function(dbCon) {
+    var handler = this[config.fileStorage] || this.fs;
+    handler.setHandler(dbCon);
+};
+
+/**
+* Currently used file storage type
+**/
+countlyFs.type = config.fileStorage || "fs";
+
+module.exports = countlyFs;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:55:28 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

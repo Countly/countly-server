@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>countlyMetric - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyDrop.html">CountlyDrop</a></li><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.addColumnSelector">addColumnSelector</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.arrayUnique">arrayUnique</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDTableColVis">changeDTableColVis</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.changeDialogHeight">changeDialogHeight</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.clip">clip</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.closeRows">closeRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirmWithCheckbox">confirmWithCheckbox</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createDrawer">createDrawer</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.expandRows">expandRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initBreadcrumbs">initBreadcrumbs</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeMultiSelect">initializeMultiSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeSelect">initializeSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTableOptions">initializeTableOptions</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.initializeTextSelect">initializeTextSelect</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loading">loading</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.model">model</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.newJSONEditor">newJSONEditor</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.objectWithoutProperties">objectWithoutProperties</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.openResource">openResource</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.popup">popup</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.refreshTable">refreshTable</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeDialog">removeDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removeEmptyValues">removeEmptyValues</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.reopenRows">reopenRows</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.revealDialog">revealDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.tableExport">tableExport</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.upload">upload</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Handlebars.html">Handlebars</a><ul class='members'><li data-type='member' style='display: none;'><a href="Handlebars.html#.app-categories">app-categories</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.appIdsToNames">appIdsToNames</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-selector">date-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.date-time-selector">date-time-selector</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfArray">eachOfArray</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObject">eachOfObject</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.eachOfObjectValue">eachOfObjectValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.encodeURIComponent">encodeURIComponent</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.for">for</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.forNumberOfTimes">forNumberOfTimes</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getFormattedNumber">getFormattedNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getIdValue">getIdValue</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.getShortNumber">getShortNumber</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.ifCond">ifCond</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.limitString">limitString</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.prettyJSON">prettyJSON</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.replace">replace</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.round">round</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.timezones">timezones</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.toUpperCase">toUpperCase</a></li><li data-type='member' style='display: none;'><a href="Handlebars.html#.withItem">withItem</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#tipsify">tipsify</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.compareVersions">compareVersions</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.divide">divide</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGauge">drawGauge</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawGraph">drawGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawHorizontalStackedBars">drawHorizontalStackedBars</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.drawTimeGraph">drawTimeGraph</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecondForDP">formatSecondForDP</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.localeStringToNumber">localeStringToNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.numberToLocaleString">numberToLocaleString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.pad">pad</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyManagementView.html">countlyManagementView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.afterCollapse">afterCollapse</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.beforeExpand">beforeExpand</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.config">config</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.doOnChange">doOnChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.isSaveAvailable">isSaveAvailable</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.onChange">onChange</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.resetTemplateData">resetTemplateData</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.savingString">savingString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.setAppId">setAppId</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.showError">showError</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.titleString">titleString</a></li><li data-type='method' style='display: none;'><a href="countlyManagementView.html#.validate">validate</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li><li><a href="global.html#setMenuItems">setMenuItems</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">countlyMetric</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            Namespace
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+
+    
+
+    <h4 class="name" id="countlyMetric">countlyMetric</h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Common metric object, all metric models inherit from it and should have these methods</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2709">line 2709</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".callback"><span class="type-signature type-signature-static">(static) </span>callback<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Callback that each metric model can define, to be called when data is loaded or refreshed</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2896">line 2896</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Callback that each metric model can define, to be called when data is loaded or refreshed</p>
+</div>
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>countlyDeviceDetails.callback = function(isRefresh, data){
+   if(isRefresh){
+       countlyAppVersion.refresh(data);
+   }
+   else{
+       countlyAppVersion.initialize();
+   }
+};</code></pre>
+
+
+
+        
+            
+<h4 class="name" id=".fetchValue"><span class="type-signature type-signature-static">(static) </span>fetchValue<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Function to get value, modifying it before processing if needed.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2722">line 2722</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Function to get value, modifying it before processing if needed.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".clearObject"><span class="type-signature type-signature-static">(static) </span>clearObject<span class="signature">(obj)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Prefill all expected properties as u, t, n with 0, to avoid null values in the result, if they don't exist, which won't work when drawing graphs</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3118">line 3118</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>oject to prefill with  values if they don't exist</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>prefilled object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".extendDb"><span class="type-signature type-signature-static">(static) </span>extendDb<span class="signature">(data)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Extend current data for model with some additional information about latest period (like data from action=refresh request)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2936">line 2936</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>set new data to be used by model</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getBars"><span class="type-signature type-signature-static">(static) </span>getBars<span class="signature">(metric_pd)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get bar data for metric</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3174">line 3174</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>metric_pd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the segment/metric to get data for, by default will use default _name provided on initialization</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use when displaying bars as [{&quot;name&quot;:&quot;English&quot;,&quot;percent&quot;:44},{&quot;name&quot;:&quot;Italian&quot;,&quot;percent&quot;:29},{&quot;name&quot;:&quot;German&quot;,&quot;percent&quot;:27}]</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getBarsWPercentageOfTotal"><span class="type-signature type-signature-static">(static) </span>getBarsWPercentageOfTotal<span class="signature">(segment, mtric, estOverrideMetric)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get bar data for metric with percentages of total</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3145">line 3145</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>segment</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the segment/metric to get data for, by default will use default _name provided on initialization</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mtric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the metric to use ordering and returning</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>estOverrideMetric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>object to use when displaying bars as [{&quot;name&quot;:&quot;English&quot;,&quot;percent&quot;:44},{&quot;name&quot;:&quot;Italian&quot;,&quot;percent&quot;:29},{&quot;name&quot;:&quot;German&quot;,&quot;percent&quot;:27}]</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getData"><span class="type-signature type-signature-static">(static) </span>getData<span class="signature">(clean, join, metric1, estOverrideMetric)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get data after initialize finished and data was retrieved</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3015">line 3015</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Example output of separate data for 2 pie charts</p>
+    
+    <pre class="prettyprint"><code>{"chartData":[
+   {"langs":"English","t":124,"u":112,"n":50},
+   {"langs":"Italian","t":83,"u":74,"n":30},
+   {"langs":"German","t":72,"u":67,"n":26},
+   {"langs":"Japanese","t":62,"u":61,"n":19},
+   {"langs":"French","t":66,"u":60,"n":28},
+   {"langs":"Korean","t":64,"u":58,"n":26}
+],
+"chartDPTotal":{
+   "dp":[
+       {"data":[[0,124]],"label":"English"},
+       {"data":[[0,83]],"label":"Italian"},
+       {"data":[[0,72]],"label":"German"},
+       {"data":[[0,62]],"label":"Japanese"},
+       {"data":[[0,66]],"label":"French"},
+       {"data":[[0,64]],"label":"Korean"}
+   ]
+},
+"chartDPNew":{
+   "dp":[
+       {"data":[[0,50]],"label":"English"},
+       {"data":[[0,30]],"label":"Italian"},
+       {"data":[[0,26]],"label":"German"},
+       {"data":[[0,19]],"label":"Japanese"},
+       {"data":[[0,28]],"label":"French"},
+       {"data":[[0,26]],"label":"Korean"}
+   ]
+}}</code></pre>
+
+        <p class="code-caption">Example output of joined data for 1 bar chart</p>
+    
+    <pre class="prettyprint"><code>{"chartData":[
+   {"langs":"English","t":124,"u":112,"n":50},
+   {"langs":"Italian","t":83,"u":74,"n":30},
+   {"langs":"German","t":72,"u":67,"n":26},
+   {"langs":"Japanese","t":62,"u":61,"n":19},
+   {"langs":"French","t":66,"u":60,"n":28},
+   {"langs":"Korean","t":64,"u":58,"n":26}
+],
+"chartDP":{
+   "dp":[
+       {"data":[[-1,null],[0,124],[1,83],[2,72],[3,62],[4,66],[5,64],[6,null]],"label":"Total Sessions"},
+       {"data":[[-1,null],[0,50],[1,30],[2,26],[3,19],[4,28],[5,26],[6,null]],"label":"New Users"}
+   ],
+  "ticks":[
+       [-1,""], //used for padding for bars
+       [23,""], //used for padding for bars
+       [0,"English"],
+       [1,"Italian"],
+       [2,"German"],
+       [3,"Japanese"],
+       [4,"French"],
+       [5,"Korean"]
+   ]
+}}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>clean</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>should retrieve clean data or preprocessed by fetchValue function</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>join</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metric1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the segment/metric to get data for, by default will use default _name provided on initialization</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>estOverrideMetric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>chartData</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getDb"><span class="type-signature type-signature-static">(static) </span>getDb<span class="signature">()</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get current data, if some view or model requires access to raw data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2917">line 2917</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>raw data returned from server either in standard metric model or preprocessed data, based on what model uses</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getMeta"><span class="type-signature type-signature-static">(static) </span>getMeta<span class="signature">(metric1)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get array of unique segments available for metric data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2947">line 2947</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>metric1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the segment/metric to get meta for, by default will use default _name provided on initialization</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>array of unique metric values</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getOSSegmentedData"><span class="type-signature type-signature-static">(static) </span>getOSSegmentedData<span class="signature">(os, clean, metric_pd, estOverrideMetric)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>If this metric's data should be segmented by OS (which means be prefixed by first os letter on server side), you can get OS segmented data</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3230">line 3230</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+        <p class="code-caption">Example output</p>
+    
+    <pre class="prettyprint"><code>//call
+//countlyMetric.getOSSegmentedData("wp")
+//data for Windows Phone segment
+{"chartData":[
+   {"density":"2.0","t":18,"u":18,"n":9},
+   {"density":"3.4","t":13,"u":12,"n":5},
+   {"density":"1.2","t":11,"u":10,"n":5},
+   {"density":"3.5","t":10,"u":10,"n":4},
+   {"density":"3.3","t":9,"u":9,"n":3}
+],
+"chartDP":{
+   "dp":[
+       {"data":[[0,53]],"label":"2.0"},
+       {"data":[[0,49]],"label":"3.4"},
+       {"data":[[0,46]],"label":"1.2"},
+       {"data":[[0,36]],"label":"3.5"},
+       {"data":[[0,32]],"label":"3.3"}
+   ]
+},
+//list of all os segments
+"os":[
+  {"name":"Windows Phone","class":"windows phone"},
+   {"name":"Android","class":"android"},
+   {"name":"iOS","class":"ios"}
+]}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>os</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>os name for which to get segmented metrics data</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clean</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>should retrieve clean data or preprocessed by fetchValue function</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metric_pd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the segment/metric to get data for, by default will use default _name provided on initialization</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>estOverrideMetric</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>os segmented metric object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getRangeData"><span class="type-signature type-signature-static">(static) </span>getRangeData<span class="signature">(metric_pd, meta, explain, order)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3336">line 3336</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+        <p class="code-caption">Example output</p>
+    
+    <pre class="prettyprint"><code>//call
+//countlyMetric.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
+//returns
+{"chartData":[
+   {"f":"First session","t":271,"percent":"&lt;div class='percent-bar' style='width:171px;'>&lt;/div>85.5%"},
+   {"f":"2 days","t":46,"percent":"&lt;div class='percent-bar' style='width:29px;'>&lt;/div>14.5%"}
+ ],
+ "chartDP":{
+     "dp":[
+       {"data":[[-1,null],[0,271],[1,46],[2,null]]}
+     ],
+     "ticks":[
+       [-1,""],
+       [2,""],
+       [0,"First session"],
+       [1,"2 days"]
+     ]
+  }
+ }</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>metric_pd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the property in the model to fetch</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>meta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the meta where property's ranges are stored</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>explain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function that receives index of the bucket and returns bucket name</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>order</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>list of keys ordered in preferred order(to return in same order)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>data</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".initialize"><span class="type-signature type-signature-static">(static) </span>initialize<span class="signature">(processed<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {jquery_promise}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Initialize metric model to fetch initial data from server</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2749">line 2749</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>beforeRender: function() {
+   return $.when(countlyMetric.initialize()).then(function () {});
+}</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>processed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>if true will fetch processed data, will fetch raw data by default</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>jquery promise to wait while data is loaded</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">jquery_promise</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".refresh"><span class="type-signature type-signature-static">(static) </span>refresh<span class="signature">()</span><span class="type-signature"> &rarr; {jquery_promise}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Refresh metric model by fetching data only for the latest time bucket using action=refresh on server. Currently does not fetch data for processed data loaded on initialization</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2832">line 2832</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>$.when(countlyMetric.refresh()).then(function () {
+   //data loaded, do something
+});</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>jquery promise to wait while data is loaded</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">jquery_promise</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".reset"><span class="type-signature type-signature-static">(static) </span>reset<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Reset/delete all retrieved metric data, like when changing app or selected time period</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2902">line 2902</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".setDb"><span class="type-signature type-signature-static">(static) </span>setDb<span class="signature">(db)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Set current data for model, if you need to provide data for model from another resource (as loaded in different model)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line2926">line 2926</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>db</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>set new data to be used by model</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Jan 08 2024 17:55:25 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
