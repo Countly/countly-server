@@ -48,22 +48,22 @@
 						<el-popover
 							title=""
 							trigger="hover"
-							placement="right"
-							popper-class="bu-pr-6"
+							placement="right-end"
 							offset=50
 							:close-delay=50>
-								<div class="bu-is-uppercase bu-is-size-7 bu-has-text-weight-normal">
+								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
-								<table class="bu-mt-2">
+								<table class="bu-mt-3">
 									<tr v-for="(value, key) in scopeRow.row.events">
-										<td class="bu-is-capitalized bu-is-size-6 bu-has-text-weight-normal bu-pr-6 bu-pt-3">
-											{{key}}
-										</td>
-										<!-- <td class="bu-pl-4"></td> -->
-										<td class="bu-is-size-5 bu-has-text-right bu-has-text-weight-medium	 bu-pl-6 bu-pt-3">
-											{{value}}
-										</td>
+										<template v-if="key !== 'total'">
+											<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
+												{{key}}
+											</td>
+											<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
+												{{value}}
+											</td>
+										</template>
 									</tr>
 								</table>
 							<span slot="reference">{{ scopeRow.row.events.total }}</span>

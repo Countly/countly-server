@@ -110,6 +110,7 @@
             if (appId === "all-apps" || appId === "natural-dp") {
                 appId = null;
             }
+
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
@@ -119,14 +120,14 @@
                 "change": periodData.change,
                 "approximated": approx,
                 "events": {
-                    "total": periodData.events,
-                    "crash": periodData.crash,
-                    "views": periodData.views,
-                    "actions": periodData.actions,
-                    "nps": periodData.nps,
-                    "surveys": periodData.surveys,
-                    "ratings": periodData.ratings,
-                    "custom": periodData.ce,
+                    "total": numberFormatter(periodData.events),
+                    "crashes": numberFormatter(periodData.crash),
+                    "views": numberFormatter(periodData.views),
+                    "actions": numberFormatter(periodData.actions),
+                    "NPS": numberFormatter(periodData.nps),
+                    "surveys": numberFormatter(periodData.surveys),
+                    "ratings": numberFormatter(periodData.ratings),
+                    "custom events": numberFormatter(periodData.ce),
                 },
             });
         }
@@ -145,6 +146,19 @@
     countlyDataPoints.setPeriod = function(period) {
         _selectedPeriod = period;
     };
+    /**
+     * 
+     * @param {number} value Input number to be formatted
+     * @returns {String} Returns the formatted number as string
+     */
+    function numberFormatter(value) {
+        if (value === null || value === undefined) {
+            return "-";
+        }
+        else {
+            return countlyCommon.formatNumber(value, 0);
+        }
+    }
 
     /**
     * Returns a human readable name given application id.
