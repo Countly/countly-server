@@ -64,7 +64,7 @@ var handleMerges = function(db, callback) {
                                     }
                                     if (!oldAppUser && newAppUser) {
                                         //old user was merged to new user, but state update failed - we can mark it as merged and process other plugins
-                                        usersApi.mergeOtherPlugins(db, app_id, {uid: user.merged_to}, {uid: olduid}, {"mc": true, "cc": true, "u": true}, resolve);
+                                        usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"mc": true, "cc": true, "u": true}, mergeDoc: user}, resolve);
                                     }
                                     if (!newAppUser) {
                                         //new user do not exists - we can delete merging record
@@ -106,7 +106,7 @@ var handleMerges = function(db, callback) {
                                                                 log.e("Failed to remove merged user from database", errRemoving);
                                                             }
                                                             else {
-                                                                usersApi.mergeOtherPlugins(db, app_id, newAppUser, oldAppUser, {"cc": true, "u": true}, resolve);
+                                                                usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"cc": true, "u": true}, mergeDoc: user}, resolve);
                                                             }
                                                         });
                                                     }
@@ -129,13 +129,13 @@ var handleMerges = function(db, callback) {
                                             log.e("Failed metric changes update in app_users merge", err7);
                                         }
                                         else {
-                                            usersApi.mergeOtherPlugins(db, app_id, {uid: user.merged_to}, {uid: olduid}, {"cc": true, "mc": true}, resolve);
+                                            usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"cc": true, "mc": true}, mergeDoc: user}, resolve);
                                         }
                                     });
                                 });
                             }
                             else {
-                                usersApi.mergeOtherPlugins(db, app_id, {uid: user.merged_to}, {uid: olduid}, {"cc": true}, resolve);
+                                usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"cc": true}, mergeDoc: user}, resolve);
                             }
                         }
                         else {
