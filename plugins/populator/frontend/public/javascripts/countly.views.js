@@ -1,4 +1,4 @@
-/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue */
+/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue, moment */
 (function() {
     var FEATURE_NAME = 'populator';
 
@@ -304,6 +304,13 @@
                         self.templates.push({
                             _id: item._id,
                             name: item.name,
+                            buttonShow: !item.isDefault,
+                            isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
+                            userCount: (item.users !== undefined ? Object.keys(item.users).length : 0),
+                            eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
+                            viewCount: (item.views !== undefined ? Object.keys(item.views).length : 0),
+                            sequenceCount: (item.sequences !== undefined ? Object.keys(item.sequences).length : 0),
+                            generatedOn: (item.generatedOn !== undefined ? moment(new Date(item.generatedOn)).format("DD MMM YYYY") : '?'),
                             uniqueUserCount: item.uniqueUserCount,
                             platformType: item.platformType || [],
                             users: item.users || [],
@@ -311,15 +318,7 @@
                             views: item.views || [],
                             sequences: item.sequences || [],
                             behavior: item.behavior,
-                            isDefault: item.isDefault,
-                            buttonShow: !item.isDefault
-                            // buttonShow: !item.isDefault,
-                            // isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
-                            // upCount: (item.up !== undefined ? Object.keys(item.up).length : 0),
-                            // eventCount: (item.events !== undefined ? Object.keys(item.events).length : 0),
-                            // editedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
-                            // up: item.up,
-                            // events: item.events
+                            lastEditedBy: (item.lastEditedBy !== undefined ? item.lastEditedBy : '-'),
                         });
                     });
                     self.isLoading = false;
