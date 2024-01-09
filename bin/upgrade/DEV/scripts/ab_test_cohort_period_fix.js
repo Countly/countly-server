@@ -25,6 +25,7 @@ pluginManager.dbConnection().then(async function(countlyDb) {
                 await countlyDb.collection("cohorts").bulkWrite(updateObj, {ordered: false}, function(err) {
                     if (err) {
                         console.error(err);
+                        close();
                     }
                     else {
                         console.log("Successfuly updated periods with huge numbers");
