@@ -105,6 +105,7 @@
                     expandKeysHolder: [],
                     isRefresh: false,
                     isLoading: false,
+                    isFetching: false,
                     showFilterDialog: false,
                     showDetailDialog: false,
                     rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
@@ -212,9 +213,13 @@
                     if (force) {
                         this.isLoading = true;
                     }
-                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
-                        self.isLoading = false;
-                    });
+                    if (force || !this.isFetching) {
+                        this.isFetching = true;
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
+                            self.isLoading = false;
+                            self.isFetching = false;
+                        });
+                    }
                 },
                 getExportQuery: function() {
 
