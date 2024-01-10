@@ -201,7 +201,9 @@ jobs:
 
       - name: Install plugins
         shell: bash
-        run: node /opt/countly/bin/scripts/install_plugins.js
+        run: |
+         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
+         node /opt/countly/bin/scripts/install_plugins.js
 
       - name: Run tests
         shell: bash
