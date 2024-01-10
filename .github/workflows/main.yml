@@ -199,6 +199,10 @@ jobs:
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
 
+      - name: Install plugins
+        shell: bash
+        run: node /opt/countly/bin/scripts/install_plugins.js
+
       - name: Run tests
         shell: bash
         working-directory: /opt/countly
