@@ -119,15 +119,16 @@
                 "data-points": periodData.dp,
                 "change": periodData.change,
                 "approximated": approx,
-                "events": {
-                    "total": numberFormatter(periodData.events),
+                "events": numberFormatter(periodData.events),
+                "events_breakdown": {
                     "crashes": numberFormatter(periodData.crash),
                     "views": numberFormatter(periodData.views),
                     "actions": numberFormatter(periodData.actions),
-                    "NPS": numberFormatter(periodData.nps),
+                    "nps": numberFormatter(periodData.nps),
                     "surveys": numberFormatter(periodData.surveys),
                     "ratings": numberFormatter(periodData.ratings),
-                    "custom events": numberFormatter(periodData.ce),
+                    "apm": numberFormatter(periodData.apm),
+                    "custom": numberFormatter(periodData.custom),
                 },
             });
         }

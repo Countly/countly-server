@@ -269,6 +269,29 @@ var DataPointsView = countlyVue.views.create({
                 return graphObject;
 
             }
+        },
+        formatExportFunction: function() {
+            var dataPoints = countlyDataPoints.getTableData();
+            var table = [];
+            for (var k = 0; k < dataPoints.length; k++) {
+                var item = {};
+                item[CV.i18n('server-stats.app-name')] = dataPoints[k].appName;
+                item[CV.i18n('server-stats.sessions')] = dataPoints[k].sessions;
+                item[CV.i18n('server-stats.events')] = dataPoints[k].events;
+                item[CV.i18n('server-stats.crashes')] = dataPoints[k].events_breakdown.crashes;
+                item[CV.i18n('server-stats.views')] = dataPoints[k].events_breakdown.views;
+                item[CV.i18n('server-stats.actions')] = dataPoints[k].events_breakdown.actions;
+                item[CV.i18n('server-stats.nps')] = dataPoints[k].events_breakdown.nps;
+                item[CV.i18n('server-stats.surveys')] = dataPoints[k].events_breakdown.surveys;
+                item[CV.i18n('server-stats.ratings')] = dataPoints[k].events_breakdown.ratings;
+                item[CV.i18n('server-stats.apm')] = dataPoints[k].events_breakdown.apm;
+                item[CV.i18n('server-stats.custom')] = dataPoints[k].events_breakdown.custom;
+                item[CV.i18n('server-stats.push')] = dataPoints[k].push;
+                item[CV.i18n('server-stats.data-points')] = dataPoints[k].dataPoints;
+                item[CV.i18n('server-stats.datapoint-change')] = dataPoints[k].change;
+                table.push(item);
+            }
+            return table;
         }
     }
 });
