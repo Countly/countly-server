@@ -1,8 +1,7 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const request = require("countly-request");
-const {NodeVM} = require('vm2');
+const {Sandbox} = require("v8-sandbox");
 
 /**
  * custom code effect
@@ -39,25 +38,23 @@ class CustomCodeEffect {
                 };
 
                 genCode = `
-                    const CUSTOM_MAIN = async () => {
-                        try {
-                            ${code}
-                         }
-                         catch(e) {
-                            CUSTOM_CODE_ERROR_CALLBACK(e);                        
-                            CUSTOM_CODE_RESOLVER();
-                         }
-                         CUSTOM_CODE_RESOLVER();
-                    }
-                    CUSTOM_MAIN();
+                    ${code}
+                    setResult({ value: params });
                 `;
-                const vm = new NodeVM({
-                    timeout: 30000,
-                    console: 'inherit',
-                    sandbox: {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK},
-                    require: false,
-                });
-                vm.run(genCode, 'vm.js');
+                const sandbox = new Sandbox();
+
+                (async() => {
+                    const { error, value } = await sandbox.execute({ code: genCode, timeout: 3000, globals: { params } });
+
+                    await sandbox.shutdown();
+
+                    if (error) {
+                        CUSTOM_CODE_ERROR_CALLBACK(error);
+                    }
+                    options.params = value;
+                    log.d("Resolved value:", value);
+                    CUSTOM_CODE_RESOLVER();
+                })();
             });
         }
         catch (e) {
