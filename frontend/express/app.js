@@ -125,6 +125,11 @@ if (!plugins.isPluginEnabled('tracker')) {
         countly_tracking: null,
     });
 }
+else {
+    plugins.setConfigs('frontend', {
+        countly_tracking: true,
+    });
+}
 
 plugins.setUserConfigs("frontend", {
     production: false,
