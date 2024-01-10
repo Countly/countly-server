@@ -203,7 +203,7 @@ jobs:
         shell: bash
         run: |
          cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
-         node /opt/countly/bin/scripts/install_plugins.js
+         node /opt/countly/bin/scripts/install_plugins.js --force
 
       - name: Run tests
         shell: bash

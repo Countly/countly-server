@@ -1263,7 +1263,7 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             //if we are on docker skip npm install. 
-            if (process && process.env && process.env.COUNTLY_CONTAINER) {
+            if (process && process.env && process.env.COUNTLY_CONTAINER && !process.env.FORCE_NPM_INSTALL) {
                 console.log('Skipping on docker');
                 resolve(errors);
             }
