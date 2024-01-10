@@ -41,6 +41,7 @@ pluginManager.dbConnection().then(async function(countlyDb) {
     }
     catch (error) {
         console.log("Error: " + error);
+        close();
     }
 
     function close() {
