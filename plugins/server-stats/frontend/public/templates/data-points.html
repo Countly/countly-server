@@ -26,7 +26,7 @@
         </cly-section>
 		
 		<cly-section>
-            <cly-datatable-n :export-format="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
+            <cly-datatable-n :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
 						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
@@ -52,16 +52,18 @@
 							offset=50
 							:close-delay=50>
 								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
-									{{i18n('server-stats.events-breakdown')}}
+									{{i18n('server-stats.event-breakdown')}}
 								</div>
-								<table class="bu-mt-3">
+								<table class="bu-mt-1">
 									<tr v-for="(value, key) in scopeRow.row.events_breakdown">
-										<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
-											{{key}}
-										</td>
-										<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
-											{{value}}
-										</td>
+										<template v-if="key !== 'total'">
+											<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
+												{{getPopoverKey(key)}}
+											</td>
+											<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
+												{{value}}
+											</td>
+										</template>
 									</tr>
 								</table>
 							<span slot="reference">{{ scopeRow.row.events }}</span>
@@ -75,3 +77,5 @@
 		</cly-section>
 	</cly-main>
 </div>
+
+

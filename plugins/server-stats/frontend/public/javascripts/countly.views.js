@@ -43,6 +43,19 @@ var DataPointsView = countlyVue.views.create({
         });
     },
     methods: {
+        getPopoverKey: function(key) {
+            const eventsBreakdownEnum = {
+                "crashes": CV.i18n('server-stats.crashes'),
+                "nps": CV.i18n('server-stats.nps'),
+                "views": CV.i18n('server-stats.views'),
+                "actions": CV.i18n('server-stats.actions'),
+                "surveys": CV.i18n('server-stats.surveys'),
+                "ratings": CV.i18n('server-stats.ratings'),
+                "apm": CV.i18n('server-stats.apm'),
+                "custom": CV.i18n('server-stats.custom'),
+            };
+            return eventsBreakdownEnum[key];
+        },
         refresh: function(force) {
             if (force) {
                 this.isLoading = true;
@@ -287,7 +300,7 @@ var DataPointsView = countlyVue.views.create({
                 item[CV.i18n('server-stats.apm')] = dataPoints[k].events_breakdown.apm;
                 item[CV.i18n('server-stats.custom')] = dataPoints[k].events_breakdown.custom;
                 item[CV.i18n('server-stats.push')] = dataPoints[k].push;
-                item[CV.i18n('server-stats.data-points')] = dataPoints[k].dataPoints;
+                item[CV.i18n('server-stats.data-points')] = dataPoints[k]['data-points'];
                 item[CV.i18n('server-stats.datapoint-change')] = dataPoints[k].change;
                 table.push(item);
             }
