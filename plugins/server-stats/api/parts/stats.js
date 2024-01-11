@@ -232,7 +232,6 @@ function fetchDatapoints(db, filter, options, callback) {
     db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, result) {
         var toReturn = {
             "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0},
-            // "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0},
         };
 
         if (err || !result) {

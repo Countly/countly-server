@@ -110,7 +110,6 @@
             if (appId === "all-apps" || appId === "natural-dp") {
                 appId = null;
             }
-
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
