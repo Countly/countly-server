@@ -114,11 +114,21 @@
                 "appName": getAppName(app),
                 "appId": appId,
                 "sessions": periodData.sessions,
-                "events": periodData.events,
                 "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
-                "approximated": approx
+                "approximated": approx,
+                "events": numberFormatter(periodData.events),
+                "events_breakdown": {
+                    "crashes": numberFormatter(periodData.crash),
+                    "views": numberFormatter(periodData.views),
+                    "actions": numberFormatter(periodData.actions),
+                    "nps": numberFormatter(periodData.nps),
+                    "surveys": numberFormatter(periodData.surveys),
+                    "ratings": numberFormatter(periodData.ratings),
+                    "apm": numberFormatter(periodData.apm),
+                    "custom": numberFormatter(periodData.custom),
+                },
             });
         }
 
@@ -136,6 +146,19 @@
     countlyDataPoints.setPeriod = function(period) {
         _selectedPeriod = period;
     };
+    /**
+     * 
+     * @param {number} value Input number to be formatted
+     * @returns {String} Returns the formatted number as string
+     */
+    function numberFormatter(value) {
+        if (value === null || value === undefined) {
+            return "-";
+        }
+        else {
+            return countlyCommon.formatNumber(value, 0);
+        }
+    }
 
     /**
     * Returns a human readable name given application id.

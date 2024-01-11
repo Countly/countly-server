@@ -43,6 +43,19 @@ var DataPointsView = countlyVue.views.create({
         });
     },
     methods: {
+        getPopoverKey: function(key) {
+            const eventsBreakdownEnum = {
+                "crashes": CV.i18n('server-stats.crashes'),
+                "nps": CV.i18n('server-stats.nps'),
+                "views": CV.i18n('server-stats.views'),
+                "actions": CV.i18n('server-stats.actions'),
+                "surveys": CV.i18n('server-stats.surveys'),
+                "ratings": CV.i18n('server-stats.ratings'),
+                "apm": CV.i18n('server-stats.apm'),
+                "custom": CV.i18n('server-stats.custom'),
+            };
+            return eventsBreakdownEnum[key];
+        },
         refresh: function(force) {
             if (force) {
                 this.isLoading = true;
@@ -269,6 +282,29 @@ var DataPointsView = countlyVue.views.create({
                 return graphObject;
 
             }
+        },
+        formatExportFunction: function() {
+            var dataPoints = countlyDataPoints.getTableData();
+            var table = [];
+            for (var k = 0; k < dataPoints.length; k++) {
+                var item = {};
+                item[CV.i18n('server-stats.app-name')] = dataPoints[k].appName;
+                item[CV.i18n('server-stats.sessions')] = dataPoints[k].sessions;
+                item[CV.i18n('server-stats.events')] = dataPoints[k].events;
+                item[CV.i18n('server-stats.crashes')] = dataPoints[k].events_breakdown.crashes;
+                item[CV.i18n('server-stats.views')] = dataPoints[k].events_breakdown.views;
+                item[CV.i18n('server-stats.actions')] = dataPoints[k].events_breakdown.actions;
+                item[CV.i18n('server-stats.nps')] = dataPoints[k].events_breakdown.nps;
+                item[CV.i18n('server-stats.surveys')] = dataPoints[k].events_breakdown.surveys;
+                item[CV.i18n('server-stats.ratings')] = dataPoints[k].events_breakdown.ratings;
+                item[CV.i18n('server-stats.apm')] = dataPoints[k].events_breakdown.apm;
+                item[CV.i18n('server-stats.custom')] = dataPoints[k].events_breakdown.custom;
+                item[CV.i18n('server-stats.push')] = dataPoints[k].push;
+                item[CV.i18n('server-stats.data-points')] = dataPoints[k]['data-points'];
+                item[CV.i18n('server-stats.datapoint-change')] = dataPoints[k].change;
+                table.push(item);
+            }
+            return table;
         }
     }
 });
