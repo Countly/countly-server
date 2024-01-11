@@ -344,6 +344,11 @@
                         app.configurationsView.registerInput("frontend.__user", {input: "el-select", attrs: {multiple: true}, list: list});
                     }
 
+                    if (self.configsData.frontend && countlyGlobal.plugins.includes('tracker')) {
+                        // disable countly tracking config for countly hosted instances
+                        delete self.configsData.frontend.countly_tracking;
+                    }
+
                     self.configsList.push({
                         "label": self.getLabel("core"),
                         "group": true,

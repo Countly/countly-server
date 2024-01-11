@@ -125,6 +125,11 @@ if (!plugins.isPluginEnabled('tracker')) {
         countly_tracking: null,
     });
 }
+else {
+    plugins.setConfigs('frontend', {
+        countly_tracking: true,
+    });
+}
 
 plugins.setUserConfigs("frontend", {
     production: false,
@@ -396,6 +401,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+
+        if (typeof plugins.getConfig('frontend').countly_tracking !== 'boolean' && plugins.isPluginEnabled('tracker')) {
+            plugins.updateConfigs(countlyDb, 'frontend', { countly_tracking: true });
+        }
     });
 
     app.engine('html', require('ejs').renderFile);
