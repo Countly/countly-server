@@ -3061,9 +3061,10 @@ common.sanitizeFilename = (filename, replacement = "") => {
 /**
  * Sanitizes html content by allowing only safe tags
  * @param {string} html - html content to sanitize
+ * @param {object} extendedWhitelist - extended whitelist of tags to allow
  * @returns {string} sanitizedHTML - sanitized html content
  */
-common.sanitizeHTML = (html) => {
+common.sanitizeHTML = (html, extendedWhitelist) => {
     const whiteList = {
         a: ["target", "title"],
         abbr: ["title"],
@@ -3154,6 +3155,17 @@ common.sanitizeHTML = (html) => {
         ],
     };
 
+    if (extendedWhitelist && typeof extendedWhitelist === "object") {
+        for (let tag in extendedWhitelist) {
+            if (whiteList[tag]) {
+                whiteList[tag] = whiteList[tag].concat(extendedWhitelist[tag]);
+            }
+            else {
+                whiteList[tag] = extendedWhitelist[tag];
+            }
+        }
+    }
+
     return html.replace(/<\/?([^>]+)>/gi, (tag) => {
         const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
 
@@ -3161,7 +3173,7 @@ common.sanitizeHTML = (html) => {
             return "";
         }
 
-        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+        const attributesRegex = /\b(\w+)\s*=\s*("[^"]*"|'[^']*'|[^>\s]+)/g;
         var doubleQuote = '"',
             singleQuote = "'";
         let matches;
@@ -3201,6 +3213,7 @@ common.sanitizeHTML = (html) => {
     });
 
 };
+
 
 
 
