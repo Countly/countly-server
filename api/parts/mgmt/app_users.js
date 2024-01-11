@@ -382,7 +382,13 @@ usersApi.getUid = function(app_id, callback) {
 };
 
 
-usersApi.mergeOtherPlugins = function(db, app_id, newAppUser, oldAppUser, updateFields, callback) {
+usersApi.mergeOtherPlugins = function(options, callback) {
+    var db = options.db;
+    var app_id = options.app_id;
+    var newAppUser = options.newAppUser;
+    var oldAppUser = options.oldAppUser;
+    var updateFields = options.updateFields;
+    var mergeDoc = options.mergeDoc || {};
     log.d("Merging other plugins ", oldAppUser.uid + "->" + newAppUser.uid);
     var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
     updateFields.lu = Math.round(new Date().getTime() / 1000);
@@ -396,17 +402,31 @@ usersApi.mergeOtherPlugins = function(db, app_id, newAppUser, oldAppUser, update
             }
         }
         else if (res && res.length > 0) {
-            callback("skipping till previous merge is finished");
+            //update lu field
+            delete updateFields.cc;//do not set as calculating
+            db.collection('app_user_merges').update({"_id": iid}, {"$set": updateFields}, {upsert: false}, function(err00) {
+                if (err00) {
+                    log.e(err00);
+                }
+                callback("skipping till previous merge is finished");
+            });
         }
         else {
-            db.collection('app_user_merges').update({"_id": iid, "cc": {"$ne": true}}, {'$set': updateFields, "$inc": {"t": 1}}, {upsert: false}, function(err0) {
+            var updateQuery = {"_id": iid};
+            if (mergeDoc && mergeDoc.cc && mergeDoc.lu) {
+                updateQuery.lu = mergeDoc.lu;
+            }
+            else {
+                updateQuery.cc = {"$ne": true};
+            }
+            db.collection('app_user_merges').update(updateQuery, {'$set': updateFields, "$inc": {"t": 1}}, {upsert: false}, function(err0, resUpdate) {
                 if (err0) {
                     log.e("Failed to update merge document about started merge", err);
                     if (callback && typeof callback === 'function') {
                         callback(err);
                     }
                 }
-                else {
+                else if (resUpdate && resUpdate.modifiedCount > 0) { //doc was updated
                     plugins.dispatch("/i/device_id", {
                         app_id: app_id,
                         oldUser: oldAppUser,
@@ -447,6 +467,10 @@ usersApi.mergeOtherPlugins = function(db, app_id, newAppUser, oldAppUser, update
                             });
                         }
                     });
+                }
+                else {
+                    //something else already triggered this change in paralel. 
+                    callback();
                 }
             });
         }
@@ -661,7 +685,7 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                                         if (err7) {
                                             log.e("Failed metric changes update in app_users merge", err7);
                                         }
-                                        usersApi.mergeOtherPlugins(common.db, app_id, newAppUserP, oldAppUser, {"cc": true, "u": true, "mc": true}, function() {});
+                                        usersApi.mergeOtherPlugins({db: common.db, app_id: app_id, newAppUser: newAppUserP, oldAppUser: oldAppUser, updateFields: {"cc": true, "u": true, "mc": true}}, function() {});
                                     });
                                 }
                             });
