@@ -199,12 +199,18 @@ jobs:
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
 
+      - name: Install plugins
+        shell: bash
+        run: |
+         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
+         node /opt/countly/bin/scripts/install_plugins.js --force
+
       - name: Run tests
         shell: bash
         working-directory: /opt/countly
         run: |
-          /sbin/my_init &
           npm install
+          /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   ui-test:
