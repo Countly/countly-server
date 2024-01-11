@@ -1,3 +1,22 @@
+## Version 23.11.8
+Fixes:
+- [push] Fix for messages failure that show infinity in detail
+- [push] Fix for setting start date correctly when user selects "send now"
+- [token-manager]  Fixed issue with displaying created tokens
+- [core] Fixes for user merging job
+- [core] update default settings when tracker is present
+- [core] remove zest integration
+- [hooks] update to new isolated vm
+- [reports] allow any number of selection for reports
+
+Enterprise Fixes:
+- [tracker] Remove config check when enabled
+- [block] Add support for $or query
+- [cohorts] Pass correct period when fetching data for cohorts graphs in cohorts view
+- [flows] Set steps to closest available value, if initital value is not found
+- [users] Correctly fetching timeline data when this year is selected
+- [timeline] Improvements for timeline merging on user merge
+
 ## Version 23.11.7
 Fixes:
 - [core] sort values by index in tooltip in charts
