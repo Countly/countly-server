@@ -55,15 +55,13 @@
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
 								<table class="bu-mt-1">
-									<tr v-for="(value, key) in scopeRow.row.events_breakdown">
-										<template v-if="key !== 'total'">
-											<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
-												{{getPopoverKey(key)}}
-											</td>
-											<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
-												{{eventsNumberFormatter(value)}}
-											</td>
-										</template>
+									<tr v-for="eventPair in scopeRow.row.sorted_breakdown">
+										<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
+											{{getPopoverKey(eventPair[0])}}
+										</td>
+										<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
+											{{eventsNumberFormatter(eventPair[1])}}
+										</td>
 									</tr>
 								</table>
 							</div>

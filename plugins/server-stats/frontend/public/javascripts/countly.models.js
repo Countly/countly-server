@@ -129,11 +129,6 @@
                 return b[1] - a[1];
             });
 
-            let sortedBrokendownEvents = {};
-            sortable.forEach(function(item) {
-                sortedBrokendownEvents[item[0]] = item[1];
-            });
-
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
@@ -143,7 +138,17 @@
                 "change": periodData.change,
                 "approximated": approx,
                 "events": periodData.events,
-                "events_breakdown": sortedBrokendownEvents,
+                "events_breakdown": {
+                    "crashes": periodData.crash,
+                    "views": periodData.views,
+                    "actions": periodData.actions,
+                    "nps": periodData.nps,
+                    "surveys": periodData.surveys,
+                    "ratings": periodData.ratings,
+                    "apm": periodData.apm,
+                    "custom": periodData.custom,
+                },
+                "sorted_breakdown": sortable,
             });
         }
 
