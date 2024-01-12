@@ -51,7 +51,7 @@ describe('Failing app analytics data reading', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Invalid path, must be one of /dashboard or /countries');
+                    ob.should.have.property('result', 'Invalid path, must be one of /dashboard,  /countries, /sessions, /metric, /tops, /loyalty, /frequency, /durations, /events');
                     done();
                 });
         });
