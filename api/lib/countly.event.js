@@ -21,17 +21,18 @@ function create() {
 
     /**
     * Get event data by periods
+    * @param {object} options - options object
     * @returns {array} with event data objects
     */
-    countlyEvent.getSubperiodData = function() {
+    countlyEvent.getSubperiodData = function(options) {
 
         var dataProps = [
             { name: "c" },
             { name: "s" },
             { name: "dur" }
         ];
-
-        return countlyCommon.extractData(countlyEvent.getDb(), countlyEvent.clearObject, dataProps);
+        options = options || {};
+        return countlyCommon.extractData(countlyEvent.getDb(), countlyEvent.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
     };
 
     /**

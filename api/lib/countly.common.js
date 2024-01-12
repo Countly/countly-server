@@ -355,10 +355,11 @@ function fixTimestampToMilliseconds(ts) {
 
 /**
 * Returns a period object used by all time related data calculation functions
-* @param {moment} prmPeriod period to be calculated
+* @param {moment} prmPeriod period to be calculated (optional)
+* @param {string} bucket  - daily or monthly. If bucket is set, period will be modified to fit full months or days
 * @returns {timeObject} time object
 **/
-function getPeriodObject(prmPeriod) {
+function getPeriodObject(prmPeriod, bucket) {
     var startTimestamp, endTimestamp, periodObject, cycleDuration;
     periodObject = {
         start: 0,
@@ -424,7 +425,7 @@ function getPeriodObject(prmPeriod) {
         fromDate.tz(_appTimezone);
         toDate.tz(_appTimezone);
 
-        if (fromDate.valueOf() === toDate.valueOf()) {
+        if (fromDate.valueOf() === toDate.valueOf()) { //single day
             cycleDuration = moment.duration(1, "day");
             Object.assign(periodObject, {
                 dateString: "D MMM, HH:mm",
@@ -528,7 +529,7 @@ function getPeriodObject(prmPeriod) {
     else if (/([1-9][0-9]*)weeks/.test(period)) {
         const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
         startTimestamp = _currMoment.clone().startOf("week").subtract((nWeeks - 1), "weeks");
-        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        cycleDuration = moment.duration(moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1, "days");
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
@@ -537,7 +538,7 @@ function getPeriodObject(prmPeriod) {
     else if (/([1-9][0-9]*)months/.test(period)) {
         const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
         startTimestamp = _currMoment.clone().startOf("month").subtract((nMonths - 1), "months");
-        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        cycleDuration = moment.duration(moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1, "days");
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
@@ -546,7 +547,7 @@ function getPeriodObject(prmPeriod) {
     else if (/([1-9][0-9]*)years/.test(period)) {
         const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
         startTimestamp = _currMoment.clone().startOf("year").subtract((nYears - 1), "years");
-        cycleDuration = moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1;
+        cycleDuration = moment.duration(moment.duration(_currMoment.clone().diff(startTimestamp)).asDays() + 1, "days");
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
@@ -555,13 +556,33 @@ function getPeriodObject(prmPeriod) {
     //incorrect period, defaulting to 30 days
     else {
         let nDays = 30;
-
         startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
         cycleDuration = moment.duration(nDays, "days");
         Object.assign(periodObject, {
             dateString: "D MMM",
             isSpecialPeriod: true
         });
+    }
+
+    if (bucket) {
+        if (bucket === "monthly") {
+            //we modify choosen period to extend to full months
+            startTimestamp = startTimestamp.clone().startOf("month");
+            endTimestamp = endTimestamp.clone().endOf("month");
+            Object.assign(periodObject, {
+                dateString: "MMM",
+                isSpecialPeriod: true
+            });
+
+            cycleDuration = moment.duration(moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asMonths()), "months"), "months");
+        }
+        else if (bucket === "daily") {
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+            cycleDuration = moment.duration(moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days"), "days");
+        }
     }
 
     Object.assign(periodObject, {
@@ -594,6 +615,12 @@ function getPeriodObject(prmPeriod) {
     var peY = date1[0];
     var peM = date1[1];
 
+    var dateFormat = "YYYY.M.D";
+    if (bucket) {
+        if (bucket === "monthly") {
+            dateFormat = "YYYY.M";
+        }
+    }
 
     for (var dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
 
@@ -602,16 +629,25 @@ function getPeriodObject(prmPeriod) {
         dateVal = dateVal.split(".");
 
         uniqueMap[dateVal[0]] = uniqueMap[dateVal[0]] || {};//each year
-        if (dateVal[0] === sY || dateVal[0] === eY) {
+        if (dateVal.length >= 2 && dateVal[0] === sY || dateVal[0] === eY) {
             uniqueMap[dateVal[0]][dateVal[1]] = uniqueMap[dateVal[0]][dateVal[1]] || {}; //each month
-            if ((dateVal[0] === sY && dateVal[1] === sM) || (dateVal[0] === eY && dateVal[1] === eM)) {
+            if ((dateVal[0] === sY && dateVal[1] === sM) || (dateVal[0] === eY && dateVal[1] === eM)) { //bucket is daily
                 uniqueMap[dateVal[0]][dateVal[1]]["w" + week] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week] || {}; //each week
-                uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+                if (dateVal.length >= 2) {
+                    uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
+                }
             }
         }
+        var label = dayIt.format(dateFormat);
+        if (periodObject.currentPeriodArr.lenght === 0 || periodObject.currentPeriodArr[periodObject.currentPeriodArr.length - 1] !== label) {
+            periodObject.currentPeriodArr.push(label);
+        }
 
-        periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
-        periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+        label = dayIt.clone().subtract(cycleDuration).format(dateFormat);
+
+        if (periodObject.previousPeriodArr.lenght === 0 || periodObject.previousPeriodArr[periodObject.previousPeriodArr.length - 1] !== label) {
+            periodObject.previousPeriodArr.push(label);
+        }
 
         dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
         week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
@@ -687,15 +723,15 @@ function getPeriodObject(prmPeriod) {
 
     let zeroIDs = new Set(),
         monthIDs = new Set();
-
     for (let index = 0; index < periodObject.currentPeriodArr.length; index++) {
-        let [year, month] = periodObject.currentPeriodArr[index].split("."),
-            [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
-
+        let [year, month] = periodObject.currentPeriodArr[index].split(".");
         zeroIDs.add(year + ":0");
         monthIDs.add(year + ":" + month);
-        zeroIDs.add(pYear + ":0");
-        monthIDs.add(pYear + ":" + pMonth);
+        if (periodObject.previousPeriodArr[index]) {
+            let [pYear, pMonth] = periodObject.previousPeriodArr[index].split(".");
+            zeroIDs.add(pYear + ":0");
+            monthIDs.add(pYear + ":" + pMonth);
+        }
     }
 
     periodObject.reqZeroDbDateIds = Array.from(zeroIDs);
@@ -1871,8 +1907,14 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties, periodOb
                 dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
             }
             else {
-                dateString = "YYYY-M-D";
-                formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                if (activeDateArr[i].split('.').length === 2) {
+                    dateString = "YYYY-M";
+                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM");
+                }
+                else {
+                    dateString = "YYYY-M-D";
+                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                }
                 dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
             }
 
@@ -2634,10 +2676,11 @@ countlyCommon.fixPercentageDelta = function(items, totalPercent) {
 /**
 * Calculate period function
 * @param {object} period - given period
+* @param {string} bucket - bucket for period - monthly or daily. If bucket passed range will be expanded to full months/days
 * @returns {object} returns {@link countlyCommon.periodObj}
 */
-countlyCommon.calculatePeriodObject = function(period) {
-    return getPeriodObject(period);
+countlyCommon.calculatePeriodObject = function(period, bucket) {
+    return getPeriodObject(period, bucket);
 };
 
 /**

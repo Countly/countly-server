@@ -2717,6 +2717,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
@@ -2735,6 +2736,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
@@ -2746,7 +2748,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard,  /countries, /sessions, /metric, /tops, /loyalty, /frequency, /durations, /events');
                     }
                     break;
                 }
