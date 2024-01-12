@@ -1145,6 +1145,7 @@
                                             <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + countlyCommon.encodeHtml(params.data.note.noteType) + '</span>\
                                         </div>\
                                     </div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + countlyCommon.encodeHtml(params.data.note.note) + '</span></div>\
                                 </div>';
                 }
                 return template;
