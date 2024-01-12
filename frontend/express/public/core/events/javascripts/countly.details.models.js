@@ -886,7 +886,7 @@
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
-                            if ((!context.state.selectedEventName) && res.map || (res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName))) {
+                            if ((!context.state.selectedEventName) || (res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
                                 var eventKeyForStorage = {};
                                 var eventKey = res.list.filter(function(item) {
