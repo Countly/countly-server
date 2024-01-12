@@ -84,6 +84,14 @@ var DataPointsView = countlyVue.views.create({
                 return countlyCommon.formatNumber(value, 0);
             }
         },
+        eventsNumberFormatter: function(value) {
+            if (value === null) {
+                return "-";
+            }
+            else {
+                return countlyCommon.formatNumber(value, 0);
+            }
+        },
         calculateSeries: function() {
             var info = countlyDataPoints.getPunchCardData();
             var data = info.data || [];

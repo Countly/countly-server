@@ -46,11 +46,11 @@
 					</template>
 					<div slot-scope="scopeRow">
 						<el-popover
-							title=""
 							trigger="hover"
-							placement="right-end"
+							placement="right"
 							offset=50
 							:close-delay=50>
+							<div slot="default" v-if="!scopeRow.row.approximated">
 								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
@@ -61,12 +61,16 @@
 												{{getPopoverKey(key)}}
 											</td>
 											<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
-												{{value}}
+												{{eventsNumberFormatter(value)}}
 											</td>
 										</template>
 									</tr>
 								</table>
-							<span slot="reference">{{ scopeRow.row.events }}</span>
+							</div>
+							<div slot="default" v-else>
+								What to show when it's approximated?
+							</div>
+							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
 						</el-popover>
 					</div>
 				</el-table-column>
