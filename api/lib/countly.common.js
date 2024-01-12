@@ -639,13 +639,13 @@ function getPeriodObject(prmPeriod, bucket) {
             }
         }
         var label = dayIt.format(dateFormat);
-        if (periodObject.currentPeriodArr.lenght === 0 || periodObject.currentPeriodArr[periodObject.currentPeriodArr.length - 1] !== label) {
+        if (periodObject.currentPeriodArr.length === 0 || periodObject.currentPeriodArr[periodObject.currentPeriodArr.length - 1] !== label) {
             periodObject.currentPeriodArr.push(label);
         }
 
         label = dayIt.clone().subtract(cycleDuration).format(dateFormat);
 
-        if (periodObject.previousPeriodArr.lenght === 0 || periodObject.previousPeriodArr[periodObject.previousPeriodArr.length - 1] !== label) {
+        if (periodObject.previousPeriodArr.length === 0 || periodObject.previousPeriodArr[periodObject.previousPeriodArr.length - 1] !== label) {
             periodObject.previousPeriodArr.push(label);
         }
 
