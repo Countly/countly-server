@@ -12,7 +12,7 @@ Countly is a big project benefiting from plugin support to make contributions ea
 
 ## Contribution areas 
 
-You can always send a pull request to Countly Community Edition or to Countly SDKs for the following: 
+You can always send a pull request to Countly Lite or to Countly SDKs for the following: 
 
 * New features, small or big, including installation, integration, tests, user interface, user experience, extra platforms and such.  
 * Bugfixes (excluding translations, explained below) 

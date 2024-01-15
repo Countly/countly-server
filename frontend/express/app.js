@@ -62,7 +62,7 @@ var versionInfo = require('./version.info'),
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
-var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
+var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
@@ -77,7 +77,7 @@ if (versionInfo.footer) {
     }
 }
 else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v" + COUNTLY_VERSION;
+    COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
     COUNTLY_TRACK_TYPE = "Enterprise";
 }
