@@ -446,6 +446,7 @@
                     returnObj.grid = {bottom: 40};
 
                     returnObj.xAxis.axisLabel.formatter = function(value) {
+                        value = countlyCommon.encodeHtml(value);
                         var ellipsis = "...";
                         var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
                         if (value.length > lengthToTruncate) {
@@ -622,16 +623,16 @@
                                 cap: "round"
                             }
                         },
-                        formatter: function(params) {
+                        formatter: (params) => {
                             var template = "";
                             let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
-                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
-                                                            <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
+                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + countlyCommon.encodeHtml(params.seriesName) + '</div>\
+                                                            <div class="text-small"> ' + countlyCommon.encodeHtml(params.data.name) + '</div>\
+                                                            <div class="text-big">' + formatter(countlyCommon.encodeHtml(params.data.value)) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -640,7 +641,7 @@
                             else {
                                 template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
-                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
+                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + countlyCommon.encodeHtml(params[0].axisValueLabel) + "</span></br>";
                                 }
 
                                 if (self.sortBy === "index") {
@@ -669,10 +670,10 @@
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small">' + countlyCommon.encodeHtml(params[i].seriesName) + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(countlyCommon.encodeHtml(params[i].value[1])) ? 0 : countlyCommon.encodeHtml(params[i].value[1])), countlyCommon.encodeHtml(params[i].value), i) : formatter((isNaN(params[i].value) ? 0 : countlyCommon.encodeHtml(params[i].value)), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -728,7 +729,7 @@
                             fontSize: 12,
                             formatter: function(value) {
                                 if (typeof value === "number") {
-                                    return countlyCommon.getShortNumber(value);
+                                    return countlyCommon.getShortNumber(countlyCommon.encodeHtml(value));
                                 }
                                 return value;
                             }
@@ -865,7 +866,7 @@
                 this.patchLegend(options);
 
                 return options;
-            }
+            },
         }
     });
 
@@ -1112,18 +1113,18 @@
                                         </div>\
                                         <div class="graph-tooltip-wrapper__container">';
                         }
-                        template += '<div class="' + conditionalClassName + '">\
-                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
+                        template += '<div class="' + countlyCommon.encodeHtml(conditionalClassName) + '">\
+                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + countlyCommon.encodeHtml(filteredNotes[i].indicator) + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
-                                                <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
+                                                <div class="text-small input-owner">' + countlyCommon.encodeHtml(filteredNotes[i].owner_name) + '</div>\
                                                 <div class="text-small color-cool-gray-50 note-date">' + moment(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + countlyCommon.encodeHtml(filteredNotes[i].noteType) + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + countlyCommon.encodeHtml(filteredNotes[i].note) + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1131,20 +1132,20 @@
                     }
                 }
                 else {
-                    template += '<div class="' + conditionalClassName + '">\
+                    template += '<div class="' + countlyCommon.encodeHtml(conditionalClassName) + '">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
-                                            <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
+                                            <div class="text-medium input-owner">' + countlyCommon.encodeHtml(params.data.note.owner_name) + '</div>\
                                             <div class="text-small color-cool-gray-50 note-date">' + moment(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
                                                 <i class="el-icon-close"></i>\
                                             </span>\
-                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
+                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + countlyCommon.encodeHtml(params.data.note.noteType) + '</span>\
                                         </div>\
                                     </div>\
-                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + countlyCommon.encodeHtml(params.data.note.note) + '</span></div>\
                                 </div>';
                 }
                 return template;
