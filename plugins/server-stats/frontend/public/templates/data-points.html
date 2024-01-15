@@ -50,7 +50,7 @@
 							placement="right"
 							offset=50
 							:close-delay=50>
-							<div slot="default" v-if="!scopeRow.row.approximated">
+							<div slot="default">
 								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
@@ -64,9 +64,6 @@
 										</td>
 									</tr>
 								</table>
-							</div>
-							<div slot="default" v-else>
-								What to show when it's approximated?
 							</div>
 							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
 						</el-popover>
