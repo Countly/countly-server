@@ -80,7 +80,8 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_processing: true,
         //batch_read_on_master: false,
         batch_read_ttl: 600,
-        batch_read_period: 60
+        batch_read_period: 60,
+        trim_trailing_ending_spaces: false
     });
 
     /**
@@ -255,12 +256,13 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        plugins.installMissingPlugins(common.db);
         common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
         common.cache.start().then(() => {
-            setTimeout(() => {
+            setImmediate(() => {
                 plugins.dispatch('/cache/init', {});
-            }, 1000);
+            });
         }, e => {
             console.log(e);
             process.exit(1);
@@ -296,7 +298,7 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
-            //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
     }
@@ -335,7 +337,12 @@ plugins.connectToAllDatabases().then(function() {
             };
 
             if (req.method.toLowerCase() === 'post') {
-                const form = new formidable.IncomingForm();
+                const formidableOptions = {};
+                if (countlyConfig.api.maxUploadFileSize) {
+                    formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+                }
+
+                const form = new formidable.IncomingForm(formidableOptions);
                 req.body = '';
                 req.on('data', (data) => {
                     req.body += data;

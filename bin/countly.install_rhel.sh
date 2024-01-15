@@ -60,8 +60,8 @@ sudo yum install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo yum update -y nss
 
 #install nodejs
-curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
+sudo yum install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+sudo yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
 
 set +e
 NODE_JS_CMD=$(which nodejs)
@@ -94,7 +94,16 @@ npm config set prefix "$DIR/../.local/"
 sudo yum install -y numactl
 
 #install mongodb
-sudo bash "$DIR/scripts/mongodb.install.sh"
+if ! command -v mongod &> /dev/null; then
+    echo "mongod not found, installing MongoDB"
+    sudo bash "$DIR/scripts/mongodb.install.sh"
+else
+    echo "MongoDB is already installed"
+    # check for ipv6 compatibility and restart mongo service
+    sudo bash "$DIR/scripts/mongodb.install.sh" configure
+    sudo systemctl restart mongod
+    sudo systemctl status mongod
+fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
     sudo sed -i 's/  fork/#  fork/g' /etc/mongod.conf
@@ -113,7 +122,12 @@ sudo bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
 set +e
-sudo countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+#configure and start nginx
+if [ -f /etc/nginx/sites-available/default ]; then
+    sudo countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+elif [ -f /etc/nginx/conf.d/default.conf ]; then
+    sudo countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+fi
 sudo countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf

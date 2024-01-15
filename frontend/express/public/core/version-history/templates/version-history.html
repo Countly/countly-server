@@ -1,0 +1,38 @@
+<div v-bind:class="[componentId]" class="version-history-view">
+    <cly-header>
+        <template v-slot:header-left>
+            <div class="header">
+                <div>{{ packageVersion }}</div>
+                <div>{{ mongoVersion }}</div>
+            </div>
+        </template>      
+    </cly-header>
+    <cly-main>
+
+        <cly-section>
+            <cly-datatable-n :rows="versionHistoryViewDbRows" :resizable="true" >
+                <template v-slot:header-left="selectScope">
+                    <p> {{ dbTitle }} </p>
+                </template>
+                <template v-slot="scope"> 
+                    <el-table-column  column-key="version" prop="version" sortable="custom" :label="i18n('version_history.version')"></el-table-column>
+                    <el-table-column  column-key="updated" prop="updated" sortable="custom" :label="i18n('version_history.upgraded')"></el-table-column>  
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+
+        <cly-section>
+            <cly-datatable-n :rows="versionHistoryViewFsRows" :resizable="true" >
+                <template v-slot:header-left="selectScope">
+                    <p> {{ fsTitle }} </p>
+                </template>
+                <template v-slot="scope">
+                    <el-table-column column-key="version" prop="version" sortable="custom" :label="i18n('version_history.version')"></el-table-column>
+                    <el-table-column column-key="updated" prop="updated" sortable="custom" :label="i18n('version_history.upgraded')"></el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+
+    </cly-main>
+</div>
+

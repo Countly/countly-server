@@ -3,7 +3,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy');
+    { request } = require('./proxy'),
+    {ObjectId} = require("mongodb");
 
 
 /**
@@ -82,8 +83,13 @@ async function validate(args, draft = false) {
                     throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform`);
                 }
             }
-
-            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
+            let creds = await common.db.collection(Creds.collection).find({
+                _id: {
+                    $in: msg.platforms
+                        .map(p => common.dot(app, `plugins.push.${p}._id`))
+                        .map(oid => ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                }
+            }).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }
@@ -270,6 +276,7 @@ module.exports.create = async params => {
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
     if (demo) {
         msg.info.demo = true;
+        msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
     if (params.qstring.status === Status.Draft) {
@@ -358,7 +365,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -1417,7 +1424,7 @@ function mimeInfo(url, method = 'HEAD') {
     return new Promise((resolve, reject) => {
         let req = request(url.toString(), method, conf);
 
-        req.once('response', res => {
+        req.on('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;

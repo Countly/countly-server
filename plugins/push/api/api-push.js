@@ -1,72 +1,163 @@
+/* eslint-disable no-inner-declarations */
+const { CentralMaster, CentralWorker } = require('../../../api/parts/jobs/ipc');
+
 const common = require('../../../api/utils/common'),
     log = common.log('push:api:push'),
     Sender = require('./send/sender'),
     { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
 
+const CMD_PUSH_TOKEN_SESSION = 'push_token_session',
+    queue = {};
+let queue_size = 0,
+    timeouts_size = 0,
+    queue_print = Date.now(),
+    ipc;
+
+if (require('cluster').isMaster) {
+    ipc = new CentralMaster(CMD_PUSH_TOKEN_SESSION, function(msg) {
+        let id = msg.app_id + msg.uid + msg.p + msg.f;
+        if (queue[id]) {
+            if (queue[id].token !== msg.token) {
+                // ensure token reset or token chanage is processed (processing for this user might be already running)
+                queue[id + Math.random()] = msg;
+                queue_size++;
+            }
+            else {
+                // duplicate token is ignored
+            }
+        }
+        else {
+            queue[id] = msg;
+            queue_size++;
+        }
+    });
+
+    /**
+     * Take next token from queue and process it
+     */
+    function next() {
+        try {
+            if (Date.now() - queue_print > 60000) {
+                log.d('token_session queue size is %d (%d setTimeouts)', queue_size, timeouts_size);
+                queue_print = Date.now();
+            }
+            let arr = [],
+                take = 0;
+            if (queue_size < 100) {
+                take = 1;
+            }
+            else if (queue_size < 300) {
+                take = 5;
+                log.d('setting batch size for token_session to %d', take);
+            }
+            else {
+                take = 100;
+                log.w('setting batch size for token_session to %d', take);
+            }
+
+            for (const k in queue) {
+                arr.push(k);
+                if (arr.length >= take) {
+                    break;
+                }
+            }
+            if (arr.length) {
+                Promise.all(arr.map(async k => {
+                    try {
+                        await processTokenSession(queue[k]);
+                    }
+                    catch (e) {
+                        log.e('Error in processTokenSession for %j', queue[k], e);
+                    }
+                    delete queue[k];
+                    queue_size--;
+                })).catch(() => {}).then(() => next());
+                return;
+            }
+        }
+        catch (e) {
+            log.e('Error in processTokenSession/next', e);
+        }
+
+        setTimeout(next, 1000);
+    }
+
+    next();
+}
+else {
+    ipc = new CentralWorker(CMD_PUSH_TOKEN_SESSION, () => {});
+}
+ipc.attach();
+
+/**
+ * Process token session request
+ * 
+ * @param {Object} msg IPC message
+ */
+async function processTokenSession(msg) {
+    let {p, f, token, hash, app_id, uid, app_user_id} = msg,
+        appusersField = field(p, f, true),
+        pushField = field(p, f, false),
+        pushCollection = common.db.collection(`push_${app_id}`),
+        appusersCollection = common.db.collection(`app_users${app_id}`);
+
+    log.d('push token: %s/%s/%s', p, f, token);
+
+    let push = await pushCollection.findOne({_id: uid}, {projection: {[field]: 1}});
+    if (token && (!push || common.dot(push, pushField) !== token)) {
+        appusersCollection.updateOne({_id: app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
+        pushCollection.updateOne({_id: uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
+
+        appusersCollection.find({[appusersField]: hash, _id: {$ne: app_user_id}}, {uid: 1}).toArray(function(err, docs) {
+            if (err) {
+                log.e('Failed to look for same tokens', err);
+            }
+            else if (docs && docs.length) {
+                log.d('Found %d hash duplicates for token %s', docs.length, token);
+                // the hash is 32 bit, not enough randomness for strict decision to unset tokens, comparing actual token strings
+                pushCollection.find({_id: {$in: docs.map(d => d.uid)}}, {[`tk.${p + f}`]: 1}).toArray(function(err2, pushes) {
+                    if (err2) {
+                        log.e('Failed to look for same tokens', err2);
+                    }
+                    else if (pushes && pushes.length) {
+                        pushes = pushes.filter(user => user._id !== uid && user.tk[p + f] === token);
+                        if (pushes.length) {
+                            log.d('Unsetting same tokens (%s) for users %j', token, pushes.map(x => x._id));
+
+                            appusersCollection.updateMany({uid: {$in: pushes.map(x => x._id)}}, {$unset: {[appusersField]: 1}}, () => {});
+                            pushCollection.updateOne({_id: {$in: pushes.map(x => x._id)}}, {$unset: {[pushField]: 1}}, () => {});
+                        }
+                    }
+                });
+            }
+        });
+
+        timeouts_size++;
+        setTimeout(() => {
+            common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, {projection: {_id: 1}}, (er, user) => {
+                if (er) {
+                    log.e('Error while loading user', er);
+                }
+                else if (!user) {
+                    log.w('Removing stale push_%s record for user %s/%s', app_id, app_user_id, uid);
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: uid}, () => {});
+                }
+                timeouts_size--;
+            });
+        }, 10000);
+    }
+    else {
+        appusersCollection.updateOne({_id: app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
+        pushCollection.updateOne({_id: uid}, {$unset: {[pushField]: 1}}, function() {});
+    }
+}
+
 module.exports.onTokenSession = async(dbAppUser, params) => {
     let stuff = extract(params.qstring);
     if (stuff) {
-        let [p, f, token, hash] = stuff,
-            appusersField = field(p, f, true),
-            pushField = field(p, f, false),
-            pushCollection = common.db.collection(`push_${params.app_id}`),
-            appusersCollection = common.db.collection(`app_users${params.app_id}`);
-
-        log.d('push token: %s/%s/%s', p, f, token);
-
-        let push = await pushCollection.findOne({_id: dbAppUser.uid}, {projection: {[field]: 1}});
-        if (token && (!push || common.dot(push, pushField) !== token)) {
-            appusersCollection.updateOne({_id: params.app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
-            pushCollection.updateOne({_id: params.app_user.uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
-
-            appusersCollection.find({[appusersField]: hash, _id: {$ne: dbAppUser._id}}, {uid: 1}).toArray(function(err, docs) {
-                if (err) {
-                    log.e('Failed to look for same tokens', err);
-                }
-                else if (docs && docs.length) {
-                    log.d('Found %d hash duplicates for token %s', docs.length, token);
-                    // the hash is 32 bit, not enough randomness for strict decision to unset tokens, comparing actual token strings
-                    pushCollection.find({_id: {$in: docs.map(d => d.uid)}}, {[`tk.${p + f}`]: 1}).toArray(function(err2, pushes) {
-                        if (err2) {
-                            log.e('Failed to look for same tokens', err2);
-                        }
-                        else if (pushes && pushes.length) {
-                            pushes = pushes.filter(user => user._id !== dbAppUser.uid && user.tk[p + f] === token);
-                            if (pushes.length) {
-                                log.d('Unsetting same tokens (%s) for users %j', token, pushes.map(x => x._id));
-
-                                appusersCollection.updateMany({uid: {$in: pushes.map(x => x._id)}}, {$unset: {[appusersField]: 1}}, () => {});
-                                pushCollection.updateOne({_id: {$in: pushes.map(x => x._id)}}, {$unset: {[pushField]: 1}}, () => {});
-                            }
-                        }
-                    });
-                }
-            });
-
-            setTimeout(() => {
-                common.db.collection(`app_users${params.app_id}`).findOne({_id: dbAppUser._id}, (er, user) => {
-                    if (er) {
-                        log.e('Error while loading user', er);
-                    }
-                    else if (!user) {
-                        log.w('Removing stale push_%s record for user %s/%s', params.app_id, dbAppUser._id, dbAppUser.uid);
-                        common.db.collection(`push_${params.app_id}`).deleteOne({_id: dbAppUser.uid}, () => {});
-                    }
-                });
-            }, 10000);
-        }
-        else {
-            appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
-            pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
-        }
+        let [p, f, token, hash] = stuff;
+        ipc.send({to: 0, cmd: CMD_PUSH_TOKEN_SESSION, p, f, token, hash, uid: dbAppUser.uid, app_id: params.app_id, app_user_id: params.app_user_id});
     }
-    else {
-        log.d('no push token in token_session:', params.qstring);
-    }
-    // else if (params.qstring.locale) {
-    //     common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
-    //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
-    // }
 };
 
 module.exports.onSessionUser = ({params, dbAppUser}) => {
@@ -284,80 +375,93 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
         nuid = newUser.uid;
 
     if (ouid && nuid) {
-        log.d(`Merging push data of ${ouid} into ${nuid}`);
-        common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
-            if (err || !users) {
-                log.e('Couldn\'t load users to merge', err);
-                return;
-            }
+        return new Promise(function(resolve, reject) {
+            log.d(`Merging push data of ${ouid} into ${nuid}`);
+            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
+                if (err || !users) {
+                    log.e('Couldn\'t load users to merge', err);
+                    reject();
+                    return;
+                }
 
-            let ou = users.filter(u => u._id === ouid)[0],
-                nu = users.filter(u => u._id === nuid)[0],
-                update = {},
-                opts = {};
+                let ou = users.filter(u => u._id === ouid)[0],
+                    nu = users.filter(u => u._id === nuid)[0],
+                    update = {},
+                    opts = {};
 
-            if (ou && nu) {
-                log.d('Merging %j into %j', ou, nu);
-                if (ou.tk && Object.keys(ou.tk).length) {
-                    update.$set = {};
+                if (ou && nu) {
+                    log.d('Merging %j into %j', ou, nu);
+                    if (ou.tk && Object.keys(ou.tk).length) {
+                        update.$set = {};
+                        for (let k in ou.tk) {
+                            update.$set['tk.' + k] = ou.tk[k];
+                            newUser['tk' + k] = oldUser['tk' + k];
+                        }
+                    }
+                    if (ou.msgs && ou.msgs.length) {
+                        let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
+                            msgs = [];
+
+                        ou.msgs.forEach(m => {
+                            if (ids.indexOf(m[0].toString()) === -1) {
+                                msgs.push(m);
+                            }
+                        });
+
+                        if (msgs.length) {
+                            update.$push = {msgs: {$each: msgs}};
+                        }
+                    }
+                }
+                else if (ou && Object.keys(ou).length > 1 && !nu) {
+                    log.d('No new uid, setting old');
+                    update.$set = ou;
+                    opts.upsert = true;
+                    delete update.$set._id;
                     for (let k in ou.tk) {
-                        update.$set['tk.' + k] = ou.tk[k];
                         newUser['tk' + k] = oldUser['tk' + k];
                     }
                 }
-                if (ou.msgs && ou.msgs.length) {
-                    let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
-                        msgs = [];
-
-                    ou.msgs.forEach(m => {
-                        if (ids.indexOf(m[0].toString()) === -1) {
-                            msgs.push(m);
+                else if (ou && Object.keys(ou).length === 1 && !nu) {
+                    log.d('Empty old uid, nothing to merge');
+                }
+                else if (!ou && nu) {
+                    log.d('No old uid, nothing to merge');
+                }
+                else {
+                    log.d('Nothing to merge at all');
+                }
+                if (ou) {
+                    log.d('Removing old push data for %s', ouid);
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
+                }
+                if (Object.keys(update).length) {
+                    log.d('Updating push data for %s: %j', nuid, update);
+                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, function(ee) {
+                        if (ee) {
+                            log.e('Error while updating new uid with push data', ee);
+                            reject();
+                        }
+                        else {
+                            resolve();
+                            setTimeout(() => {
+                                common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
+                                    if (er) {
+                                        log.e('Error while loading user', er);
+                                    }
+                                    else if (!user) {
+                                        log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
+                                        common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
+                                    }
+                                });
+                            }, 10000);
                         }
                     });
-
-                    if (msgs.length) {
-                        update.$push = {msgs: {$each: msgs}};
-                    }
                 }
-            }
-            else if (ou && Object.keys(ou).length > 1 && !nu) {
-                log.d('No new uid, setting old');
-                update.$set = ou;
-                opts.upsert = true;
-                delete update.$set._id;
-                for (let k in ou.tk) {
-                    newUser['tk' + k] = oldUser['tk' + k];
+                else {
+                    resolve();
                 }
-            }
-            else if (ou && Object.keys(ou).length === 1 && !nu) {
-                log.d('Empty old uid, nothing to merge');
-            }
-            else if (!ou && nu) {
-                log.d('No old uid, nothing to merge');
-            }
-            else {
-                log.d('Nothing to merge at all');
-            }
-
-            if (ou) {
-                log.d('Removing old push data for %s', ouid);
-                common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
-            }
-            if (Object.keys(update).length) {
-                log.d('Updating push data for %s: %j', nuid, update);
-                common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, e => e && log.e('Error while updating new uid with push data', e));
-                setTimeout(() => {
-                    common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
-                        if (er) {
-                            log.e('Error while loading user', er);
-                        }
-                        else if (!user) {
-                            log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
-                            common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
-                        }
-                    });
-                }, 10000);
-            }
+            });
         });
     }
 };

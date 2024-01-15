@@ -1115,9 +1115,15 @@ module.exports = function(my_db) {
                     }
 
                     update_progress(my_exportid, "sending", "progress", 0, "", true);
-                    var r = request.post({url: res.server_address + '/i/datamigration/import?exportid=' + my_exportid + '&auth_token=' + res.server_token}, requestCallback);
-                    var form = r.form();
-                    form.append("import_file", fs.createReadStream(dir));
+                    const fileData = {
+                        fileField: 'import_file',
+                        fileStream: fs.createReadStream(dir)
+                    };
+
+                    request.post({
+                        url: res.server_address + '/i/datamigration/import?exportid=' + my_exportid + '&auth_token=' + res.server_token,
+                        form: fileData
+                    }, requestCallback);
                 }
             }
         });
@@ -1141,7 +1147,7 @@ module.exports = function(my_db) {
             apps = apps.sort();
             var app_names = [];
             //clear out duplicates
-            for (let i = 1; i < apps.lenght - 1; i++) {
+            for (let i = 1; i < apps.length - 1; i++) {
                 if (apps[i - 1] === apps[i]) {
                     apps.splice(i, 1); i--;
                 }

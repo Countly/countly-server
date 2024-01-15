@@ -7,11 +7,19 @@ var AppCarrierView = countlyVue.views.create({
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyAppCarrier/fetchAll');
+        this.$store.dispatch('countlyAppCarrier/fetchAll', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyAppCarrier/fetchAll');
+        refresh: function(force) {
+            if (force) {
+                this.$store.dispatch('countlyAppCarrier/fetchAll', true);
+            }
+            else {
+                this.$store.dispatch('countlyAppCarrier/fetchAll', false);
+            }
+        },
+        dateChanged: function() {
+            this.refresh(true);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);

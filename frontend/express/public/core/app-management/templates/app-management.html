@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]" class="app-management-view">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('management-applications.title')}} </h2>
-        </template>
+    <cly-header
+        :title="i18n('management-applications.title')"
+    >
         <template v-if="!firstApp" v-slot:header-right>
             <el-button v-if="isGlobalAdmin" type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
         </template>
@@ -153,6 +152,18 @@
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
+                                        <div v-if="formScope.editedObject.type === 'web'">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')">
+                                                {{formScope.editedObject.app_domain}}
+                                            </cly-inline-form-field>
+                                            <cly-inline-form-field v-else :label="i18n('management-applications.app-domain')" prop="app_domain">
+                                                <el-input
+                                                    :disabled="isDisabled()"
+                                                    :placeholder="i18n('management-applications.app-domain')"
+                                                    v-model="formScope.editedObject.app_domain">
+                                                </el-input>
+                                            </cly-inline-form-field>
+                                        </div>
 										<div v-if="!newApp && apps[selectedApp] && apps[selectedApp].redirect_url">
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.redirect_url')" :help="i18n('management-applications.redirect_url.help')">
                                                 {{formScope.editedObject.redirect_url}}
@@ -254,6 +265,46 @@
                                             v-bind="conf.attrs"
                                             >
                                         </el-input>
+                                    <el-color-picker 
+                                        v-else-if="conf.input === 'el-color-picker'" 
+                                        @change="onChange(key, $event)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                    </el-color-picker>
+                                    <cly-colorpicker 
+                                        class="feedback-settings__colorpicker"
+                                        v-else-if="conf.input === 'cly-colorpicker'" 
+                                        v-model="conf.value"
+                                        @change="onChange(key, conf.value)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs"
+                                        style="display:inline">
+                                    </cly-colorpicker>
+                                    <el-upload
+                                        class="feedback-settings__upload"
+                                        v-else-if="conf.input === 'image'" 
+                                        :show-file-list="false"
+                                        :data="{'id':selectedApp, 'auth_token': authToken, 'name': 'feedback_logo'+selectedApp}"
+                                        :before-upload="conf.before"
+                                        :on-success="conf.success"
+                                        :on-error="conf.error"
+                                        v-bind="conf.attrs">
+                                    <div :class="conf.image_size">
+                                        <div v-if="conf.value" class="image-delete bu-is-flex">
+                                            <el-button 
+                                                size="small" 
+                                                type="text" 
+                                                @click.stop="onChange(key, '')"
+                                                class="bu-p-0 feedback-settings__button">{{i18n('feedback.delete-logo')}}</el-button>
+                                            <img :src="'/feedback/preview/' + conf.value + '?' + Date.now()">
+                                        </div>
+                                        <div v-else class="bu-is-flex">
+                                            <el-button type="default" style="display:flex;margin:auto;">{{i18n('feedback.choose-file')}}</el-button>
+                                            <el-button type="default" disabled style="width: 165px;height: 50px;cursor: default;">{{i18n('feedback.logo-preview')}}</el-button>
+                                        </div>
+                                    </div>
+                                    <span class="config-error">{{conf.errorMessage || ""}}</span>
+                                </el-upload>
                                         <el-select
                                             v-else-if="conf.input === 'el-select'"
                                             @change="onChange(key, $event)"

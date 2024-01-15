@@ -27,7 +27,8 @@
                 segments: '',
                 sum: 0,
                 dur: 0,
-                submittedForm2: {selectedTemplate: ''}
+                submittedForm2: {selectedTemplate: ''},
+                isLoading: false,
             };
         },
         methods: {
@@ -47,7 +48,7 @@
             },
             refresh: function(isRefresh) {
                 if (isRefresh) {
-                    this.getTemplateList();
+                    this.getTemplateList(false);
                 }
             },
             changeTemplate: function(command, template) {
@@ -172,7 +173,7 @@
 
                 countlyPopulator.setSelectedTemplate(self.selectedTemplate);
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
-                    countlyPopulator.generateUsers(self.maxTime * 4, template);
+                    countlyPopulator.generateUsers(self.maxTime, template);
                 });
                 var startTime = Math.round(Date.now() / 1000);
                 this.progressBar = setInterval(function() {
@@ -222,8 +223,9 @@
                 this.generateDataModal = { showDialog: false };
                 this.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
             },
-            getTemplateList: function() {
+            getTemplateList: function(force) {
                 var self = this;
+                self.isLoading = force;
                 self.templates = [];
                 countlyPopulator.getTemplates(function(templates) {
                     templates.forEach(function(item) {
@@ -239,13 +241,14 @@
                             events: item.events
                         });
                     });
+                    self.isLoading = false;
                 });
             },
         },
         beforeCreate: function() {
         },
         created: function() {
-            this.getTemplateList();
+            this.getTemplateList(true);
             if (!this.canUserCreate) {
                 this.currentTab = "templates";
             }

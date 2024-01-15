@@ -13,6 +13,11 @@
                 type: Boolean,
                 required: false,
                 default: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-vue-dialog-test-id',
+                required: false,
             }
         },
         computed: {
@@ -30,7 +35,7 @@
             }
         },
         template: '<el-dialog :destroy-on-close="true" class="cly-vue-dialog" :class="topClasses" v-on="$listeners" v-bind="$attrs" :title="title" :append-to-body="true">\
-                        <template v-slot:title><h3 class="color-cool-gray-100">{{title}}</h3></template>\
+                        <template v-slot:title><h3 :data-test-id="testId + \'-cly-dialog-title-label\'" class="color-cool-gray-100">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
                         </template>\
@@ -43,7 +48,8 @@
             title: {type: String, required: true},
             saveButtonLabel: {type: String, required: false, default: CV.i18n("common.save")},
             cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
-            dialogType: {type: String, required: false, default: "success"}
+            dialogType: {type: String, required: false, default: "success"},
+            testId: {type: String, default: 'cly-vue-confirm-dialog-test-id', required: false}
         },
         computed: {
             forwardedSlots: function() {
@@ -75,15 +81,15 @@
             }
         },
         template: '<el-dialog destroyOnClose class="cly-vue-confirm-dialog" v-on="$listeners" v-bind="$attrs" :title="title">\
-                        <template v-slot:title><h3 class="color-cool-gray-100">{{title}}</h3></template>\
+                        <template v-slot:title><h3 :data-test-id="testId + \'-cly-confirm-dialog-title-label\'" class="color-cool-gray-100">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
                         </template>\
 						<template v-slot:footer><div class="cly-vue-formdialog__buttons is-single-step bu-is-justify-content-flex-end bu-is-flex">\
-							<el-button size="small" @click="cancelClicked"  type="secondary" >{{cancelLabel}}</el-button>\
-							<el-button size="small" @click="confirmClicked" type="success" v-if="confirmStyle==\'success\'" >{{saveLabel}}</el-button>\
-                            <el-button size="small" @click="confirmClicked" type="warning" v-else-if="confirmStyle==\'warning\'" >{{saveLabel}}</el-button>\
-							<el-button size="small" @click="confirmClicked" type="danger" v-else >{{saveLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-cancel-button\'" @click="cancelClicked"  type="secondary" >{{cancelLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-save-button\'" @click="confirmClicked" type="success" v-if="confirmStyle==\'success\'" >{{saveLabel}}</el-button>\
+                            <el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-warning-button\'" @click="confirmClicked" type="warning" v-else-if="confirmStyle==\'warning\'" >{{saveLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-danger-button\'" @click="confirmClicked" type="danger" v-else >{{saveLabel}}</el-button>\
 						</div></template>\
                     </el-dialog>'
     }));
@@ -153,6 +159,11 @@
                     type: String,
                     default: 'stdt-fade'
                 },
+                testId: {
+                    type: String,
+                    default: 'cly-vue-formdialog-test-id',
+                    required: false,
+                }
             },
             computed: {
                 rootClasses: function() {

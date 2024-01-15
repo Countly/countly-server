@@ -1601,28 +1601,6 @@
         </div>
     </script>
 
-
-    <script id="version-history-template" type="text/x-handlebars-template">
-		<div class="widget">
-            <div>{{ package-version }}</div>
-			<div>{{mongo-version}}</div>
-            <br>
-			<div class="widget-header">
-				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase fs-title}}</div>
-			</div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table-fs" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-            <br>
-			<div class="widget-header">
-				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase db-title}}</div>
-			</div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table-db" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-    </script>
-
 	<script id="graph-note-create" type="text/x-handlebars-template">
 		<div class="graph-note-create">
 			<div class="title"><span class="note-form-hearder" data-localize="notes.add-note-form-title"></span></div>
@@ -1837,6 +1815,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.cms.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
@@ -1872,6 +1851,9 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/version-history/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
@@ -1894,18 +1876,6 @@
             <!--Countly script-->
             <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js?<%= countlyVersion %>'></script>
             <script type='text/javascript'>
-
-            //initializing countly with params
-            Countly.init({
-                app_key: "<%= frontend_app || "386012020c7bf7fcb2f1edf215f1801d6146913f" %>",
-                url: "<%= frontend_server || "https://stats.count.ly/" %>",
-                device_id: countlyGlobal["member"]["email"],
-                app_version: "<%= countlyVersion %>",
-                interval:1000
-            });
-
-            //track sessions automatically
-            Countly.track_sessions();
 
             Countly.getViewName = function(){
                 var view = "/dashboard#";
@@ -1949,74 +1919,96 @@
                 return view + parts.join("/");
             };
 
-            //track pageviews automatically
-            Countly.track_pageview(Countly.getViewName());
+            if (countlyGlobal.countly_tracking) {
+                var domain = countlyGlobal.countly_domain;
 
-            $(window).on('hashchange', function() {
-                Countly.track_pageview(Countly.getViewName());
-            });
+                try {
+                    // try to extract hostname from full domain url
+                    var urlObj = new URL(domain);
+                    domain = urlObj.hostname;
+                }
+                catch (_) {
+                    // do nothing, domain from config will be used as is
+                }
 
-            //track any clicks to webpages automatically
-            Countly.track_clicks();
-
-            //track javascript errors
-            Countly.track_errors();
-            
-            if (Countly.report_trace && window.performance && window.performance.timing) {
-                $(window).on( "load", function(){
-                    setTimeout(function(){
-                        var trace = {
-                            type: "device",
-                            name: Countly.getViewName(),
-                            stz: window.performance.timing.navigationStart,
-                            etz: window.performance.timing.domContentLoadedEventEnd,
-                            apm_metrics: {}
-                        };
-                        if (window.performance.timing.domLoading && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.first_paint = window.performance.timing.domLoading - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domContentLoadedEventStart && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.first_contentful_paint = window.performance.timing.domContentLoadedEventStart - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domInteractive && window.performance.timing.navigationStart) {
-                            trace.apm_metrics.dom_interactive = window.performance.timing.domInteractive - window.performance.timing.navigationStart;
-                        }
-                        if (window.performance.timing.domContentLoadedEventEnd && window.performance.timing.domContentLoadedEventStart) {
-                            trace.apm_metrics.dom_content_loaded_event_end = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domContentLoadedEventStart;
-                        }
-                        if (window.performance.timing.loadEventEnd && window.performance.timing.loadEventStart) {
-                            trace.apm_metrics.load_event_end = window.performance.timing.loadEventEnd - window.performance.timing.loadEventStart;
-                        }
-                        if (Object.keys(trace.apm_metrics).length) {
-                            Countly.report_trace(trace);
-                        }
-                    },1);
+                //initializing countly with params
+                Countly.init({
+                    app_key: countlyGlobal.frontend_app,
+                    url: countlyGlobal.frontend_server,
+                    device_id: domain,
+                    app_version: "<%= countlyVersion %>",
+                    interval:1000
                 });
-            }
 
-            Countly.user_details({
-                "name": countlyGlobal["member"]["full_name"] || "",
-                "username": countlyGlobal["member"]["username"] || "",
-                "email": countlyGlobal["member"]["email"]
-            });
+                // if domain has changed since the last time it is saved as device id set the new domain as device id and merge it with the old domain
+                if (Countly.get_device_id() !== domain) {
+                    Countly.change_id(domain, true);
+                }
 
-            Countly.userData.set("lastServer", window.location.hostname);
-            Countly.userData.set("lastVersion", "<%= countlyVersion %>");
-            Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
-            Countly.userData.set("isTrial", <%= countlyTrial %>);
-            <% if (!offline_mode) { %>
+                //track sessions automatically
+                Countly.track_sessions();
+
+                //track pageviews automatically
+                Countly.track_pageview(Countly.getViewName());
+
+                $(window).on('hashchange', function() {
+                    Countly.track_pageview(Countly.getViewName());
+                });
+
+                //track any clicks to webpages automatically
+                Countly.track_clicks();
+
+                //track javascript errors
+                Countly.track_errors();
+                
+                if (Countly.report_trace && window.performance && window.performance.timing) {
+                    $(window).on( "load", function(){
+                        setTimeout(function(){
+                            var trace = {
+                                type: "device",
+                                name: Countly.getViewName(),
+                                stz: window.performance.timing.navigationStart,
+                                etz: window.performance.timing.domContentLoadedEventEnd,
+                                apm_metrics: {}
+                            };
+                            if (window.performance.timing.domLoading && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.first_paint = window.performance.timing.domLoading - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domContentLoadedEventStart && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.first_contentful_paint = window.performance.timing.domContentLoadedEventStart - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domInteractive && window.performance.timing.navigationStart) {
+                                trace.apm_metrics.dom_interactive = window.performance.timing.domInteractive - window.performance.timing.navigationStart;
+                            }
+                            if (window.performance.timing.domContentLoadedEventEnd && window.performance.timing.domContentLoadedEventStart) {
+                                trace.apm_metrics.dom_content_loaded_event_end = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domContentLoadedEventStart;
+                            }
+                            if (window.performance.timing.loadEventEnd && window.performance.timing.loadEventStart) {
+                                trace.apm_metrics.load_event_end = window.performance.timing.loadEventEnd - window.performance.timing.loadEventStart;
+                            }
+                            if (Object.keys(trace.apm_metrics).length) {
+                                Countly.report_trace(trace);
+                            }
+                        },1);
+                    });
+                }
+
+                Countly.userData.set("lastServer", window.location.hostname);
+                Countly.userData.set("lastVersion", "<%= countlyVersion %>");
+                Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
+                Countly.userData.set("isTrial", <%= countlyTrial %>);
                 Countly.userData.set("cpus", <%= cpus %>);
-            <% } %>
-            Countly.userData.push_unique("servers", window.location.hostname);
-            Countly.userData.push_unique("versions", "<%= countlyVersion %>");
-            Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
-            Countly.userData.save();
+                Countly.userData.push_unique("servers", window.location.hostname);
+                Countly.userData.push_unique("versions", "<%= countlyVersion %>");
+                Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
+                Countly.userData.save();
 
-            <% if (installed) { %>
-            Countly.add_event({
-                key:"INSTALL"
-            });
-            <% } %>
+                <% if (installed) { %>
+                Countly.add_event({
+                    key:"INSTALL"
+                });
+                <% } %>
+            }
             </script>
         <% } %>
     <% } %>
@@ -2034,10 +2026,6 @@
     <% if (typeof inject_template.js != 'undefined') { %>
 	<script><%- inject_template.js %></script>
 	<% } %>
-    <% if (!offline_mode) { %>
-    <!-- Zest code Snippet -->
-    <script>(function(){window.addEventListener("load",function(){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src="https://app.hellozest.io/widget/embed/z05qxwmw",document.body.appendChild(t)});})();</script>
-    <% } %>
     <!-- The last countly script to load -->
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
 </body>

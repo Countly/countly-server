@@ -320,7 +320,17 @@
                 }
             },
             isReadyForView: function(row) {
-                return row.view && row.hasData;
+                if (row.linked_to) {
+                    if (row.have_dashboard_widget) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                else {
+                    return row.view && row.hasData;
+                }
             },
             isReadyForRerun: function(row) {
                 return row.status !== "running" && row.status !== "rerunning" && row.request;
@@ -383,7 +393,12 @@
                     else if (command === "view-task") {
                         self.$emit("view-task", row);
                         if (!this.disableAutoNavigationToTask) {
-                            window.location = row.view + id;
+                            if (row.dashboard_report) {
+                                window.location = row.view;
+                            }
+                            else {
+                                window.location = row.view + id;
+                            }
                         }
                     }
                     else if (command === "download-task") {

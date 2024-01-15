@@ -17,6 +17,7 @@
                 multiple
                 ref="trigger"
                 class="el-select-head"
+                :test-id="testId"
                 :disabled="disabled"
                 :opened="dropdown.visible"
                 :placeholder="placeholder"
@@ -29,6 +30,7 @@
             <cly-input-dropdown-trigger
                 v-else
                 ref="trigger"
+                :test-id="testId"
                 :size="size"
                 :disabled="disabled"
                 :adaptive-length="adaptiveLength"
@@ -45,7 +47,7 @@
     <div class="cly-vue-select-x__pop" :class="popClasses">
         <div class="cly-vue-select-x__header">
 			<div class="bu-level">
-				<div class="cly-vue-select-x__title" v-if="title">{{title}}</div>
+				<div class="cly-vue-select-x__title" :data-test-id="testId + '-select-x-title'" v-if="title">{{title}}</div>
 				<div class='bu-level-right text-small color-cool-gray-50' v-if="showSelectedCount">{{selectedCountText}}</div>
 			</div>
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">
@@ -57,11 +59,12 @@
                         v-show="showList"
                         ref="searchBox"
                         autocomplete="off"
+                        :test-id="testId + '-search-box'"
                         :disabled="disabled"
                         v-model="searchQuery"
                         @keydown.native.esc.stop.prevent="doClose"
                         :placeholder="searchPlaceholder">
-                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                        <i slot="prefix" :data-test-id="testId + '-search-icon'" class="el-input__icon el-icon-search"></i>
                     </el-input>
                 </div>
                 <slot name="action"></slot>
@@ -70,12 +73,14 @@
         <el-tabs
             v-loading="isQueryPending"
             v-model="activeTabId"
+            :test-id="testId + '-tabs'"
             @keydown.native.esc.stop.prevent="doClose">
             <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">
-                <span slot="label">
+                <span slot="label" :data-test-id="testId + '-el-tab-' + tab.label.toString().replace(/[\s,]+/g, '-').toLowerCase()">
                     {{tab.label}}
                 </span>
                 <cly-listbox
+                    :test-id="testId"
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-if="mode === 'single-list'"
@@ -96,6 +101,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
+                    :test-id="testId + '-checklistbox'"
                     :disable-non-selected="disableNonSelected"
                     :bordered="false"
                     :options="getMatching(tab.options)"
@@ -106,6 +112,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
+                    :test-id="testId + '-checklistbox'"
                     :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
@@ -120,8 +127,8 @@
         </el-tabs>
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">
             <div class="cly-vue-select-x__commit-section">
-                <el-button @click="doDiscard" type="secondary" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="doCommit" :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
+                <el-button @click="doDiscard" :data-test-id="testId + '-select-x-cancel-button'" type="secondary" size="small">{{ i18n("common.cancel") }}</el-button>
+                <el-button @click="doCommit" :data-test-id="testId + '-select-x-confirm-button'"  :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
             </div>
         </div>
     </div>

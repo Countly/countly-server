@@ -12,7 +12,7 @@ var plugin = {},
     { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
-
+var log = common.log('crashes:api');
 const FEATURE_NAME = 'crashes';
 
 plugins.setConfigs("crashes", {
@@ -21,7 +21,8 @@ plugins.setConfigs("crashes", {
     smart_preprocessing: true,
     smart_regexes: "{.*?}\n/.*?/",
     same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS
+    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
+    activate_custom_field_cleanup_job: false,
 });
 
 /**
@@ -72,40 +73,66 @@ plugins.setConfigs("crashes", {
         var oldUid = ob.oldUser.uid;
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
-            common.db.collection("app_crashes" + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function() {});
-            common.db.collection("app_crashusers" + appId).find({uid: oldUid}).toArray(function(err, res) {
-                if (res && res.length) {
-                    const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
-                    for (let i = 0; i < res.length; i++) {
-                        const updates = {};
-                        for (const key of ['last', 'sessions']) {
-                            if (res[i][key]) {
-                                if (!updates.$max) {
-                                    updates.$max = {};
-                                }
-                                updates.$max[key] = res[i][key];
-                            }
-                        }
-                        for (const key of ['reports', 'crashes', 'fatal']) {
-                            if (res[i][key]) {
-                                if (!updates.$inc) {
-                                    updates.$inc = {};
-                                }
-                                updates.$inc[key] = res[i][key];
-                            }
-                        }
-                        const group = res[i].group;
-                        if (Object.keys(updates).length) {
-                            bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
-                        }
-                        bulk.find({uid: oldUid, group: group}).delete();
+            return new Promise(function(resolve, reject) {
+                common.db.collection("app_crashes" + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function(errUpdate) {
+                    if (errUpdate) {
+                        log.e(errUpdate);
+                        reject();
+                        return;
                     }
-                    bulk.execute(function(bulkerr) {
-                        if (bulkerr) {
-                            console.log(bulkerr);
+                    common.db.collection("app_crashusers" + appId).find({uid: oldUid}).toArray(function(err, res) {
+                        if (err) {
+                            log.e(err);
+                            reject();
+                            return;
+                        }
+                        if (res && res.length) {
+                            try {
+                                const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
+                                for (let i = 0; i < res.length; i++) {
+                                    const updates = {};
+                                    for (const key of ['last', 'sessions']) {
+                                        if (res[i][key]) {
+                                            if (!updates.$max) {
+                                                updates.$max = {};
+                                            }
+                                            updates.$max[key] = res[i][key];
+                                        }
+                                    }
+                                    for (const key of ['reports', 'crashes', 'fatal']) {
+                                        if (res[i][key]) {
+                                            if (!updates.$inc) {
+                                                updates.$inc = {};
+                                            }
+                                            updates.$inc[key] = res[i][key];
+                                        }
+                                    }
+                                    const group = res[i].group;
+                                    if (Object.keys(updates).length) {
+                                        bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
+                                    }
+                                    bulk.find({uid: oldUid, group: group}).delete();
+                                }
+                                bulk.execute(function(bulkerr) {
+                                    if (bulkerr) {
+                                        console.log(bulkerr);
+                                        reject();
+                                    }
+                                    else {
+                                        resolve();
+                                    }
+                                });
+                            }
+                            catch (exc) {
+                                log.e(exc);
+                                reject("Failed to merge crashes");
+                            }
+                        }
+                        else {
+                            resolve();
                         }
                     });
-                }
+                });
             });
         }
     });
@@ -780,7 +807,7 @@ plugins.setConfigs("crashes", {
                         });
                     });
                 }
-            });
+            }, params.app && params.app.plugins);
         }
     });
 
@@ -1009,8 +1036,9 @@ plugins.setConfigs("crashes", {
                             break;
                         }
                     }
-                    if (params.qstring.filter !== "crash-hidden") {
-                        filter.is_hidden = {$ne: true};
+
+                    if (!('is_hidden' in filter)) {
+                        filter.is_hidden = { $ne: true };
                     }
 
                     plugins.dispatch("/drill/preprocess_query", {

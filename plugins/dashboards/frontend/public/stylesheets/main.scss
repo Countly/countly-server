@@ -182,7 +182,7 @@
                 margin-top: 6px;
 
                 td {
-                    padding: 9px 0;
+                    padding: 4px 0;
                 }
             }
 
@@ -200,6 +200,12 @@
             .cly-vue-eldatatable__footer {
                 display:none;
             }
+
+            .el-table {
+                td {
+                    font-size: 13px;
+                }
+            }
         }
     }
     .cly-vue-chart-legend {
@@ -207,10 +213,37 @@
             padding: 0px;
         }
     }
+
+    .clyd-apps {
+        margin-bottom: -1rem;
+        .apps {
+            &__single {
+                &--avatar {
+                    width: 16px;
+                    height: 16px;
+                    background-position: 50% 50%;
+                    border-radius: 4px;
+                    background-repeat: no-repeat;
+                    background-size: auto 16px;
+                    span {
+                        color: #fff;
+                        font-size: 9px;
+                        text-transform: uppercase;
+                    }
+                }
+            }
+        }
+        hr {
+            margin: 1rem -1.5rem 0.5rem;
+            border: none;
+            height: 0.5px;
+            background-color: #E2E4E8;
+        }
+    }
 }
 
 .dashboard-more-options {
-    padding: 2px !important;
+    // padding: 2px !important;
 
     &__divider {
         border: 0; 

@@ -83,7 +83,7 @@ var AppPlatformView = countlyVue.views.create({
                             appPlatformVersionRows: function() {
                                 var platforms = this.appPlatform.versions;
 
-                                if (!this.selectedPlatform) {
+                                if (!this.selectedPlatform && platforms.length) {
                                     this.selectedPlatform = platforms[0].label;
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
                                 }
@@ -102,7 +102,7 @@ var AppPlatformView = countlyVue.views.create({
                                 for (var k = 0; k < platforms.length; k++) {
                                     display.push({"value": platforms[k].label, "name": platforms[k].label});
                                 }
-                                if (!this.selectedPlatform) {
+                                if (!this.selectedPlatform && display.length) {
                                     this.selectedPlatform = display[0].value;
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
                                 }
@@ -123,8 +123,16 @@ var AppPlatformView = countlyVue.views.create({
         this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
+        refresh: function(force) {
+            if (force) {
+                this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform', true);
+            }
+            else {
+                this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform', false);
+            }
+        },
+        dateChange: function() {
+            this.refresh(true);
         },
         handleCardsScroll: function() {
             if (this.$refs && this.$refs.bottomSlider) {

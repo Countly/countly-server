@@ -941,6 +941,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-datatable-n-test-id',
+                required: false
             }
         },
         data: function() {
@@ -978,6 +983,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.externalParams && this.externalParams.skipLoading) {
+                    return false;
+                }
                 if (this.forceLoading === true) {
                     return true;
                 }

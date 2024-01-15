@@ -811,6 +811,9 @@
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
                 hookDetail.lastTriggerTimestampString = hookDetail.lastTriggerTimestamp && moment(hookDetail.lastTriggerTimestamp).fromNow() || "-";
                 return hookDetail;
+            },
+            detailLogsInitialized: function() {
+                return this.$store.getters["countlyHooks/getDetailLogsInitialized"];
             }
         },
         methods: {

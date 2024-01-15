@@ -850,7 +850,11 @@ fetch.fetchCountries = function(params) {
 fetch.fetchSessions = function(params) {
     fetchTimeObj('users', params, false, function(usersDoc) {
         countlySession.setDb(usersDoc || {});
-        common.returnOutput(params, countlySession.getSubperiodData());
+        var options = {};
+        if (params.qstring.bucket) {
+            options.bucket = params.qstring.bucket;
+        }
+        common.returnOutput(params, countlySession.getSubperiodData(options));
     });
 };
 
@@ -1244,12 +1248,16 @@ fetch.fetchEvents = function(params) {
     if (params.qstring.event && params.qstring.event.length) {
         let collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
         fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+            var options = {};
+            if (params.qstring.bucket) {
+                options.bucket = params.qstring.bucket;
+            }
             countlyEvents.setDb(doc || {});
             if (params.qstring.segmentation && params.qstring.segmentation !== "no-segment") {
                 common.returnOutput(params, countlyEvents.getSegmentedData(params.qstring.segmentation));
             }
             else {
-                common.returnOutput(params, countlyEvents.getSubperiodData());
+                common.returnOutput(params, countlyEvents.getSubperiodData(options));
             }
         });
     }
@@ -2024,7 +2032,8 @@ fetch.alljobs = async function(metric, params) {
                 schedule: { $first: "$schedule" },
                 next: { $first: "$next" },
                 finished: { $first: "$finished" },
-                total: { $sum: 1 }
+                total: { $sum: 1 },
+                rowId: { $first: "$_id" }
             }
         }
     ];
@@ -2076,6 +2085,7 @@ fetch.jobDetails = async function(metric, params) {
     cursor.close();
     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
 };
+
 
 /**
  * Fetch data for tops

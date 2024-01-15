@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('slipping-away-users.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('slipping-away-users.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('slipping-away-users.title')"
+        :tooltip="{description: i18n('slipping-away-users.description')}"
+    >
     </cly-header>
     <cly-main>
         <cly-qb-bar v-if="showDrillFilter" feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>

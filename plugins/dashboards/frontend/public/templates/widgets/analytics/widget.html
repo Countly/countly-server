@@ -23,7 +23,7 @@
         </div>
     </div>
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
-    <clyd-primary-legend :apps="data.apps" :showApps="(data.visualization !== 'time-series') || (data.visualization === 'time-series' && data.data_type === 'technology')" :custom-period="data.custom_period"></clyd-primary-legend>
+    <clyd-primary-legend :custom-period="data.custom_period"></clyd-primary-legend>
     <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
 		<template v-if="!loading">
             <cly-chart-time v-if="data.visualization === 'time-series' && !data.breakdowns" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :sub-category="data.feature === 'events' ? data.events : []">
@@ -56,11 +56,12 @@
                 </cly-datatable-n>
                 <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
             </div>
-            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
+            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}" :patch-x-axis="stackedBarOptions.patchXAxis !== undefined ? stackedBarOptions.patchXAxis : true"></cly-chart-bar>
             <cly-chart-bar v-else-if="data.visualization === 'time-series'" :valFormatter="valFormatter" :option="stackedBarTimeSeriesOptions" :patch-x-axis="false" :no-hourly="true" category="user-analytics" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" height="auto" skin="full"></cly-chart-bar>
             <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
         </template>
 	</div>
     <drawer :settings="drawerSettingsForWidgets" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
     <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series' && !data.breakdowns"></clyd-secondary-legend>
+    <clyd-widget-apps :apps="data.apps"></clyd-widget-apps>
 </div>

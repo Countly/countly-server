@@ -1,0 +1,60 @@
+<div v-bind:class="[componentId]" class="search">
+    <cly-header
+        :title="i18n('guides.search.in-countly-guides')"
+    >
+        <template v-slot:header-top>
+            <cly-back-link :title="i18n('guides.back-to-guides')" link="#/guides/overview"></cly-back-link>
+        </template>
+        <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
+            <el-input
+                ref="searchBox"
+                autocomplete="off"
+                autofocus="true"
+                v-model="currentSearchQuery"
+                :placeholder="i18n('guides.search.in-guides')"
+                @keyup.enter.native="OnEnterSearch"
+            >
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+            </el-input>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-empty-view
+            v-if="!results"
+            style="opacity:1"
+            :title="i18n('guides.search.start')"
+            :subTitle="i18n('guides.search.start-description')"
+        >
+            <template v-slot:icon>
+                <img src="images/icons/start-search.svg"></img>
+            </template>
+        </cly-empty-view>
+        <cly-empty-view
+            v-else-if="results && results.length === 0"
+            style="opacity:1"
+            :title="i18n('guides.search.no-result')"
+            :subTitle="i18n('guides.search.no-result-description')"
+        >
+            <template v-slot:icon>
+                <img src="images/icons/no-search-result.svg"></img>
+            </template>
+        </cly-empty-view>
+        <div v-else>
+            <div class="count">
+                {{ i18n('guides.search.results-count', resultCount, searchQuery) }}
+            </div>
+            <div>
+                <cly-dynamic-tabs
+                    v-model="currentTab"
+                    :tabs="tabs"
+                    customStyle="background: unset; padding: 0px;"
+                >
+                    <template v-slot:tables="scope">
+                        <span>{{ scope.tab.title }}</span>
+                    </template>
+                </cly-dynamic-tabs>
+            </div>
+        </div>
+    </cly-main>
+</div>

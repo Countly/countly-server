@@ -54,17 +54,22 @@ sudo apt-get update
 sudo apt-get install -y nginx
 
 #install node.js
-#add node.js repo
-#echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get update
-sudo apt-get install -y nodejs || (echo "Failed to install nodejs." ; exit)
+sudo apt-get install -y ca-certificates curl gnupg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+NODE_MAJOR=18
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+sudo apt-get update
+sudo apt-get install nodejs -y
 
 set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
-    sudo ln -s "$(which node)" /usr/bin/nodejs
+	sudo ln -s "$(which node)" /usr/bin/nodejs
+elif [ ! -f "/usr/bin/node" ]; then
+    sudo ln -s "$(which nodejs)" /usr/bin/node
 fi
 
 #if npm is not installed, install it too
@@ -89,7 +94,16 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install mongodb
-sudo bash "$DIR/scripts/mongodb.install.sh"
+if ! command -v mongod &> /dev/null; then
+    echo "mongod not found, installing MongoDB"
+    sudo bash "$DIR/scripts/mongodb.install.sh"
+else
+    echo "MongoDB is already installed"
+    # check for ipv6 compatibility and restart mongo service
+    sudo bash "$DIR/scripts/mongodb.install.sh" configure
+    sudo systemctl restart mongod
+    sudo systemctl status mongod
+fi
 
 if [ "$INSIDE_DOCKER" == "1" ]; then
     sudo bash "$DIR/commands/docker/mongodb.sh" &
@@ -106,7 +120,13 @@ fi
 sudo bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
-countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+#configure and start nginx
+if [ -f /etc/nginx/sites-available/default ]; then
+    countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
+elif [ -f /etc/nginx/conf.d/default.conf ]; then
+    countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+fi
+
 countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf

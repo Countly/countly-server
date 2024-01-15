@@ -23,6 +23,7 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request');
+const Handle = require('../../api/parts/jobs/index.js');
 
 var loaded_configs_time = 0;
 
@@ -38,7 +39,8 @@ const countlyApi = {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
         appUsers: require('../parts/mgmt/app_users.js'),
-        eventGroups: require('../parts/mgmt/event_groups.js')
+        eventGroups: require('../parts/mgmt/event_groups.js'),
+        cms: require('../parts/mgmt/cms.js'),
     }
 };
 
@@ -1118,7 +1120,7 @@ const processRequest = (params) => {
                                                         if (plugins.isPluginEnabled('drill')) {
                                                             //remove from drill
                                                             var eventHash = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
-                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id: "meta_" + eventHash}, function(err5, resEvent) {
+                                                            common.drillDb.collection("drill_meta").findOne({_id: params.qstring.app_id + "_meta_" + eventHash}, function(err5, resEvent) {
                                                                 if (err5) {
                                                                     console.log(err5);
                                                                 }
@@ -1128,18 +1130,16 @@ const processRequest = (params) => {
                                                                 resEvent = resEvent || {};
                                                                 resEvent.sg = resEvent.sg || {};
                                                                 for (let p = 0; p < obj.list.length; p++) {
-                                                                    if (resEvent.sg[obj.list[p]] && resEvent.sg[obj.list[p]].type === "bl") {
-                                                                        remove_biglists.push("meta_" + eventHash + "_sg." + obj.list[p]);
-                                                                    }
+                                                                    remove_biglists.push(params.qstring.app_id + "_meta_" + eventHash + "_sg." + obj.list[p]);
                                                                     newsg["sg." + obj.list[p]] = {"type": "s"};
                                                                 }
                                                                 //big list, delete also big list file
                                                                 if (remove_biglists.length > 0) {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id: {$in: remove_biglists}}, function(err6) {
+                                                                    common.drillDb.collection("drill_meta").remove({_id: {$in: remove_biglists}}, function(err6) {
                                                                         if (err6) {
                                                                             console.log(err6);
                                                                         }
-                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function(err7) {
+                                                                        common.drillDb.collection("drill_meta").update({_id: params.qstring.app_id + "_meta_" + eventHash}, {$set: newsg}, function(err7) {
                                                                             if (err7) {
                                                                                 console.log(err7);
                                                                             }
@@ -1148,7 +1148,7 @@ const processRequest = (params) => {
                                                                     });
                                                                 }
                                                                 else {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function() {
+                                                                    common.drillDb.collection("drill_meta").update({_id: params.qstring.app_id + "_meta_" + eventHash}, {$set: newsg}, function() {
                                                                         resolve();
                                                                     });
                                                                 }
@@ -1445,6 +1445,9 @@ const processRequest = (params) => {
                 break;
             }
             case '/i': {
+                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
+                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+                }
                 params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
                 params.user = {};
 
@@ -1943,20 +1946,22 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
                             return false;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
-                            }
-                            catch (ex) {
-                                params.qstring.query = null;
-                            }
-                        }
                         if (typeof params.qstring.filter === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
                             }
                             catch (ex) {
-                                params.qstring.query = null;
+                                common.returnMessage(params, 400, "Failed to parse query. " + ex.message);
+                                return false;
+                            }
+                        }
+                        else if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query, common.reviver);
+                            }
+                            catch (ex) {
+                                common.returnMessage(params, 400, "Failed to parse query. " + ex.message);
+                                return false;
                             }
                         }
                         if (typeof params.qstring.projection === "string") {
@@ -2129,6 +2134,7 @@ const processRequest = (params) => {
                         });
 
                         countlyApi.data.exports.fromRequestQuery({
+                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                             params: params,
                             path: params.qstring.path,
                             data: params.qstring.data,
@@ -2567,6 +2573,33 @@ const processRequest = (params) => {
 
                     validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
                     break;
+                case 'suspend_job': {
+                    /**
+                     * @api {get} /o?method=suspend_job Suspend Job
+                     * @apiName SuspendJob
+                     * @apiGroup Jobs
+                     *  
+                     * @apiDescription Suspend the selected job
+                     * * 
+                     * @apiSuccessExample {json} Success-Response:
+                     * HTTP/1.1 200 OK
+                     * {
+                     *  "result": true,
+                     *  "message": "Job suspended successfully"
+                     * }
+                     * 
+                     * @apiErrorExample {json} Error-Response:
+                     * HTTP/1.1 400 Bad Request
+                     * {
+                     *  "result": "Updating job status failed" 
+                     * }
+                     * 
+                    */
+                    validateUserForGlobalAdmin(params, async() => {
+                        await Handle.suspendJob(params);
+                    });
+                    break;
+                }
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
@@ -2684,6 +2717,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
@@ -2702,6 +2736,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
@@ -2713,7 +2748,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard,  /countries, /sessions, /metric, /tops, /loyalty, /frequency, /durations, /events');
                     }
                     break;
                 }
@@ -2808,6 +2843,38 @@ const processRequest = (params) => {
                 validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
             }
+            case '/o/cms': {
+                switch (paths[3]) {
+                case 'entries':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
+                    break;
+                case 'clear':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                    }
+                    break;
+                }
+
+                break;
+            }
+            case '/i/cms': {
+                switch (paths[3]) {
+                case 'save_entries':
+                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    break;
+                }
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
@@ -2860,16 +2927,12 @@ const processRequestData = (params, app, done) => {
         var update = {};
         //check if we already processed app users for this request
         if (params.app_user.last_req !== params.request_hash && ob.updates.length) {
-            ob.updates.push({$set: {last_req: params.request_hash, ingested: false}});
             for (let i = 0; i < ob.updates.length; i++) {
                 update = common.mergeQuery(update, ob.updates[i]);
             }
         }
         var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
-            if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                common.returnMessage(params, 200, 'Success');
-            }
             if (params.qstring.begin_session) {
                 plugins.dispatch("/session/retention", {
                     params: params,
@@ -2899,10 +2962,6 @@ const processRequestData = (params, app, done) => {
                             break;
                         }
                     }
-                }
-                if (!retry && plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                    //acknowledge data ingestion
-                    common.updateAppUser(params, {$set: {ingested: true}});
                 }
                 if (!params.res.finished) {
                     if (retry) {
@@ -3229,13 +3288,17 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
             let payload = params.href.substr(3) || "";
             if (params.req.method.toLowerCase() === 'post') {
-                payload += params.req.body;
+                payload += "&" + params.req.body;
             }
+            //remove dynamic parameters
+            payload = payload.replace(new RegExp("[?&]?(rr=[^&\n]+)", "gm"), "");
+            payload = payload.replace(new RegExp("[?&]?(checksum=[^&\n]+)", "gm"), "");
+            payload = payload.replace(new RegExp("[?&]?(checksum256=[^&\n]+)", "gm"), "");
             params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
-                if (params.app_user.last_req === params.request_hash && (!plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.app_user.ingested)) {
+                if (params.app_user.last_req === params.request_hash) {
                     params.cancelRequest = "Duplicate request";
                 }
             }

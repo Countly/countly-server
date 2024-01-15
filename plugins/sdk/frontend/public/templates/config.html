@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]" class="configurations">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> SDK Configuration (Experimental) </h2>
-            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+        title="SDK Configuration (Experimental)"
+        :tooltip="{description}"
+    >
     </cly-header>
     <cly-main>
         <div v-if="!isTableLoading" class="bu-columns bu-is-gapless">

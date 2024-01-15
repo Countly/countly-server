@@ -1,9 +1,8 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('user-activity.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('user-activity.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"></cly-tooltip-icon>
-        </template>
+    <cly-header
+        :title="i18n('user-activity.title')"
+        :tooltip="{description: i18n('user-activity.description')}"
+    >
     </cly-header>
     <cly-main>
         <cly-qb-bar feature="core" v-if="showDrillFilter" class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>

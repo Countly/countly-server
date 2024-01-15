@@ -455,7 +455,7 @@
                     var tmpQuery = {};
 
                     if (newValue.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(newValue.query);
+                        tmpQuery = countlyCrashes.modifyQueries(newValue.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
@@ -531,22 +531,28 @@
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             },
             isLoading: function() {
-                return this.$store.getters['countlyCrashes/overview/isLoading'];
+                return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
+            loading: function() {
+                return this.$store.getters["countlyCrashes/overview/loading"];
+            }
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
+                if (this.$refs && this.$refs.dataTable && this.$refs.dataTable.externalParams) {
+                    this.$refs.dataTable.externalParams.skipLoading = true;
+                }
                 if (this.$refs && this.$refs.crashesAutoRefreshToggle && this.$refs.crashesAutoRefreshToggle.autoRefresh) {
                     var query = {};
                     var tmpQuery = {};
                     if (this.crashgroupsFilter.query) {
-                        tmpQuery = countlyCrashes.modifyOsVersionQuery(this.crashgroupsFilter.query);
+                        tmpQuery = countlyCrashes.modifyQueries(this.crashgroupsFilter.query);
                         query = countlyCrashes.modifyExistsQueries(tmpQuery);
                     }
 
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)}),
-                        this.$store.dispatch("countlyCrashes/overview/refresh")
+                        this.$store.dispatch("countlyCrashes/overview/refresh", force)
                     ]);
                 }
             },
@@ -617,16 +623,14 @@
             var query = {};
             var tmpQuery = {};
             if (this.$route.params && this.$route.params.query) {
-                tmpQuery = countlyCrashes.modifyOsVersionQuery(this.$route.params.query.query);
+                tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
                 query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
                 this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
             }
 
-            return Promise.all([
-                this.$store.dispatch("countlyCrashes/overview/refresh")
-            ]);
+            this.$store.dispatch("countlyCrashes/overview/refresh", true);
         }
     });
 
@@ -1161,7 +1165,7 @@
 
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
-                        countlyCrashSymbols.fetchSymbols(true)
+                        countlyCrashSymbols.fetchSymbols(false)
                             .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
@@ -1337,14 +1341,17 @@
                 return {
                     uid: '',
                     userCrashesData: [],
-                    title: CV.i18n('crashes.unresolved-crashes')
+                    title: CV.i18n('crashes.unresolved-crashes'),
+                    isLoading: false
                 };
             },
-            beforeCreate: function() {
+            created: function() {
                 var self = this;
+                self.isLoading = true;
                 this.uid = this.$route.params.uid;
                 countlyCrashes.userCrashes(this.uid)
                     .then(function(res) {
+                        self.isLoading = false;
                         if (res) {
                             self.userCrashesData = res.aaData.map(function(data) {
                                 return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
@@ -1371,6 +1378,20 @@
                 {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
             ]
         });
+
+        app.addAppManagementInput("crashes", CV.i18n("crashes.title"),
+            {
+                "crashes.smart_preprocessing": {input: "el-switch", attrs: {}, defaultValue: true},
+                "crashes.smart_regexes": {input: "el-input", attrs: {type: "textarea", rows: 5}},
+                "crashes.grouping_strategy": {
+                    input: "el-select",
+                    attrs: {},
+                    list: [
+                        {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                        {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+                    ]
+                }
+            });
     }
 
     app.route("/crashes", "crashes", function() {

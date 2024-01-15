@@ -102,6 +102,7 @@ function transformAppVersion(inpVersion) {
                     filteredData: {},
                     isLoading: false,
                     realSession: {},
+                    loading: false,
                 };
             },
             getters: {},
@@ -112,6 +113,10 @@ function transformAppVersion(inpVersion) {
 
         _overviewSubmodule.getters.isLoading = function(state) {
             return state.isLoading;
+        };
+
+        _overviewSubmodule.getters.loading = function(state) {
+            return state.loading;
         };
 
         _overviewSubmodule.getters.crashgroupsFilter = function(state) {
@@ -209,7 +214,7 @@ function transformAppVersion(inpVersion) {
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_u[prop]) / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
@@ -223,11 +228,11 @@ function transformAppVersion(inpVersion) {
                     }
                     else {
                         if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
-                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                            propValue = ((dashboard.cr_s[prop] - dashboard[name][prop]) / dashboard.cr_s[prop] * 100);
                         }
                         else {
                             // Use real total session if cr_s value is too low
-                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                            propValue = ((realTotalSession - dashboard[name][prop]) / realTotalSession * 100);
                         }
                     }
 
@@ -430,16 +435,25 @@ function transformAppVersion(inpVersion) {
             return "crashes" in state.rawData ? Object.keys(state.rawData.crashes.os) : [];
         };
 
+        _overviewSubmodule.mutations.setLoading = function(state, value) {
+            state.loading = value;
+        };
+
         _overviewSubmodule.actions.setCrashgroupsFilter = function(context, value) {
             context.state.crashgroupsFilter = value;
         };
 
         _overviewSubmodule.actions.setActiveFilter = function(context, value) {
             context.state.activeFilter = value;
-            context.dispatch("refresh");
+            context.dispatch("refresh", true);
         };
 
-        _overviewSubmodule.actions.refresh = function(context) {
+        _overviewSubmodule.actions.refresh = function(context, forceLoading) {
+
+            if (forceLoading) {
+                context.commit("setLoading", true);
+            }
+
             var ajaxPromises = [];
             var requestParams = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
@@ -498,7 +512,9 @@ function transformAppVersion(inpVersion) {
                 context.state.realSession = countlySession.getSessionData();
             }));
 
-            return Promise.all(ajaxPromises);
+            return Promise.all(ajaxPromises).finally(function() {
+                context.commit("setLoading", false);
+            });
         };
 
         _overviewSubmodule.actions.setSelectedAsResolved = function(context, selectedIds) {
@@ -841,7 +857,7 @@ function transformAppVersion(inpVersion) {
 
                                 crashes = crashes.concat(crashgroupJson.data);
 
-                                var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
+                                var ajaxPromise = countlyCrashSymbols.fetchSymbols(true);
                                 ajaxPromises.push(ajaxPromise);
                                 ajaxPromise.then(function(fetchSymbolsResponse) {
                                     crashes.forEach(function(crash, crashIndex) {
@@ -917,7 +933,7 @@ function transformAppVersion(inpVersion) {
                     reject(null);
                 }
                 else {
-                    countlyCrashSymbols.fetchSymbols(false).then(function(fetchSymbolsResponse) {
+                    countlyCrashSymbols.fetchSymbols(true).then(function(fetchSymbolsResponse) {
                         var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
@@ -1228,7 +1244,7 @@ function transformAppVersion(inpVersion) {
         return id;
     };
 
-    countlyCrashes.modifyOsVersionQuery = function(inpQuery) {
+    countlyCrashes.modifyQueries = function(inpQuery) {
         var resultQuery = {};
 
         Object.keys(inpQuery).forEach(function(key) {
@@ -1237,6 +1253,19 @@ function transformAppVersion(inpVersion) {
                 var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
 
                 resultQuery[newKey] = inpQuery[key];
+            }
+            else if (key.startsWith('is_hidden')) {
+                Object.keys(inpQuery[key]).forEach(function(innerKey) {
+                    if (
+                        (innerKey === '$in' || innerKey === '$nin') &&
+                        Array.isArray(inpQuery[key][innerKey]) &&
+                        inpQuery[key][innerKey].includes(false)
+                    ) {
+                        inpQuery[key][innerKey].push(null);
+                    }
+                });
+
+                resultQuery[key] = inpQuery[key];
             }
             else {
                 resultQuery[key] = inpQuery[key];

@@ -1244,6 +1244,7 @@ class MultiTrigger extends ReschedulingTrigger {
      */
     set dates(dates) {
         if (Array.isArray(dates) && !dates.filter(n => !(n instanceof Date)).length) {
+            dates.sort();
             this._data.dates = dates;
         }
         else {

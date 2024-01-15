@@ -1,10 +1,9 @@
 <script type="text/x-template" id="reports-home">
 <div id="reports-view" v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('reports.title')}}
-            </h2><span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
-        </template>
+    <cly-header
+        :title="i18n('reports.title')"
+        :tooltip="{description: i18n('reports.tips'), placement: 'top-center'}"
+    >
         <template v-slot:header-right>
             <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createReport">{{i18n('reports.create')}}</el-button>
         </template>
@@ -163,7 +162,6 @@
                 v-on:change="appsChange" 
                 :collapse-tags="false"
                 :multiple="true"
-                :multiple-limit="4"
                 v-model="drawerScope.editedObject.apps" 
                 multiple>
             </cly-app-select>

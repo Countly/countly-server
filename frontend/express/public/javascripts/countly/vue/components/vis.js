@@ -407,6 +407,11 @@
                 var maxLen = 0;
                 var maxStr = "";
 
+                if (xAxis.data.length) {
+                    xAxis.data = xAxis.data.map(function(item) {
+                        return countlyCommon.unescapeHtml(item);
+                    });
+                }
                 xAxis.data.forEach(function(item) {
                     var str = "";
                     if (Array.isArray(item)) {
@@ -441,6 +446,7 @@
                     returnObj.grid = {bottom: 40};
 
                     returnObj.xAxis.axisLabel.formatter = function(value) {
+                        value = countlyCommon.encodeHtml(value);
                         var ellipsis = "...";
                         var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
                         if (value.length > lengthToTruncate) {
@@ -534,6 +540,11 @@
             noEmpty: {
                 type: Boolean,
                 default: false
+            },
+            sortBy: {
+                type: String,
+                default: "value",
+                required: false
             }
         },
         data: function() {
@@ -612,16 +623,16 @@
                                 cap: "round"
                             }
                         },
-                        formatter: function(params) {
+                        formatter: (params) => {
                             var template = "";
                             let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
-                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
-                                                            <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
+                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + countlyCommon.encodeHtml(params.seriesName) + '</div>\
+                                                            <div class="text-small"> ' + countlyCommon.encodeHtml(params.data.name) + '</div>\
+                                                            <div class="text-big">' + formatter(countlyCommon.encodeHtml(params.data.value)) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -630,20 +641,27 @@
                             else {
                                 template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
-                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
+                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + countlyCommon.encodeHtml(params[0].axisValueLabel) + "</span></br>";
                                 }
 
-                                params.sort(function(a, b) {
-                                    if (typeof a.value === 'object') {
-                                        return b.value[1] - a.value[1];
-                                    }
-                                    else {
-                                        return b.value - a.value;
-                                    }
-                                });
+                                if (self.sortBy === "index") {
+                                    params.sort(function(a, b) {
+                                        return a.seriesIndex - b.seriesIndex;
+                                    });
+                                }
+                                else {
+                                    params.sort(function(a, b) {
+                                        if (typeof a.value === 'object') {
+                                            return b.value[1] - a.value[1];
+                                        }
+                                        else {
+                                            return b.value - a.value;
+                                        }
+                                    });
+                                }
 
                                 for (var i = 0; i < params.length; i++) {
-                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                    if (params[i].seriesName.toLowerCase() === 'duration' || params[i].seriesName.toLowerCase() === 'avg. duration') {
                                         formatter = countlyCommon.formatSecond;
                                     }
                                     else {
@@ -652,10 +670,10 @@
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small">' + countlyCommon.encodeHtml(params[i].seriesName) + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(countlyCommon.encodeHtml(params[i].value[1])) ? 0 : countlyCommon.encodeHtml(params[i].value[1])), countlyCommon.encodeHtml(params[i].value), i) : formatter((isNaN(params[i].value) ? 0 : countlyCommon.encodeHtml(params[i].value)), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -711,7 +729,7 @@
                             fontSize: 12,
                             formatter: function(value) {
                                 if (typeof value === "number") {
-                                    return countlyCommon.getShortNumber(value);
+                                    return countlyCommon.getShortNumber(countlyCommon.encodeHtml(value));
                                 }
                                 return value;
                             }
@@ -848,7 +866,7 @@
                 this.patchLegend(options);
 
                 return options;
-            }
+            },
         }
     });
 
@@ -1095,18 +1113,18 @@
                                         </div>\
                                         <div class="graph-tooltip-wrapper__container">';
                         }
-                        template += '<div class="' + conditionalClassName + '">\
-                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
+                        template += '<div class="' + countlyCommon.encodeHtml(conditionalClassName) + '">\
+                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + countlyCommon.encodeHtml(filteredNotes[i].indicator) + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
-                                                <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
+                                                <div class="text-small input-owner">' + countlyCommon.encodeHtml(filteredNotes[i].owner_name) + '</div>\
                                                 <div class="text-small color-cool-gray-50 note-date">' + moment(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + countlyCommon.encodeHtml(filteredNotes[i].noteType) + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + countlyCommon.encodeHtml(filteredNotes[i].note) + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1114,20 +1132,20 @@
                     }
                 }
                 else {
-                    template += '<div class="' + conditionalClassName + '">\
+                    template += '<div class="' + countlyCommon.encodeHtml(conditionalClassName) + '">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
-                                            <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
+                                            <div class="text-medium input-owner">' + countlyCommon.encodeHtml(params.data.note.owner_name) + '</div>\
                                             <div class="text-small color-cool-gray-50 note-date">' + moment(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
                                                 <i class="el-icon-close"></i>\
                                             </span>\
-                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
+                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + countlyCommon.encodeHtml(params.data.note.noteType) + '</span>\
                                         </div>\
                                     </div>\
-                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + countlyCommon.encodeHtml(params.data.note.note) + '</span></div>\
                                 </div>';
                 }
                 return template;
@@ -1890,6 +1908,10 @@
                 default: false,
                 required: false
             },
+            testId: {
+                type: String,
+                default: 'cly-chart-header-test-id',
+            }
         },
         data: function() {
             return {
@@ -1979,9 +2001,9 @@
                             <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
                                 <add-note :category="this.category" @refresh="refresh"></add-note>\
                             </div>\
-                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
-                                <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
-                                <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
+                            <cly-more-options :test-id="testId + \'-cly-chart-more-dropdown\'" v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                                <el-dropdown-item :data-test-id="testId + \'-download-button\'" v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
+                                <el-dropdown-item :data-test-id="testId + \'-more-zoom-button\'" v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
                             </cly-more-options>\
                             <zoom-interactive @zoom-reset="onZoomReset" :is-zoom="isZoom" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
@@ -2001,6 +2023,10 @@
             },
             position: {
                 type: String
+            },
+            testId: {
+                type: String,
+                default: "secondary-legend-test-id"
             }
         },
         computed: {
@@ -2046,8 +2072,8 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="testId + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
@@ -2089,7 +2115,8 @@
                                 >\
                                     <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="item.percentage && !isNaN(item.percentage)">{{item.percentage}}%</span>\
+                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)">{{item.percentage}}%</span>\
+                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length">{{item.percentage}}</span>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2119,6 +2146,10 @@
             seriesType: {
                 type: String,
                 default: ""
+            },
+            testId: {
+                type: String,
+                default: "custom-legend-test-id"
             }
         },
         data: function() {
@@ -2214,6 +2245,7 @@
                         </template>\
                         <template v-if="options.type === \'secondary\'">\
                             <secondary-legend\
+                                :testId="testId"\
                                 :data="legendData"\
                                 :position="options.position"\
                                 :onClick="onLegendClick">\
@@ -2606,6 +2638,11 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: "cly-chart-bar-test-id",
+                required: false
             }
         },
         components: {
@@ -2624,7 +2661,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2642,7 +2679,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2650,6 +2687,7 @@
                             ref="legend"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
+                            :testId="testId"\
                             v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
@@ -3005,6 +3043,10 @@
             showTooltip: {
                 type: Boolean,
                 default: true
+            },
+            blockAutoLoading: {
+                type: Boolean,
+                default: false
             }
         },
         beforeCreate: function() {
@@ -3100,7 +3142,7 @@
         },
         computed: {
             loading: function() {
-                return this.loadingGeojson || this.loadingCities;
+                return !this.blockAutoLoading && (this.loadingGeojson || this.loadingCities);
             },
             inDetail: function() {
                 return this.country !== null;

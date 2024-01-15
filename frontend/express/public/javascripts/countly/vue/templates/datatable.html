@@ -15,6 +15,7 @@
                         title="Edit columns"
                         mode="multi-check-sortable"
                         placement="bottom-end"
+                        :test-id="testId + '-edit-columns-container'"
                         :persistColumnOrderKey="persistKey"
                         :width="300"
                         :auto-commit="false"
@@ -24,21 +25,21 @@
                         :options="availableDynamicCols"
                         v-model="controlParams.selectedDynamicCols">
                         <template v-slot:trigger>
-                            <el-button size="small" icon="ion-navicon-round"></el-button>
+                            <el-button :test-id="testId + '-edit-columns-button'" size="small" icon="ion-navicon-round"></el-button>
                         </template>
                     </cly-select-x>
                 </div>
                 <div class="bu-level-item" v-if="hasExport">
                     <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
                         <template v-slot:trigger="dropdown">
-                            <el-button size="small" icon="cly-icon-btn cly-icon-download"></el-button>
+                            <el-button :data-test-id="testId + '-export-as-button'" size="small" icon="cly-icon-btn cly-icon-download"></el-button>
                         </template>
                         <template>
                             <div class="bu-mx-4 bu-mt-4">
-                                <p class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
+                                <p :data-test-id="testId + '-export-as-pop-up-label'" class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
                                 <div  class="cly-vue-eldatatable__export--radio-button bu-mb-5">
                                     <el-radio-group v-model="selectedExportType">
-                                        <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                        <el-radio-button :data-test-id="testId + '-export-as-pop-up-' + exportType.value.toLowerCase() + '-button'" v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
                                     </el-radio-group>
                                 </div>
                             </div>
@@ -59,6 +60,7 @@
                                     <div class="bu-level">
                                         <div class="bu-level-item cly-vue-eldatatable__export--search">
                                             <el-input
+                                                :test-id="testId + '-export-as-pop-up-search-input'"
                                                 ref="searchBox"
                                                 autocomplete="off"
                                                 v-model="searchQuery"
@@ -79,25 +81,26 @@
                             </div>
                             <div v-if="customExportFileName" :class="{'cly-vue-eldatatable__export--fileExport': exportColumnSelection}">
                                 <div class="bu-my-4 bu-mx-4">
-                                    <p class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
-                                    <el-input v-model="exportFileName"></el-input>
+                                    <p :data-test-id="testId + '-export-as-pop-up-file-name-label'" class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
+                                    <el-input :test-id="testId + '-export-as-pop-up-file-name-input'" v-model="exportFileName"></el-input>
                                 </div>
                             </div>
                             <slot name="export-config"></slot>
                             <div class="bu-mx-4 bu-mb-4">
-                                <el-button size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
+                                <el-button :data-test-id="testId + '-export-as-pop-up-export-button'" size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
                             </div>
                         </template>
                     </cly-dropdown>
                 </div>
                 <div class="bu-level-item" v-if="displaySearch">
                     <form @keydown.enter.prevent="">
-                        <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
+                        <el-input :test-id="testId + '-datatable-search-input'" autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                     </form>
                 </div>
             </div>
         </div>
         <el-table
+            :test-id="testId"
             :preventDefaultSort="preventDefaultSort"
             :border="border"
             :row-key="keyFn"
@@ -111,7 +114,7 @@
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
                 <template slot="empty">
-                    <cly-empty-datatable></cly-empty-datatable>
+                    <cly-empty-datatable :test-id="testId"></cly-empty-datatable>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
@@ -119,16 +122,16 @@
         </el-table>
         <div v-if="!hideBottom" class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
-                <div class="bu-level-item text-smallish bu-mr-0">
+                <div class="bu-level-item text-smallish bu-mr-0" :data-test-id="testId + '-items-per-page-label'">
                     {{ i18n("common.items-per-page") }}:
                 </div>
                 <div class="bu-level-item text-smallish">
-                    <el-select :borderless="true" style="margin-top: 2px;" :adaptiveLength="true" v-model="controlParams.perPage" size="mini">
+                    <el-select :test-id="testId + '-items-per-page-count'" :borderless="true" style="margin-top: 2px;" :adaptiveLength="true" v-model="controlParams.perPage" size="mini">
                         <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>
                     </el-select>
                 </div>
                 <div class="bu-level-item" style="font-size: 11px">
-                    {{ paginationInfo }}
+                    <span :data-test-id="testId + '-items-per-page-count-select'">{{ paginationInfo }}</span>
                 </div>
                 <slot v-bind="commonScope" name="footer-left"></slot>
             </div>
@@ -136,25 +139,25 @@
                 <slot v-bind="commonScope" name="footer-right"></slot>
                 <div class="bu-level-item text-smallish bu-mr-0">
                     <div class="cly-vue-eldatatable__table-page-selector" style="margin-top: 2px;" >
-                        <el-select :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
+                        <el-select :test-id="testId + '-page-number'" :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
                             <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>
                         </el-select>
                         <el-input v-else type="number" :min="1" style="width: 160px" class="bu-mr-1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
                     </div>
                 </div>
                 <div class="bu-level-item text-smallish">
-                    of {{formatNumber(totalPages)}} pages
+                    <span :test-id="testId + '-page-number-of-pages'">of {{formatNumber(totalPages)}} pages</span>
                 </div>
-                <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                <div :data-test-id="testId + '-first-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
                     <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i></span>
                 </div>
-                <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                <div :data-test-id="testId + '-previous-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
                     <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="ion-ios-arrow-back"></i></span>
                 </div>
-                <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                <div :data-test-id="testId + '-next-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
                     <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="ion-ios-arrow-forward"></i></span>
                 </div>
-                <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                <div :data-test-id="testId + '-last-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
                     <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="ion-ios-arrow-forward"></i><i class="ion-ios-arrow-forward"></i></span>
                 </div>
             </div>

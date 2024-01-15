@@ -1,16 +1,7 @@
 <div class="bu-is-flex bu-is-align-items-center bu-my-2">
-    <div class="clyd-legend-app bu-is-flex-shrink-1" v-if="showApps" style="min-width: 0;">
-        <div class="bu-is-flex">
-            <div :style="app.image" class="clyd-legend-app__logo"></div>
-            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
-        </div>
-    </div>
-
-    <i class="fas fa-circle color-cool-gray-50 bu-mx-2" style="font-size: 4px;" v-if="showPeriod && showApps"></i>
-
     <div class="clyd-legend-app bu-is-flex-shrink-1" v-if="customText" style="min-width: 0;">
         <div class="bu-is-flex">
-            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{customText}}</span>
+            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{unescapeHtml(customText)}}</span>
         </div>
     </div>
 

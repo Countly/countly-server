@@ -143,6 +143,58 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    this.installMissingPlugins = function(db, callback) {
+        console.log("Checking if any plugins are missing");
+        var self = this;
+        var installPlugins = [];
+        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            res = res || {};
+            pluginConfig = res.plugins || {}; //currently enabled plugins
+            //list of plugin folders
+            var pluginNames = [];
+            var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
+            //filter out just folders
+            for (var z = 0; z < pluginsList.length; z++) {
+                var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+                if (p.isDirectory() || p.isSymbolicLink()) {
+                    pluginNames.push(pluginsList[z]);
+                }
+            }
+            for (var zz = 0; zz < pluginNames.length; zz++) {
+                if (typeof pluginConfig[pluginNames[zz]] === 'undefined') {
+                    installPlugins.push(pluginNames[zz]);
+                }
+            }
+            if (installPlugins.length > 0) {
+                console.log("Plugins to install: " + JSON.stringify(installPlugins));
+            }
+            Promise.each(installPlugins, function(name) {
+                return new Promise(function(resolve) {
+                    var obb = {'name': name};
+                    if (plugins.indexOf(name) === -1) {
+                        obb.enable = false;
+                    }
+                    else {
+                        obb.enable = true;
+                    }
+                    self.processPluginInstall(db, obb, function() {
+                        resolve();
+                    });
+                });
+            }).then(function() {
+                if (callback) {
+                    callback();
+                }
+            }).catch(function(rejection) {
+                console.log(rejection);
+                if (callback) {
+                    callback();
+                }
+            });
+
+
+        });
+    };
     /**
     * Load configurations from database
     * @param {object} db - database connection for countly db
@@ -171,7 +223,7 @@ var pluginManager = function pluginManager() {
                     for (var z = 0; z < plugins.length; z++) {
                         if (typeof pluginConfig[plugins[z]] === 'undefined') {
                             pluginConfig[plugins[z]] = true;
-                            installPlugins.push(plugins[z]);
+                            //installPlugins.push(plugins[z]);
                         }
                     }
                     Promise.each(installPlugins, function(name) {
@@ -1138,6 +1190,13 @@ var pluginManager = function pluginManager() {
 
     this.processPluginInstall = function(db, name, callback) {
         var self = this;
+        var should_enable = true;
+        if (typeof name !== "string" && name.name) {
+            if (name.enable === false || name.enable === true) {
+                should_enable = name.enable;
+            }
+            name = name.name;
+        }
         db.collection("plugins").remove({'_id': 'install_' + name, 'time': {'$lt': Date.now() - 60 * 1000 * 60}}, function(err) {
             if (err) {
                 console.log(err);
@@ -1156,9 +1215,9 @@ var pluginManager = function pluginManager() {
                             if (!errors) {
                                 console.log("Install is finished fine. Updating state in database");
                                 var query = {_id: "plugins"};
-                                query["plugins." + name] = {"$ne": false};
+                                query["plugins." + name] = {"$ne": !should_enable};
                                 var update = {};
-                                update["plugins." + name] = true;
+                                update["plugins." + name] = should_enable;
                                 db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function(err3, res) {
                                     console.log('plugins document updated');
                                     if (err3) {
@@ -1205,7 +1264,7 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             //if we are on docker skip npm install. 
-            if (process && process.env && process.env.COUNTLY_CONTAINER) {
+            if (process && process.env && process.env.COUNTLY_CONTAINER && !process.env.FORCE_NPM_INSTALL) {
                 console.log('Skipping on docker');
                 resolve(errors);
             }
@@ -1854,7 +1913,12 @@ var pluginManager = function pluginManager() {
 
     this.getMaskingSettings = function(appID) {
         if (appID === 'all') {
-            return JSON.parse(JSON.stringify(masking.apps));
+            if (masking && masking.apps) {
+                return JSON.parse(JSON.stringify(masking.apps));
+            }
+            else {
+                return {};
+            }
         }
         else if (masking && masking.apps && masking.apps[appID]) {
             return JSON.parse(JSON.stringify(masking.apps[appID]));

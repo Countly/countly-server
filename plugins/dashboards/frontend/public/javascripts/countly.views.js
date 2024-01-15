@@ -761,6 +761,9 @@
             canUpdateGrid: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
                 return (dashboard.data && dashboard.data.is_editable) ? true : false;
+            },
+            customPadding: function() {
+                return this.widget.widget_type === "note" ? "bu-p-4" : "bu-p-5";
             }
         },
         mounted: function() {
@@ -1438,7 +1441,7 @@
             document.addEventListener('fullscreenchange', fullscreeToggle);
         },
         methods: {
-            refresh: function() {
+            refresh: function(forceRefresh) {
                 var isRefreshing = this.isRefreshing;
                 var isInitializing = this.isInitLoad;
                 var isDrawerOpen = this.isDrawerOpen;
@@ -1471,11 +1474,11 @@
                     return;
                 }
 
-                this.dateChanged(true);
+                this.dateChanged(forceRefresh);
             },
             dateChanged: function(isRefresh) {
                 var self = this;
-                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", isRefresh);
 
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
                     self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);
@@ -1641,7 +1644,7 @@
 
     var DashboardsMenu = countlyVue.views.create({
         template: CV.T('/dashboards/templates/dashboards-menu.html'),
-        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin, countlyVue.mixins.commonFormatters],
         components: {
             "dashboards-drawer": DashboardDrawer
         },
