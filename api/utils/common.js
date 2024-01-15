@@ -3155,6 +3155,20 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
         ],
     };
 
+    //Whitelisted attributes apply to every tag
+    const whitelistedAttributes = ["style"];
+
+    if (extendedWhitelist && typeof extendedWhitelist === "object") {
+        for (let tag in extendedWhitelist) {
+            if (whiteList[tag]) {
+                whiteList[tag] = whiteList[tag].concat(extendedWhitelist[tag]);
+            }
+            else {
+                whiteList[tag] = extendedWhitelist[tag];
+            }
+        }
+    }
+
     if (extendedWhitelist && typeof extendedWhitelist === "object") {
         for (let tag in extendedWhitelist) {
             if (whiteList[tag]) {
