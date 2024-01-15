@@ -769,7 +769,10 @@
                             <cly-tooltip-icon :tooltip="i18n('push-notification.compose-message-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div>
-                            <el-checkbox :value="multipleLocalizations" @change="onMultipleLocalizationChange">
+                            <div class="cly-vue-push-notification-drawer__checkbox-text" v-if="isEstimationLoading">
+                                <i class="fa fa-spin fa-spinner" style="font-size: 16px;margin-right: 6px;"></i> {{i18n('push-notification.allow-to-set-different-content')}}
+                            </div>
+                            <el-checkbox :value="multipleLocalizations" @change="onMultipleLocalizationChange" v-else>
                                 <div class="cly-vue-push-notification-drawer__checkbox-text">{{i18n('push-notification.allow-to-set-different-content')}}</div>
                             </el-checkbox>
                         </div>
@@ -1195,7 +1198,10 @@
                                         {{previewCohorts(pushNotificationUnderEdit.cohorts).join(', ')}}
                                     </template>
                                 </review-section-row>
-                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
+                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')">
+                                    <template v-if="isEstimationLoading"><i class="fa fa-spin fa-spinner"></i></template>
+                                    <template v-else>{{currentNumberOfUsers}}</template>
+                                </review-section-row>
                                 <review-section-row v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
                                 <review-section-row 
                                     v-if="type === TypeEnum.ONE_TIME" 
@@ -1212,7 +1218,10 @@
                                         {{previewCohorts(pushNotificationUnderEdit.cohorts).join(', ')}}
                                     </template>
                                 </review-section-row>
-                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
+                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')">
+                                    <template v-if="isEstimationLoading"><i class="fa fa-spin fa-spinner"></i></template>
+                                    <template v-else>{{currentNumberOfUsers}}</template>
+                                </review-section-row>
                                 <review-section-row v-if="pushNotificationUnderEdit[TypeEnum.RECURRING].targeting === TargetingEnum.SEGMENTED" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
                                 <review-section-row 
                                     v-if="type === TypeEnum.RECURRING" 
@@ -1229,7 +1238,10 @@
                                         {{previewCohorts(pushNotificationUnderEdit.cohorts).join(', ')}}
                                     </template>
                                 </review-section-row>
-                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
+                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')">
+                                    <template v-if="isEstimationLoading"><i class="fa fa-spin fa-spinner"></i></template>
+                                    <template v-else>{{currentNumberOfUsers}}</template>
+                                </review-section-row>
                                 <review-section-row v-if="pushNotificationUnderEdit[TypeEnum.MULTIPLE].targeting === TargetingEnum.SEGMENTED" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
                                 <review-section-row 
                                     v-if="type === TypeEnum.MULTIPLE" 
