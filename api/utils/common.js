@@ -3173,7 +3173,7 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
             return "";
         }
 
-        const attributesRegex = /\b(\w+)\s*=\s*("[^"]*"|'[^']*'|[^>\s]+)/g;
+        const attributesRegex = /\b(\w+)\s*=\s*("[^"]*"|'[^']*'|[^>\s'"]+(?=\s*\/?>|\s*>))/g;
         var doubleQuote = '"',
             singleQuote = "'";
         let matches;
