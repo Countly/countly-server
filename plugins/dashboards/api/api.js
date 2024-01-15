@@ -1614,7 +1614,6 @@ plugins.setConfigs("dashboards", {
      */
     function sanitizeNote(contenthtml) {
         contenthtml = common.sanitizeHTML(contenthtml, {a: ["href"]});
-        contenthtml = escapeHtml(contenthtml);
         //Keep only valid links
         var regex = /<a\s+(?:[^>]*\s+)?href="([^"]*)"/g;
         contenthtml = contenthtml.replace(regex, function(match, href) {
@@ -1625,6 +1624,7 @@ plugins.setConfigs("dashboards", {
                 return match.replace(href, '#');
             }
         });
+        contenthtml = escapeHtml(contenthtml);
         return contenthtml;
     }
 
