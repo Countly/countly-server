@@ -1095,7 +1095,7 @@ plugins.setConfigs("dashboards", {
             }
 
             if (widget.widget_type === "note") {
-                widget.contenthtml = validateLinks(widget.contenthtml);
+                widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
@@ -1168,7 +1168,7 @@ plugins.setConfigs("dashboards", {
             }
 
             if (widget.widget_type === "note") {
-                widget.contenthtml = validateLinks(widget.contenthtml);
+                widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -1584,11 +1584,37 @@ plugins.setConfigs("dashboards", {
     }
 
     /**
-     * Function to validate Note widget links
-     * @param  {String} contenthtml - note widget HTML
-     * @returns {String} note widget HTML with valid links only
+     * Function to encode HTML
+     * @param  {String} html - HTML string
+     * @returns {String} encoded HTML
      */
-    function validateLinks(contenthtml) {
+    function escapeHtml(html) {
+        return html.replace(/[&<>"']/g, function(match) {
+            switch (match) {
+            case '&':
+                return '&amp;';
+            case '<':
+                return '&lt;';
+            case '>':
+                return '&gt;';
+            case '"':
+                return '&quot;';
+            case "'":
+                return '&#39;';
+            default:
+                return match;
+            }
+        });
+    }
+
+    /**
+     * Function to sanitize note widget
+     * @param  {String} contenthtml - note widget HTML
+     * @returns {String} note widget valid HTML
+     */
+    function sanitizeNote(contenthtml) {
+        contenthtml = common.sanitizeHTML(contenthtml, {a: ["href"]});
+        //Keep only valid links
         var regex = /<a\s+(?:[^>]*\s+)?href="([^"]*)"/g;
         contenthtml = contenthtml.replace(regex, function(match, href) {
             if (href.startsWith('http://') || href.startsWith('https://')) {
@@ -1598,6 +1624,7 @@ plugins.setConfigs("dashboards", {
                 return match.replace(href, '#');
             }
         });
+        contenthtml = escapeHtml(contenthtml);
         return contenthtml;
     }
 
