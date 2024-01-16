@@ -544,8 +544,8 @@ class MultiRecurringMapper extends Mapper {
 
         // send in user's timezone
         if (this.trigger.tz) {
-            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
-            d -= utz;
+            let utz = Number(user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0);
+            d -= (utz + date.getTimezoneOffset()) * 60000;
         }
 
         if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
