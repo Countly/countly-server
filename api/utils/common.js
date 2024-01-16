@@ -3169,13 +3169,10 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
         }
     }
 
-    if (extendedWhitelist && typeof extendedWhitelist === "object") {
-        for (let tag in extendedWhitelist) {
-            if (whiteList[tag]) {
-                whiteList[tag] = whiteList[tag].concat(extendedWhitelist[tag]);
-            }
-            else {
-                whiteList[tag] = extendedWhitelist[tag];
+    for (var attribute in whitelistedAttributes) {
+        for (let tag in whiteList) {
+            if (whiteList[tag].indexOf(whitelistedAttributes[attribute]) === -1) {
+                whiteList[tag].push(whitelistedAttributes[attribute]);
             }
         }
     }
