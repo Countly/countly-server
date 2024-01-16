@@ -46,27 +46,26 @@
 					</template>
 					<div slot-scope="scopeRow">
 						<el-popover
-							title=""
 							trigger="hover"
-							placement="right-end"
+							placement="right"
 							offset=50
 							:close-delay=50>
+							<div slot="default">
 								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
 								<table class="bu-mt-1">
-									<tr v-for="(value, key) in scopeRow.row.events_breakdown">
-										<template v-if="key !== 'total'">
-											<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
-												{{getPopoverKey(key)}}
-											</td>
-											<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
-												{{value}}
-											</td>
-										</template>
+									<tr v-for="eventPair in scopeRow.row.sorted_breakdown">
+										<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
+											{{getPopoverKey(eventPair[0])}}
+										</td>
+										<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
+											{{eventsNumberFormatter(eventPair[1])}}
+										</td>
 									</tr>
 								</table>
-							<span slot="reference">{{ scopeRow.row.events }}</span>
+							</div>
+							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
 						</el-popover>
 					</div>
 				</el-table-column>

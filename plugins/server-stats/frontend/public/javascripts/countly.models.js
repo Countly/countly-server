@@ -110,6 +110,25 @@
             if (appId === "all-apps" || appId === "natural-dp") {
                 appId = null;
             }
+            var brokendownEvents = {
+                "crashes": periodData.crash,
+                "views": periodData.views,
+                "actions": periodData.actions,
+                "nps": periodData.nps,
+                "surveys": periodData.surveys,
+                "ratings": periodData.ratings,
+                "apm": periodData.apm,
+                "custom": periodData.custom,
+            };
+            let sortable = [];
+            for (var event in brokendownEvents) {
+                sortable.push([event, brokendownEvents[event]]);
+            }
+
+            sortable.sort(function(a, b) {
+                return b[1] - a[1];
+            });
+
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
@@ -118,17 +137,18 @@
                 "data-points": periodData.dp,
                 "change": periodData.change,
                 "approximated": approx,
-                "events": numberFormatter(periodData.events),
+                "events": periodData.events,
                 "events_breakdown": {
-                    "crashes": numberFormatter(periodData.crash),
-                    "views": numberFormatter(periodData.views),
-                    "actions": numberFormatter(periodData.actions),
-                    "nps": numberFormatter(periodData.nps),
-                    "surveys": numberFormatter(periodData.surveys),
-                    "ratings": numberFormatter(periodData.ratings),
-                    "apm": numberFormatter(periodData.apm),
-                    "custom": numberFormatter(periodData.custom),
+                    "crashes": periodData.crash,
+                    "views": periodData.views,
+                    "actions": periodData.actions,
+                    "nps": periodData.nps,
+                    "surveys": periodData.surveys,
+                    "ratings": periodData.ratings,
+                    "apm": periodData.apm,
+                    "custom": periodData.custom,
                 },
+                "sorted_breakdown": sortable,
             });
         }
 
@@ -146,19 +166,6 @@
     countlyDataPoints.setPeriod = function(period) {
         _selectedPeriod = period;
     };
-    /**
-     * 
-     * @param {number} value Input number to be formatted
-     * @returns {String} Returns the formatted number as string
-     */
-    function numberFormatter(value) {
-        if (value === null || value === undefined) {
-            return "-";
-        }
-        else {
-            return countlyCommon.formatNumber(value, 0);
-        }
-    }
 
     /**
     * Returns a human readable name given application id.
