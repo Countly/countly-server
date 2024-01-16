@@ -321,7 +321,8 @@
         template: CV.T('/data-manager/templates/event-group-detail.html'),
         mixins: [
             countlyVue.mixins.hasDrawers(["eventgroup"]),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'event-group-drawer': EventGroupDrawer,
@@ -784,7 +785,8 @@
     var EventsGroupsTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-groups.html'),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             return {
