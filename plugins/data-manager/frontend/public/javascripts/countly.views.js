@@ -1198,7 +1198,8 @@
         template: CV.T('/data-manager/templates/event-detail.html'),
         mixins: [
             countlyVue.mixins.hasDrawers(["events", "segments"]),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'events-drawer': EventsDrawer,
