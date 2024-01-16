@@ -1,3 +1,16 @@
+## Version 23.11.9
+Fixes:
+- [core] Add option to pass bucket (daily, monthly) for /o/analytics/session and /o/analytics/events endpoints
+- [dashboards] Dasboard name and tooltip sanitization
+- [notes] Notes content sanitization
+- [populator] Do not update last data on populator
+- [push] fix on timezone for recurring messages
+- [push] skippable audience estimation
+
+Enterprise Fixes:
+- [drill]  Modify export filename no do not include full query if query is too long
+- [retention] Classical & Unbound Retention query breakdown fix
+
 ## Version 23.11.8
 Fixes:
 - [push] Fix for messages failure that show infinity in detail
