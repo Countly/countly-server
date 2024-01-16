@@ -386,7 +386,8 @@
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'data-manager-manage-category': ManageCategory
@@ -1169,7 +1170,8 @@
             countlyVue.container.mixins(["/manage/data-manager"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager"
-            })
+            }),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             var localTabs = [];
