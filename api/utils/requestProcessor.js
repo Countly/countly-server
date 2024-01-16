@@ -3258,7 +3258,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
-        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
+        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24) && !params.populator && !params.qstring.populator) { //update if more than day passed
             //set new value
             common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
                 if (err1) {
