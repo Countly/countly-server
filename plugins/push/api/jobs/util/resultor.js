@@ -515,13 +515,13 @@ class Resultor extends DoFinish {
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
 
-                        try {
+                        /*try {
                             this.log.d('Recording %d data points', sent);
                             require('../../../../server-stats/api/parts/stats').updateDataPoints(common.writeBatcher, app._id, 0, {"p": sent});
                         }
                         catch (e) {
                             this.log.d('Error during dp recording', e);
-                        }
+                        }*/
                         this.sentUsers[aid][mid][p] = 0;
                     }
                 });
