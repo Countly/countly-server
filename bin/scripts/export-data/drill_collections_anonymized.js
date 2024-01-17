@@ -74,7 +74,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         var collections = [];
         try {
             var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(appId)});
-            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device"];
+            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 
             if (events && events.list) {
                 for (var p = 0; p < events.list.length; p++) {

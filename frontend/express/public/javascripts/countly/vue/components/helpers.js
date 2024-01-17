@@ -597,6 +597,14 @@
                 }
 
 
+                if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
+                    availableEvents.push({
+                        "label": this.i18n('internal-events.[CLY]_consent'),
+                        "name": "[CLY]_consent",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_consent'), value: '[CLY]_consent' } ]
+                    });
+                }
+
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
                     availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
@@ -607,7 +615,14 @@
 
                 if (countlyGlobal.plugins.indexOf('push') !== -1) {
                     availableEvents.push({
-                        "label": 'Push',
+                        "label": 'Push Sent',
+                        "name": "[CLY]_push_sent",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_push_sent'), value: '[CLY]_push_sent' }
+                        ]
+                    });
+                    availableEvents.push({
+                        "label": 'Push Actioned',
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
