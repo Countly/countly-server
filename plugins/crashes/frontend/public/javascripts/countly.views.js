@@ -711,7 +711,8 @@
                 externalActionDropdownItems: "crashes/external/actionDropdownItems",
                 externalDialogs: "crashes/external/dialogs",
                 externalActions: "crashes/external/actionDropdownItems/actions"
-            })
+            }),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             return {

@@ -376,7 +376,7 @@
                                     <div class="bu-p-5 bu-is-align-self-flex-start">
                                         <div class="text-medium text-uppercase font-weight-bold">
                                             {{i18n('crashes.sdk-logs')}}</div>
-                                        <pre class="crash-pre">{{props.row.logs}}</pre>
+                                        <pre class="crash-pre">{{unescapeHtml(props.row.logs)}}</pre>
                                     </div>
                                 </el-card>
                             </template>
