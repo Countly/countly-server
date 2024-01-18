@@ -133,6 +133,12 @@
     var globalDaysRange = [],
         globalMonthsRange = [],
         globalYearsRange = [],
+        // EMRE: ...
+        globalMinutesRange = [],
+        globalHoursRange = [],
+        globalFutureMinutesRange = [],
+        globalFutureHoursRange = [],
+
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
         globalFutureYearsRange = [],
@@ -140,9 +146,14 @@
         globalMax = moment().endOf('day'),
         globalFutureMin = moment().startOf('day'),
         globalFutureMax = moment().startOf('day').add(10, "y"),
+        // EMRE: hours and minutes cursors from min date
+        minutesCursor = moment(globalMin.toDate()),
+        hoursCursor = moment(globalMin.toDate()),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate()),
         yearsCursor = moment(globalMin.toDate());
+
+    // EMRE: TODO: Double while loops for both minutes and hours..
 
     while (daysCursor < globalMax) {
         globalDaysRange.push({
@@ -216,11 +227,13 @@
         yearsCursor = yearsCursor.add(10, "Y");
     }
 
+    // EMRE: Free global objects of minutes and hours.
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
     Object.freeze(globalFutureDaysRange);
     Object.freeze(globalFutureMonthsRange);
     Object.freeze(globalYearsRange);
+    // EMRE: Has Object.freeze(globaFutureYearsRange); been missing here?
 
     /**
      * Creates an initial state object 
@@ -232,7 +245,16 @@
             tableType = "",
             globalRange = null,
             inputDisable = false;
-
+        if (instance.type.includes("minutes")) {
+            formatter = "YYYY-MM";
+            tableType = "minutes";
+            globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+        }
+        if (instance.type.includes("hours")) {
+            formatter = "YYYY-MM";
+            tableType = "hours";
+            globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
+        }
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
@@ -243,6 +265,7 @@
             tableType = "year";
             globalRange = instance.isFuture ? globalFutureYearsRange : globalYearsRange;
         }
+        // EMRE: Shouldn't this else clause show days format table?
         else {
             formatter = "YYYY-MM-DD";
             tableType = "day";
@@ -277,7 +300,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day"},
+            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day", hours: "hours", minutes: "minutes"},
             inputDisable: inputDisable,
             leftSideShortcuts: [
                 {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
@@ -286,6 +309,8 @@
                 {label: CV.i18n('common.time-period-select.last-n'), value: "inTheLast"},
                 {label: CV.i18n('common.all-time'), value: "0days"},
             ],
+            globalMinutesRange: globalMinutesRange,
+            globalHoursRange: globalHoursRange,
             globalMonthsRange: globalMonthsRange,
             globalYearsRange: globalYearsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
@@ -374,6 +399,20 @@
                         </table-component>\
                         <div v-if="!visible" style="height:180px"></div>\
                     </div>',
+    };
+
+    var minuteTableComponent = {
+        components: {
+            'table-component': ELEMENT.MinuteTable
+        },
+        mixins: [AbstractTableComponent]
+    };
+
+    var hourTableComponent = {
+        components: {
+            'table-component': ELEMENT.HourTable
+        },
+        mixins: [AbstractTableComponent]
     };
 
     var dateTableComponent = {
@@ -502,7 +541,14 @@
                     this.tableType = "day";
                     inputObj = this.onmInput.parsed;
                     break;
+                ///////////////////////////////////////////////////////////////////////////////////////////
                 case 'inTheLast':
+                    if (this.inTheLastInput.raw.level === "minutes") {
+                        this.tableType = "minutes";
+                    }
+                    if (this.inTheLastInput.raw.level === "hours") {
+                        this.tableType = "hours";
+                    }
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
@@ -620,12 +666,20 @@
             'beforeInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.beforeInput, 1);
             },
+            ///////////////////////////////////////////////////////////////////////////////////////////
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
                     this.$emit("update-stringified-value", newVal);
                     var self = this;
                     var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+                    // EMRE: Checks for minutes and hours
+                    if (newVal.level === "minutes") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("minute");
+                    }
+                    if (newVal.level === "hours") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("hour");
+                    }
                     if (newVal.level === "weeks") {
                         parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
                     }
@@ -664,6 +718,14 @@
                         setTimeout(function() {
                             self.scrollTo(self.inTheLastInput.parsed[0]);
                         }, 0);
+                    }
+                    else if (newVal.level === "hours") {
+                        this.globalRange = this.globalHoursRange;
+                        this.tableType = "month";
+                    }
+                    else if (newVal.level === "minutes") {
+                        this.globalRange = this.globalMinutesRange;
+                        this.tableType = "month";
                     }
                 }
             },
@@ -834,6 +896,8 @@
             ELEMENT.utils.Emitter
         ],
         components: {
+            'minute-table': minuteTableComponent,
+            'hour-table': hourTableComponent,
             'date-table': dateTableComponent,
             'month-table': monthTableComponent,
             'year-table': yearTableComponent,
@@ -900,7 +964,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['date', 'daterange', 'month', 'monthrange', "week", 'year', 'yearrange'].includes(value);
+                    return ['date', 'daterange', 'month', 'monthrange', "week", 'year', 'yearrange', 'minute', 'hour'].includes(value);
                 }
             },
             displayShortcuts: {
@@ -1006,7 +1070,17 @@
                 type: String,
                 default: "cly-datepicker-test-id",
                 required: false
-            }
+            },
+            inTheLastMinutes: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            inTheLastHours: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
         },
         data: function() {
             var data = getInitialState(this);
@@ -1210,7 +1284,7 @@
                 if (this.isGlobalDatePicker) {
                     try {
                         var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
-                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days"};
+                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days", "hour": "hours", "minute": "minutes"};
                         this.rangeMode = storedDateItems.rangeMode;
                         this.tableType = storedDateItems.tableType;
                         if (this.rangeMode === "inTheLast") {
