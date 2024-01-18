@@ -735,6 +735,32 @@ function verifyMemberArgon2Hash(username, password, callback) {
 usersApi.deleteOwnAccount = function(params) {
     if (params.qstring.password && params.qstring.password !== "") {
         verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
+            const dispatchDeleteCallback = async function(__, otherPluginResults) {
+                const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                    if (result.status === "rejected") {
+                        acc.push((result.reason && result.reason.message) || '');
+                    }
+
+                    return acc;
+                }, []);
+
+                if (rejectReasons.length > 0) {
+                    log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                    common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                }
+                else {
+                    try {
+                        await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
+                        killAllSessionForUser(member._id);
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                    catch (err1) {
+                        console.log(err1);
+                        common.returnMessage(params, 400, 'Mongo error');
+                    }
+                }
+            };
+
             if (member) {
                 if (member.global_admin) {
                     common.db.collection('members').count({'global_admin': true}, function(err2, count) {
@@ -746,40 +772,18 @@ usersApi.deleteOwnAccount = function(params) {
                             common.returnMessage(params, 400, 'global admin limit');
                         }
                         else {
-                            common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err1 /*, res1*/) {
-                                if (err1) {
-                                    console.log(err1);
-                                    common.returnMessage(params, 400, 'Mongo error');
-                                }
-                                else {
-                                    plugins.dispatch("/i/users/delete", {
-                                        params: params,
-                                        data: member
-                                    });
-                                    killAllSessionForUser(member._id);
-                                    common.returnMessage(params, 200, 'Success');
-                                }
-                            });
-                        }
-
-                    });
-
-                }
-                else {
-                    common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err3 /* , res1*/) {
-                        if (err3) {
-                            console.log(err3);
-                            common.returnMessage(params, 400, 'Mongo error');
-                        }
-                        else {
                             plugins.dispatch("/i/users/delete", {
                                 params: params,
                                 data: member
-                            });
-                            killAllSessionForUser(member._id);
-                            common.returnMessage(params, 200, 'Success');
+                            }, dispatchDeleteCallback);
                         }
                     });
+                }
+                else {
+                    plugins.dispatch("/i/users/delete", {
+                        params: params,
+                        data: member
+                    }, dispatchDeleteCallback);
                 }
             }
             else {
