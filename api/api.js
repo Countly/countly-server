@@ -362,8 +362,13 @@ plugins.connectToAllDatabases().then(function() {
                         }
                     }
                     params.files = files;
+                    let formDataUrl = [];
                     for (const i in fields) {
                         params.qstring[i] = fields[i];
+                        formDataUrl.push(`${i}=${fields[i]}`);
+                    }
+                    if (formDataUrl.length) {
+                        params.formDataUrl = formDataUrl.join('&');
                     }
                     if (!params.apiPath) {
                         processRequest(params);
