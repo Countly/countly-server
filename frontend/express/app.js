@@ -463,22 +463,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(cookieParser());
     //server theme images
     app.use(function(req, res, next) {
-        if (req.url.indexOf(countlyConfig.path + '/images/') === 0) {
-            var urlPath = req.url.replace(countlyConfig.path, "");
-            var theme = req.cookies.theme || curTheme;
-            if (theme && theme.length) {
-                fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
-                    if (exists) {
-                        res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
-                    }
-                    else {
-                        next();
-                    }
-                });
-            }
-            else { //serve default location
-                next();
-            }
+        var urlPath = req.url.replace(countlyConfig.path, "");
+        var theme = req.cookies.theme || curTheme;
+        if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
+            fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
+                if (exists) {
+                    res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
+                }
+                else {
+                    next();
+                }
+            });
         }
         else {
             next();
