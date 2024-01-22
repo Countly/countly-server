@@ -12,9 +12,20 @@ pluginManager.dbConnection().then(function(countlyDb) {
                             if (cohorts[k].steps[l].period && Array.isArray(cohorts[k].steps[l].period) && cohorts[k].steps[l].period[1] > 220950501179902000) {
                                 updateObj.push({
                                     'updateOne': {
-                                        'filter': {"_id": cohorts[k]._id },
-                                        'update': {"$set": {"steps.$[element].period": {"since": cohorts[k].steps[l].period[0]}}},
-                                        'arrayFilters': [{ "element.period": {$gte: 220950501179902000}}]
+                                        'filter': { "_id": cohorts[k]._id },
+                                        'update': {
+                                            "$set": {
+                                                "steps.$[element].period": {
+                                                    "since": cohorts[k].steps[l].period[0]
+                                                }
+                                            }
+                                        },
+                                        'arrayFilters': [
+                                            {
+                                                "element.period.0": cohorts[k].steps[l].period[0],
+                                                "element.period.1": cohorts[k].steps[l].period[1]
+                                            }
+                                        ]
                                     }
                                 });
                             }
