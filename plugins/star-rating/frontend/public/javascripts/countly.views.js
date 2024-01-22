@@ -182,6 +182,7 @@
 
     // these table components should be 3 different components
     var CommentsTable = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
             comments: Array,
@@ -821,7 +822,8 @@
         },
         mixins: [
             countlyVue.mixins.hasDrawers("widget"),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters
         ],
         data: function() {
             return {
@@ -1177,6 +1179,7 @@
     });
 
     var UserFeedbackRatingsTable = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T('/star-rating/templates/users-feedback-ratings-table.html'),
         props: {
             ratings: {
