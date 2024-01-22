@@ -15,12 +15,12 @@
     }
 
     var Drawer = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/drawer.html"),
         props: {
             settings: Object,
             controls: Object
         },
-        mixins: [],
         data: function() {
             return {
                 imageSource: '',
@@ -285,7 +285,8 @@
     var WidgetsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/widgets-table.html"),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters
         ],
         props: {
             rows: {
@@ -1085,7 +1086,7 @@
                 starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                     self.widget = widget;
                     self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
-                    self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
+                    self.widget.created_at = countlyCommon.formatTimeAgoText(self.widget.created_at).text;
                     if (self.cohortsEnabled) {
                         self.widget = self.parseTargeting(widget);
                     }
