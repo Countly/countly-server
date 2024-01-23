@@ -348,6 +348,12 @@ plugins.connectToAllDatabases().then(function() {
                     req.body += data;
                 });
 
+                let multiFormData = false;
+                // Check if we have 'multipart/form-data'
+                if (req.headers['content-type']?.startsWith('multipart/form-data')) {
+                    multiFormData = true;
+                }
+
                 form.parse(req, (err, fields, files) => {
                     //handle bakcwards compatability with formiddble v1
                     for (let i in files) {
@@ -362,13 +368,18 @@ plugins.connectToAllDatabases().then(function() {
                         }
                     }
                     params.files = files;
-                    let formDataUrl = [];
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
-                        formDataUrl.push(`${i}=${fields[i]}`);
-                    }
-                    if (formDataUrl.length) {
+                    if (multiFormData) {
+                        let formDataUrl = [];
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                            formDataUrl.push(`${i}=${fields[i]}`);
+                        }
                         params.formDataUrl = formDataUrl.join('&');
+                    }
+                    else {
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                        }
                     }
                     if (!params.apiPath) {
                         processRequest(params);
