@@ -17,6 +17,8 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_session" + apps[i]._id).digest('hex')] = "[CLY]_session";
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + apps[i]._id).digest('hex')] = "[CLY]_crash";
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + apps[i]._id).digest('hex')] = "[CLY]_push_action";
+            hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_push_sent" + apps[i]._id).digest('hex')] = "[CLY]_push_sent";
+            hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + apps[i]._id).digest('hex')] = "[CLY]_consent";
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + apps[i]._id).digest('hex')] = "[CLY]_star_rating";
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + apps[i]._id).digest('hex')] = "[CLY]_nps";
             hashes["drill_events" + crypto.createHash('sha1').update("[CLY]_survery" + apps[i]._id).digest('hex')] = "[CLY]_survey";
