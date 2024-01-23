@@ -569,7 +569,7 @@ usersApi.mergeUserProperties = function(newAppUserP, oldAppUser) {
             newAppUserP[i] = oldAppUser[i];
         }
     }
-	newAppUserP.merged_uid = oldAppUser.uid;
+    newAppUserP.merged_uid = oldAppUser.uid;
     newAppUserP.merged_did = oldAppUser.did;
     newAppUserP.merges = (newAppUserP.merges || 0) + 1;
 };
