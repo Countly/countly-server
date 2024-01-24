@@ -22,7 +22,7 @@
 						</div>
 						<div class="ratings-drawer__ratings-popup">
               <div class="ratings-drawer__rp-question-area" data-test-id="ratings-drawer-ratingspopup-question">
-                {{ drawerScope.editedObject.popup_header_text }}
+                {{ unescapeHtml(drawerScope.editedObject.popup_header_text) }}
               </div>
               <div v-if="drawerScope.editedObject.ratings_texts">
                 <div class="ratings-drawer__rp-ratings-area" v-if="drawerScope.editedObject.rating_symbol==='emojis'">
