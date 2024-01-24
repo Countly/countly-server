@@ -936,7 +936,12 @@
             visible: {default: true, type: Boolean},
             closable: {default: true, type: Boolean},
             autoHide: { default: false, type: Boolean },
-            goTo: { default: { title: '', url: '', from: ''}, type: Object, required: false },
+            goTo: {
+                default() {
+                    return { title: '', url: '', from: '' };
+                },
+                type: Object
+            }
         },
         data: function() {
             return {
