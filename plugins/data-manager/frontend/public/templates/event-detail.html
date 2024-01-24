@@ -7,7 +7,7 @@
                 <cly-back-link link="/manage/data-manager/events/events" title="Back to Manage Events"></cly-back-link>
                 <div class="bu-mt-4">
                     <div class="bu-is-flex bu-is-align-items-center">
-                        <h3 class="bu-is-capitalized bu-mr-2">{{event.name || event.key}}</h3>
+                        <h3 class="bu-is-capitalized bu-mr-2">{{unescapeHtml(event.name || event.key)}}</h3>
                         <cly-guide></cly-guide>
                     </div>
                     <div class="bu-mt-4 bu-mr-2">
@@ -65,22 +65,22 @@
                             <tr>
                                 <td><span>{{i18n('data-manager.events.key')}}</span>
                                 </td>
-                                <td v-html="event.key"></td>
+                                <td>{{unescapeHtml(event.key)}}</td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.event-name')}}</span>
                                 </td>
-                                <td v-html="event.name"></td>
+                                <td>{{unescapeHtml(event.name)}}</td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.description')}}</span>
                                 </td>
-                                <td v-html="event.description || '-' "></td>
+                                <td>{{unescapeHtml(event.description || '-')}}</td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.category')}}</span>
                                 </td>
-                                <td v-html="categoriesMap[event.category] || i18n('data-manager.uncategorized')"></td>
+                                <td>{{unescapeHtml(categoriesMap[event.category] || i18n('data-manager.uncategorized'))}}</td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.first-triggered')}}</span>
@@ -109,12 +109,12 @@
             <template v-slot="scope">
                 <el-table-column :label="i18n('data-manager.segment-name')" sortable="custom" prop="name">
                     <template v-slot="rowScope">
-                        <div v-html="rowScope.row.name"></div>
+                        <div>{{unescapeHtml(rowScope.row.name)}}</div>
                     </template>
                 </el-table-column>
                 <el-table-column :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
-                        <div v-html="rowScope.row.description"></div>
+                        <div>{{unescapeHtml(rowScope.row.description)}}</div>
                     </template>
                 </el-table-column>
                 <el-table-column :label="i18n('data-manager.status')" sortable="custom" prop="status">
