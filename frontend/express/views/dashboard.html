@@ -1740,11 +1740,6 @@
             </div>
         </div>
 	</script>
-<% if (!offline_mode) { %>
-    <% if (use_google) { %>
-        <script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <% } %>
-<% } %>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
