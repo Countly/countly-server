@@ -3098,7 +3098,13 @@ const checksumSaltVerification = (params) => {
         payloads.push(params.href.substr(params.fullPath.length + 1));
 
         if (params.req.method.toLowerCase() === 'post') {
-            payloads.push(params.req.body);
+            // Check if we have 'multipart/form-data'
+            if (params.formDataUrl) {
+                payloads.push(params.formDataUrl);
+            }
+            else {
+                payloads.push(params.req.body);
+            }
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
