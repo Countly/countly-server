@@ -614,13 +614,13 @@
                 }
 
                 if (countlyGlobal.plugins.indexOf('push') !== -1) {
-                    availableEvents.push({
+                    /*availableEvents.push({
                         "label": 'Push Sent',
                         "name": "[CLY]_push_sent",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_sent'), value: '[CLY]_push_sent' }
                         ]
-                    });
+                    });*/
                     availableEvents.push({
                         "label": 'Push Actioned',
                         "name": "[CLY]_push_action",
