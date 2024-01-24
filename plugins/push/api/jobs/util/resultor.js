@@ -514,6 +514,7 @@ class Resultor extends DoFinish {
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
+                        //plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: params.qstring.events});
 
                         try {
                             this.log.d('Recording %d data points', sent);

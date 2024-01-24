@@ -4,7 +4,7 @@
         <div v-if="item.labels && item.labels.length" class="bu-is-flex bu-is-align-items-center bu-is-flex-shrink-1 bu-is-flex-grow-1" style="min-width: 0">
             <div v-for="(label, i) in item.labels" :class="['bu-is-flex bu-is-align-items-center bu-is-flex-shrink-1 bu-px-2 bu-mr-1']" :style="{backgroundColor: label.color + '26', borderRadius: '4px', minWidth: 0}">
                 <i class="fas fa-circle bu-mr-2" :style="{fontSize: '6px', color: label.color}"></i>
-                <span class="text-small has-ellipsis bu-is-flex-shrink-1" v-html="label.label"></span>
+                <span class="text-small has-ellipsis bu-is-flex-shrink-1">{{unescapeHtml(label.label)}}</span>
             </div>
         </div>
     </div>

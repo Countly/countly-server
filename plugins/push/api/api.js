@@ -72,6 +72,7 @@ plugins.setConfigs(FEATURE_NAME, {
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');
+plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 
 plugins.register('/worker', function() {

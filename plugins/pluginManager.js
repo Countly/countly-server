@@ -1856,8 +1856,8 @@ var pluginManager = function pluginManager() {
                 hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": eventsDb[z].list[i]};
             }
 
-            var internalDrillEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
-            var internalEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
+            var internalDrillEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
+            var internalEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 
             if (internalDrillEvents) {
                 for (let i = 0; i < internalDrillEvents.length; i++) {

@@ -11,7 +11,9 @@ const internalEventsEnum =
     "[CLY]_star_rating": "str",
     "[CLY]_apm_device": "apm",
     "[CLY]_apm_network": "apm",
-    "[CLY]_push_action": "p"
+    "[CLY]_push_action": "p",
+    "[CLY]_push_sent": "ps",
+    "[CLY]_consent": "cs",
 };
 
 /**
