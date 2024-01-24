@@ -21,8 +21,9 @@
                                         <cly-inline-form-field rules="required" :label="i18n('management-users.full-name')" prop="full_name">
                                             <el-input :placeholder="i18n('management-users.full-name')" v-model="formScope.editedObject.full_name" @input="nameChanged"></el-input>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field rules="required" :label="i18n('user-settings.api-key')" prop="api_key">
-                                            <el-input :placeholder="i18n('user-settings.api-key')" v-model="formScope.editedObject.api_key"></el-input>
+                                        <cly-inline-form-field rules="required" :label="i18n('user-settings.api-key')" prop="api_key" class="apikey">
+                                            <el-input :placeholder="i18n('user-settings.api-key')" v-model="formScope.editedObject.api_key" readonly></el-input>
+                                            <el-button @click="formScope.editedObject.api_key = generateAPIKey()">{{i18n('configs.regenerate')}}</el-button>
                                         </cly-inline-form-field>
                                         <cly-inline-form-field :label="i18n('management-users.password')">
                                             <el-button @click="changePassword.showDialog = true">{{i18n('user-settings.change-password')}}</el-button>
