@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon */
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
@@ -914,6 +914,7 @@
                                 '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
                                 '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
+                            '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
                             '<div v-if="closable"  class="bu-mt-2" >\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
@@ -934,7 +935,13 @@
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
             closable: {default: true, type: Boolean},
-            autoHide: {default: false, type: Boolean},
+            autoHide: { default: false, type: Boolean },
+            goTo: {
+                default() {
+                    return { title: '', url: '', from: '' };
+                },
+                type: Object
+            }
         },
         data: function() {
             return {
@@ -984,6 +991,9 @@
                 this.isModalVisible = false;
                 this.$emit('close', this.id);
             },
+            goToUrl: function() {
+                CountlyHelpers.goTo(this.goTo);
+            }
         },
         mounted: function() {
             if (this.autoHide) {
