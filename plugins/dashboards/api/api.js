@@ -1334,7 +1334,7 @@ plugins.setConfigs("dashboards", {
                         owner: report.user,
                         purpose: "LoginAuthToken",
                         temporary: true,
-                        ttl: 300, //5 minutes
+                        ttl: 540, //9 minutes
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();
@@ -1352,7 +1352,7 @@ plugins.setConfigs("dashboards", {
                                 options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
-                                options.timeout = 120000;
+                                options.timeout = 240000;
                                 options.cbFn = function(opt) {
                                     var rep = opt.report || {};
                                     var reportDateRange = rep.date_range || "30days";
