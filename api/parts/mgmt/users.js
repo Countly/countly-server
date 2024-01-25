@@ -585,13 +585,14 @@ usersApi.updateUser = async function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user was deleted
 **/
-usersApi.deleteUser = function(params) {
+usersApi.deleteUser = async function(params) {
     var argProps = {
             'user_ids': {
                 'required': true,
                 'type': 'Array'
             }
         },
+        fails = 0,
         userIds = [];
 
     var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
@@ -606,21 +607,52 @@ usersApi.deleteUser = function(params) {
             continue;
         }
         else {
-            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] }, function() {});
-            common.db.collection('members').findAndModify({ '_id': common.db.ObjectID(userIds[i]) }, {}, {}, { remove: true }, function(err, user) {
-                if (!err && user && user.ok && user.value) {
+            const user = await common.db.collection('members').findOne({ '_id': common.db.ObjectID(userIds[i]) });
+            const promisifiedDispatch = function(prms, data) {
+                return new Promise((resolve, reject) => {
                     plugins.dispatch("/i/users/delete", {
-                        params: params,
-                        data: user.value
+                        params: prms,
+                        data,
+                    }, async(__, otherPluginResults) => {
+                        const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                            if (result.status === "rejected") {
+                                acc.push((result.reason && result.reason.message) || '');
+                            }
+
+                            return acc;
+                        }, []);
+
+                        if (rejectReasons.length > 0) {
+                            log.e("User " + userIds[i] + " deletion failed\n%j", rejectReasons.join("\n"));
+                            fails += 1;
+                            reject(false);
+                        }
+                        else {
+                            await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+                            await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
+                            await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
+                            resolve(true);
+                        }
                     });
-                    usersApi.deleteUserNotes({member: {_id: user.value._id.toString()}});
-                }
-            });
+                });
+            };
+
+            await promisifiedDispatch(params, user);
         }
     }
 
-    common.returnMessage(params, 200, 'Success');
-    return true;
+    if (fails === 0) {
+        common.returnMessage(params, 200, 'Success');
+        return true;
+    }
+    else if (fails === userIds.length) {
+        common.returnMessage(params, 500, 'User deletion failed, please see logs for more detail');
+        return false;
+    }
+    else {
+        common.returnMessage(params, 200, 'Some users cannot be deleted, please see logs for more detail');
+        return true;
+    }
 };
 
 // created functions below are for account deletion. when merging together with next should remove  and include from members utility !!!!!! 
