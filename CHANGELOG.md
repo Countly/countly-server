@@ -1,3 +1,24 @@
+## Version 23.11.10
+Fixes:
+- [core] Record consent and push sent events
+- [core] Allow extending geojson map through themes
+- [core] Save last merged uid and did in users document
+- [core] Fix for Checksum not working for form data
+- [core] Add link to cly-notification
+- [consolidate] Preserve metrics from original request
+- [star-rating] Sanitize star rating content
+- [data-manager] Sanitize content Data manager ui
+- [account-settings] allow generating new api key
+- [reports] Increase timeouts for report generation
+- [flows] Fixed bug with incorrectly seletcing date range when calculating flows
+  
+Enterprise Fixes:
+- [heatmaps] Display a warning on heatmaps if domain is not setup
+- [license] Fix license metrics dp endpoint calculation
+- [surveys] Sanitize content for surveys
+- [users] include more fields in debug log
+- [drill] Changed metric name from "Average Session Duration" to "Average Duration"
+
 ## Version 23.11.9
 Fixes:
 - [core] Add option to pass bucket (daily, monthly) for /o/analytics/session and /o/analytics/events endpoints
