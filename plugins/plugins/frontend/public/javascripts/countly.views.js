@@ -344,6 +344,11 @@
                         app.configurationsView.registerInput("frontend.__user", {input: "el-select", attrs: {multiple: true}, list: list});
                     }
 
+                    if (self.configsData.frontend && countlyGlobal.plugins.includes('tracker')) {
+                        // disable countly tracking config for countly hosted instances
+                        delete self.configsData.frontend.countly_tracking;
+                    }
+
                     self.configsList.push({
                         "label": self.getLabel("core"),
                         "group": true,
@@ -992,6 +997,15 @@
                         this.components[allComponents[i]._id] = allComponents[i];
                     }
                 }
+            },
+            //generate API key which is a random string 32 chars long
+            generateAPIKey: function() {
+                var text = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                for (var i = 0; i < 32; i++) {
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                return text;
             }
         }
     });
@@ -1111,6 +1125,23 @@
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
+    app.configurationsView.registerInput("security.proxy_hostname", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_port", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_username", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_password", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_type", {
+        input: "el-select",
+        attrs: {},
+        list: [
+            {value: 'https', label: 'https'},
+            {value: 'http', label: 'http'}
+        ]
+    });
+
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
@@ -1186,7 +1217,25 @@
     };
     if (countlyAuth.validateGlobalAdmin()) {
         if (countlyGlobal.plugins.indexOf("drill") !== -1) {
-            showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
+            showInAppManagment.drill = {
+                "big_list_limit": true,
+                "record_big_list": true,
+                "cache_threshold": true,
+                "correct_estimation": true,
+                "custom_property_limit": true,
+                "list_limit": true,
+                "projection_limit": true,
+                "record_actions": true,
+                "record_crashes": true,
+                "record_meta": true,
+                "record_pushes": true,
+                "record_pushes_sent": true,
+                "record_sessions": true,
+                "record_star_rating": true,
+                "record_apm": true,
+                "record_consent": true,
+                "record_views": true
+            };
         }
         if (countlyGlobal.plugins.includes("logger")) {
             showInAppManagment.logger = {"state": true, "limit": true};

@@ -42,7 +42,8 @@ usersApi.getUserById = function(params) {
     }
     common.db.collection('members').findOne({ _id: common.db.ObjectID(params.qstring.id) }, {
         password: 0,
-        appSortList: 0
+        appSortList: 0,
+        api_key: 0
     }, function(err, member) {
 
         if (!member || err) {
@@ -72,7 +73,8 @@ usersApi.getUserById = function(params) {
 usersApi.getAllUsers = function(params) {
     common.db.collection('members').find({}, {
         password: 0,
-        appSortList: 0
+        appSortList: 0,
+        api_key: 0,
     }).toArray(function(err, members) {
 
         if (!members || err) {

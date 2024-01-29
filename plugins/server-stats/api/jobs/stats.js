@@ -4,8 +4,17 @@ const job = require('../../../../api/parts/jobs/job.js'),
     tracker = require('../../../../api/parts/mgmt/tracker.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
     config = require("../../../../frontend/express/config.js"),
+    pluginManager = require('../../../pluginManager.js'),
     moment = require('moment-timezone'),
     request = require('countly-request');
+
+const promisedLoadConfigs = function(db) {
+    return new Promise((resolve) => {
+        pluginManager.loadConfigs(db, () => {
+            resolve();
+        });
+    });
+};
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
@@ -36,7 +45,7 @@ class StatsJob extends job.Job {
                                 s: { $sum: "$s"}
                             }
                         }
-                    ], { allowDiskUse: true }, function(error, allData) {
+                    ], { allowDiskUse: true }, async function(error, allData) {
                         if (!error) {
                             var data = {};
                             data.all = 0;
@@ -56,21 +65,34 @@ class StatsJob extends job.Job {
                             data.avg = Math.round((data.all / allData.length) * 100) / 100;
                             var date = new Date();
                             var usersData = [];
-                            members.forEach((member) => {
-                                usersData.push({
-                                    device_id: member.email,
-                                    timestamp: Math.floor(date.getTime() / 1000),
-                                    hour: date.getHours(),
-                                    dow: date.getDay(),
-                                    user_details: JSON.stringify({
-                                        custom: {
-                                            dataPointsAll: data.all,
-                                            dataPointsMonthlyAvg: data.avg,
-                                            dataPointsLast3Months: data.month3
-                                        }
-                                    })
-                                });
+
+                            await promisedLoadConfigs(db);
+
+                            let domain = '';
+
+                            try {
+                                // try to extract hostname from full domain url
+                                const urlObj = new URL(pluginManager.getConfig('api').domain);
+                                domain = urlObj.hostname;
+                            }
+                            catch (_) {
+                                // do nothing, domain from config will be used as is
+                            }
+
+                            usersData.push({
+                                device_id: domain,
+                                timestamp: Math.floor(date.getTime() / 1000),
+                                hour: date.getHours(),
+                                dow: date.getDay(),
+                                user_details: JSON.stringify({
+                                    custom: {
+                                        dataPointsAll: data.all,
+                                        dataPointsMonthlyAvg: data.avg,
+                                        dataPointsLast3Months: data.month3
+                                    }
+                                })
                             });
+
                             var formData = {
                                 app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
                                 requests: JSON.stringify(usersData)

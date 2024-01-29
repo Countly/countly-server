@@ -2,7 +2,8 @@ import {
     feedbackRatingWidgetsPageElements,
     widgetsDataTableElements,
     feedbackRatingWidgetDetailsPageElements,
-    feedbackRatingWidgetDetailsCommentsDataTableElements
+    feedbackRatingWidgetDetailsCommentsDataTableElements,
+    feedbackRatingWidgetDetailsRatingsDataTableElements
 } from "../../../support/elements/feedback/ratings/widgets";
 
 const stepElements = require("../../../support/components/addFeedbackSteps");
@@ -26,6 +27,7 @@ const verifyEmptyPageElements = () => {
 };
 
 const verifySettingsPageElements = ({
+    widgetName,
     question,
     emojiOneText,
     emojiTwoText,
@@ -42,6 +44,17 @@ const verifySettingsPageElements = ({
 
     stepElements.verifyRatingStepElements(FEEDBACK_ADD_STEPS.SETTINGS);
 
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
+        labelText: "surveys.drawer.internal.name",
+        element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
+        value: widgetName,
+        elementPlaceHolder: "Widget Name"
+    });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_DESC,
+        labelText: "Name survey for internal purposes. It is not going to be shown on survey.",
+    });
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.QUESTION_LABEL,
         labelText: "Question",
@@ -361,6 +374,10 @@ const typeQuestion = (question) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.QUESTION_INPUT, question);
 };
 
+const typeWidgetName = (widgetName) => {
+    cy.typeInput(feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT, widgetName);
+};
+
 const clearQuestion = () => {
     cy.clearInput(feedbackRatingWidgetsPageElements.QUESTION_INPUT);
 };
@@ -393,7 +410,7 @@ const clickAddCommentCheckbox = () => {
     cy.clickElement(feedbackRatingWidgetsPageElements.ADD_COMMENT_CHECKBOX);
 };
 
-const typeAddComment = (comment) => {
+const typeAddCommentCheckboxLabelText = (comment) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.ADD_COMMENT_INPUT, comment);
 };
 
@@ -401,7 +418,7 @@ const clickContactViaCheckbox = () => {
     cy.clickElement(feedbackRatingWidgetsPageElements.CONTACT_VIA_CHECKBOX);
 };
 
-const typeContactVia = (email) => {
+const typeContactViaCheckboxLabelText = (email) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.CONTACT_VIA_INPUT, email);
 };
 
@@ -503,12 +520,18 @@ const clickSetActiveCheckbox = (page) => {
 const verifyWidgetDataFromTable = ({
     index,
     question,
+    internalName,
     pages,
     isActive
 }) => {
     cy.verifyElement({
         element: widgetsDataTableElements(index).WIDGET_QUESTION,
         elementText: question
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).INTERNAL_NAME,
+        elementText: internalName
     });
 
     cy.verifyElement({
@@ -693,12 +716,20 @@ const verifyWidgetDetailsPageElements = ({
     ratingsValue = "0",
     ratingsRate = "0%",
     timesShownValue = "0",
-    rowIndex,
-    rowRatingValue,
-    rowTimeValue,
-    rowCommentValue,
-    rowEmailValue
+    commentsTable,
+    ratingsTable
 }) => {
+    const {
+        ratings,
+        times,
+        comments,
+        emails
+    } = commentsTable;
+
+    const {
+        numberOfRatings,
+        percentages
+    } = ratingsTable;
 
     cy.verifyElement({
         element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK_ICON,
@@ -797,58 +828,89 @@ const verifyWidgetDetailsPageElements = ({
         elementText: timesShownValue
     });
 
-    if (rowIndex != null) {
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_RATINGS,
-            labelText: "Ratings",
-        });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_RATINGS,
+        labelText: "Ratings",
+    });
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS,
-            labelText: "Comments",
-        });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS,
+        labelText: "Comments",
+    });
+
+    if (commentsTable.ratings != null && commentsTable.ratings.length > 0) {
+        cy.scrollPageToBottom('.main-view');
+        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
+                labelText: index + 1,
+            });
+        }
+
+        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_NUMBER_OF_RATINGS,
+                labelText: ratingsTable.numberOfRatings[index],
+            });
+        }
+
+        for (var index = 0; index < ratingsTable.percentages.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_PERCENTAGE,
+                labelText: ratingsTable.percentages[index],
+            });
+        }
 
         cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
+        cy.scrollPageToBottom('.main-view');
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_RATING_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
         });
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_TIME_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_TIME_LABEL,
             labelText: "Time",
         });
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_COMMENT_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_COMMENT_LABEL,
             labelText: "Comment",
         });
 
         cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).COLUMN_NAME_EMAIL_LABEL,
+            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_EMAIL_LABEL,
             labelText: "E-mail",
         });
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_RATING,
-            labelText: rowRatingValue,
-        });
+        for (var index = 0; index < commentsTable.ratings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
+                labelText: commentsTable.ratings[index],
+            });
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_TIME,
-            labelText: rowTimeValue,
-        });
+        for (var index = 0; index < commentsTable.ratings.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
+                labelText: commentsTable.times,
+            });
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_COMMENT,
-            labelText: rowCommentValue,
-        });
+        for (var index = 0; index < commentsTable.comments.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
+                labelText: commentsTable.comments[index],
+            });
+        }
 
-        cy.verifyElement({
-            labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(rowIndex).ROW_EMAIL,
-            labelText: rowEmailValue,
-        });
+        for (var index = 0; index < commentsTable.emails.length; index++) {
+            cy.verifyElement({
+                labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
+                labelText: commentsTable.emails[index],
+            });
+        }
     }
 };
 
@@ -904,6 +966,7 @@ module.exports = {
     clickSaveButton,
     clearQuestion,
     clearThanksMessage,
+    typeWidgetName,
     typeQuestion,
     typeEmojiOneText,
     typeEmojiTwoText,
@@ -911,9 +974,9 @@ module.exports = {
     typeEmojiFourText,
     typeEmojiFiveText,
     clickAddCommentCheckbox,
-    typeAddComment,
+    typeAddCommentCheckboxLabelText,
     clickContactViaCheckbox,
-    typeContactVia,
+    typeContactViaCheckboxLabelText,
     typeButtonCallOut,
     typeThanksMessage,
     selectRatingSymbol,

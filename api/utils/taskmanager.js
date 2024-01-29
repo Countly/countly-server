@@ -741,8 +741,80 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     }
     const count = await options.db.collection("long_tasks").count(options.query);
     return options.db.collection("long_tasks").find(options.query, options.projection).sort(sortBy).skip(skip).limit(limit).toArray((err, list) => {
+        //check if there are any reports connected to widgets and change view links to correct dashboards if there are any.
         if (!err) {
-            callback(null, {list, count});
+            var ids_drill = [];
+            var ids_formulas = [];
+            for (var z = 0; z < list.length; z++) {
+                if (list[z].linked_to) {
+                    list[z].dashboard_report = true;
+                    if (list[z].linked_to._issuer === "wqm:drill") {
+                        ids_drill.push(list[z]._id);
+                    }
+
+                    if (list[z].linked_to._issuer === "wqm:formulas") {
+                        ids_formulas.push(list[z]._id);
+                    }
+                }
+            }
+            if (ids_drill.length > 0 || ids_formulas.length > 0) {
+                var query = {};
+                if (ids_formulas.length > 0 && ids_drill.length > 0) {
+                    query.$or = [{"cmetrics": {$in: ids_formulas}}, {"drill_report": {$in: ids_drill}}];
+                }
+                else if (ids_formulas.length > 0) {
+                    query.cmetrics = {$in: ids_formulas};
+                }
+                else if (ids_drill.length > 0) {
+                    query.drill_report = {$in: ids_drill};
+                }
+                common.db.collection("widgets").aggregate([
+                    {"$match": query},
+                    {"$project": {"wid": {"$toString": "$_id"}, "drill_report": "$drill_report", "cmetrics": "$cmetrics"}},
+                    {"$unionWith": {"coll": "dashboards", "pipeline": [{"$project": {"did": "$_id", "wid": "$widgets"}}, {"$unwind": "$wid"}, {"$project": {"did": "$did", "wid": {"$toString": "$wid"}}}]}},
+                    {"$group": {"_id": "$wid", "did": {"$push": "$did"}, "drill_report": {"$push": "$drill_report"}, "cmetrics": {"$push": "$cmetrics"}}}
+                ], function(err1, res) {
+                    if (err1) {
+                        log.e(err1);
+                    }
+                    if (res) {
+                        var map_report = {};
+                        for (var k = 0; k < res.length; k++) {
+                            if (Array.isArray(res[k].did)) {
+                                res[k].did = res[k].did[0];
+                            }
+
+                            if (Array.isArray(res[k].drill_report)) {
+                                res[k].drill_report = res[k].drill_report[0];
+                            }
+
+                            if (Array.isArray(res[k].cmetrics)) {
+                                res[k].cmetrics = res[k].cmetrics[0];
+                            }
+                            if (res[k].drill_report && res[k].drill_report.length > 0) {
+                                for (var p = 0; p < res[k].drill_report.length; p++) {
+                                    map_report[res[k].drill_report[p]] = res[k].did;
+                                }
+                            }
+                            if (res[k].cmetrics && res[k].cmetrics.length > 0) {
+                                for (var p2 = 0; p2 < res[k].cmetrics.length; p2++) {
+                                    map_report[res[k].cmetrics[p2]] = res[k].did;
+                                }
+                            }
+                        }
+                        for (var kk = 0; kk < list.length; kk++) {
+                            if (map_report[list[kk]._id]) {
+                                list[kk].view = "#/custom/" + map_report[list[kk]._id];
+                                list[kk].have_dashboard_widget = true;
+                            }
+                        }
+                    }
+                    callback(null, {list, count});
+                });
+            }
+            else {
+                callback(null, {list, count});
+            }
         }
         else {
             callback(err, {});

@@ -1,8 +1,8 @@
 FROM node:hydrogen-bullseye-slim
 
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager
-# Enterprise Edition:
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
+# Countly Enterprise:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides
 
 EXPOSE 6001
 HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:6001/ping || exit 1
@@ -19,10 +19,9 @@ ENV COUNTLY_CONTAINER="frontend" \
 
 WORKDIR /opt/countly
 COPY . .
-
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y apt-transport-https procps curl wget git python2 make gcc g++ unzip && \
+	apt-get install -y iputils-ping net-tools telnet apt-transport-https procps curl wget git python2 make gcc g++ unzip && \
 	ln -s /usr/bin/python2.7 /usr/bin/python
 
 RUN apt-get update && \

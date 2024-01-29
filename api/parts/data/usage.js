@@ -195,11 +195,15 @@ usage.processSessionDuration = function(params, callback) {
         var dbDateIds = common.getDateIds(params);
 
         common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+        params.qstring.session_duration = session_duration;
 
-        plugins.dispatch("/session/duration", {
-            params: params,
-            session_duration: session_duration
-        });
+        if (!params.qstring.begin_session) {
+            plugins.dispatch("/session/duration", {
+                params: params,
+                session_duration: session_duration
+            });
+        }
+
         if (callback) {
             callback();
         }
@@ -956,7 +960,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
     if (params.qstring.city) {
         userProps.cty = params.qstring.city;
     }
-
+    var locationData;
     if (params.qstring.location) {
         var coords = (params.qstring.location + "").split(',');
         if (coords.length === 2) {
@@ -972,6 +976,25 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     },
                     date: params.time.mstimestamp
                 };
+                locationData = await locFromGeocoder(params, {
+                    country: userProps.cc,
+                    city: userProps.cc,
+                    tz: userProps.tz,
+                    lat: userProps.loc && userProps.loc.geo.coordinates[1],
+                    lon: userProps.loc && userProps.loc.geo.coordinates[0]
+                });
+
+                if (!userProps.cc && locationData.country) {
+                    userProps.cc = locationData.country;
+                }
+
+                if (!userProps.rgn && locationData.region) {
+                    userProps.rgn = locationData.region;
+                }
+
+                if (!userProps.cty && locationData.city) {
+                    userProps.cty = locationData.city;
+                }
             }
         }
     }
@@ -991,7 +1014,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
     }
     else if (params.qstring.begin_session && params.qstring.location !== "") {
         if (userProps.loc !== undefined || (userProps.cc && userProps.cty)) {
-            let data = await locFromGeocoder(params, {
+            let data = locationData || await locFromGeocoder(params, {
                 country: userProps.cc,
                 city: userProps.cc,
                 tz: userProps.tz,
@@ -1141,6 +1164,12 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 dbAppUser: params.app_user,
                 updates: ob.updates
             });
+            if (params.qstring.session_duration) {
+                plugins.dispatch("/session/duration", {
+                    params: params,
+                    session_duration: params.qstring.session_duration
+                });
+            }
         }
         else {
             userProps.lsid = params.request_id;

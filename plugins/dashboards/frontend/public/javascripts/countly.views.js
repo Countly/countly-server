@@ -761,6 +761,9 @@
             canUpdateGrid: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
                 return (dashboard.data && dashboard.data.is_editable) ? true : false;
+            },
+            customPadding: function() {
+                return this.widget.widget_type === "note" ? "bu-p-4" : "bu-p-5";
             }
         },
         mounted: function() {
@@ -1641,7 +1644,7 @@
 
     var DashboardsMenu = countlyVue.views.create({
         template: CV.T('/dashboards/templates/dashboards-menu.html'),
-        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin, countlyVue.mixins.commonFormatters],
         components: {
             "dashboards-drawer": DashboardDrawer
         },
@@ -1724,7 +1727,7 @@
         },
         beforeMount: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/getAll").then(function() {
+            this.$store.dispatch("countlyDashboards/getAll", {just_schema: true}).then(function() {
                 self.identifySelected();
             });
         }
@@ -1743,7 +1746,7 @@
         pluginName: "dashboards",
         beforeCreate: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/getAll").then(function(res) {
+            this.$store.dispatch("countlyDashboards/getAll", {just_schema: true}).then(function(res) {
                 if (res) {
                     var dashboards = [];
 

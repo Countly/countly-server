@@ -65,12 +65,14 @@ plugins.setConfigs(FEATURE_NAME, {
     pool_pushes: 400, // object mode streams high water mark
     pool_bytes: 10000, // bytes mode streams high water mark
     pool_concurrency: 5, // max number of same type connections
-    pool_pools: 10 // max number of connections in total
+    pool_pools: 10, // max number of connections in total
+    message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');
+plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 
 plugins.register('/worker', function() {

@@ -407,6 +407,11 @@
                 var maxLen = 0;
                 var maxStr = "";
 
+                if (xAxis.data.length) {
+                    xAxis.data = xAxis.data.map(function(item) {
+                        return countlyCommon.unescapeHtml(item);
+                    });
+                }
                 xAxis.data.forEach(function(item) {
                     var str = "";
                     if (Array.isArray(item)) {
@@ -441,6 +446,7 @@
                     returnObj.grid = {bottom: 40};
 
                     returnObj.xAxis.axisLabel.formatter = function(value) {
+                        value = countlyCommon.encodeHtml(value);
                         var ellipsis = "...";
                         var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
                         if (value.length > lengthToTruncate) {
@@ -534,6 +540,11 @@
             noEmpty: {
                 type: Boolean,
                 default: false
+            },
+            sortBy: {
+                type: String,
+                default: "value",
+                required: false
             }
         },
         data: function() {
@@ -612,16 +623,16 @@
                                 cap: "round"
                             }
                         },
-                        formatter: function(params) {
+                        formatter: (params) => {
                             var template = "";
                             let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
-                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
-                                                            <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
+                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + this.sanitizeHtml(params.seriesName) + '</div>\
+                                                            <div class="text-small"> ' + this.sanitizeHtml(params.data.name) + '</div>\
+                                                            <div class="text-big">' + formatter(this.sanitizeHtml(params.data.value)) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -630,17 +641,24 @@
                             else {
                                 template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
-                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
+                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + this.sanitizeHtml(params[0].axisValueLabel) + "</span></br>";
                                 }
 
-                                params.sort(function(a, b) {
-                                    if (typeof a.value === 'object') {
-                                        return b.value[1] - a.value[1];
-                                    }
-                                    else {
-                                        return b.value - a.value;
-                                    }
-                                });
+                                if (self.sortBy === "index") {
+                                    params.sort(function(a, b) {
+                                        return a.seriesIndex - b.seriesIndex;
+                                    });
+                                }
+                                else {
+                                    params.sort(function(a, b) {
+                                        if (typeof a.value === 'object') {
+                                            return b.value[1] - a.value[1];
+                                        }
+                                        else {
+                                            return b.value - a.value;
+                                        }
+                                    });
+                                }
 
                                 for (var i = 0; i < params.length; i++) {
                                     if (params[i].seriesName.toLowerCase() === 'duration' || params[i].seriesName.toLowerCase() === 'avg. duration') {
@@ -652,10 +670,10 @@
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small">' + this.sanitizeHtml(params[i].seriesName) + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : formatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? formatter((isNaN(this.sanitizeHtml(params[i].value[1])) ? 0 : this.sanitizeHtml(params[i].value[1])), this.sanitizeHtml(params[i].value), i) : formatter((isNaN(params[i].value) ? 0 : this.sanitizeHtml(params[i].value)), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -709,9 +727,9 @@
                             show: true,
                             color: "#81868D",
                             fontSize: 12,
-                            formatter: function(value) {
+                            formatter: (value) => {
                                 if (typeof value === "number") {
-                                    return countlyCommon.getShortNumber(value);
+                                    return countlyCommon.getShortNumber(this.sanitizeHtml(value));
                                 }
                                 return value;
                             }
@@ -848,6 +866,13 @@
                 this.patchLegend(options);
 
                 return options;
+            },
+            sanitizeHtml: function(value) {
+                if (value) {
+                    value = countlyCommon.encodeHtml(value);
+                    return countlyCommon.unescapeHtml(value);
+                }
+                return value;
             }
         }
     });
@@ -901,6 +926,11 @@
                 type: String,
                 required: false,
                 default: "weekly"
+            },
+            testId: {
+                type: String,
+                required: false,
+                default: "test-id"
             }
         },
         data: function() {
@@ -1095,18 +1125,18 @@
                                         </div>\
                                         <div class="graph-tooltip-wrapper__container">';
                         }
-                        template += '<div class="' + conditionalClassName + '">\
-                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
+                        template += '<div class="' + this.sanitizeHtml(conditionalClassName) + '">\
+                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + this.sanitizeHtml(filteredNotes[i].indicator) + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
-                                                <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
+                                                <div class="text-small input-owner">' + this.sanitizeHtml(filteredNotes[i].owner_name) + '</div>\
                                                 <div class="text-small color-cool-gray-50 note-date">' + moment(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + filteredNotes[i].noteType + '</span>\
+                                                <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + this.sanitizeHtml(filteredNotes[i].noteType) + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes input-minimizer">' + this.sanitizeHtml(filteredNotes[i].note) + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1114,20 +1144,20 @@
                     }
                 }
                 else {
-                    template += '<div class="' + conditionalClassName + '">\
+                    template += '<div class="' + this.sanitizeHtml(conditionalClassName) + '">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                         <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
-                                            <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
+                                            <div class="text-medium input-owner">' + this.sanitizeHtml(params.data.note.owner_name) + '</div>\
                                             <div class="text-small color-cool-gray-50 note-date">' + moment(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
                                                 <i class="el-icon-close"></i>\
                                             </span>\
-                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
+                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + this.sanitizeHtml(params.data.note.noteType) + '</span>\
                                         </div>\
                                     </div>\
-                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
+                                    <div class="graph-notes-tooltip__body"><span class="text-medium input-notes">' + this.sanitizeHtml(params.data.note.note) + '</span></div>\
                                 </div>';
                 }
                 return template;
@@ -1739,6 +1769,10 @@
                 type: String,
                 default: 'line'
             },
+            testId: {
+                required: false,
+                default: 'test-id'
+            }
         },
         mixins: [
             countlyVue.mixins.i18n
@@ -1759,11 +1793,11 @@
                 }
             }
         },
-        template: '<div class="chart-type-toggle-wrapper">\
-                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select">\
-                            <div class="chart-type-toggle-wrapper__title"><span class="text-smaller font-weight-bold bu-is-uppercase">{{i18n("common.chart-type")}}</span></div>\
-                            <el-option value="line" label="Line"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type">Line Chart</span></el-option>\
-                            <el-option value="bar" label="Bar"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type">Bar</span></el-option>\
+        template: '<div class="chart-type-toggle-wrapper" :data-test-id="testId + \'-chart-type-toggle-wrapper\'">\
+                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select" :test-id="testId">\
+                            <div class="chart-type-toggle-wrapper__title" :data-test-id="testId + \'-chart-type-toggle-wrapper-title\'"><span class="text-smaller font-weight-bold bu-is-uppercase" :data-test-id="testId + \'-chart-type-label\'">{{i18n("common.chart-type")}}</span></div>\
+                            <el-option value="line" label="Line" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line\'"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line-text\'">Line Chart</span></el-option>\
+                            <el-option value="bar" label="Bar" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar\'"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar-text\'">Bar</span></el-option>\
                         </el-select>\
                     </div>'
     });
@@ -1973,7 +2007,7 @@
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                                <chart-toggle :test-id="testId" :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
@@ -2089,7 +2123,8 @@
                                 </div>\
                             </div>\
                             <div class="cly-vue-chart-legend__second-row">\
-                                <div class="cly-vue-chart-legend__p-number">{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip">~{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number" v-else>{{item.value}}</div>\
                                 <div\
                                     :class="[\'cly-vue-chart-legend__p-trend\', \
                                             {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
@@ -2576,7 +2611,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\

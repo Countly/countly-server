@@ -6,7 +6,12 @@
         </div>
     </div>
     <div class="bu-is-flex bu-is-align-items-center">
-        <h2>{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}</h2>
+        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate">
+            ~{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
+        </h2>
+        <h2 v-else>
+            {{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
+        </h2>
         <div v-if="colorClass == 'up'" :class="'cly-trend-up ' + negatedClass">
             <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{data && data.change}}</span>
         </div>

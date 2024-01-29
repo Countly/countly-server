@@ -22,6 +22,9 @@ export const feedbackRatingWidgetsPageElements = {
     STEP_SETTINGS_CHECK_ICON: '[data-test-id="ratings-drawer-step-1-label"].is-passed',
     STEP_APPEARANCE_CHECK_ICON: '[data-test-id="ratings-drawer-step-2-label"].is-passed',
     CLOSE_ICON: 'ratings-drawer-close-button',
+    WIDGET_NAME_LABEL: 'ratings-drawer-settings-widget-name-label',
+    WIDGET_NAME_DESC: 'ratings-drawer-settings-widget-name-desc',
+    WIDGET_NAME_INPUT: 'ratings-drawer-settings-ratings-widget-name-input',
     QUESTION_LABEL: 'ratings-drawer-settings-question-label',
     QUESTION_INPUT: 'ratings-drawer-settings-question-input',
     RATINGS_LABEL: 'ratings-drawer-settings-ratings-label',
@@ -145,6 +148,7 @@ const widgetsDataTableElements = (index = 0) => {
         STATUS_SWITCH_WRAPPER: 'ratings-widgets-data-table-status-' + index + '-el-switch-wrapper',
         STATUS_SWITCH_INPUT: 'ratings-widgets-data-table-status-' + index + '-el-switch-input',
         WIDGET_QUESTION: 'ratings-widgets-data-table-widget-name-' + index,
+        INTERNAL_NAME: 'ratings-widgets-data-table-internal-widget-name-' + index,
         WIDGET_ID_LABEL: 'ratings-widgets-data-table-widget-id-label-' + index,
         WIDGET_ID: 'ratings-widgets-data-table-widget-id-value-' + index,
         TARGETING_ALL_USERS: 'ratings-widgets-data-table-targeting-' + index + '-all-users',
@@ -200,15 +204,15 @@ export const feedbackRatingWidgetDetailsPageElements = {
     RATINGS_WIDGET_DETAILS_FILTER_PARAMETERS_CONFIRM_BUTTON: 'ratings-detail-confirm-button',
     RATINGS_WIDGET_DETAILS_FILTER_PARAMETERS_CANCEL_BUTTON: 'ratings-detail-cancel-button',
     RATINGS_WIDGET_DETAILS_RATINGS_LABEL: 'ratings-detail-metric-card-widget-detail-ratings-label',
-    RATINGS_WIDGET_DETAILS_RATINGS_TOOLTIP: 'ratings-detail-metric-card-widget-detail-ratings-metric-card-tooltip',
-    RATINGS_WIDGET_DETAILS_RATINGS_VALUE: 'ratings-detail-metric-card-widget-detail-ratings-metric-card-number',
+    RATINGS_WIDGET_DETAILS_RATINGS_TOOLTIP: 'metric-card-ratings-detail-metric-card-widget-detail-ratings-column-tooltip',
+    RATINGS_WIDGET_DETAILS_RATINGS_VALUE: 'metric-card-ratings-detail-metric-card-widget-detail-ratings-column-number',
     RATINGS_WIDGET_DETAILS_RATINGS_RATE_LABEL: 'ratings-detail-metric-card-widget-detail-rate-label',
-    RATINGS_WIDGET_DETAILS_RATINGS_RATE_TOOLTIP: 'ratings-detail-metric-card-widget-detail-rate-metric-card-tooltip',
-    RATINGS_WIDGET_DETAILS_RATINGS_RATE_PROGRESS: '.el-progress.el-progress--circle.el-progress--without-text',
-    RATINGS_WIDGET_DETAILS_RATINGS_RATE_VALUE: 'ratings-detail-metric-card-widget-detail-rate-metric-card-number',
+    RATINGS_WIDGET_DETAILS_RATINGS_RATE_TOOLTIP: 'metric-card-ratings-detail-metric-card-widget-detail-rate-column-tooltip',
+    RATINGS_WIDGET_DETAILS_RATINGS_RATE_PROGRESS: 'el-progress-metric-card-ratings-detail-metric-card-widget-detail-rate-column',
+    RATINGS_WIDGET_DETAILS_RATINGS_RATE_VALUE: 'metric-card-ratings-detail-metric-card-widget-detail-rate-column-number',
     RATINGS_WIDGET_DETAILS_TIMES_SHOWN_LABEL: 'ratings-detail-metric-card-widget-detail-times-shown-label',
-    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_TOOLTIP: 'ratings-detail-metric-card-widget-detail-times-shown-metric-card-tooltip',
-    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_VALUE: 'ratings-detail-metric-card-widget-detail-times-shown-metric-card-number',
+    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_TOOLTIP: 'metric-card-ratings-detail-metric-card-widget-detail-times-shown-column-tooltip',
+    RATINGS_WIDGET_DETAILS_TIMES_SHOWN_VALUE: 'metric-card-ratings-detail-metric-card-widget-detail-times-shown-column-number',
     RATINGS_WIDGET_DETAILS_TAB_RATINGS: 'ratings-detail-table-tab-ratings-title',
     RATINGS_WIDGET_DETAILS_TAB_COMMENTS: 'ratings-detail-table-tab-comments-title',
 };
@@ -244,10 +248,40 @@ const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => {
     };
 };
 
+const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => {
+    return {
+        TABLE_ROWS: '.el-table__row',
+        EXPORT_AS_BUTTON: 'ratings-data-table-export-as-button',
+        TABLE_SEARCH_INPUT: 'ratings-data-table-datatable-search-input',
+        COLUMN_NAME_RATING_LABEL: 'ratings-data-table-label-rating',
+        COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-data-table-sortable-icon-rating',
+        COLUMN_NAME_NUMBER_OF_RATINGS_LABEL: 'ratings-data-table-label-number-of-ratings',
+        COLUMN_NAME_NUMBER_OF_RATINGS_SORTABLE_ICON: 'ratings-data-table-sortable-icon-number-of-ratings',
+        COLUMN_NAME_PERCENTAGE_LABEL: 'ratings-data-table-label-percentage',
+        COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'ratings-data-table-sortable-icon-percentage',
+        //Columns' Rows' Datas Elements
+        ROW_RATING: 'ratings-data-table-rating-' + index,
+        ROW_NUMBER_OF_RATINGS: 'ratings-data-table-number-of-rating-' + index,
+        ROW_PERCENTAGE: 'ratings-data-table-percentage-' + index,
+
+        //PAGINATION ELEMENTS
+        ITEMS_PER_PAGE_LABEL: 'ratings-data-table-items-per-page-label',
+        PER_PAGE_COUNT_SELECT: 'ratings-data-table-items-per-page-count-select-input-pseudo-input-label',
+        PER_PAGE_COUNT_SELECT_ICON: 'ratings-data-table-items-per-page-count-select-icon',
+        PER_PAGE_COUNT_LABEL: 'ratings-data-table-items-per-page-count-select',
+        PAGE_NUMBER_SELECT: 'ratings-data-table-page-number-select-input-pseudo-input-label',
+        PAGE_NUMBER_SELECT_ICON: 'ratings-data-table-page-number-select-icon',
+        FIRST_PAGE_ARROW_BUTTON: 'ratings-data-table-first-page-arrow-button',
+        PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-data-table-previous-page-arrow-button',
+        NEXT_PAGE_ARROW_BUTTON: 'ratings-data-table-next-page-arrow-button',
+        LAST_PAGE_ARROW_BUTTON: 'ratings-data-table-last-page-arrow-button'
+    };
+};
+
 module.exports = {
     feedbackRatingWidgetsPageElements,
     feedbackRatingWidgetDetailsPageElements,
     widgetsDataTableElements,
-    feedbackRatingWidgetDetailsCommentsDataTableElements
+    feedbackRatingWidgetDetailsCommentsDataTableElements,
+    feedbackRatingWidgetDetailsRatingsDataTableElements
 };
-

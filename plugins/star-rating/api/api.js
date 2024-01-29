@@ -116,6 +116,10 @@ const widgetProperties = {
         required: false,
         type: "Boolean"
     },
+    internalName: {
+        required: false,
+        type: "String"
+    },
     appearance: {
         required: false,
         type: "Object"
@@ -1495,15 +1499,16 @@ function uploadFile(myfile, id, callback) {
         var oldUid = ob.oldUser.uid;
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
-            common.db.collection("feedback" + appId).update({
-                uid: oldUid
-            }, {
-                '$set': {
-                    uid: newUid
-                }
-            }, {
-                multi: true
-            }, function() {});
+            return new Promise(function(resolve, reject) {
+                common.db.collection("feedback" + appId).update({ uid: oldUid }, {'$set': { uid: newUid }}, { multi: true}, function(errUpdate) {
+                    if (errUpdate) {
+                        reject(errUpdate);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
         }
     });
     plugins.register("/i/app_users/delete", async function(ob) {

@@ -37,6 +37,12 @@
         return _entries;
     };
 
+    countlyGuides.getEntry = function(sectionID) {
+        return _entries.find(function(entry) {
+            return entry.sectionID === sectionID;
+        });
+    };
+
     countlyGuides.getWalkthroughs = function(sectionID) {
         let entries = _entries;
         if (sectionID) {

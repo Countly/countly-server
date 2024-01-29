@@ -97,6 +97,7 @@
                 isFetchEventsLoading: false,
                 isFetchLocationsLoading: false,
                 isLoading: false,
+                isEstimationLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
                 cohortOptions: [],
@@ -476,7 +477,7 @@
                     return;
                 }
                 if (this.shouldEstimate(nextStep, currentStep)) {
-                    return this.estimate();
+                    this.estimate(); // estimate in the background
                 }
                 if (this.shouldValidateContentBeforeExit(nextStep, currentStep)) {
                     return this.$refs.content.validate();
@@ -521,6 +522,9 @@
             setIsLoading: function(value) {
                 this.isLoading = value;
             },
+            setEstimationLoading: function(value) {
+                this.isEstimationLoading = value;
+            },
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
@@ -534,7 +538,7 @@
                         resolve(false);
                         return;
                     }
-                    self.setIsLoading(true);
+                    self.setEstimationLoading(true);
                     var options = {};
                     options.isLocationSet = self.isLocationSet;
                     options.from = self.from;
@@ -570,7 +574,7 @@
                         CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
-                        self.setIsLoading(false);
+                        self.setEstimationLoading(false);
                     });
                 });
             },
@@ -1583,9 +1587,7 @@
                 if (!this.canUserUpdate) {
                     return false;
                 }
-                return status === this.StatusEnum.CREATED
-                || status === this.StatusEnum.SENT
-                || status === this.StatusEnum.STOPPED
+                return status === this.StatusEnum.STOPPED
                 || status === this.StatusEnum.FAILED;
             },
             shouldShowStopUserCommand: function(status) {
@@ -2036,9 +2038,7 @@
                 if (!this.canUserUpdate) {
                     return false;
                 }
-                return status === this.StatusEnum.CREATED
-                || status === this.StatusEnum.SENT
-                || status === this.StatusEnum.STOPPED
+                return status === this.StatusEnum.STOPPED
                 || status === this.StatusEnum.FAILED;
             },
             shouldShowStopUserCommand: function(status) {

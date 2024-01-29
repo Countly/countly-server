@@ -1,25 +1,27 @@
-<cly-datatable-n test-id="ratings-comments-table" :rows="preparedRows" :persist-key="commentsTablePersistKey" :force-loading="loadingState">
+<cly-datatable-n test-id="ratings-comments-table" :persist-key="commentsTablePersistKey" :data-source="remoteTableDataSource"  width="100%">
   <template v-slot="scope">
-      <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
-          <template v-slot="rowScope">
-              <span class="text-medium" :data-test-id="'ratings-comment-table-rating-row-' + rowScope.$index">
-                {{rowScope.row.rating}}
-              </span>
-          </template>
-      </el-table-column>
-      <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')">
+      <el-table-column prop="comment" :label="i18n('feedback.comment')" min-width="260">
         <template v-slot="rowScope">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index" v-html="rowScope.row.cd"></span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="comment" :label="i18n('feedback.comment')">
-        <template v-slot="rowScope">
+          <div class="has-ellipsis" v-tooltip="{content:rowScope.row.comment,placement:'auto'}">
             <span class="text-medium" :data-test-id="'ratings-comment-table-comment-row-' + rowScope.$index">
               {{ rowScope.row.comment }}
             </span>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column prop="email" :label="i18n('feedback.email')">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')" min-width="60">
+          <template v-slot="rowScope">
+              <span class="text-medium" :data-test-id="'ratings-comment-table-rating-row-' + rowScope.$index">
+                <span :class="'rating-color rating-comments-color-' + rowScope.row.rating"></span> {{ rowScope.row.rating}}
+              </span>
+          </template>
+      </el-table-column>
+      <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')" min-width="120">
+        <template v-slot="rowScope">
+            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index">{{unescapeHtml(rowScope.row.cd)}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">
         <template v-slot="rowScope">
             <span class="text-medium" :data-test-id="'ratings-comment-table-time-email-row' + rowScope.$index">
               {{ rowScope.row.email }}

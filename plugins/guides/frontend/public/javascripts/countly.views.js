@@ -69,8 +69,8 @@
     var OverviewComponent = countlyVue.views.create({
         template: CV.T('/guides/templates/overview-component.html'),
         props: {
-            title: {type: String, required: true},
-            description: {type: String, required: true},
+            title: {type: String, required: false},
+            description: {type: String, required: false},
             link: {type: String, required: false},
             items: {type: Array, required: false},
             type: {type: String, required: true, default: 'walkthroughs'},
@@ -80,14 +80,31 @@
             'walkthrough-component': WalkthroughComponent,
             'article-component': ArticleComponent
         },
+        data: function() {
+            return {
+                guideConfig: {}
+            };
+        },
         computed: {
+            titleContent: function() {
+                return this.title || (this.type === 'walkthroughs' ? this.guideConfig.walkthroughTitle : this.guideConfig.articleTitle);
+            },
+            descriptionContent: function() {
+                return this.description || (this.type === 'walkthroughs' ? this.guideConfig.walkthroughDescription : this.guideConfig.articleDescription);
+            },
             customClass: function() {
                 return this.max <= 2 ? 'bu-is-half' : 'bu-is-full';
             },
             wrapperStyle: function() {
                 return this.max > 0 ? `max-width:${100 / this.max}%;` : `max-width:50%;`;
             }
-        }
+        },
+        created: function() {
+            var self = this;
+            countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
+            });
+        },
     });
 
     // GLOBAL COMPONENTS
@@ -163,11 +180,10 @@
             while (sections.length > 0 && !self.isButtonVisible) {
                 let sectionID = '/' + sections.join('/');
                 countlyGuides.fetchEntries({ sectionID }).then(function() {
-                    let walkthroughs = countlyGuides.getWalkthroughs(sectionID);
-                    let articles = countlyGuides.getArticles(sectionID);
-                    if (walkthroughs.length > 0 || articles.length > 0) {
+                    let entry = countlyGuides.getEntry(sectionID);
+                    if (entry && (entry.walkthroughs.length > 0 || entry.articles.length > 0)) {
                         self.isButtonVisible = true;
-                        self.guideData = countlyGuides.getEntries()[0];
+                        self.guideData = entry;
                         countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                             self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
                         });
@@ -206,6 +222,7 @@
             },
             fetchAndDisplayWidget: function() {
                 var domain = countlyGlobal.countly_domain;
+                var self = this;
                 try {
                     var urlObj = new URL(domain);
                     domain = urlObj.hostname;
@@ -223,16 +240,17 @@
                         //console.log(err);
                         return;
                     }
-                    var i = countlyPresentableFeedback.length - 1;
-                    var countlyFeedbackWidget = countlyPresentableFeedback[0];
-                    while (i--) {
-                        if (countlyPresentableFeedback[i].type === 'survey') {
-                            countlyFeedbackWidget = countlyPresentableFeedback[i];
-                            break;
-                        }
+                    const widgetType = "survey";
+                    const countlyFeedbackWidget = countlyPresentableFeedback.find(function(widget) {
+                        return widget.type === widgetType;
+                    });
+                    if (!countlyFeedbackWidget) {
+                        //console.error(`[Countly] No ${widgetType} widget found`);
+                        return;
                     }
-                    var selectorId = "feedback-survey";
-                    COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId);
+                    const selectorId = "feedback-survey";
+                    const segmentation = {guide: self.guideData.sectionID || ""};
+                    COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId, null, segmentation);
                 });
             },
         },
@@ -387,20 +405,20 @@
         },
         data: function() {
             return {
-                onboardingWalkthroughs: [],
-                newWalkthroughs: [],
-                suggestionsWalkthroughs: [],
-                promotedArticles: []
+                onboardingEntry: {},
+                newEntry: {},
+                suggestionsEntry: {},
+                promotedEntry: {},
             };
         },
         created: function() {
             var self = this;
             countlyGuides.fetchEntries({ sectionID: { $in: ["/overview/getting-started", "/overview/whats-new", "/overview/suggestions", "/overview/promoted"] } })
                 .then(function() {
-                    self.onboardingWalkthroughs = countlyGuides.getWalkthroughs('/overview/getting-started').slice(0, 2);
-                    self.newWalkthroughs = countlyGuides.getWalkthroughs('/overview/whats-new').slice(0, 2);
-                    self.suggestionsWalkthroughs = countlyGuides.getWalkthroughs('/overview/suggestions').slice(0, 4);
-                    self.promotedArticles = countlyGuides.getArticles('/overview/promoted').slice(0, 3);
+                    self.onboardingEntry = countlyGuides.getEntry('/overview/getting-started');
+                    self.newEntry = countlyGuides.getEntry('/overview/whats-new');
+                    self.suggestionsEntry = countlyGuides.getEntry('/overview/suggestions');
+                    self.promotedEntry = countlyGuides.getEntry('/overview/promoted');
                 })
                 .catch(function() {
                     // console.log(error);

@@ -427,6 +427,7 @@ plugins.setConfigs("dashboards", {
      */
     plugins.register("/o/dashboards/all", function(ob) {
         var params = ob.params;
+        let just_schema = params.qstring.just_schema;
 
         validateUser(params, function() {
             var member = params.member,
@@ -453,70 +454,83 @@ plugins.setConfigs("dashboards", {
                     ]
                 };
             }
-
-            common.db.collection("dashboards").find(filterCond).toArray(function(err, dashboards) {
+            let projection = {};
+            if (just_schema) {
+                projection = {_id: 1, name: 1, owner_id: 1, created_at: 1};
+            }
+            common.db.collection("dashboards").find(filterCond, projection).toArray(function(err, dashboards) {
                 if (err || !dashboards || !dashboards.length) {
                     return common.returnOutput(params, []);
                 }
 
-                async.forEach(dashboards, function(dashboard, done) {
-                    async.parallel([
-                        hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
-                        fetchMembersData.bind(null, [dashboard.owner_id], [])
-                    ], function(perr, result) {
-                        if (perr) {
-                            return done(perr);
+                if (!just_schema) {
+                    async.forEach(dashboards, function(dashboard, done) {
+                        async.parallel([
+                            hasEditAccessToDashboard.bind(null, member, dashboard),
+                            fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
+                            fetchMembersData.bind(null, [dashboard.owner_id], [])
+                        ], function(perr, result) {
+                            if (perr) {
+                                return done(perr);
+                            }
+
+                            var hasEditAccess = result[0];
+                            var widgetsMeta = result[1] || [];
+                            var ownerData = result[2];
+
+                            if (dashboard.owner_id === memberId || member.global_admin) {
+                                dashboard.is_owner = true;
+                            }
+
+                            if (hasEditAccess) {
+                                dashboard.is_editable = true;
+                            }
+
+                            if (ownerData && ownerData.length) {
+                                dashboard.owner = ownerData[0];
+                            }
+
+                            if (!dashboard.share_with) {
+                                if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
+                                    dashboard.shared_with_view && dashboard.shared_with_view.length ||
+                                    dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                    dashboard.shared_email_view && dashboard.shared_email_view.length ||
+                                    dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
+                                    dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
+                                    dashboard.share_with = "selected-users";
+                                }
+                                else {
+                                    dashboard.share_with = "none";
+                                }
+                            }
+
+                            delete dashboard.shared_with_edit;
+                            delete dashboard.shared_with_view;
+                            delete dashboard.shared_email_view;
+                            delete dashboard.shared_email_edit;
+                            delete dashboard.shared_user_groups_edit;
+                            delete dashboard.shared_user_groups_view;
+
+                            dashboard.widgets = widgetsMeta[0] || [];
+                            dashboard.apps = widgetsMeta[1] || [];
+
+                            done();
+                        });
+                    }, function(e) {
+                        if (e) {
+                            return common.returnOutput(params, []);
                         }
-
-                        var hasEditAccess = result[0];
-                        var widgetsMeta = result[1] || [];
-                        var ownerData = result[2];
-
+                        common.returnOutput(params, dashboards);
+                    });
+                }
+                else {
+                    dashboards.forEach((dashboard) => {
                         if (dashboard.owner_id === memberId || member.global_admin) {
                             dashboard.is_owner = true;
                         }
-
-                        if (hasEditAccess) {
-                            dashboard.is_editable = true;
-                        }
-
-                        if (ownerData && ownerData.length) {
-                            dashboard.owner = ownerData[0];
-                        }
-
-                        if (!dashboard.share_with) {
-                            if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
-                                dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
-                                dashboard.shared_email_view && dashboard.shared_email_view.length ||
-                                dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
-                                dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
-                                dashboard.share_with = "selected-users";
-                            }
-                            else {
-                                dashboard.share_with = "none";
-                            }
-                        }
-
-                        delete dashboard.shared_with_edit;
-                        delete dashboard.shared_with_view;
-                        delete dashboard.shared_email_view;
-                        delete dashboard.shared_email_edit;
-                        delete dashboard.shared_user_groups_edit;
-                        delete dashboard.shared_user_groups_view;
-
-                        dashboard.widgets = widgetsMeta[0] || [];
-                        dashboard.apps = widgetsMeta[1] || [];
-
-                        done();
                     });
-                }, function(e) {
-                    if (e) {
-                        return common.returnOutput(params, []);
-                    }
                     common.returnOutput(params, dashboards);
-                });
+                }
             });
         });
 
@@ -1094,6 +1108,10 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
+            if (widget.widget_type === "note") {
+                widget.contenthtml = sanitizeNote(widget.contenthtml);
+            }
+
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
                     common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
@@ -1161,6 +1179,10 @@ plugins.setConfigs("dashboards", {
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
+            }
+
+            if (widget.widget_type === "note") {
+                widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -1573,6 +1595,51 @@ plugins.setConfigs("dashboards", {
         }
 
         return true;
+    }
+
+    /**
+     * Function to encode HTML
+     * @param  {String} html - HTML string
+     * @returns {String} encoded HTML
+     */
+    function escapeHtml(html) {
+        return html.replace(/[&<>"']/g, function(match) {
+            switch (match) {
+            case '&':
+                return '&amp;';
+            case '<':
+                return '&lt;';
+            case '>':
+                return '&gt;';
+            case '"':
+                return '&quot;';
+            case "'":
+                return '&#39;';
+            default:
+                return match;
+            }
+        });
+    }
+
+    /**
+     * Function to sanitize note widget
+     * @param  {String} contenthtml - note widget HTML
+     * @returns {String} note widget valid HTML
+     */
+    function sanitizeNote(contenthtml) {
+        contenthtml = common.sanitizeHTML(contenthtml, {a: ["href"]});
+        //Keep only valid links
+        var regex = /<a\s+(?:[^>]*\s+)?href="([^"]*)"/g;
+        contenthtml = contenthtml.replace(regex, function(match, href) {
+            if (href.startsWith('http://') || href.startsWith('https://')) {
+                return match;
+            }
+            else {
+                return match.replace(href, '#');
+            }
+        });
+        contenthtml = escapeHtml(contenthtml);
+        return contenthtml;
     }
 
     // /**

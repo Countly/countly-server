@@ -1,5 +1,11 @@
 var common = require('../../../api/utils/common.js');
+const inspector = require('inspector');
+const countlyFs = require('../../../api/utils/countlyFs.js');
 var exec = require('child_process').exec;
+const tar = require("tar-stream");
+const session = new inspector.Session();
+
+const PROFILER_DIR = "nodeprofile";
 
 var _id = null;
 
@@ -395,5 +401,221 @@ function mongodbConnectionCheck() {
     });
 }
 
+
 exports.healthcheck = healthCheck;
 exports.dbcheck = mongodbConnectionCheck;
+
+// PROFILER
+
+/**
+ * Promise abstraction for session.post
+ * @param {string} cmd session command to run
+ * @returns {Promise<mixed>} the value command returns
+ */
+function sessionPost(cmd) {
+    return new Promise((res, rej) => {
+        session.post(cmd, (err, arg) => {
+            if (err) {
+                return rej(err);
+            }
+            return res(arg);
+        });
+    });
+}
+
+/**
+ * Saves the result to gridfs
+ * @param {string} filename file name with extension
+ * @param {object} result result object returned by the profiler
+ * @returns {Promise<string>} filename
+ */
+function saveProfilerResult(filename, result) {
+    return new Promise((res, rej) => {
+        countlyFs.gridfs.saveData(
+            PROFILER_DIR, filename, JSON.stringify(result),
+            { writeMode: "overwrite" },
+            function(err) {
+                if (err) {
+                    return rej(err);
+                }
+                res(filename);
+            }
+        );
+    });
+}
+
+/**
+ * Connects to inspector session and starts profilers
+ * There're 3 types of profiler: cpu, heap, coverage
+ */
+async function startProfiler() {
+    session.connect();
+
+    await sessionPost("Profiler.enable");
+    await sessionPost("Profiler.start");
+    await sessionPost("Profiler.startPreciseCoverage");
+
+    await sessionPost("HeapProfiler.enable");
+    await sessionPost("HeapProfiler.startSampling");
+}
+
+/**
+ * Stops profiler and disconnects from the inspector session
+ * Files to be created:
+ *  - process-name.cpuprofile
+ *  - process-name.heapprofile
+ *  - process-name.coverage
+ * @param {string} processName process or worker and process id
+ */
+async function stopProfiler(processName) {
+    const errors = [];
+
+    // clear old files
+    await new Promise(
+        (res, rej) => countlyFs.gridfs.deleteAll(
+            PROFILER_DIR,
+            null,
+            err => err ? rej(err) : res()
+        )
+    );
+
+    // coverage
+    try {
+        const coverage = await sessionPost("Profiler.takePreciseCoverage");
+        await saveProfilerResult(processName + ".coverage", coverage?.result);
+        await sessionPost("Profiler.stopPreciseCoverage");
+    }
+    catch (err) {
+        errors.push(err);
+    }
+
+    // cpu profiler
+    try {
+        const cpuProfile = await sessionPost("Profiler.stop");
+        await saveProfilerResult(processName + ".cpuprofile", cpuProfile?.profile);
+        await sessionPost("Profiler.disable");
+    }
+    catch (err) {
+        errors.push(err);
+    }
+
+    // heap profiler
+    try {
+        const heapProfile = await sessionPost("HeapProfiler.stopSampling");
+        await saveProfilerResult(processName + ".heapprofile", heapProfile?.profile);
+        await sessionPost("HeapProfiler.disable");
+    }
+    catch (err) {
+        errors.push(err);
+    }
+
+    session.disconnect();
+
+    if (errors.length) {
+        throw errors;
+    }
+}
+
+/**
+ * Returns the data of a file in PROFILER_DIR collection
+ * @param {string} filename file name with extension
+ * @returns {Promise<{data:string, filename:string}>} file object with name and content
+ */
+function downloadProfilerFile(filename) {
+    return new Promise((resolve, reject) => {
+        countlyFs.gridfs.getData(PROFILER_DIR, filename, {}, (err, data) => {
+            if (err) {
+                return reject("File not found");
+            }
+            resolve({ data, filename });
+        });
+    });
+}
+/**
+ * Returns the names, creation dates and size of all files in the PROFILER_DIR collection
+ * @returns {Promise<Array<{createdOn: Date, filename: string, size: number }>>} file info
+ */
+function listProfilerFiles() {
+    return new Promise((resolve, reject) => {
+        countlyFs.gridfs.listFiles(PROFILER_DIR, (err, files) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(files);
+        });
+    });
+}
+
+/**
+ * Returns the tarball read stream for all profiler files
+ * @returns {tar.Pack} tar stream
+ */
+async function profilerFilesTarStream() {
+    const files = await listProfilerFiles();
+    let fileStreamFinished = 0;
+    if (!files.length) {
+        return null;
+    }
+    const pack = tar.pack();
+    for (let i = 0; i < files.length; i++) {
+        const entry = pack.entry({ name: files[i].filename, size: files[i].size });
+        const stream = await new Promise((res, rej) => {
+            countlyFs.gridfs.getStream(
+                PROFILER_DIR,
+                files[i].filename,
+                {},
+                (err, fileStream) => err ? rej(err) : res(fileStream)
+            );
+        });
+        stream.pipe(entry);
+        stream.on("end", () => {
+            entry.end();
+            fileStreamFinished++;
+            if (fileStreamFinished === files.length) {
+                pack.finalize();
+            }
+        });
+    }
+    return pack;
+}
+
+/**
+ * Opens inspector. Running inspector.open on master process triggers workers to
+ * open their inspector also. But this is not the case for closing the inspectors.
+ * Each worker needs to be closed manually.
+ * @returns {void}
+ */
+function startInspector() {
+    return new Promise((res, rej) => {
+        try {
+            res(inspector.open());
+        }
+        catch (err) {
+            rej(err);
+        }
+    });
+}
+
+/**
+ * Closes inspector. Running inspector.close on master doesn't trigger workers to
+ * close their inspector. Each worker needs to be closed manually.
+ * @returns {void}
+ */
+function stopInspector() {
+    return new Promise((res, rej) => {
+        try {
+            res(inspector.close());
+        }
+        catch (err) {
+            rej(err);
+        }
+    });
+}
+
+exports.startProfiler = startProfiler;
+exports.stopProfiler = stopProfiler;
+exports.downloadProfilerFile = downloadProfilerFile;
+exports.listProfilerFiles = listProfilerFiles;
+exports.startInspector = startInspector;
+exports.stopInspector = stopInspector;
+exports.profilerFilesTarStream = profilerFilesTarStream;

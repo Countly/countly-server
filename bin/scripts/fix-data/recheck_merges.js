@@ -7,38 +7,55 @@
 
 var DRY_RUN = true;
 
-
 const asyncjs = require("async");
 const pluginManager = require('../../../plugins/pluginManager.js');
 const dataviews = require('../../../plugins/drill/api/parts/data/dataviews.js');
 const common = require("../../../api/utils/common.js");
 const drillCommon = require("../../../plugins/drill/api/common.js");
 
+const APP_ID = ""; //leave empty to get all apps
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
-    console.log("Connected to databases.");
+    console.log("Connected to databases...");
     common.db = countlyDb;
     common.drillDb = drillDb;
     //get all apps
     try {
-        const apps = await countlyDb.collection("apps").find({}, {_id: 1, name: 1}).toArray();
+        var query = {};
+        if (APP_ID) {
+            query._id = common.db.ObjectID(APP_ID);
+        }
+        const apps = await countlyDb.collection("apps").find(query, {_id: 1, name: 1}).toArray();
         if (!apps || !apps.length) {
             return close();
         }
         try {
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
-                console.log("Processing app ", app.name);
-                //get users with merges
-                var collections = await getDrillCollections(app._id); //get all drill collections for this app
-                const usersCursor = countlyDb.collection('app_users' + app._id).find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
+                console.log("Processing app: ", app.name);
+                //get all drill collections for this app
+                var collections = await getDrillCollections(app._id);
+                //cursor
+                const usersCollection = countlyDb.collection('app_users' + app._id);
+                var usersCursor = usersCollection.find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1});
+                //processed users count
+                var processedUsersCount = 0;
                 //for each user
-                while (await usersCursor.hasNext()) {
+                while (usersCursor && await usersCursor.hasNext()) {
+                    //increment processed users count
+                    processedUsersCount++;
+                    //get next user
                     const user = await usersCursor.next();
                     //check if old uid still exists in drill collections
                     if (user && user.merged_uid) {
                         await processUser(user.merged_uid, user.uid, collections, app);
                     }
+                    //if cursor is closed, recreate it and skip processed users
+                    if (usersCursor.isClosed()) {
+                        usersCursor = usersCollection.find({merges: {$gt: 0}}, {_id: 1, uid: 1, merged_uid: 1}).skip(processedUsersCount);
+                    }
                 }
+
             }, function(err) {
                 return close(err);
             });
@@ -55,7 +72,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         var collections = [];
         try {
             var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});
-            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device"];
+            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 
             if (events && events.list) {
                 for (var p = 0; p < events.list.length; p++) {
@@ -116,11 +133,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
 
     function close(err) {
-        if (err) {
-            console.log("Error: ", err);
-        }
         countlyDb.close();
         drillDb.close();
-        console.log("Done.");
+        if (err) {
+            console.log("Finished with errors: ", err);
+        }
+        else {
+            console.log("Finished successfully.");
+        }
     }
 });

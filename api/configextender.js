@@ -32,6 +32,7 @@ const OVERRIDES = {
 
     API: {
         MAX_SOCKETS: 'max_sockets',
+        MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize'
     },
 
     WEB: {
@@ -39,6 +40,12 @@ const OVERRIDES = {
         SECURE_COOKIES: 'secure_cookies',
         SESSION_SECRET: 'session_secret',
         SESSION_NAME: 'session_name'
+    },
+
+    MAIL: {
+        CONFIG: {
+            IGNORETLS: "ignoreTLS"
+        }
     },
 
     IGNOREPROXIES: 'ignoreProxies',

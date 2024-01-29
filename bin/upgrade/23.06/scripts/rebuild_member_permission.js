@@ -73,4 +73,5 @@ pluginManager.dbConnection().then(async (countlyDb) => {
 
     countlyDb.close();
     console.log('Member permission rebuild done');
+    process.exit(0);
 });

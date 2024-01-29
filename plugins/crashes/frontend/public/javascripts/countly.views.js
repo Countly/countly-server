@@ -1278,7 +1278,8 @@
                         "value": value,
                         "info": getUs[k].info,
                         "trend": data[getUs[k].prop].trend,
-                        "change": data[getUs[k].prop].change
+                        "change": data[getUs[k].prop].change,
+                        "isEstimate": data[getUs[k].prop].isEstimate || false,
                     });
                 }
 
@@ -1378,6 +1379,20 @@
                 {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
             ]
         });
+
+        app.addAppManagementInput("crashes", CV.i18n("crashes.title"),
+            {
+                "crashes.smart_preprocessing": {input: "el-switch", attrs: {}, defaultValue: true},
+                "crashes.smart_regexes": {input: "el-input", attrs: {type: "textarea", rows: 5}},
+                "crashes.grouping_strategy": {
+                    input: "el-select",
+                    attrs: {},
+                    list: [
+                        {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                        {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+                    ]
+                }
+            });
     }
 
     app.route("/crashes", "crashes", function() {

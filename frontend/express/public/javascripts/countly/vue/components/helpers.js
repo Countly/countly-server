@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon */
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
@@ -200,7 +200,9 @@
             numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'},
             boxType: {type: Number, default: -1},
             tooltip: {type: String, default: ''},
-            testId: {type: String, default: "cly-metric-card-test-id"}
+            testId: {type: String, default: "cly-metric-card-test-id"},
+            isEstimate: {type: Boolean, default: false},
+            estimateTooltip: {type: String, default: ''}
         },
         computed: {
             formattedNumber: function() {
@@ -256,17 +258,18 @@
                 return classes;
             }
         },
-        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses" :style="metricStyles">\
-                        <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between has-ellipsis">\
-                            <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
+        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :data-test-id="\'metric-card-\' + testId + \'-column\'" :class="topClasses" :style="metricStyles">\
+                        <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between has-ellipsis" :data-test-id="\'metric-card-\' + testId + \'-column-wrapper\'">\
+                            <cly-progress-donut class="bu-pr-4 bu-is-flex" :test-id="\'metric-card-\' + testId + \'-column\'" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
-                                    <span :data-test-id="testId + \'-metric-card-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
-                                    <cly-tooltip-icon :data-test-id="testId + \'-metric-card-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
+                                    <span :data-test-id="\'metric-card-\' + testId + \'-column-label\'" class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <cly-tooltip-icon :data-test-id="\'metric-card-\' + testId + \'-column-tooltip\'" v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
-                                    <h2 :data-test-id="testId + \'-metric-card-number\'"><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="testId + \'-metric-card-description\'" class="text-medium">{{description}}</span></slot></div>\
+                                    <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -597,6 +600,14 @@
                 }
 
 
+                if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
+                    availableEvents.push({
+                        "label": this.i18n('internal-events.[CLY]_consent'),
+                        "name": "[CLY]_consent",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_consent'), value: '[CLY]_consent' } ]
+                    });
+                }
+
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
                     availableEvents.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
@@ -607,7 +618,14 @@
 
                 if (countlyGlobal.plugins.indexOf('push') !== -1) {
                     availableEvents.push({
-                        "label": 'Push',
+                        "label": 'Push Sent',
+                        "name": "[CLY]_push_sent",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_push_sent'), value: '[CLY]_push_sent' }
+                        ]
+                    });
+                    availableEvents.push({
+                        "label": 'Push Actioned',
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
@@ -899,6 +917,7 @@
                                 '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
                                 '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
+                            '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
                             '<div v-if="closable"  class="bu-mt-2" >\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
@@ -919,7 +938,13 @@
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
             closable: {default: true, type: Boolean},
-            autoHide: {default: false, type: Boolean},
+            autoHide: { default: false, type: Boolean },
+            goTo: {
+                default() {
+                    return { title: '', url: '', from: '' };
+                },
+                type: Object
+            }
         },
         data: function() {
             return {
@@ -969,6 +994,9 @@
                 this.isModalVisible = false;
                 this.$emit('close', this.id);
             },
+            goToUrl: function() {
+                CountlyHelpers.goTo(this.goTo);
+            }
         },
         mounted: function() {
             if (this.autoHide) {
@@ -1160,4 +1188,5 @@
             }
         }
     }));
+
 }(window.countlyVue = window.countlyVue || {}));

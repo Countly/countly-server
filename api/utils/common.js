@@ -3061,9 +3061,10 @@ common.sanitizeFilename = (filename, replacement = "") => {
 /**
  * Sanitizes html content by allowing only safe tags
  * @param {string} html - html content to sanitize
+ * @param {object} extendedWhitelist - extended whitelist of tags to allow
  * @returns {string} sanitizedHTML - sanitized html content
  */
-common.sanitizeHTML = (html) => {
+common.sanitizeHTML = (html, extendedWhitelist) => {
     const whiteList = {
         a: ["target", "title"],
         abbr: ["title"],
@@ -3154,6 +3155,28 @@ common.sanitizeHTML = (html) => {
         ],
     };
 
+    //Whitelisted attributes apply to every tag
+    const whitelistedAttributes = ["style"];
+
+    if (extendedWhitelist && typeof extendedWhitelist === "object") {
+        for (let tag in extendedWhitelist) {
+            if (whiteList[tag]) {
+                whiteList[tag] = whiteList[tag].concat(extendedWhitelist[tag]);
+            }
+            else {
+                whiteList[tag] = extendedWhitelist[tag];
+            }
+        }
+    }
+
+    for (var attribute in whitelistedAttributes) {
+        for (let tag in whiteList) {
+            if (whiteList[tag].indexOf(whitelistedAttributes[attribute]) === -1) {
+                whiteList[tag].push(whitelistedAttributes[attribute]);
+            }
+        }
+    }
+
     return html.replace(/<\/?([^>]+)>/gi, (tag) => {
         const tagName = tag.match(/<\/?([^\s>/]*)/)[1];
 
@@ -3161,7 +3184,7 @@ common.sanitizeHTML = (html) => {
             return "";
         }
 
-        const attributesRegex = /\b(\w+)=["']([^"']*)["']/g;
+        const attributesRegex = /\b(\w+)\s*=\s*("[^"]*"|'[^']*'|[^>\s'"]+(?=\s*\/?>|\s*>))/g;
         var doubleQuote = '"',
             singleQuote = "'";
         let matches;
@@ -3174,7 +3197,6 @@ common.sanitizeHTML = (html) => {
             let attributeName = matches[1];
             let attributeValue = matches[2];
             if (allowedAttributes.indexOf(attributeName) > -1) {
-
                 var attributeValueStart = fullAttribute.indexOf(attributeValue);
                 if (attributeValueStart >= 1) {
                     var attributeWithQuote = fullAttribute.substring(attributeValueStart - 1);
@@ -3202,6 +3224,7 @@ common.sanitizeHTML = (html) => {
     });
 
 };
+
 
 
 

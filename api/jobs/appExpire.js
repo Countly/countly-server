@@ -30,7 +30,7 @@ class AppExpireJob extends job.Job {
             const INDEX_NAME = "cd_1";
 
             let collections = [];
-            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey"];
+            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_consent"];
             let fromPlugins = plugins.getExpireList();
 
             // predefined drill events
