@@ -130,6 +130,9 @@
                 "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
+            "parserOptions": {
+                "ecmaVersion": 2020
+            },
             "env": {
                 "browser": true,
                 "es6": true

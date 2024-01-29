@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
+/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment, CV*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
@@ -40,6 +40,7 @@
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.qihoo.appstore", "com.dragon.android.pandaspace", "me.onemobile.android", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "um.market.android"],
         _source: ["https://www.google.lv/search?q=countly+analytics", "https://www.google.co.in/search?q=mobile+analytics", "https://www.google.ru/search?q=product+analytics", "http://stackoverflow.com/questions?search=what+is+mobile+analytics", "http://stackoverflow.com/unanswered?search=game+app+analytics", "http://stackoverflow.com/tags?search=product+dashboard", "http://r.search.yahoo.com/?query=analytics+product+manager"]
     };
+
     var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
     var viewSegments = {
         name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
@@ -227,6 +228,71 @@
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+
+    /**
+     * 
+     * @param {array} arr - array of objects with probability property
+     * @returns {string} returns random key from array
+     */
+    function randomGetOne(arr) {
+        var randomNum = Math.random() * 100;
+        for (let i = 0; i < arr.length; i++) {
+            if (randomNum < parseInt(arr[i].probability)) {
+                return arr[i].key;
+            }
+            else {
+                randomNum -= parseInt(arr[i].probability);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 
+     * @param {string} jsonString - stringified json
+     * @returns {object} returns parsed json or string
+     */
+    function tryToParseJSON(jsonString) {
+        try {
+            jsonString.forEach(function(item) {
+                item.key = JSON.parse(item.key);
+            });
+        }
+        catch (e) {
+            //
+        }
+        return jsonString;
+    }
+
+    /**
+     * 
+     * @param {Array} array - array of objects with probability property
+     * @returns {string} returns random string from array 
+     */
+    function randomSelectByProbability(array) {
+        const totalProbability = array.reduce(function(sum, item) {
+            return sum + parseInt(item.probability);
+        }, 0);
+
+        const randomNum = Math.random() * totalProbability;
+        let selectedValue = null;
+        let cumulativeProbability = 0;
+
+        for (let i = 0; i < array.length; i++) {
+            cumulativeProbability += parseInt(array[i].probability);
+            if (array[i].probability === 100) {
+                selectedValue = array[i].key;
+                break;
+            }
+            else if (randomNum <= cumulativeProbability) {
+                selectedValue = array[i].key;
+                break;
+            }
+        }
+        return selectedValue;
+    }
+
+
     /**
      * Capitalize first letter of string
      * @param {string} string - input string
@@ -256,6 +322,9 @@
      * @returns {object} returns user properties
      **/
     function getUserProperties(templateUp) {
+        if (!templateUp) {
+            return {};
+        }
         var up = {populator: true};
 
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (Math.random() > 0.5)) {
@@ -264,12 +333,18 @@
             up.utm_campaign = campaigns[getRandomInt(0, campaigns.length - 1)].id;
         }
 
-        Object.keys(templateUp || {}).forEach(function(key) {
-            var values = templateUp[key];
-            up[key] = values[getRandomInt(0, values.length - 1)];
+        templateUp.forEach(function(item) {
+            up[item.key] = randomSelectByProbability(tryToParseJSON(item.values));
         });
 
-        return up;
+        let modifiedUpOnConditions = {};
+        templateUp.forEach(function(item) {
+            if (item.condition && up[item.condition.selectedKey] === item.condition.selectedValue) {
+                modifiedUpOnConditions[item.key] = randomSelectByProbability(tryToParseJSON(item.condition.values));
+            }
+        });
+        const mergedUp = Object.assign({}, up, modifiedUpOnConditions);
+        return mergedUp;
     }
 
     // helper functions
@@ -321,78 +396,110 @@
         return year + "." + d.format('MM') + "." + day;
     }
     /**
+     * 
+     * @param {object} userDetails - user details
+     * @param {array} conditions - array of conditions
+     * @returns {array} - returns null or array of values
+     */
+    function pickBehaviorConditionValue(userDetails, conditions) {
+        const userCustom = userDetails.custom;
+        if (!userCustom) {
+            return null;
+        }
+        for (const condition of conditions) {
+            const conditionKey = condition.selectedKey;
+            const conditionValue = condition.selectedValue;
+            if (userCustom[conditionKey] && userCustom[conditionKey] === conditionValue) {
+                return condition.values;
+            }
+        }
+        return null;
+    }
+    /**
      * Generate a user with random properties and actions
      * @param {object} templateUp user properties template, if available
      **/
-    function getUser(templateUp) {
-        this.getId = function() {
-            /**
-             * Generate hash for id
-             * @returns {string} returns string contains 4 characters
-             **/
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            }
-            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-        };
-
+    function User() {
         this.getProp = getProp;
-
-        var that = this;
-        this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-        this.id = this.getId();
-        this.isRegistered = false;
-
-        this.hasSession = false;
-        this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        if ((totalCountWithoutUserProps < totalUserCount / 3)) {
-            this.userdetails = { custom: getUserProperties(templateUp) };
-            totalCountWithoutUserProps++;
-        }
-        else {
-            this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
-        }
-        this.userdetails.custom.populator = true;
-        this.metrics = {};
         this.startTs = startTs;
         this.endTs = endTs;
-        this.events = [];
         this.ts = getRandomInt(this.startTs, this.endTs);
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-            this.platform = this.getProp("_os_web");
-        }
-        else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
-            this.platform = this.getProp("_os_desktop");
-        }
-        else {
-            this.platform = this.getProp("_os");
-        }
-        this.app_version = getVersion(this.ts, true);
-        this.metrics._os = this.platform;
-        this.metrics._app_version = this.app_version;
-        var m_props = metric_props.mobile;
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
-            m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
-        }
-        for (var mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
-            if (m_props[mPropsIndex] !== "_os") {
-                //handle specific cases
-                if (m_props[mPropsIndex] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    this.metrics[m_props[mPropsIndex]] = this.getProp("_source");
+        this.events = [];
+        this.metrics = {};
+        this.isRegistered = false;
+
+        this.getUserFromTemplate = function(templateUp, index = 0) {
+            this.getId = function() {
+                /**
+                 * Generate hash for id
+                 * @returns {string} returns string contains 4 characters
+                 **/
+                function s4() {
+                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
                 }
-                else {
-                    //check os specific metric
-                    if (typeof props[m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
-                        this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+            };
+            this.id = this.getId();
+            this.isRegistered = false;
+
+            // this.hasSession = false;
+            this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+            if ((index % 3 === 0)) {
+                this.userdetails = { custom: getUserProperties(templateUp) };
+            }
+            else {
+                this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
+            }
+            this.userdetails.custom.populator = true;
+
+
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                this.platform = this.getProp("_os_web");
+            }
+            else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
+                this.platform = this.getProp("_os_desktop");
+            }
+            else {
+                this.platform = this.getProp("_os");
+            }
+            this.app_version = getVersion(this.ts, true);
+            this.metrics._os = this.platform;
+            this.metrics._app_version = this.app_version;
+            var m_props = metric_props.mobile;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
+                m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
+            }
+            for (var mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
+                if (m_props[mPropsIndex] !== "_os") {
+                    //handle specific cases
+                    if (m_props[mPropsIndex] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        this.metrics[m_props[mPropsIndex]] = this.getProp("_source");
                     }
-                    //default metric set
                     else {
-                        this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex]);
+                        //check os specific metric
+                        if (typeof props[m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
+                            this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
+                        }
+                        //default metric set
+                        else {
+                            this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex]);
+                        }
                     }
                 }
             }
-        }
+        };
+        this.getUserFromEnvironment = function(env) {
+            this.id = env._id.split('_', 3)[0]; //device_id
+            if (!this.userdetails) {
+                this.userdetails = {};
+            }
+            this.platform = env.platform;
+            this.app_version = env.appVersion;
+            this.userdetails.custom = env.custom;
 
+            this.metrics._os = this.platform;
+            this.metrics._app_version = this.app_version;
+        };
         this.getCrash = function() {
             var crash = {};
             crash._os = this.metrics._os;
@@ -441,7 +548,8 @@
             var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                 errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-                var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
+                var randomError = errors[Math.floor(Math.random() * errors.length)];
+                var err = new Error(randomError + " in " + randomString(5) + ".js at line " + getRandomInt(1, 100));
                 return err.stack + "";
             }
             else if (this.platform === "Android") {
@@ -567,47 +675,52 @@
             return trace;
         };
 
-        this.getEvent = function(id, eventTemplates) {
-            this.stats.e++;
-
+        this.getEvent = function(id, eventTemplate, ts, isRandom) {
             var event = {
                 "key": id,
                 "count": 1,
-                "timestamp": this.ts,
+                "timestamp": ts || this.ts,
                 "hour": getRandomInt(0, 23),
                 "dow": getRandomInt(0, 6)
             };
 
-            this.ts += 1000;
-
-            if (Array.isArray(eventTemplates)) {
-                var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
-            }
-            else {
-                eventTemplate = eventTemplates;
+            if (!id && eventTemplate && Object.keys(eventTemplate).length) {
+                event.key = eventTemplate.key;
             }
 
-            if (eventTemplate && eventTemplate.duration) {
-                event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
-            }
-            else if (id === "[CLY]_view") {
-                event.dur = getRandomInt(0, 100);
+            if (eventTemplate && eventTemplate.duration && eventTemplate.duration.isActive) {
+                event.dur = getRandomInt(parseInt(eventTemplate.duration.minDurationTime), parseInt(eventTemplate.duration.maxDurationTime) || 10);
             }
 
-            if (eventTemplate && eventTemplate.sum) {
-                event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
+            if (eventTemplate && eventTemplate.sum && eventTemplate.sum.isActive) {
+                event.sum = getRandomInt(parseInt(eventTemplate.sum.minSumValue), parseInt(eventTemplate.sum.maxSumValue) || 10);
             }
-
-            if (eventTemplate && eventTemplate.segments) {
+            else if (eventTemplate && eventTemplate.segmentations && eventTemplate.segmentations.length) {
                 event.segmentation = {};
-                Object.keys(eventTemplate.segments).forEach(function(key) {
-                    var values = eventTemplate.segments[key];
-                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
+                var eventSegmentations = {};
+                var modifiedSegmentationsOnCondition = {};
+                eventTemplate.segmentations.forEach(function(item) {
+                    var values = item.values;
+                    var key = item.key;
+                    eventSegmentations[key] = randomSelectByProbability(tryToParseJSON(values));
+                    if (id === "[CLY]_view") {
+                        eventSegmentations.name = eventTemplate.key;
+                        eventSegmentations.visit = 1;
+                        eventSegmentations.start = 1;
+                        eventSegmentations.bounce = 1;
+                    }
                 });
+                eventTemplate.segmentations.forEach(function(item) {
+                    if (item.condition && Object.keys(eventSegmentations).includes(item.condition.selectedKey) && eventSegmentations[item.condition.selectedKey] === item.condition.selectedValue) {
+                        var values = item.condition.values;
+                        var key = item.key;
+                        modifiedSegmentationsOnCondition[key] = randomSelectByProbability(tryToParseJSON(values));
+                    }
+                });
+                event.segmentation = Object.assign({}, eventSegmentations, modifiedSegmentationsOnCondition);
             }
-            else if (id === "[CLY]_view") {
+            else if (id === "[CLY]_view" && isRandom) {
                 event.segmentation = {};
-                // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
                 var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
@@ -623,22 +736,26 @@
             else if (id === "[CLY]_orientation") {
                 event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
             }
+            else if (id === "[CLY]_view" && eventTemplate && (!eventTemplate.segmentations || !eventTemplate.segmentations.length)) {
+                event.segmentation = {};
+                event.segmentation.name = eventTemplate.key;
+                event.segmentation.visit = 1;
+                event.segmentation.start = 1;
+                event.segmentation.bounce = 1;
+            }
 
             return [event];
         };
 
-
         this.getEvents = function(count, templateEvents) {
-            if (!_.isObject(templateEvents) || Object.keys(templateEvents).length === 0) {
+            if (!templateEvents || !templateEvents.length) {
                 return [];
             }
 
             var events = [];
-            var eventKeys = Object.keys(templateEvents || {});
-
             for (var eventIndex = 0; eventIndex < count; eventIndex++) {
-                var eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
-                events.push(this.getEvent(eventKey, templateEvents[eventKey])[0]);
+                var randomEvent = templateEvents[getRandomInt(0, templateEvents.length - 1)]; //eventKeys[getRandomInt(0, eventKeys.length - 1)];
+                events.push(this.getEvent(randomEvent.key, randomEvent));
             }
 
             return events;
@@ -655,8 +772,6 @@
         };
 
         this.getRatingEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_star_rating",
                 "count": 1,
@@ -672,7 +787,7 @@
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
             event.segmentation.app_version = this.app_version;
-            event.segmentation.platform = this.metrics._os;
+            event.segmentation.platform = this.platform ? this.platform : this.metrics._os;
             if (ratingWidgetList.length) {
                 event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
             }
@@ -680,8 +795,6 @@
         };
 
         this.getNPSEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_nps",
                 "count": 1,
@@ -705,8 +818,6 @@
         };
 
         this.getSurveyEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_survey",
                 "count": 1,
@@ -774,24 +885,7 @@
             return events;
         };
 
-        this.createUsersForAB = function(device_id, callback) {
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/o/sdk",
-                data: {
-                    app_key: countlyCommon.ACTIVE_APP_KEY,
-                    device_id: device_id,
-                    keys: JSON.stringify([abExampleName]),
-                    method: "ab"
-                },
-                success: callback,
-                error: callback
-            });
-        };
-
         this.getHeatmapEvent = function() {
-            this.stats.e++;
-            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
             var views = getPageTemplates(populatorType);
@@ -843,8 +937,6 @@
         };
 
         this.getScrollmapEvent = function() {
-            this.stats.e++;
-            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
             var views = getPageTemplates(populatorType);
@@ -870,34 +962,35 @@
             return [event];
         };
 
-        this.startSession = function(template) {
-            this.ts = this.ts + 60 * 60 * 24 + 100;
-            this.stats.s++;
+        this.getAllEventsAndSessionsForRandomSequence = function(template) {
             var req = {};
             var events;
 
             if (!this.isRegistered) {
                 this.isRegistered = true;
-                this.stats.u++;
-                // note login event was here
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
-                //force users to generate first event in the template to be used later in Funnels
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
+                    .concat(
+                        this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvents(4, template && template.events)
+                    );
                 if (template && template.events && Object.keys(template.events).length > 0) {
-                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                    events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
-                this.stats.p++;
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
                 req.events = req.events.concat(this.getHeatmapEvents());
                 req.events = req.events.concat(this.getFeedbackEvents());
                 req.events = req.events.concat(this.getScrollmapEvents());
             }
             else {
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
-                //force users to generate first event in the template to be used later in Funnels
-                if (template && template.events && Object.keys(template.events).length > 0) {
-                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
+                    .concat(
+                        this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvents(4, template && template.events)
+                    );
+                if (template && template.events && template.events.length) {
+                    events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
+                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
             }
 
             if (Math.random() > 0.10) {
@@ -907,7 +1000,6 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            this.stats.c++;
             req.crash = this.getCrash();
 
             var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
@@ -916,63 +1008,24 @@
             for (var consentIndex = 0; consentIndex < consents.length; consentIndex++) {
                 req.consent[consents[consentIndex]] = (Math.random() > 0.8) ? false : true;
             }
+            req.user_details = this.userdetails;
+            return req;
+        };
 
-            this.hasSession = true;
+        this.startSessionForAb = function(user) {
+            var req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: user, ignore_cooldown: '1'};
             this.request(req);
-            this.timer = setTimeout(function() {
-                that.extendSession(template);
-            }, timeout);
-        };
-
-        this.startSessionForAb = function() {
-            this.createUsersForAB(this.id);
-        };
-
-        this.extendSession = function(template) {
-            if (this.hasSession) {
-                var req = {};
-                this.ts = this.ts + 30;
-                this.stats.x++;
-                this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(2, template && template.events));
-                req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
-                if (Math.random() > 0.8) {
-                    this.timer = setTimeout(function() {
-                        that.extendSession(template);
-                    }, timeout);
-                }
-                else {
-                    if (Math.random() > 0.5) {
-                        this.stats.c++;
-                        req.crash = this.getCrash();
-                    }
-                    this.timer = setTimeout(function() {
-                        that.endSession(template);
-                    }, timeout);
-                }
-                this.request(req);
-            }
-        };
-
-        this.endSession = function(template) {
-            if (this.timer) {
-                clearTimeout(this.timer);
-                this.timer = null;
-            }
-            if (this.hasSession) {
-                this.hasSession = false;
-                var events = this.getEvents(2, template && template.events);
-                this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()});
-            }
+            countlyPopulator.sync();
+            this.ts = this.ts + getRandomInt(100, 300);
         };
 
         this.request = function(params) {
-            this.stats.r++;
             params.device_id = this.id;
-            params.ip_address = this.ip;
+            if (this.ip) {
+                params.ip_address = this.ip;
+            }
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
-            params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                 params.sdk_name = "javascript_native_web";
@@ -982,11 +1035,9 @@
             }
             params.sdk_version = getVersion(params.timestamp);
             bulk.push(params);
-            this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-            countlyPopulator.sync();
         };
 
-        this.reportConversion = function(uid, campaingId) {
+        this.reportConversion = function(uid, campaingId, deviceId) {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i",
@@ -994,11 +1045,132 @@
                     campaign_id: uid,
                     campaign_user: campaingId,
                     app_key: countlyCommon.ACTIVE_APP_KEY,
-                    device_id: this.id,
+                    device_id: deviceId,
                     timestamp: getRandomInt(startTs, endTs),
                     populator: true
                 },
                 success: function() {}
+            });
+        };
+
+        this.generateAllEventsAndSessions = function(template, runCount, hasEnvironment) {
+            return new Promise((resolve) => {
+                completedRequestCount++;
+                this.ts = getRandomInt(startTs, endTs);
+                var endSessionTs = null;
+                var req = {};
+                let selectedSequence = null;
+                if (template && template.behavior && template.behavior.sequences && template.behavior.sequences.length) {
+                    // process every sequence
+                    while (runCount > 0) {
+                        // select random sequence from behavior
+                        if (template.behavior.sequenceConditions && template.behavior.sequenceConditions.length) {
+                            const matchedConditionValues = pickBehaviorConditionValue(this.userdetails, template.behavior.sequenceConditions);
+                            selectedSequence = matchedConditionValues ? randomSelectByProbability(matchedConditionValues) : randomSelectByProbability(template.behavior.sequences);
+                        }
+                        else {
+                            selectedSequence = randomSelectByProbability(template.behavior.sequences);
+                        }
+                        if (selectedSequence === "random") {
+                            req = this.getAllEventsAndSessionsForRandomSequence(template);
+                        }
+                        else {
+                            selectedSequence = template.sequences[parseInt(selectedSequence.split('_', 2)[1]) - 1];
+                            // process every step of a sequence
+                            for (let i = 0; i < selectedSequence.steps.length; i++) {
+                                let sequenceEvents = [];
+                                let sequenceViews = [];
+                                let selectedSequenceStep = selectedSequence.steps[i];
+                                // decides if step should be executed in accordance with probability.
+                                // e.g./ if the probability of a step is %20, it will be executed with a %20 probability otherwise it will be skipped
+                                if (!randomGetOne([selectedSequenceStep])) {
+                                    continue;
+                                }
+
+                                switch (selectedSequenceStep.key) {
+                                case "session":
+                                    if (selectedSequenceStep.value === "start") {
+                                        // this.hasSession = true;
+                                        this.isRegistered = true;
+                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
+
+                                        if (!hasEnvironment) {
+                                            req.metrics = this.metrics;
+                                            req.user_details = this.userdetails;
+                                        }
+                                        this.ts = this.ts + getRandomInt(100, 300);
+                                    }
+                                    break;
+                                case "events":
+                                    sequenceEvents = template.events.filter(x=>x.key === selectedSequenceStep.value);
+                                    if (sequenceEvents && sequenceEvents.length) {
+                                        var randomGapBetweenEvents = getRandomInt(100, 300);
+                                        this.ts = this.ts + randomGapBetweenEvents;
+                                        if (!req.events) {
+                                            req.events = [];
+                                        }
+                                        req.events = req.events.concat(this.getEvent(null, sequenceEvents[0], this.ts));
+                                    }
+                                    break;
+                                case "views":
+                                    var randomGapBetweenViews = getRandomInt(100, 300);
+                                    this.ts = this.ts + randomGapBetweenViews;
+                                    sequenceViews = template.views.filter(x=>x.key === selectedSequenceStep.value);
+                                    if (!req.events) {
+                                        req.events = [];
+                                    }
+                                    req.events = req.events.concat(this.getEvent("[CLY]_view", sequenceViews[0], this.ts));
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        runCount--;
+                        this.request(req);
+                        req = {};
+                        let minRunningSession = parseInt(template.behavior.runningSession[0]);
+                        let maxRunningSession = parseInt(template.behavior.runningSession[1]);
+
+                        if (template.behavior.generalConditions && template.behavior.generalConditions.length) {
+                            const matchedConditionValues = pickBehaviorConditionValue(this.userdetails, template.behavior.generalConditions);
+                            if (matchedConditionValues) {
+                                minRunningSession = parseInt(matchedConditionValues[0]);
+                                maxRunningSession = parseInt(matchedConditionValues[1]);
+                            }
+                        }
+
+                        endSessionTs = this.ts;
+                        var randomHours = getRandomInt(minRunningSession, maxRunningSession);
+                        var randomSeconds = randomHours * 3600;
+                        this.ts = this.ts + randomSeconds;
+                        if (runCount === 0) {
+                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1'};
+                            this.request(req);
+                            resolve(bulk);
+                        }
+                    }
+                }
+            });
+        };
+
+        this.saveEnvironment = function(environmentUserList) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/i/populator/environment/save",
+                    data: {
+                        app_key: countlyCommon.ACTIVE_APP_KEY,
+                        users: JSON.stringify(environmentUserList),
+                        populator: true
+                    },
+                    success: function() {
+                        resolve(true);
+                    },
+                    error: function() {
+                        reject(false);
+                    }
+                });
             });
         };
     }
@@ -1007,29 +1179,49 @@
     var campaingClicks = [];
     var startTs = 1356998400;
     var endTs = new Date().getTime() / 1000;
-    var timeout = 1000;
-    var bucket = 50;
     var generating = false;
     var stopCallback = null;
     var users = [];
-    var usersForAb = [];
     var userAmount = 1000;
-    var totalUserCount = 0;
-    var totalCountWithoutUserProps = 0;
-    var queued = 0;
     var abExampleCount = 1;
     var abExampleName = "Pricing";
-    var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
     var _templateType = '';
+    var runCount = 0;
+    var completedRequestCount = 0;
+
     /**
-     * Update populator UI
-     * @param {object} stats - current populator stats
-     **/
-    function updateUI(stats) {
-        for (var i in stats) {
-            totalStats[i] += stats[i];
-            $(".populate-stats-" + i).text(totalStats[i]);
-        }
+     * 
+     * @param {array} req - request 
+     * @returns {promise} returns promise
+     */
+    function flushAllRequests(req) {
+        return new Promise((resolve, reject) => {
+            if (generating) {
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/i/bulk",
+                    data: {
+                        app_key: countlyCommon.ACTIVE_APP_KEY,
+                        requests: JSON.stringify(req),
+                        populator: true
+                    },
+                    success: function(response) {
+                        if (response && response.status === 504) {
+                            reject(false);
+                        }
+                        else {
+                            resolve(true);
+                        }
+                    },
+                    error: function() {
+                        reject(false);
+                    }
+                });
+            }
+            else {
+                resolve(true);
+            }
+        });
     }
     /**
      * Create campaign
@@ -1512,27 +1704,27 @@
                 });
             });
         }
-
-        generateRatingWidgets(function() {
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
-                generateNPSWidgets(function() {
-                    setTimeout(function() {
-                        generateSurveyWidgets1(done);
-                    }, 1000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets2(done);
-                    }, 3000);
-
-                    setTimeout(function() {
-                        generateSurveyWidgets3(done);
-                    }, 5000);
-                });
-            }
-            else {
-                done();
-            }
-        });
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+            generateRatingWidgets(function() {
+                if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
+                    generateNPSWidgets(function() {
+                        setTimeout(function() {
+                            generateSurveyWidgets1(function() {
+                                generateSurveyWidgets2(function() {
+                                    generateSurveyWidgets3(done);
+                                });
+                            });
+                        }, 100);
+                    });
+                }
+                else {
+                    done();
+                }
+            });
+        }
+        else {
+            done();
+        }
     }
 
 
@@ -1622,200 +1814,31 @@
                 campaignsIndex++; // future async issues?
             }
             else {
-                for (var clickIndex = 0; clickIndex < (campaigns.length * 33); clickIndex++) {
+                const randomCampaignClick = getRandomInt(3, campaigns.length * 5);
+                for (var clickIndex = 0; clickIndex < randomCampaignClick; clickIndex++) {
                     clickCampaign(campaigns[getRandomInt(0, campaigns.length - 1)].id);
                 }
-                setTimeout(callback, 3000);
+                setTimeout(callback, 50);
             }
         }
 
         recursiveCallback();
     }
 
-
-    /**
-     * Generate retention user
-     * @param {date} ts - date as timestamp
-     * @param {number} userCount - users count will be generated
-     * @param {array} ids - ids array
-     * @param {object} template template object
-     * @param {callback} callback - callback function
-     **/
-    function generateRetentionUser(ts, userCount, ids, template, callback) {
-        var bulker = [];
-        for (var userIndex = 0; userIndex < userCount; userIndex++) {
-            for (var j = 0; j < ids.length; j++) {
-                var metrics = {};
-                var platform;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    platform = getProp("_os_web");
-                }
-                else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
-                    platform = getProp("_os_desktop");
-                }
-                else {
-                    platform = getProp("_os");
-                }
-                metrics._os = platform;
-                var m_props = metric_props.mobile;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
-                    m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
-                }
-                for (var k = 0; k < m_props.length; k++) {
-                    if (m_props[k] !== "_os") {
-                        //handle specific cases
-                        if (m_props[k] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            metrics[m_props[k]] = getProp("_source");
-                        }
-                        else {
-                            //check os specific metric
-                            if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
-                                metrics[m_props[k]] = getProp(m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_"));
-                            }
-                            //default metric set
-                            else {
-                                metrics[m_props[k]] = getProp(m_props[k]);
-                            }
-                        }
-                    }
-                }
-
-                var userdetails = new getUser(template && template.up);
-                userdetails.begin_session = 1;
-                userdetails.device_id = userIndex + "" + ids[j];
-                userdetails.dow = getRandomInt(0, 6);
-                userdetails.hour = getRandomInt(0, 23);
-                userdetails.ip_address = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-                delete userdetails.ip;
-                userdetails.request_id = userIndex + "" + ids[j] + "_" + ts;
-                userdetails.timestamp = ts;
-                delete userdetails.metrics;
-                userdetails.metrics = metrics;
-
-                bulker.push(userdetails);
-                totalStats.s++;
-                totalStats.u++;
-            }
-        }
-
-        totalStats.r++;
-        for (var index = 0; index < bulker.length; index++) {
-            bulker[index].startSession(template);
-        }
-
-        callback("");
-    }
-
-    /**
-     * Generate retentions
-     * @param {object} template template object
-     * @param {callback} callback - callback function
-     **/
-    function generateRetention(template, callback) {
-        if (typeof countlyRetention === "undefined") {
-            callback();
-            return;
-        }
-        var ts = endTs - 60 * 60 * 24 * 9;
-        var ids = [ts];
-        var userCount = 10;
-        var retentionCall = 8; // number of generateRetentionUser function call
-        var retentionLastUserCount = (userCount - retentionCall) + 1;
-
-        var idCount = 1;
-        for (var i = userCount; i >= retentionLastUserCount; i--) { //total retension user
-            totalUserCount += idCount * i;
-            idCount++;
-        }
-
-        totalUserCount += userAmount + retentionCall; // campaign users
-        totalCountWithoutUserProps = 0;
-
-        generateRetentionUser(ts, userCount--, ids, template, function() {
-            ts += 60 * 60 * 24;
-            ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, template, function() {
-                ts += 60 * 60 * 24;
-                ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, template, function() {
-                    ts += 60 * 60 * 24;
-                    ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, template, function() {
-                        ts += 60 * 60 * 24;
-                        ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, template, function() {
-                            ts += 60 * 60 * 24;
-                            ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, template, function() {
-                                ts += 60 * 60 * 24;
-                                ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, template, function() {
-                                    ts += 60 * 60 * 24;
-                                    ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, template, callback);
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    }
-
     /**
      * To report campaign clicks conversion
      */
     function reportConversions() {
-        for (var i = 0; i < campaingClicks.length; i++) {
+        var i = 0;
+        for (i = 0; i < campaingClicks.length; i++) {
             var click = campaingClicks[i];
-            if ((Math.random() > 0.5)) {
-                users[i].reportConversion(click.cly_id, click.cly_uid);
+            if (i > users.length - 1) {
+                break;
+            }
+            if (Math.random() > 0.5) {
+                users[i].reportConversion(click.cly_id, click.cly_uid, users[i].id);
             }
         }
-    }
-
-    /**
-     * Serializes a template object members for API use
-     * @param {object} template a template object
-     * @returns {object} an API-safe template object
-     **/
-    function serializeTemplate(template) {
-        if (template && template.up && !_.isString(template.up)) {
-            delete template.up[""]; // delete user properties without keys
-
-            if (Object.keys(template.up).length === 0) {
-                delete template.up;
-            }
-            else {
-                template.up = JSON.stringify(template.up);
-            }
-        }
-
-        if (template && template.events && !_.isString(template.events)) {
-            delete template.events[""]; // delete events without keys
-            Object.keys(template.events).forEach(function(key) {
-                var event = template.events[key];
-
-                if (event.segments) {
-                    delete event.segments[""];
-                }
-
-                if (event.segments && event.segments.length === 0) {
-                    delete event.segments;
-                }
-
-                template.events[key] = event;
-            });
-
-            if (template.events.length === 0) {
-                delete template.events;
-            }
-            else {
-                template.events = JSON.stringify(template.events);
-            }
-        }
-        template.app_id = countlyCommon.ACTIVE_APP_ID;
-        return template;
     }
 
     //Public Methods
@@ -1834,126 +1857,210 @@
     countlyPopulator.getUserAmount = function() {
         return userAmount;
     };
-    countlyPopulator.generateUI = function() {
-        for (var i in totalStats) {
-            $(".populate-stats-" + i).text(totalStats[i]);
-        }
-    };
-    countlyPopulator.generateUsers = function(amount, template) {
+
+    countlyPopulator.generateUsers = function(run, template, environment) {
         this.currentTemplate = template;
         stopCallback = null;
-        userAmount = amount;
+        userAmount = template.uniqueUserCount || 100;
         bulk = [];
-        totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-        bucket = Math.max(amount / 50, 10);
-        var mult = (Math.round(queued / 10) + 1);
-        timeout = bucket * 10 * mult * mult;
+        runCount = run;
         generating = true;
-        /**
-         * Create new user
-         **/
-        function createUser() {
-            var u = new getUser(template && template.up);
-            users.push(u);
-            u.timer = setTimeout(function() {
-                u.startSession(template);
-            }, Math.random() * timeout);
-        }
+        completedRequestCount = 0;
 
         /**
-         * Create new user for ab test
-         **/
-        function createUsersForABTest() {
-            var u = new getUser(template && template.up);
-            usersForAb.push(u);
-            u.timer = setTimeout(function() {
-                u.startSession(template);
-            }, Math.random() * timeout);
-        }
+         * Get users from environment 
+        **/
+        async function getUsers() {
+            let batchSize = getRandomInt(3, 10); //5;
+            let currentIndex = 0;
+            userAmount = environment.length;
 
-        var seg = {};
+            /**
+             * 
+             * @returns {array} - array of users
+             */
+            async function getUserBatch() {
+                const userBatch = [];
+                for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
+                    const u = new User();
+                    u.getUserFromEnvironment(environment[currentIndex]);
+                    const requests = u.generateAllEventsAndSessions(template, runCount, true);
+                    userBatch.push(requests);
+                    bulk = [];
+                    currentIndex++;
+                }
+                try {
+                    const partialUserList = await Promise.allSettled(userBatch);
+                    return partialUserList;
+                }
+                catch (error) {
+                    return [];
+                }
+            }
 
-        if (template && template.name) {
-            seg.template = template.name;
-        }
-
-        app.recordEvent({
-            "key": "populator-execute",
-            "count": 1,
-            "segmentation": seg
-        });
-
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUser(u) {
-            if (u && !u.hasSession) {
-                u.timer = setTimeout(function() {
-                    u.startSession(template);
-                }, Math.random() * timeout);
-            }
-        }
-        /**
-         * Start user session process for AB
-         * @param {object} u - user object
-         **/
-        function processUserForAb(u) {
-            if (u && !u.hasSession) {
-                u.timer = setTimeout(function() {
-                    u.startSessionForAb();
-                }, Math.random() * timeout);
-            }
-        }
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUsers() {
-            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUser(users[userAmountIndex]);
-            }
-            if (users.length > 0 && generating) {
-                setTimeout(processUsers, timeout);
-            }
-            else {
-                countlyPopulator.sync(true);
-            }
-        }
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUsersForAb() {
-            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUserForAb(usersForAb[userAmountIndex]);
-            }
-        }
-
-        generateWidgets(function() {
-            generateRetention(template, function() {
-                generateCampaigns(function() {
-                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                        createUser();
+            /**
+             * 
+             * @param {array} userBatch - array of users
+             */
+            async function processUserBatch(userBatch) {
+                for (const u of userBatch) {
+                    const startTime = new Date().getTime();
+                    await flushAllRequests(u.value);
+                    const endTime = new Date().getTime();
+                    const timeDiff = endTime - startTime;
+                    if (timeDiff > 3000 && batchSize > 3) { // process min 3 batch at a time
+                        batchSize--;
                     }
-                    // Generate campaigns conversion for web
+                }
+            }
+
+            /**
+             * 
+             * 
+             */
+            async function createAndProcessUsers() {
+                const userBatch = await getUserBatch();
+                await processUserBatch(userBatch);
+
+                if (currentIndex < userAmount) {
+                    await createAndProcessUsers();
+                }
+                if (environment.length < template.uniqueUserCount) { // if environment users are less than template user count(in case of stop generate or error), complete the rest with new users in next run
+                    CountlyHelpers.notify({type: 'warning', message: CV.i18n("populator.warning-environment-users", environment.length, template.uniqueUserCount, template.uniqueUserCount - environment.length), sticky: true});
+
+                    userAmount = template.uniqueUserCount - environment.length;
+                    template.saveEnvironment = true;
+                    template.environmentName = environment[0].name;
+                    await createUsers();
+                }
+                else {
+                    generating = false;
+                }
+            }
+            await createAndProcessUsers();
+        }
+
+        /**
+         * Create new user 
+        **/
+        async function createUsers() {
+            let batchSize = getRandomInt(3, 10); //5;
+            let currentIndex = 0;
+
+            /**
+             * Create batch of users
+             * @returns {array} - array of users
+             * */
+            async function createUserBatch() {
+                const batchPromises = [];
+
+                for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
+                    const u = new User();
+                    u.getUserFromTemplate(template.users, currentIndex);
+                    const requests = u.generateAllEventsAndSessions(template, runCount);
+                    batchPromises.push(requests);
+                    bulk = [];
+
+                    if (template.saveEnvironment) {
+                        await checkEnvironment(u);
+                    }
+                    if (currentIndex < userAmount && users.length < 50 && Math.random() > 0.5) {
+                        users.push(u.user);
+                    }
+                    currentIndex++;
+                }
+                try {
+                    const partialUserList = await Promise.allSettled(batchPromises);
+                    return partialUserList;
+                }
+                catch (error) {
+                    return [];
+                }
+            }
+
+            /**
+             * 
+             * @param {object} user - user object
+             */
+            async function checkEnvironment(user) {
+                let environmentUsers = [];
+                const requestEnv = {
+                    deviceId: user.id,
+                    templateId: template._id,
+                    appId: countlyCommon.ACTIVE_APP_ID,
+                    environmentName: template.environmentName,
+                    userName: user.userdetails.name ? user.userdetails.name : user.id,
+                    platform: user.platform,
+                    device: user.metrics._device || 'Unknown',
+                    appVersion: user.metrics._app_version || 'Unknown',
+                    custom: user.userdetails.custom || {},
+                };
+                environmentUsers.push(requestEnv);
+                if (environmentUsers.length > 0) {
+                    await user.saveEnvironment(environmentUsers);
+                    environmentUsers = [];
+                }
+            }
+
+            /**
+             * Process batch of users
+             * @param {array} userBatch - request array
+             * */
+            async function processUsers(userBatch) {
+                for (const u of userBatch) {
+                    const startTime = new Date().getTime();
+                    await flushAllRequests(u.value);
+                    const endTime = new Date().getTime();
+                    const timeDiff = endTime - startTime;
+                    if (timeDiff > 3000 && batchSize > 3) { // process min 3 batch at a time
+                        batchSize--;
+                    }
+                }
+            }
+
+            /**
+             * Create and process users
+             * */
+            async function createAndProcessUsers() {
+                const u = await createUserBatch();
+                await processUsers(u);
+
+                if (currentIndex < userAmount) {
+                    await createAndProcessUsers();
+                }
+                else {
+                    generating = false;
+                }
+            }
+            await createAndProcessUsers();
+        }
+
+        if (environment && environment.length) {
+            getUsers();
+        }
+        else {
+            generateWidgets(function() {
+                generateCampaigns(async function() {
+                    const usersResult = await createUsers();
+
+                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing") && usersResult) {
+                        abExampleName = "Pricing" + abExampleCount++;
+                        generateAbTests(function() {
+                            if (users.length) {
+                                const usersForAbTests = getRandomInt(1, users.length / 2);
+                                for (var i = 0; i < usersForAbTests; i++) {
+                                    users[i].startSessionForAb(users[i]);
+                                }
+                            }
+                        });
+                    }
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                        setTimeout(reportConversions, timeout);
+                        setTimeout(reportConversions, 100);
                     }
-                    setTimeout(processUsers, timeout);
                 });
             });
-        });
-
-        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-            abExampleName = "Pricing" + abExampleCount++;
-            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                createUsersForABTest();
-            }
-            generateAbTests(function() {
-                processUsersForAb();
-            });
         }
+
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
@@ -1967,31 +2074,28 @@
                 success: function() {}
             });
         }
+        var seg = {};
 
-        //if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-        //    generateWidgets(function() {});
-        //}
+        if (template.name) {
+            seg.template = template.name;
+        }
+
+        app.recordEvent({
+            "key": "populator-execute",
+            "count": 1,
+            "segmentation": seg
+        });
     };
 
     countlyPopulator.stopGenerating = function(ensureJobs, callback) {
         stopCallback = callback;
         generating = false;
 
-        var u;
-        for (var userGenerationIndex = 0; userGenerationIndex < users.length; userGenerationIndex++) {
-            u = users[userGenerationIndex];
-            if (u) {
-                u.endSession(this.currentTemplate);
-            }
-        }
-        users = [];
-
         if (ensureJobs) {
             countlyPopulator.ensureJobs();
         }
-
         if (stopCallback) {
-            stopCallback(!countlyPopulator.bulking);
+            stopCallback(true);
         }
     };
 
@@ -1999,46 +2103,28 @@
         return generating;
     };
 
-    countlyPopulator.sync = function(force) {
-        if (generating && (force || bulk.length > bucket) && !countlyPopulator.bulking) {
-            queued++;
-            var mult = Math.round(queued / 10) + 1;
-            timeout = bucket * 10 * mult * mult;
-            $(".populate-stats-br").text(queued);
-            countlyPopulator.bulking = true;
-            var req = bulk.splice(0, bucket);
-            var temp = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-            for (var i in req) {
-                if (req[i].stats) {
-                    for (var stat in req[i].stats) {
-                        temp[stat] += req[i].stats[stat];
+    countlyPopulator.sync = function() {
+        return new Promise((resolve, reject) => {
+            if (bulk.length > 1) {
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/i/bulk",
+                    data: {
+                        app_key: countlyCommon.ACTIVE_APP_KEY,
+                        requests: JSON.stringify(bulk),
+                        populator: true
+                    },
+                    success: function() {
+                        bulk = [];
+                        resolve();
+                    },
+                    error: function() {
+                        bulk = [];
+                        reject();
                     }
-                    delete req[i].stats;
-                }
+                });
             }
-            $.ajax({
-                type: "POST",
-                url: countlyCommon.API_URL + "/i/bulk",
-                data: {
-                    app_key: countlyCommon.ACTIVE_APP_KEY,
-                    requests: JSON.stringify(req),
-                    populator: true
-                },
-                success: function() {
-                    queued--;
-                    $(".populate-stats-br").text(queued);
-                    updateUI(temp);
-                    countlyPopulator.bulking = false;
-                    countlyPopulator.sync();
-                },
-                error: function() {
-                    queued--;
-                    $(".populate-stats-br").text(queued);
-                    countlyPopulator.bulking = false;
-                    countlyPopulator.sync();
-                }
-            });
-        }
+        });
     };
 
     countlyPopulator.ensureJobs = function() {
@@ -2052,9 +2138,9 @@
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
-                if (template.up && Object.keys(template.up).length > 0) {
-                    var firstUserProperty = Object.keys(template.up)[0];
-                    var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
+                if (template.users && Object.keys(template.users).length > 0) {
+                    var firstUserProperty = Object.keys(template.users)[0];
+                    var firstUserPropertyValue = JSON.stringify(template.users[firstUserProperty][0]);
 
                     countlyCohorts.add({
                         cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
@@ -2211,6 +2297,10 @@
         return _templateType;
     };
 
+    countlyPopulator.getCompletedRequestCount = function() {
+        return completedRequestCount;
+    };
+
     countlyPopulator.setSelectedTemplate = function(value) {
         _templateType = value;
     };
@@ -2230,21 +2320,25 @@
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"});
+                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-template", templateId), type: "error"});
                 }
             });
         }
     };
 
-    countlyPopulator.getTemplates = function(callback) {
+    countlyPopulator.getTemplates = function(platformType, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        if (platformType) {
+            data.platform_type = platformType.charAt(0).toUpperCase() + platformType.slice(1);
+        }
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/templates",
-            data: {
-                app_id: countlyCommon.ACTIVE_APP_ID
-            },
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
             success: function(templates) {
-                callback(templates.concat(defaultTemplates));
+                callback(defaultTemplates.concat(templates));
             },
             error: function() {
                 CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-templates"], type: "error"});
@@ -2258,7 +2352,6 @@
         $.ajax({
             type: "POST",
             url: countlyCommon.API_URL + "/i/populator/templates/create",
-            // data: serializeTemplate(template),
             data: JSON.stringify(template),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -2271,7 +2364,7 @@
 
     countlyPopulator.editTemplate = function(templateId, newTemplate, callback) {
         newTemplate.template_id = templateId;
-
+        newTemplate.generated_on = newTemplate.generatedOnTs;
         var foundDefault = defaultTemplates.find(function(template) {
             return template._id === templateId;
         });
@@ -2283,15 +2376,14 @@
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
-                // data: serializeTemplate(newTemplate),
                 data: JSON.stringify(newTemplate),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: callback || function() {},
                 error: function(err) {
                     CountlyHelpers.notify({
-                        title: $.i18n.prop('common.error'),
-                        message: $.i18n.prop("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
+                        title: CV.i18n('common.error'),
+                        message: CV.i18n("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
                         type: "error"
                     });
                 }
@@ -2314,10 +2406,78 @@
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"});
+                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
                 }
             });
         }
+    };
+
+    countlyPopulator.checkEnvironment = function(environmentName, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_name: environmentName};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/check",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.getEnvironments = function(callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/list",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroments) {
+                callback(enviroments);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environments"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.getEnvironment = function(environmentId, callback) {
+        const data = {environment_id: environmentId};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/get",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.removeEnvironment = function(environmentId, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/remove",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-delete-environment"], type: "error"});
+            }
+        });
     };
 
     countlyPopulator.defaultTemplates = defaultTemplates;

@@ -84,7 +84,7 @@
                             <div class="bu-mr-3 populator-template__active-bar" :style="[item.isActive ? {\'background-color\': activeColorCode} : {}]"></div>\
                             <div>\
                                 <div class="text-medium bu-has-text-weight-medium bu-mb-1" @click="scrollToSection(index)" :style="[item.isActive ? {\'color\': activeColorCode} : {\'cursor\': \'pointer\'}]">{{item.header}}</div>\
-                                <div class="text-smallish color-cool-gray-50">{{i18n("populator-template.settings-of-your-users")}}</div>\
+                                <div class="text-smallish color-cool-gray-50">{{i18n("populator-template.settings-of-your", item.header.toLowerCase())}}</div>\
                             </div>\
                         </div>\
                     </div>\
@@ -143,13 +143,13 @@
                     return {};
                 }
             },
-            userProperties: {
+            conditionProperties: {
                 type: Array,
                 default: function() {
                     return [];
                 },
             },
-            userPropertyValues: {
+            conditionPropertyValues: {
                 type: Array,
                 default: function() {
                     return [];
@@ -174,17 +174,17 @@
                 conditionType: 1,
                 selectedValue: '',
                 selectedProperty: '',
-                userPropertyValueItems: []
+                conditionPropertyValueItems: []
             };
         },
         watch: {
-            userPropertyValues: {
+            conditionPropertyValues: {
                 handler: function(newValue) {
-                    this.userPropertyValueItems = newValue;
-                    this.userPropertyValueItems = this.userPropertyValueItems.map(item => (item === '' ? null : item));
-                    if (this.userPropertyValueItems.length && this.userPropertyValueItems.indexOf(null) !== -1) {
-                        const filteredArr = this.userPropertyValueItems.filter((item) => item !== null);
-                        this.userPropertyValueItems = ['Empty/Unset', ...filteredArr];
+                    this.conditionPropertyValueItems = newValue;
+                    this.conditionPropertyValueItems = this.conditionPropertyValueItems.map(item => (item === '' ? null : item));
+                    if (this.conditionPropertyValueItems.length && this.conditionPropertyValueItems.indexOf(null) !== -1) {
+                        const filteredArr = this.conditionPropertyValueItems.filter((item) => item !== null);
+                        this.conditionPropertyValueItems = ['Empty/Unset', ...filteredArr];
                     }
                 },
                 deep: true
@@ -192,11 +192,12 @@
         },
         methods: {
             close: function() {
-                document.getElementById('addConditionBtn').click();
+                document.querySelector('[data-test-id="populator-template-form-header-title"]').click();
             },
             save: function() {
                 if (this.value && typeof this.value.length !== "undefined") { // if it is an array
                     this.$emit("save-condition", this.type, this.selectedProperty, this.selectedValue, this.conditionType);
+                    this.close();
                 }
                 else {
                     this.$emit('input', {
@@ -209,19 +210,20 @@
                 this.close();
             },
             onAddCondition: function() {
-                if (this.userProperties.length === 1) {
-                    this.selectedProperty = this.userProperties[0];
+                if (this.conditionProperties.length === 1) {
+                    this.selectedProperty = this.conditionProperties[0];
                 }
                 else {
                     this.selectedProperty = '';
                 }
-                if (this.value && typeof this.value.length !== "undefined") { // if it is an array
-                    this.$emit('selected-key-change', this.selectedProperty);
-                }
+                // if (this.value && typeof this.value.length !== "undefined") { // if it is an array
+                this.$emit('selected-key-change', this.selectedProperty);
+                // }
                 this.selectedValue = '';
             },
             onSelectedKeyChange: function() {
                 this.$emit('selected-key-change', this.selectedProperty);
+                this.selectedValue = "";
             }
         },
         template: '<div>\
@@ -229,13 +231,14 @@
                         placement="bottom"\
                         width="288"\
                         popper-class="populator-condition-selector__popover"\
+                        transition="stdt-fade"\
                         trigger="click">\
                         <template v-slot:default>\
                             <div class="bu-p-5">\
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n(\'populator-template.property\')}}</div>\
                                 <el-select v-model="selectedProperty" @change="onSelectedKeyChange" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property\')">\
                                     <el-option\
-                                        v-for="item in userProperties"\
+                                        v-for="item in conditionProperties"\
                                         :key="item"\
                                         :label="item"\
                                         :value="item">\
@@ -245,7 +248,7 @@
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n(\'populator-template.property-value\')}}</div>\
                                 <el-select v-model="selectedValue" style="width: 100%" :placeholder="i18n(\'populator.template.select-a-user-property-value\')">\
                                     <el-option\
-                                        v-for="item in userPropertyValueItems"\
+                                        v-for="item in conditionPropertyValueItems"\
                                         :key="item"\
                                         :label="item"\
                                         :value="item">\
@@ -304,6 +307,7 @@
         data: function() {
             return {
                 users: [],
+                conditionPropertyValues: []
             };
         },
         created() {
@@ -342,6 +346,14 @@
                 });
             },
             onAddAnotherValue: function(index) {
+                if (this.users[index].values.filter(value => value.key.trim() === "").length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
+                        type: "warning"
+                    });
+                    return;
+                }
                 this.users[index].values.push({key: "", probability: 0});
             },
             onRemoveValue: function(index, valueIndex) {
@@ -388,7 +400,30 @@
                 }
             },
             onAddAnotherConditionValue: function(index) {
-                this.users[index].condition.values.push({key: "", probability: 0});
+                try {
+                    if (this.users[index].condition.values.filter(item => item.key.trim() === "").length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.users[index].condition.values.push({key: "", probability: 0});
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-adding-condition"),
+                        type: "error"
+                    });
+                }
+            },
+            onConditionSelectedKeyChange: function(selectedConditionProp) {
+                const item = this.users.find(user => user.key === selectedConditionProp);
+                if (item) {
+                    this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
             }
         },
         template: CV.T("/populator/templates/sections/users.html")
@@ -407,8 +442,8 @@
         },
         data: function() {
             return {
-                // Dummy data
-                events: []
+                events: [],
+                conditionPropertyValues: []
             };
         },
         watch: {
@@ -453,8 +488,25 @@
                     });
                 }
             },
-            onAddAnotherValue: function(index, valueIndex) {
-                this.events[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+            onAddAnotherValue: function(index, segmentIndex) {
+                try {
+                    if (this.events[index].segmentations[segmentIndex].values.filter(item => item.key.trim() === "").length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+                    this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-adding-condition"),
+                        type: "error"
+                    });
+                }
             },
             onAddAnotherConditionValue: function(index, segmentIndex) {
                 this.events[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
@@ -481,6 +533,12 @@
             },
             onDeleteCondition: function(index, segmentIndex) {
                 this.events[index].segmentations[segmentIndex].condition = undefined;
+            },
+            onConditionSelectedKeyChange: function(selectedConditionProp, index) {
+                const item = this.events[index].segmentations.find(segment => segment.key === selectedConditionProp);
+                if (item) {
+                    this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
             }
         },
         created() {
@@ -502,7 +560,8 @@
         },
         data: function() {
             return {
-                views: []
+                views: [],
+                conditionPropertyValues: []
             };
         },
         watch: {
@@ -547,7 +606,25 @@
                 }
             },
             onAddAnotherValue: function(index, valueIndex) {
-                this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+                try {
+                    if (this.views[index].segmentations[valueIndex].values.filter(item => item.key.trim() === "").length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
+                            type: "warning"
+                        });
+                        return;
+                    }
+
+                    this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
+                }
+                catch (error) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.error-while-adding-condition"),
+                        type: "error"
+                    });
+                }
             },
             onAddAnotherConditionValue: function(index, segmentIndex) {
                 this.views[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
@@ -575,6 +652,12 @@
             onDeleteCondition: function(index, segmentIndex) {
                 this.views[index].segmentations[segmentIndex].condition = undefined;
             },
+            onConditionSelectedKeyChange: function(selectedConditionProp, index) {
+                const item = this.views[index].segmentations.find(segment => segment.key === selectedConditionProp);
+                if (item) {
+                    this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            }
         },
         created() {
             this.views = this.value;
@@ -595,28 +678,9 @@
             parentData: {
                 type: [Object, Array],
             }
-            // sequenceStepPropertyValues: {
-            //     type: Object,
-            //     default: function() {
-            //         // todo: Dummy data for now, will be deleted after completed the event and view sections
-            //         return {
-            //             events: [
-            //                 {name: "Purchase", value: "purchase"},
-            //                 {name: "Payment", value: "payment"},
-            //                 {name: "Shopping", value: "shopping"}
-            //             ],
-            //             views: [
-            //                 {name: "Home", value: "home"},
-            //                 {name: "Detail", value: "detail"},
-            //                 {name: "My Detail Page", value: "myDetailPage"}
-            //             ]
-            //         };
-            //     }
-            // }
         },
         data: function() {
             return {
-                // Dummy data
                 sequences: [],
                 selectedProperty: '',
                 selectedValue: '',
@@ -643,9 +707,17 @@
         },
         methods: {
             onAddSequence: function() {
-                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 0, "fixed": true}]});
+                this.sequences.push({steps: [{"key": "session", value: "start", "probability": 100, "fixed": true}, {"key": "session", value: "end", "probability": 100, "fixed": true}]});
             },
             onRemoveSequence(index) {
+                if (this.sequences.length === 1) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.warning-while-removing-condition"),
+                        type: "warning"
+                    });
+                    return;
+                }
                 this.sequences.splice(index, 1);
             },
             onRemoveStep: function(index, stepIndex) {
@@ -678,16 +750,10 @@
             onDragChange: function() {
             },
             onSaveStep: function(index) {
+                this.sequences[index].steps = this.sequences[index].steps.filter(x => x.key !== "session");
                 this.sequences[index].steps.push({key: this.selectedProperty, value: this.selectedValue, probability: 0});
-                if (this.sequences[index].steps.length > 1) {
-                    if (!this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
-                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
-                    }
-                    else {
-                        this.sequences[index].steps = this.sequences[index].steps.filter(x => !(x.key === "session" && x.value === "end"));
-                        this.sequences[index].steps.push({key: "session", value: "end", probability: 100});
-                    }
-                }
+                this.sequences[index].steps.unshift({key: "session", value: "start", probability: 100, fixed: true});
+                this.sequences[index].steps.push({key: "session", value: "end", probability: 100, fixed: true});
                 this.onClose();
             },
             onClose: function() {
@@ -702,9 +768,14 @@
             }
         },
         created: function() {
-            this.sequences = this.value;
+            if (this.value && Object.keys(this.value).length) {
+                this.sequences = this.value;
+            }
+            else {
+                this.sequences = [{steps: [{"key": "session", value: "start", "probability": 100, "fixed": true}, {"key": "session", value: "end", "probability": 100, "fixed": true}]}];
+            }
             this.sequenceStepValues = this.parentData;
-
+            // this.sequences = this.value;
             // this.sequenceStepValues = this.sequenceStepPropertyValues;
         },
         template: CV.T("/populator/templates/sections/sequences.html")
@@ -735,28 +806,28 @@
                 deep: true,
                 handler: function(newValue) {
                     // this.behavior.sequences = [];
-                    const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
                     const usersUndefinedOrEmpty = typeof newValue.users === 'undefined' || newValue.users.length === 0;
+                    const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
 
-                    if (sequencesUndefinedOrEmpty || usersUndefinedOrEmpty) {
-                        this.$parent.disableSwitch = true;
-                        this.$parent.isSectionActive = false;
-                        this.behavior.runningSession = [0, 0];
-                        this.behavior.generalConditions = [];
-                        this.behavior.sequenceConditions = [];
+                    if (usersUndefinedOrEmpty) {
+                        this.isConditionDisabled = true;
                     }
                     else {
-                        this.$parent.disableSwitch = false;
+                        this.isConditionDisabled = false;
                     }
+                    if (sequencesUndefinedOrEmpty) {
+                        this.isSequenceSectionActive = false;
+                    }
+                    else {
+                        this.isSequenceSectionActive = true;
+                    }
+
                     if (newValue.sequences && newValue.sequences.length && newValue.sequences.length !== this.behavior.sequences.filter(obj => obj.key !== 'random').length) {
-                        //todo: this needs to be getting improved
                         this.behavior.sequences = [];
-                        // this.behavior.sequences.push({key: 'Sequence_' + newValue.sequences.length, probability: 0});
                         for (let i = 0; i < newValue.sequences.length; i++) {
                             this.behavior.sequences.push({key: 'Sequence_' + (i + 1), probability: 0});
                         }
                         if (newValue.sequences.length > 1) {
-                            // this.behavior.sequences = this.behavior.sequences.filter(obj => obj.key !== 'random');
                             this.behavior.sequences.push({key: 'random', probability: 0});
                         }
                     }
@@ -770,14 +841,16 @@
                     GENERAL: "general",
                     SEQUENCE: "sequence"
                 },
-                userPropertyValues: [],
+                conditionPropertyValues: [],
+                isConditionDisabled: false,
+                isSequenceSectionActive: true
             };
         },
         methods: {
             onConditionSelectedKeyChange: function(selectedConditionProp) {
                 const item = this.parentData.users.find(user => user.keys === selectedConditionProp);
                 if (item) {
-                    this.userPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                    this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
                 }
             },
             onRemoveConditionValue: function(type, index) {
@@ -801,7 +874,7 @@
                         selectedKey: selectedProperty,
                         selectedValue: selectedValue,
                         conditionType: conditionType,
-                        values: [{key: 0, probability: 0}]
+                        values: [0, 0]
                     });
                 }
                 else if (type === this.behaviourSectionEnum.SEQUENCE) {
@@ -830,9 +903,9 @@
             }
             else {
                 this.behavior = {
-                    "runningSession": [0, 0],
+                    "runningSession": [null, null],
                     "generalConditions": [],
-                    "sequences": [],
+                    "sequences": [{key: "Sequence_1", probability: 100}],
                     "sequenceConditions": []
                 };
             }

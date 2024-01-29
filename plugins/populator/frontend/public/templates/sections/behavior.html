@@ -23,9 +23,17 @@
                 <div v-if="behavior.generalConditions.length" v-for="(item, index) in behavior.generalConditions">
                     <div class="populator-template__behavior--general-conditions bu-is-flex bu-is-align-items-baseline bu-is-justify-content-start bu-mt-4">
                     <div class="condition-label text-smallish bu-has-text-weight-medium bu-ml-1 bu-mt-5">{{ item.conditionType === 1 ? i18n('populator-template.condition-is', item.selectedKey, item.selectedValue) : i18n('populator-template.condition-is-not', item.selectedKey, item.selectedValue) }}</div>
-                        <div class="bu-mt-2 bu-is-flex bu-ml-4" v-for="(value, valueIndex) in item.values">
+                        <div class="bu-is-align-items-center bu-mt-2 bu-is-flex bu-ml-4">
                             <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
-                                <el-input class="input" v-model="value.key" :class="{'is-error': v.errors.length > 0}">
+                                <el-input class="populator-template__behavior--session-input-container bu-mr-2" v-model="item.values[0]" :class="{'is-error': v.errors.length > 0}">
+                                    <template slot="suffix">
+                                        <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
+                                    </template>
+                                </el-input>
+                            </validation-provider>
+                            - 
+                            <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
+                                <el-input class="populator-template__behavior--session-input-container bu-ml-2" v-model="item.values[1]" :class="{'is-error': v.errors.length > 0}">
                                     <template slot="suffix">
                                         <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
                                     </template>
@@ -40,9 +48,10 @@
                 <hr class="divider bu-mt-5">
                 <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center">
                 <cly-populator-condition-selector
-                    :user-properties="parentData.users.map(item => item.keys)"
+                    :disabled="isConditionDisabled"
+                    :condition-properties="parentData.users.map(item => item.keys)"
                     @selected-key-change="onConditionSelectedKeyChange"
-                    :user-property-values="userPropertyValues"
+                    :condition-property-values="conditionPropertyValues"
                     :type="behaviourSectionEnum.GENERAL"
                     @save-condition="saveCondition"
                     v-model="behavior.generalConditions">
@@ -50,7 +59,7 @@
                 </div>
             </div>
         </cly-populator-section-detail>
-        <cly-populator-section-detail :title="i18n('populator-template.sequence-probabilities')" class="bu-mt-4" key="sequence-behavior">
+        <cly-populator-section-detail v-if="isSequenceSectionActive" :title="i18n('populator-template.sequence-probabilities')" class="bu-mt-4" key="sequence-behavior">
             <div v-if="behavior.sequences.length" class="populator-template__behavior--sequences-container">
                 <div class="bu-is-flex bu-mt-4">
                     <div class="sequence-text">
@@ -102,11 +111,12 @@
             <hr class="divider bu-my-5">
             <div class="bu-is-flex bu-is-justify-content-center">
                 <cly-populator-condition-selector
-                    :user-properties="parentData.users.map(item => item.keys)"
+                    :disabled="isConditionDisabled"
+                    :condition-properties="parentData.users.map(item => item.keys)"
                     @selected-key-change="onConditionSelectedKeyChange"
                     :type="behaviourSectionEnum.SEQUENCE"
                     @save-condition="saveCondition"
-                    :user-property-values="userPropertyValues"
+                    :condition-property-values="conditionPropertyValues"
                     v-model="behavior.sequenceConditions">
                 </cly-populator-condition-selector>
             </div>

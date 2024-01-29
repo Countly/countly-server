@@ -98,19 +98,25 @@
         }    
     }
 
+    .main-page-inputs {
+        width: 100%;
+    }
+
     &__save-field {
         width: 232px;
         height: 32px;
+    }
+
+    .cly-vue-section__sub {
+        border-left: 1px solid #ececec;
+        border-right: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
     }
 
     &__max-time {
         width: 232px;
         height: 32px;
         margin-left: 13px
-    }
-
-    .el-dialog__headerbtn {
-        visibility: hidden;
     }
 
     .el-dialog__header {
@@ -134,6 +140,10 @@
         .el-table__only-options-fixed-right {
             min-height: 580px !important;
         }
+    }
+
+    .populator-input-area {
+        min-width: 20%;
     }
 }
 

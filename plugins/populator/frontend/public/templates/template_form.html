@@ -3,11 +3,12 @@
     @submit="onSubmit"
     class="populator-template"
     v-bind="$props.controls"
-    :hasBackLink="{ value: true, style: 'width: 622px' }"
+    :hasBackLink="{ value: true, style: 'width: 630px' }"
     name="populatorTemplate"
     :title="$props.titleDescription.header"
     :saveButtonLabel="$props.titleDescription.button"
     toggle-transition="stdt-fade"
+    test-id="populator-template-form"
     :size="12">
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-template-step">
@@ -17,7 +18,7 @@
                         <cly-populator-left-container :data="items"></cly-populator-left-container>
                     </div>
                 </div>
-                <div style="width: 702px;margin-right:155px;">
+                <div style="width: 702px">
                     <div class="cly-vue-drawer-step__section">
                         <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
                         <validation-provider name="key" rules="required" v-slot="v">
@@ -57,6 +58,7 @@
                         <cly-populator-section title="Behavior" type="behaviorSection" :parent-data="prepareData('behavior', drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch></cly-populator-section>
                     </div>
                 </div>
+                <div></div>
             </div>
         </cly-form-step>
     </template>

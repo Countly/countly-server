@@ -1,7 +1,8 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    log = common.log('data-populator:api');
 
 const templateProperties = {
     name: {
@@ -54,6 +55,10 @@ const FEATURE_NAME = 'populator';
         ob.features.push(FEATURE_NAME);
     });
 
+    plugins.setConfigs("api", {
+        safe: true,
+    });
+
     const createTemplate = function(ob) {
         const obParams = ob.params;
         const validatedArgs = common.validateArgs(obParams.qstring, templateProperties, true);
@@ -74,6 +79,7 @@ const FEATURE_NAME = 'populator';
         }
 
         template.isDefault = template.isDefault === 'true' ? true : false;
+        template.generatedOn = new Date().getTime();
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
                 if (!insertTemplateErr) {
@@ -139,6 +145,9 @@ const FEATURE_NAME = 'populator';
             const newTemplate = validatedArgs.obj;
 
             newTemplate.lastEditedBy = params.member.full_name;
+            if (params.qstring.generated_on) {
+                newTemplate.generatedOn = params.qstring.generated_on;
+            }
             newTemplate.isDefault = newTemplate.isDefault === 'true' ? true : false;
 
             common.db.collection('populator_templates').replaceOne({_id: templateId}, newTemplate, {}, function(updateTemplateErr, template) {
@@ -153,6 +162,47 @@ const FEATURE_NAME = 'populator';
                 }
                 else {
                     common.returnMessage(params, 404, "Template not found");
+                    return false;
+                }
+            });
+        });
+        return true;
+    };
+
+    const saveEnvironment = function(ob) {
+        const obParams = ob.params;
+        const users = JSON.parse(ob.params.qstring.users);
+
+        if (!users || !users.length) {
+            common.returnMessage(obParams, 400, "Missing params: " + users);
+            return false;
+        }
+
+        const _id = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
+        const insertedInformations = [];
+        const createdAt = new Date().getTime();
+        for (let i = 0; i < users.length; i++) {
+            insertedInformations.push({
+                _id: users[i].deviceId + "_" + _id + "_" + users[i].templateId,
+                appId: users[i].appId,
+                name: users[i].environmentName,
+                userName: users[i].userName,
+                platform: users[i].platform,
+                device: users[i].device,
+                appVersion: users[i].appVersion,
+                custom: users[i].custom,
+                createdAt: createdAt
+            });
+        }
+        validateCreate(obParams, FEATURE_NAME, function(params) {
+            common.db.collection('populator_environments').insertMany(insertedInformations, function(err) {
+                if (!err) {
+                    common.returnMessage(ob.params, 201, 'Successfully created ');
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: insertedInformations[0].name});
+                    return true;
+                }
+                else {
+                    common.returnMessage(ob.params, 500, err.message);
                     return false;
                 }
             });
@@ -313,7 +363,7 @@ const FEATURE_NAME = 'populator';
      *             }
      *         ]
      *         },
-     *         "lastEditedBy": "Pınar Genç"
+     *         "lastEditedBy": "Pinar Genc"
      *     },
      *     {
      *         "_id": "621f8871f3c2b2349da8ed39",
@@ -351,7 +401,6 @@ const FEATURE_NAME = 'populator';
     plugins.register('/o/populator/templates', function(ob) {
         const obParams = ob.params;
         const query = {};
-
         validateRead(obParams, FEATURE_NAME, function() {
             if (obParams.qstring.template_id) {
                 try {
@@ -362,7 +411,15 @@ const FEATURE_NAME = 'populator';
                     return false;
                 }
             }
-
+            if (obParams.qstring.platform_type) {
+                try {
+                    query.platformType = {$in: [obParams.qstring.platform_type]};
+                }
+                catch (e) {
+                    common.returnMessage(obParams, 500, 'Invalid platform_type.');
+                    return false;
+                }
+            }
             common.db.collection('populator_templates').find(query).toArray(function(err, docs) {
                 if (err) {
                     common.returnMessage(obParams, 500, err.message);
@@ -370,7 +427,7 @@ const FEATURE_NAME = 'populator';
                 }
                 else if (query._id) {
                     if (docs.length === 1) {
-                        common.returnOutput(obParams, docs.length > 0 ? docs[0] : null);
+                        common.returnOutput(obParams, docs[0]);
                         return true;
                     }
                     else {
@@ -381,6 +438,237 @@ const FEATURE_NAME = 'populator';
                 else {
                     common.returnOutput(obParams, docs);
                     return true;
+                }
+            });
+        });
+        return true;
+    });
+
+    /**
+     * @api {get} /i/populator/environment/save
+     * @apiName saveEnvironment
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Create populator template.
+     * @apiQuery {String} deviceId, User device id 
+     * @apiQuery {String} templateId, template id that associated with environment
+     * @apiQuery {String} appId, application id that associated with environment
+     * @apiQuery {String} environmentName, environment name
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *     "deviceId": "d2ed577a-d2a6-ac7e-129b-5321871701d0",
+     *     "templateId": "Custom Template",
+     *     "appId": "657984294c3287b7df6c220f",
+     *     "environmentName": "Custom Environment"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
+    plugins.register("/i/populator/environment/save", saveEnvironment);
+
+    /**
+     * @api {get} /i/populator/environment/check
+     * @apiName checkEnvironment
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Returns environment name if exists 
+     * @apiQuery {String} app_id, App id of related application
+     * @apiQuery {String} template_id, populator template id
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [
+     *    {
+    *      "hasEnvironment": true,
+     *     "name": "Custom Environment"
+     *   }
+     * ]
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+     * */
+    plugins.register('/o/populator/environment/check', function(ob) {
+        const obParams = ob.params;
+        validateRead(obParams, FEATURE_NAME, function() {
+            common.db.collection('populator_environments').find({
+                "appId": obParams.qstring.app_id,
+                "name": obParams.qstring.environment_name,
+            }, {"_id": 0, "name": 1}).limit(1).toArray(function(errEnv, environments) {
+                if (errEnv) {
+                    common.returnMessage(obParams, 500, errEnv.message);
+                }
+                if (environments.length) {
+                    common.returnOutput(obParams, {errorMsg: "Duplicated environment name detected for this application! Please try with an another name"});
+                }
+                else {
+                    common.returnOutput(obParams, {result: true});
+                }
+            });
+        });
+        return true;
+    });
+
+    /**
+     * @api {get} /i/populator/environment/list
+     * @apiName getEnvironmentList
+     * @apiGroup DataPopulator
+     * 
+     * @apiDescription Returns environment list
+     * @apiQuery {String} app_id, App id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [
+     *   {
+     *    "_id": "a5503f74ae6b7e3d686addfd23c87617f3890bfe",
+     *   "name": "Custom Environment"
+     *  }
+     * ]
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     * "result": "Missing parameter "api_key" or "auth_token""
+     * }
+     * */
+    plugins.register('/o/populator/environment/list', function(ob) {
+        const obParams = ob.params;
+        validateRead(obParams, FEATURE_NAME, function() {
+            common.db.collection('populator_environments').aggregate([
+                {
+                    $match: {
+                        appId: obParams.qstring.app_id
+                    }
+                },
+                {
+                    $project: {
+                        _id: { $split: ["$_id", "_"] },
+                        name: 1,
+                        templateId: { $arrayElemAt: [{ $split: ["$_id", "_"] }, 2]}
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            _id: { $arrayElemAt: ["$_id", 1] },
+                            name: "$name",
+                            templateId: "$templateId"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: "$_id._id",
+                        templateId: "$_id.templateId",
+                        name: "$_id.name"
+                    }
+                }
+            ]).toArray(function(err, environments) {
+                if (err) {
+                    common.returnMessage(obParams, 500, err.message);
+                }
+                common.returnOutput(obParams, environments);
+            });
+        });
+        return true;
+    });
+
+    /**
+     * 
+     * @api {get} /i/populator/environment/get
+     * @apiName getEnvironment
+     * @apiGroup DataPopulator
+     * 
+     * @apiDescription Returns environment list
+     * @apiQuery {String} app_id, App id of related application
+     * @apiQuery {String} environment_id, Environment id
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [
+     *  {
+     *   "_id": "a5503f74ae6b7e3d686addfd23c87617f3890bfe",
+     *  "name": "Custom Environment"
+     * }
+     * ]
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     * "result": "Missing parameter "api_key" or "auth_token""
+     * }
+     * */
+    plugins.register('/o/populator/environment/get', function(ob) {
+        const obParams = ob.params;
+        if (!obParams.qstring.environment_id) {
+            common.returnMessage(obParams, 401, "Missing parameter environment_id");
+            return false;
+        }
+        validateRead(obParams, FEATURE_NAME, function() {
+            common.db.collection('populator_environments').find({
+                $expr: {
+                    $eq: [
+                        { $arrayElemAt: [{ $split: ["$_id", "_"] }, 1] },
+                        obParams.qstring.environment_id
+                    ]
+                }
+            }).toArray(function(errEnv, environments) {
+                if (errEnv) {
+                    common.returnMessage(obParams, 500, errEnv.message);
+                }
+                else {
+                    common.returnOutput(obParams, environments);
+                }
+            });
+        });
+        return true;
+    });
+
+    /**
+     * @api {get} /i/populator/environment/remove
+     * @apiName deleteTemplate
+     * @apiGroup DataPopulator
+     * 
+     * @apiDescription Delete environment
+     * @apiQuery {String} app_id, App id of related application
+     * @apiQuery {String} environment_id, Environment id
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * { result: true }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+     * */
+    plugins.register('/o/populator/environment/remove', function(ob) {
+        const obParams = ob.params;
+        if (!obParams.qstring.environment_id) {
+            common.returnMessage(obParams, 401, "Missing parameter environment_id");
+            return false;
+        }
+        validateDelete(obParams, FEATURE_NAME, function() {
+            common.db.collection('populator_environments').deleteMany({
+                $expr: {
+                    $eq: [
+                        { $arrayElemAt: [{ $split: ["$_id", "_"] }, 1] },
+                        obParams.qstring.environment_id
+                    ]
+                }
+            }, function(err) {
+                if (err) {
+                    common.returnMessage(obParams, 500, err.message);
+                }
+                else {
+                    common.returnOutput(obParams, {result: true});
                 }
             });
         });
@@ -409,6 +697,43 @@ const FEATURE_NAME = 'populator';
         else {
             return false;
         }
+    });
+
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('populator_environments').deleteMany({appId: appId}, function(err) {
+            if (err) {
+                log.e("Error deleting populator environments for " + appId + " application", err);
+            }
+        });
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('populator_environments').deleteMany({appId: appId}, function(err) {
+            if (err) {
+                log.e("Error deleting populator environments for " + appId + " application", err);
+            }
+        });
+    });
+
+    plugins.register("/i/apps/clear", function(ob) {
+        var appId = ob.appId;
+        common.db.collection("populator_environments").deleteMany({createdAt: {$lt: ob.moment.valueOf()}, appId: appId}, function(err) {
+            if (err) {
+                log.e("Error deleting populator environments for " + appId + " application", err);
+            }
+        });
+
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('populator_environments').deleteMany({appId: appId}, function(err) {
+            if (err) {
+                log.e("Error deleting populator environments for " + appId + " application", err);
+            }
+        });
     });
 
     /**

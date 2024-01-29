@@ -135,7 +135,13 @@
                             </div>
                         </div>
                         <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center" v-if="!segment.condition">
-                            <cly-populator-condition-selector :disabled="segment.key.length ? false : true" :user-properties="[segment.key]" :user-property-values="segment.values.map(item => item.key)" v-model="segment.condition"></cly-populator-condition-selector>
+                            <cly-populator-condition-selector
+                                :disabled="events[index].segmentations.length > 1 ? false : true"
+                                :condition-properties="events[index].segmentations.filter(item=>item.key !== segment.key && item.key.length).map(item => item.key)"
+                                :condition-property-values="conditionPropertyValues"
+                                @selected-key-change="(param) => onConditionSelectedKeyChange(param, index)"
+                                v-model="segment.condition">
+                            </cly-populator-condition-selector>
                         </div>
                         <hr class="divider">
                     </div>

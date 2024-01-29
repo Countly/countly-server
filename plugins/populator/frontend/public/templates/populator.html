@@ -1,6 +1,6 @@
-<div v-bind:class="[componentId]"> 
+<div v-bind:class="[componentId]" class="populator-wrapper"> 
     <cly-tabs v-model="currentTab">
-        <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')" class="populator-wrapper">
+        <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')">
             <cly-header
                 :title="i18n('populator.plugin-title')"
                 :tooltip="{description: i18n('description')}"
@@ -11,7 +11,7 @@
                 <div>
                     <cly-section v-if="currentPopulateTab === 'pop-with-temp'" class="bu-mt-5 populator-wrapper__main-page-form">
                         <cly-sub-section class="bu-columns bu-is-vcentered">
-                            <div class="bu-column bu-is-2">
+                            <div class="bu-column bu-is-2 populator-input-area">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.data-template') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
                             </div>
@@ -22,7 +22,7 @@
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
-                            <div class="bu-column bu-is-2">
+                            <div class="bu-column bu-is-2 populator-input-area">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
                             </div>
                             <div class="bu-column bu-is-narrow">
@@ -30,7 +30,7 @@
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
-                            <div class="bu-column bu-is-2">
+                            <div class="bu-column bu-is-2 populator-input-area">
                                 <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
                                 <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')"></cly-tooltip-icon>
                             </div>
@@ -39,17 +39,17 @@
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
-                            <div class="bu-column bu-is-2">
-                                <el-switch v-model="isOpen" @click="toggleSwitch"></el-switch>
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.save-template') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.save-template-tooltip')"></cly-tooltip-icon>
+                            <div class="bu-column bu-is-2 populator-input-area">
+                                <el-switch v-model="isOpen"></el-switch>
+                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.save-environment') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column bu-is-narrow">
-                                <el-input class="populator-wrapper__save-field" v-model="saveEnvironmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
+                                <el-input class="populator-wrapper__save-field" v-model="environmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
-                            <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                            <el-button type="success" :disabled="!selectedTemplate.length" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
                     </cly-section>
 
@@ -60,8 +60,8 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column bu-is-narrow">
-                                <el-select v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
+                                <el-select v-model="selectedEnvironment" :placeholder="i18n('populator.select-template')">
+                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
                                 </el-select>
                             </div>
                         </cly-sub-section>
@@ -83,17 +83,11 @@
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
-                            <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                            <el-button type="success" :disabled="!selectedEnvironment.length" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
                     </cly-section>
                 </div>
-
-                <cly-confirm-dialog class="populator-wrapper__start-dialog" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
-                    <template slot-scope="scope">
-                        <div v-html="dialog.text"></div>
-                    </template>
-                </cly-confirm-dialog> 
-                <el-dialog class="populator-start-modal-wrapper" :close-on-press-escape="false" :close-on-click-modal="false" :visible.sync="generateDataModal.showDialog"  width="429px" :before-close="closeGenerateDataModal">
+                <el-dialog class="populator-start-modal-wrapper" :close-on-press-escape="false" :show-close="false" :close-on-click-modal="false" :visible.sync="generateDataModal.showDialog"  width="429px" :before-close="closeGenerateDataModal">
                     <img src="/populator/images/generate-data-modal.png" style="width: 100%;">
                     <div class="populator-start-modal-wrapper__modal-progress-container">
                         <cly-progress-bar  :percentage="percentage" :color="progressBarColor" :height:=8 class="bu-mt-1 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
@@ -102,7 +96,7 @@
                         <el-button type="default" class="bu-mt-6" @click="stopPopulate()">{{i18n('populator.stop')}}</el-button>
                     </div>
                 </el-dialog>
-                <el-dialog class="populator-stop-modal-wrapper" :visible.sync="finishedGenerateModal.showDialog"  width="30%">
+                <el-dialog class="populator-stop-modal-wrapper" :visible.sync="finishedGenerateModal.showDialog" width="30%" :show-close="false">
                     <div class="populator-stop-modal-wrapper__modal-progress-container">
                         <i class="el-icon-success populator-stop-modal-wrapper__success-icon"></i>
                         <h3 class="populator-stop-modal-wrapper__finished-confirm-header">{{ i18n('populator.finished-confirm-title') }}</h3>
@@ -114,35 +108,73 @@
             </cly-main>
         </el-tab-pane>
         <el-tab-pane name="templates" :label="i18n('populator.templates-tab-title')">
-            <cly-header
-                :title="i18n('populator.templates-tab-title')"
-            >
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2> {{i18n('populator.templates-tab-title')}} </h2>
+                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator.templates-tooltip')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+                </template>
                 <template v-slot:header-right>
                     <el-button type="success" v-if="canUserCreate" icon="el-icon-circle-plus" @click="newTemplate">{{i18n("populator.create-new-template")}}</el-button>
-                </template>
+                </template> 
             </cly-header>
-                <cly-main>
-                    <cly-datatable-n :force-loading="isLoading" :rows="templates" class="populator-wrapper__table">
-                        <template v-slot="scope">
-                            <el-table-column prop="name" :label="i18n('populator.template')" sortable></el-table-column>
-                            <el-table-column prop="isDefault" :label="i18n('populator.template-type')" sortable></el-table-column>
-                            <el-table-column prop="upCount" :label="i18n('populator.number-of-user-props')" sortable></el-table-column>
-                            <el-table-column prop="eventCount" :label="i18n('populator.number-of-events')" sortable></el-table-column>
-                            <el-table-column prop="editedBy" :label="i18n('populator.edited-by')" sortable></el-table-column>
-                            <el-table-column type="options">
-                                <template v-slot="col">
-                                     <!-- <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)"> -->
-                                    <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="handleDrawerActions($event, col.row)">
-                                        <el-dropdown-item command="edit" v-if="col.row.buttonShow && canUserUpdate">{{ i18n('populator.edit') }}</el-dropdown-item>
-                                        <el-dropdown-item command="delete" v-if="col.row.buttonShow && canUserDelete">{{ i18n('populator.delete') }}</el-dropdown-item>
-                                        <el-dropdown-item v-if="canUserCreate" command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
-                                    </cly-more-options>
-                                </template>
-                            </el-table-column>
-                        </template>
-                    </cly-datatable-n>
-                </cly-main>
+            <cly-main>
+                <cly-datatable-n 
+                :force-loading="isLoading" 
+                :rows="templates" 
+                class="populator-wrapper__table" 
+                searchPlaceholder="Search in Templates"
+                :hasExport="false">
+                    <template v-slot="scope">
+                        <el-table-column prop="name" :label="i18n('populator.template')" sortable>
+                            <div slot-scope="rowScope" class="has-ellipsis" v-tooltip="rowScope.row.name">
+                                <a v-if="rowScope.row.hasEnvironment" class="color-dark-blue-100" @click="onRowClick(rowScope.row)">{{ unescapeHtml(rowScope.row.name) }}</a>
+                                <span v-else>{{ rowScope.row.name }}</span>
+                            </div>
+                        </el-table-column>
+                        <el-table-column prop="userCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-users')" sortable>
+                                <div slot-scope="rowScope" class="bu-has-text-right">
+                                    {{ rowScope.row.userCount }}
+                                </div>
+                        </el-table-column>
+                        <el-table-column prop="eventCount" width="180" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-events')" sortable>
+                                <div slot-scope="rowScope" class="bu-has-text-right">
+                                    {{ rowScope.row.eventCount }}
+                                </div>
+                        </el-table-column>
+                        <el-table-column prop="viewCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-views')" sortable>
+                                <div slot-scope="rowScope" class="bu-has-text-right">
+                                    {{ rowScope.row.viewCount }}
+                                </div>
+                        </el-table-column>
+                        <el-table-column prop="sequenceCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-sequences')" sortable>
+                                <div slot-scope="rowScope" class="bu-has-text-right">
+                                    {{ rowScope.row.sequenceCount }}
+                                </div>
+                        </el-table-column>
+                        <el-table-column prop="generatedOn" :label="i18n('populator.generated-on')" sortable>
+                                <div slot-scope="rowScope">
+                                    {{ rowScope.row.generatedOn }}
+                                </div>
+                        </el-table-column>
+                        <el-table-column type="options">
+                            <template v-slot="col">
+                                 <!-- <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)"> -->
+                                <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="handleDrawerActions($event, col.row)">
+                                    <el-dropdown-item command="edit" v-if="col.row.buttonShow && canUserUpdate">{{ i18n('populator.edit') }}</el-dropdown-item>
+                                    <el-dropdown-item command="delete" v-if="col.row.buttonShow && canUserDelete">{{ i18n('populator.delete') }}</el-dropdown-item>
+                                    <el-dropdown-item v-if="canUserCreate" command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
+                                </cly-more-options>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-main>
         </el-tab-pane>
     </cly-tabs>
+    <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+        <template slot-scope="scope">
+            <div v-html="dialog.text"></div>
+        </template>
+    </cly-confirm-dialog>
     <cly-populator-template-drawer ref="populatorTemplateDrawer" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>
 </div>
