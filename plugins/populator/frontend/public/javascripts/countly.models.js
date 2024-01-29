@@ -1015,7 +1015,7 @@
         this.startSessionForAb = function(user) {
             var req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: user, ignore_cooldown: '1'};
             this.request(req);
-            countlyPopulator.sync();
+            flushAllRequests([req]);
             this.ts = this.ts + getRandomInt(100, 300);
         };
 
@@ -1863,6 +1863,7 @@
         stopCallback = null;
         userAmount = template.uniqueUserCount || 100;
         bulk = [];
+        users = [];
         runCount = run;
         generating = true;
         completedRequestCount = 0;
@@ -1965,7 +1966,7 @@
                         await checkEnvironment(u);
                     }
                     if (currentIndex < userAmount && users.length < 50 && Math.random() > 0.5) {
-                        users.push(u.user);
+                        users.push(u);
                     }
                     currentIndex++;
                 }
@@ -2041,9 +2042,9 @@
         else {
             generateWidgets(function() {
                 generateCampaigns(async function() {
-                    const usersResult = await createUsers();
+                    await createUsers();
 
-                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing") && usersResult) {
+                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
                         abExampleName = "Pricing" + abExampleCount++;
                         generateAbTests(function() {
                             if (users.length) {
@@ -2101,30 +2102,6 @@
 
     countlyPopulator.isGenerating = function() {
         return generating;
-    };
-
-    countlyPopulator.sync = function() {
-        return new Promise((resolve, reject) => {
-            if (bulk.length > 1) {
-                $.ajax({
-                    type: "POST",
-                    url: countlyCommon.API_URL + "/i/bulk",
-                    data: {
-                        app_key: countlyCommon.ACTIVE_APP_KEY,
-                        requests: JSON.stringify(bulk),
-                        populator: true
-                    },
-                    success: function() {
-                        bulk = [];
-                        resolve();
-                    },
-                    error: function() {
-                        bulk = [];
-                        reject();
-                    }
-                });
-            }
-        });
     };
 
     countlyPopulator.ensureJobs = function() {
