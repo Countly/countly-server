@@ -60,8 +60,7 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo dnf update -y nss
 
 #install nodejs
-sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
-sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+sudo dnf module install nodejs:18/common
 
 set +e
 NODE_JS_CMD=$(which nodejs)
