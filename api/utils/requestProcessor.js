@@ -2848,8 +2848,15 @@ const processRequest = (params) => {
                 case 'entries':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
                     break;
+                }
+            }
+            case '/i/cms': {
+                switch (paths[3]) {
+                case 'save_entries':
+                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    break;
                 case 'clear':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -2860,20 +2867,10 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
                     }
                     break;
                 }
-
-                break;
-            }
-            case '/i/cms': {
-                switch (paths[3]) {
-                case 'save_entries':
-                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
-                    break;
-                }
-                break;
             }
             default:
                 if (!plugins.dispatch(apiPath, {
