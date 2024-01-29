@@ -2872,6 +2872,7 @@ const processRequest = (params) => {
                     }
                     break;
                 }
+                break;
             }
             default:
                 if (!plugins.dispatch(apiPath, {
