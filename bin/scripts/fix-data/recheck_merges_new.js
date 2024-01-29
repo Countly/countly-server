@@ -32,6 +32,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         try {
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
+                console.log("Timestamp:", new Date());
                 console.log("Processing app: ", app.name);
                 await processCursor(app);
             }, function(err) {
@@ -129,6 +130,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     async function processCursor(app) {
         var session;
         try {
+            //Processed users count
+            var processedUsers = 0;
             //start session
             session = await countlyDb.client.startSession();
             //get all drill collections for this app
@@ -141,6 +144,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             try {
                 //for each user
                 while (usersCursor && await usersCursor.hasNext()) {
+                    console.log("Timestamp:", new Date());
                     //refresh session every 5 minutes
                     if ((new Date() - refreshTimestamp) / 1000 > 300) {
                         console.log("Refreshing session");
@@ -157,10 +161,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     const user = await usersCursor.next();
                     //check if old uid still exists in drill collections
                     if (user && user.merged_uid) {
-                        await processUser(user.merged_uid, user.uid, drillCollections, app);
+                        console.log("Found user ", user.uid, "with old uid ", user.merged_uid);
+                        if (!DRY_RUN) {
+                            await processUser(user.merged_uid, user.uid, drillCollections, app);
+                        }
+                        processedUsers++;
                     }
                     await addRecheckedFlag(app._id, user.uid);
                 }
+                console.log("Processed users for app", app.name, ": ", processedUsers);
             }
             catch (cursorError) {
                 console.log("Cursor error: ", cursorError);
