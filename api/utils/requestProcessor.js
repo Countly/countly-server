@@ -2849,6 +2849,7 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
                     break;
                 }
+                break;
             }
             case '/i/cms': {
                 switch (paths[3]) {
