@@ -14,22 +14,22 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-sudo yum install -y wget openssl-devel make git sqlite unzip bzip2
+sudo dnf install -y wget openssl-devel make git sqlite unzip bzip2
 
-sudo yum install -y python3-pip
+sudo dnf install -y python3-pip
 sudo pip3 install pip --upgrade
 sudo pip3 install meld3
 sudo pip3 install supervisor --ignore-installed meld3
-sudo yum install -y python3-setuptools
+sudo dnf install -y python3-setuptools
 
-sudo yum install -y python3-policycoreutils
-sudo yum group install -y "Development Tools"
+sudo dnf install -y python3-policycoreutils
+sudo dnf group install -y "Development Tools"
 
 if [ ! -f "/etc/centos-release" ]; then
     sudo dnf -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${CENTOS_MAJOR}.noarch.rpm"
 fi
 
-sudo yum install -y epel-release
+sudo dnf install -y epel-release
 
 # see https://github.com/koalaman/shellcheck/issues/1871
 wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
@@ -55,13 +55,12 @@ else
 fi
 
 #Install dependancies required by the puppeteer
-sudo yum install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
+sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
 #Install nss after installing above dependencies
-sudo yum update -y nss
+sudo dnf update -y nss
 
 #install nodejs
-sudo yum install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
-sudo yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+sudo dnf module install nodejs:18/common
 
 set +e
 NODE_JS_CMD=$(which nodejs)
@@ -73,7 +72,7 @@ elif [ ! -f "/usr/bin/node" ]; then
 fi
 
 #install nginx
-sudo yum install -y nginx
+sudo dnf install -y nginx
 
 set +e
 sudo useradd www-data
@@ -83,7 +82,7 @@ set -e
 sudo chown -R www-data:www-data /var/lib/nginx
 
 #install sendmail
-sudo yum install -y sendmail
+sudo dnf install -y sendmail
 sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
 #install npm modules
@@ -91,7 +90,7 @@ npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
 
 #install numactl
-sudo yum install -y numactl
+sudo dnf install -y numactl
 
 #install mongodb
 if ! command -v mongod &> /dev/null; then
