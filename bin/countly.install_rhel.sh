@@ -47,8 +47,12 @@ sudo ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
 cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 
 #Install raven-release for ipa-gothic-fonts required by puppeteer
-sudo dnf install -y https://pkgs.dyn.su/el${$CENTOS_MAJOR}/base/x86_64/raven-release.noarch.rpm
-sudo dnf install -y ipa-gothic-fonts
+if [[ "$CENTOS_MAJOR" = "9" ]]; then
+    sudo rpm -ivh https://pkgs.dyn.su/el8/base/x86_64/ipa-gothic-fonts-003.03-15.el8.noarch.rpm
+else
+    sudo yum install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
+    sudo yum install -y ipa-gothic-fonts
+fi
 
 #Install dependancies required by the puppeteer
 sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
