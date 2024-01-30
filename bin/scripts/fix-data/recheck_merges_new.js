@@ -15,6 +15,8 @@ const drillCommon = require("../../../plugins/drill/api/common.js");
 
 const APP_ID = ""; //leave empty to get all apps
 
+var totalProcessedUsers = {};
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
     common.db = countlyDb;
@@ -34,6 +36,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             asyncjs.eachSeries(apps, async function(app) {
                 console.log("Timestamp:", new Date());
                 console.log("Processing app: ", app.name);
+                totalProcessedUsers[app._id] = 0;
                 await processCursor(app);
             }, function(err) {
                 return close(err);
@@ -130,8 +133,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     async function processCursor(app) {
         var session;
         try {
-            //Processed users count
-            var processedUsers = 0;
             //start session
             session = await countlyDb.client.startSession();
             //get all drill collections for this app
@@ -165,11 +166,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         if (!DRY_RUN) {
                             await processUser(user.merged_uid, user.uid, drillCollections, app);
                         }
-                        processedUsers++;
+                        totalProcessedUsers[app._id]++;
                     }
                     await addRecheckedFlag(app._id, user.uid);
                 }
-                console.log("Processed users for app", app.name, ": ", processedUsers);
+                console.log("Processed users for app", app.name, ": ", totalProcessedUsers[app._id]);
             }
             catch (cursorError) {
                 console.log("Cursor error: ", cursorError);
