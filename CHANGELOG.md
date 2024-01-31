@@ -1,3 +1,17 @@
+## Version 23.11.11
+Fixes:
+  - [install] Minor improvements for RHEL installer
+  - [scripts] remove_user command for informative output
+  - [cms] fixed permissions for /clear endpoint
+  - [push] fix apidoc comment
+  - [scripts] fixes for dry run mode in recheck_merges script
+  - [scripts] Script to process unfinished merges
+  - [push] fix for updating message state properly while populating push queue
+
+Enterprise Fixes:
+ - [drill] Fixes to show session table in users profile
+
+
 ## Version 23.11.10
 Fixes:
 - [core] Record consent and push sent events
