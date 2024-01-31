@@ -455,6 +455,30 @@ class Message extends Mongoable {
     }
 
     /**
+     * Returns the ids of messages that has at least one record in "push" collection
+     * 
+     * @returns {string[]} ids of the messages
+     */
+    static async findStreamableMessageIds() {
+        const streamableMessages = await this.findMany({
+            state: {
+                $bitsAllSet: State.Streamable
+            }
+        });
+        return streamableMessages.map(message => message._id);
+    }
+
+    // static async hasPushRecords(id) {
+    //     let oid = dbext.oidBlankWithDate(new Date());
+    //     const push = await common.db.collection(Push.collection).findOne({
+    //         _id: { $lte: oid },
+    //         m: dbext.ObjectID(id),
+    //     });
+    //     // console.log(push, id);
+    //     return !!push;
+    // }
+
+    /**
      * Encode field key so it could be stored in mongo (replace dots with S - Separator)
      * 
      * @param {string} key field name
