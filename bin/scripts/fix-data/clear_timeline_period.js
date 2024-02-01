@@ -7,7 +7,7 @@
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var Promise = require("bluebird");
-const APPS = ["6075f94b7e5e0d392902520c"]; //leave array empty to process all apps;
+const APPS = []; //leave array empty to process all apps;
 var query_ids = {"_id": {"$regex": "^2024:1:30.*"}};
 
 
@@ -39,32 +39,34 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         }
                         else {
                             console.log("Cleared out data from timeline collection for: " + app.name);
-                            console.log("Clearing out data from timeline status collection for: " + app.name);
-                            var query2 = {};
-                            var regex2 = "^.{40}_" + query_ids._id.$regex.substring(1);
-                            query2["_id"] = {"$regex": regex2};
-                            console.log(JSON.stringify(query2));
-                            countlyDb.collection("timelineStatus").update(query2, {$set: {"g": false}}, {multi: true}, function(err, res) {
-                                if (err) {
-                                    console.log(err);
-                                    reject();
-                                }
-                                else {
-                                    res = res || {};
-                                    console.log(JSON.stringify(res.result));
-                                    console.log("Cleared out data from timeline status collection for: " + app.name);
-                                    resolve();
-                                }
-                            });
+                            resolve();
 
                         }
                     });
                 });
 
             }).then(function() {
-                console.log("Finished cleanup. Data will be regenerated upon job starting rechecking process or upon API request triggering timeline generation.");
-                countlyDb.close();
-                drillDb.close();
+
+                console.log("Clearing out data from timeline status collection");
+                var query2 = {};
+                var regex2 = "^.{40}_" + query_ids._id.$regex.substring(1);
+                query2["_id"] = {"$regex": regex2};
+                console.log(JSON.stringify(query2));
+                countlyDb.collection("timelineStatus").update(query2, {$set: {"g": false}}, {multi: true}, function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    else {
+                        res = res || {};
+                        console.log(JSON.stringify(res.result));
+                        console.log("Cleared out data from timeline status collection for");
+
+                    }
+
+                    console.log("Finished cleanup. Data will be regenerated upon job starting rechecking process or upon API request triggering timeline generation.");
+                    countlyDb.close();
+                    drillDb.close();
+                });
             }).catch(function(error) {
                 console.log(error);
                 countlyDb.close();
