@@ -60,7 +60,7 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo dnf update -y nss
 
 #install nodejs
-sudo dnf module install nodejs:18/common
+sudo dnf module install -y nodejs:18/common
 
 set +e
 NODE_JS_CMD=$(which nodejs)
