@@ -743,12 +743,12 @@
                     var self = this;
                     var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
                     // EMRE: Checks for minutes and hours
-                    // if (newVal.level === "minutes") {
-                    //     parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("minute");
-                    // }
-                    // if (newVal.level === "hours") {
-                    //     parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("hour");
-                    // }
+                    if (newVal.level === "minutes") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("minute");
+                    }
+                    if (newVal.level === "hours") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("hour");
+                    }
                     if (newVal.level === "weeks") {
                         parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
                     }
@@ -789,14 +789,14 @@
                         }, 0);
                     }
                     // EMRE: newVal.level checkds for minutes and hours
-                    // else if (newVal.level === "hours") {
-                    //     this.globalRange = this.globalHoursRange;
-                    //     this.tableType = "month";
-                    // }
-                    // else if (newVal.level === "minutes") {
-                    //     this.globalRange = this.globalMinutesRange;
-                    //     this.tableType = "month";
-                    // }
+                    else if (newVal.level === "hours") {
+                        this.globalRange = this.globalHoursRange;
+                        this.tableType = "month";
+                    }
+                    else if (newVal.level === "minutes") {
+                        this.globalRange = this.globalMinutesRange;
+                        this.tableType = "month";
+                    }
                 }
             },
         }
@@ -1482,7 +1482,8 @@
                     var _maxDate = new Date(this.maxDate);
                     var currentDate = new Date(_maxDate.getTime());
                 }
-                if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
+                // EMRE: checking modelMode === absolute along with level !== hours, is minutes useful here?
+                if (this.rangeMode === 'inBetween' || (this.modelMode === "absolute" && this.inTheLastInput.raw.level !== "hours" && this.inTheLastInput.raw.level !== "minutes")) {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     if (this.type === "date" && !this.selectTime) {
                         effectiveMinDate.setHours(23, 59);
@@ -1535,6 +1536,7 @@
                 this.handleDropdownHide(true);
                 this.doClose();
             },
+            // EMRE: 12minutes, false
             doCommit: function(value, isShortcut) {
                 if (value) {
                     if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {

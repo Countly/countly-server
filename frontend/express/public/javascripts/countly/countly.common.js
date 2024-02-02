@@ -3938,6 +3938,30 @@
                     previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
                 });
             }
+            // EMRE: adding minutes and hours checks
+            // startTimestamp and endTimestamp should be adjusted, like with hours
+            else if (/([1-9][0-9]*)minutes/.test(period)) {
+                const nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
+                startTimestamp = currentTimestamp.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
+                cycleDuration = moment.duration(nMinutes, "minutes");
+                Object.assign(periodObject, {
+                    dateString: "HH:mm",
+                    isSpecialPeriod: true
+                });
+            }
+            else if (/([1-9][0-9]*)hours/.test(period)) {
+                const nHours = parseInt(/([1-9][0-9]*)hours/.exec(period)[1]);
+                startTimestamp = currentTimestamp.clone().startOf("hour").subtract(nHours - 1, "hours");
+                endTimestamp = currentTimestamp.clone().endOf("hour"),
+                cycleDuration = moment.duration(nHours, "hours");
+                console.log("startTimestamp " + startTimestamp.format("D MMM, HH:mm") + " endTimestamp: " + endTimestamp.format("D MMM, HH:mm"));
+                Object.assign(periodObject, {
+                    // EMRE: added hourly flag
+                    isHourly: true,
+                    dateString: "HH:mm",
+                    isSpecialPeriod: true,
+                });
+            }
             else if (/([1-9][0-9]*)days/.test(period)) {
                 nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
                 startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
@@ -4037,9 +4061,11 @@
                     }
                 }
 
-                periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
-                periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+                if (!periodObject.isHourly) {
+                    periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
+                    periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
 
+                }
                 dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
                 week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
                 dateVal = dateVal.split(".");
@@ -4057,7 +4083,19 @@
             if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
                 periodObject.activePeriod = periodObject.currentPeriodArr[0];
             }
-
+            // EMRE: check for if it's hour pick, or not.
+            if (periodObject.isHourly) {
+                var startHour = startTimestamp.clone(),
+                    endHour = endTimestamp.clone();
+                for (startHour; startHour < endHour; startHour.add(1, "hours")) {
+                    periodObject.currentPeriodArr.push(startHour.format("D MMM, HH:mm"));
+                    periodObject.previousPeriodArr.push(startHour.clone().subtract(cycleDuration).format("D MMM, HH:mm"));
+                }
+            }
+            console.log("currentPeriodArr:");
+            console.log(periodObject.currentPeriodArr);
+            console.log("previousPeriodArr:");
+            console.log(periodObject.previousPeriodArr);
             var currentYear = 0,
                 currWeeksArr = [],
                 currWeekCounts = {},
@@ -5126,6 +5164,14 @@
                 else if (Object.prototype.hasOwnProperty.call(period, "before")) {
                     inferredType = "before";
                 }
+            }
+            else if (period.endsWith("minutes")) {
+                inferredLevel = "minutes";
+                inferredType = "last-n";
+            }
+            else if (period.endsWith("hours")) {
+                inferredLevel = "hours";
+                inferredType = "last-n";
             }
             else if (period.endsWith("days")) {
                 inferredLevel = "days";
