@@ -1,3 +1,62 @@
+## Version 23.11.9
+Fixes:
+- [core] Add option to pass bucket (daily, monthly) for /o/analytics/session and /o/analytics/events endpoints
+- [dashboards] Dasboard name and tooltip sanitization
+- [notes] Notes content sanitization
+- [populator] Do not update last data on populator
+- [push] fix on timezone for recurring messages
+- [push] skippable audience estimation
+
+Enterprise Fixes:
+- [drill]  Modify export filename no do not include full query if query is too long
+- [retention] Classical & Unbound Retention query breakdown fix
+
+## Version 23.11.8
+Fixes:
+- [push] Fix for messages failure that show infinity in detail
+- [push] Fix for setting start date correctly when user selects "send now"
+- [token-manager]  Fixed issue with displaying created tokens
+- [core] Fixes for user merging job
+- [core] update default settings when tracker is present
+- [core] remove zest integration
+- [hooks] update to new isolated vm
+- [reports] allow any number of selection for reports
+
+Enterprise Fixes:
+- [tracker] Remove config check when enabled
+- [block] Add support for $or query
+- [cohorts] Pass correct period when fetching data for cohorts graphs in cohorts view
+- [flows] Set steps to closest available value, if initital value is not found
+- [users] Correctly fetching timeline data when this year is selected
+- [timeline] Improvements for timeline merging on user merge
+
+## Version 23.11.7
+Fixes:
+- [core] sort values by index in tooltip in charts
+- [core] ensure data consistency when user merging
+- [core] Null check for fetching masking properties
+- [tracker] Fixes for device id domain
+
+Enterprise Fixes:
+- [ab-testing] Limit days to 10 years
+- [data redaction] Fixed code in masking processing for drill_meta aggregation
+- [dashboards][drill] added "average session duration" metric to drill widget
+- [ab-testing] Use since period object for infinite ab tests
+- [nps] Fix for nps appearance color not getting updated
+- [users] Fixed filtering events in users profile if selected event type is start rating
+
+## Version 23.11.6
+Fixes:
+- [core] fix for optimizing loyalty calculation
+- [star-rating] changes for status change on detail page
+- [core][bugfix] Filter was not working on isset/ is not set in anayltics/loyality
+- [recaptcha] Fix for Recaptcha response is not passed along with login details when 2 fa is enabled
+
+Enterprise Fixes:
+- [flows] Recheck logic for  date regex for event timeline
+- [data-manager] Do not show 'all-time' in regeneration drawer in data manager
+- [drill] typo fixes in drill localization
+   
 ## Version 23.11.5
 Fixes:
 - [core] add required excludes to scripts

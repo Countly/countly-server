@@ -337,6 +337,129 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    var check_if_merges_finished = function(tries, done) {
+        if (tries == 3) {
+            done();
+        }
+        else {
+            testUtils.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    console.log(JSON.stringify(res));
+                    setTimeout(function() {
+                        check_if_merges_finished(tries + 1, done);
+                    }, 10000);
+                }
+                else {
+                    done();
+                }
+            });
+        }
+    };
+
+    describe('Test user merging', function() {
+        it('Send in some user', function(done) {
+            var events = [{
+                "key": "[CLY]_star_rating",
+                "count": 1,
+                "timestamp": 1419432000000,
+                "hour": 10,
+                "dow": 2,
+                "segmentation": {
+                    "contactMe": true,
+                    "email": "someone@gmail.com",
+                    "comment": "It's a old comment.",
+                    "rating": 5,
+                    "app_version": "5.5",
+                    "platform": "iOS",
+                    "widget_id": WIDGET_ID
+                }
+            }];
+
+            request.get('/i/feedback/input?app_key=' + APP_KEY + '&device_id=' + 'OLD' + "&events=" + JSON.stringify(events))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('Send in some other user', function(done) {
+            var events = [{
+                "key": "[CLY]_star_rating",
+                "count": 1,
+                "timestamp": 1419432000000,
+                "hour": 10,
+                "dow": 2,
+                "segmentation": {
+                    "contactMe": true,
+                    "email": "someoneNew@gmail.com",
+                    "comment": "It's a test comment.",
+                    "rating": 5,
+                    "app_version": "5.5",
+                    "platform": "iOS",
+                    "widget_id": WIDGET_ID
+                }
+            }];
+
+            request.get('/i/feedback/input?app_key=' + APP_KEY + '&device_id=' + 'NEW' + "&events=" + JSON.stringify(events))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('Merge users', function(done) {
+            request
+                .get('/i?device_id=NEW&old_device_id=OLD&app_key=' + APP_KEY)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+        it('making sure merge is finished', function(done) {
+            check_if_merges_finished(0, done);
+        });
+        it('Validate in docs are correct in database', function(done) {
+            testUtils.db.collection("app_users" + APP_ID).findOne({"did": "NEW"}, function(err, res) {
+                if (err) {
+                    done("user not found");
+                }
+                else {
+                    var uid = res.uid;
+                    testUtils.db.collection("feedback" + APP_ID).find({"uid": uid}).toArray(function(err, res) {
+                        if (err) {
+                            done(err);
+                        }
+                        else {
+                            if (res && res.length === 2) {
+                                done();
+                            }
+                            else {
+                                console.log(JSON.stringify(res));
+                                done("feedback collection not properly merged. Expected 2 records.");
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+
+    });
     describe('Reset app', function() {
         it('should reset data', function(done) {
             var params = {

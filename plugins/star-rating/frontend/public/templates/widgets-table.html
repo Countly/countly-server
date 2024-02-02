@@ -22,7 +22,7 @@
             <template v-slot="rowScope">
               <div>
                 <div @click="goWidgetDetail(rowScope.row._id)" :data-test-id="'ratings-widgets-data-table-widget-name-' + rowScope.$index" :class="[rowScope.row.hover && 'bu-is-underlined bu-is-clickable color-primary', 'color-dark-blue-100 text-medium']">
-                  {{rowScope.row.popup_header_text}}
+                  {{unescapeHtml(rowScope.row.popup_header_text)}}
                 </div>
                 <div>
                   <span :data-test-id="'ratings-widgets-data-table-widget-id-label-' + rowScope.$index" class="color-cool-gray-40 text-small bu-has-text-weight-semibold"> {{ i18n('feedback.widget-id') }} </span>

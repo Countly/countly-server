@@ -44,12 +44,12 @@ Files to modify:
 
 /var/countly/frontend/express/config.sample.js
 
-#and if you have enterprise edition then also
+#and if you have Countly Enterprise then also
 /var/countly/plugins/drill/config.sample.js
 ```
 
 5) Additionally you might need to copy app image files from your old countly frontend/express/public/appimages/ folder
 
-6) If you are upgrading from Countly Community Edition also execute community upgrade script
+6) If you are upgrading from Countly Lite also execute community upgrade script
 
     bash bin/upgrade/15.03/community.upgrade.sh

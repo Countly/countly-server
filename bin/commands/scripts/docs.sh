@@ -23,5 +23,5 @@ elif [ "$1" = "generate" ]; then
     npx apidoc -i "$DIR/../../../" -o "$DIR/../../../frontend/express/public/docs/apidoc" -f ".*\\.js$" -e "node_modules" ;
     
     #add redirect for main folder
-    echo "<html><head><meta http-equiv='Refresh' content='0; url=./api/index.html'/><script type='javascript'>window.location = './api/index,html';</script></head></html>" > "$DIR/../../../frontend/express/public/docs/index.html"
+    echo "<html><head><meta http-equiv='Refresh' content='0; url=./api/index.html'/><script type='javascript'>window.location = './api/index.html';</script></head></html>" > "$DIR/../../../frontend/express/public/docs/index.html"
 fi

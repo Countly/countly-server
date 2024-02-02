@@ -16,7 +16,7 @@
         </el-table-column>
         <el-table-column prop="time" column-key="ts" :label="i18n('feedback.time')">
           <template v-slot="rowScope">
-              <span v-html="rowScope.row.ts" class="text-medium"></span>
+            <span class="text-medium">{{unescapeHtml(rowScope.row.ts)}}</span>
           </template>
         </el-table-column>
     </cly-datatable-n>

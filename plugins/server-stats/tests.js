@@ -64,7 +64,6 @@ function verifyAddedEvents(addedEvents, initialRequest) {
             if (!res || (!res.length && !initialRequest)) {
                 throw ({err: "Invalid length"});
             }
-
             if (initialRequest) {
                 lastEventCounts.e = res && res[0] && res[0].e ? res[0].e : 0;
                 lastEventCounts.ce = res && res[0] && res[0].ce ? res[0].ce : 0;
@@ -79,8 +78,8 @@ function verifyAddedEvents(addedEvents, initialRequest) {
                 const internalEventKey = statInternalEvents[key] || 'ce';
 
                 lastEventCounts[internalEventKey] = lastEventCounts[internalEventKey] || 0;
-                lastEventCounts[internalEventKey] += event.count;
-                lastEventCounts.e += event.count;
+                lastEventCounts[internalEventKey] += 1;
+                lastEventCounts.e += 1;
             });
             if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
                 lastEventCounts.s++;

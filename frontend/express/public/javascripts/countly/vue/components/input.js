@@ -883,7 +883,7 @@
                 }
             },
             isItemCountValid: function() {
-                if (this.mode === "single-list" || this.autoCommit) {
+                if (this.mode === "single-list" || this.autoCommit || this.maxItems === 0 || this.maxItems === undefined) {
                     return true;
                 }
                 return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
@@ -904,6 +904,9 @@
                 return false;
             },
             disableNonSelected: function() {
+                if (this.maxItems === 0 || this.maxItems === undefined) {
+                    return false;
+                }
                 return this.innerValue && this.innerValue.length === this.maxItems;
             }
         },

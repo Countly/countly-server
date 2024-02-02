@@ -306,7 +306,7 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
-            //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
     }
@@ -356,6 +356,12 @@ plugins.connectToAllDatabases().then(function() {
                     req.body += data;
                 });
 
+                let multiFormData = false;
+                // Check if we have 'multipart/form-data'
+                if (req.headers['content-type']?.startsWith('multipart/form-data')) {
+                    multiFormData = true;
+                }
+
                 form.parse(req, (err, fields, files) => {
                     //handle bakcwards compatability with formiddble v1
                     for (let i in files) {
@@ -370,8 +376,18 @@ plugins.connectToAllDatabases().then(function() {
                         }
                     }
                     params.files = files;
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
+                    if (multiFormData) {
+                        let formDataUrl = [];
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                            formDataUrl.push(`${i}=${fields[i]}`);
+                        }
+                        params.formDataUrl = formDataUrl.join('&');
+                    }
+                    else {
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                        }
                     }
                     if (!params.apiPath) {
                         processRequest(params);

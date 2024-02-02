@@ -110,15 +110,45 @@
             if (appId === "all-apps" || appId === "natural-dp") {
                 appId = null;
             }
+            var brokendownEvents = {
+                "crashes": periodData.crash,
+                "views": periodData.views,
+                "actions": periodData.actions,
+                "nps": periodData.nps,
+                "surveys": periodData.surveys,
+                "ratings": periodData.ratings,
+                "apm": periodData.apm,
+                "custom": periodData.custom,
+            };
+            let sortable = [];
+            for (var event in brokendownEvents) {
+                sortable.push([event, brokendownEvents[event]]);
+            }
+
+            sortable.sort(function(a, b) {
+                return b[1] - a[1];
+            });
+
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
                 "sessions": periodData.sessions,
-                "events": periodData.events,
                 "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
-                "approximated": approx
+                "approximated": approx,
+                "events": periodData.events,
+                "events_breakdown": {
+                    "crashes": periodData.crash,
+                    "views": periodData.views,
+                    "actions": periodData.actions,
+                    "nps": periodData.nps,
+                    "surveys": periodData.surveys,
+                    "ratings": periodData.ratings,
+                    "apm": periodData.apm,
+                    "custom": periodData.custom,
+                },
+                "sorted_breakdown": sortable,
             });
         }
 
