@@ -14,6 +14,7 @@
                 templates: [],
                 progressBarColor: '#0166D6',
                 progressBar: null,
+                progressBarWidth: '0 / 0',
                 finishedGenerateModal: {showDialog: false},
                 description: CV.i18n('populator.warning3'),
                 titleDescription: {header: '', button: ''},
@@ -169,6 +170,7 @@
                 self.progressBar = setInterval(function() {
                     if (countlyPopulator.isGenerating()) {
                         self.percentage = countlyPopulator.getCompletedRequestCount() / (template.uniqueUserCount) * 100;
+                        self.progressBarWidth = countlyPopulator.getCompletedRequestCount() + " / " + template.uniqueUserCount;
                     }
                     else {
                         self.percentage = 100;

@@ -91,9 +91,10 @@
                     <img src="/populator/images/generate-data-modal.png" style="width: 100%;">
                     <div class="populator-start-modal-wrapper__modal-progress-container">
                         <cly-progress-bar  :percentage="percentage" :color="progressBarColor" :height:=8 class="bu-mt-1 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
+                        <span class="text-small font-weight-bold">{{progressBarWidth}}</span>
                         <h3 class="populator-start-modal-wrapper__generate-data-header">{{ i18n('populator.generating-data') }}</h3>
-                        <span class="text-medium bu-has-text-grey-light populator-start-modal-wrapper__generate-data-bulk" >{{ i18n('populator.bulk') }}</span>
-                        <el-button type="default" class="bu-mt-6" @click="stopPopulate()">{{i18n('populator.stop')}}</el-button>
+                        <span class="text-medium color-cool-gray-50 populator-start-modal-wrapper__generate-data-bulk" >{{ i18n('populator.bulk') }}</span>
+                        <el-button type="default" class="text-smallish font-weight-bold populator-start-modal-wrapper__stop-button" @click="stopPopulate()">{{i18n('populator.stop')}}</el-button>
                     </div>
                 </el-dialog>
                 <el-dialog class="populator-stop-modal-wrapper" :visible.sync="finishedGenerateModal.showDialog" width="30%" :show-close="false">

@@ -176,11 +176,19 @@
     } 
 
     &__generate-data-header {
-        margin-top: 20px;
+        // margin-top: 20px;
+        margin-top: 6px;
     }
 
     &__generate-data-bulk {
         margin-top: 4px;
+    }
+
+    &__stop-button {
+        border: none;
+        background-color: #f6f6f6;
+        margin-top: 32px;
+        margin-bottom: 12px;
     }
 }
 
