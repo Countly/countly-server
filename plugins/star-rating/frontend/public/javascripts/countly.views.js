@@ -518,7 +518,6 @@
                     var month = dateArray[1];
                     var day = dateArray[2];
                     if (result[year] && result[year][month] && result[year][month][day]) {
-
                         for (var rating in result[year][month][day]) {
                             if (self.matchPlatformVersion(rating)) {
                                 var rank = (rating.split("**"))[2];
