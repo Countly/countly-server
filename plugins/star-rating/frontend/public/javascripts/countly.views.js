@@ -506,6 +506,11 @@
                 var result = self.rating;
                 var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
 
+                var idMap = {};
+                self.widgets.forEach(function(obj) {
+                    idMap[obj._id] = obj;
+                });
+
                 // prepare cumulative data by period object
                 for (var i = 0; i < periodArray.length; i++) {
                     var dateArray = periodArray[i].split('.');
@@ -513,10 +518,12 @@
                     var month = dateArray[1];
                     var day = dateArray[2];
                     if (result[year] && result[year][month] && result[year][month][day]) {
+
                         for (var rating in result[year][month][day]) {
                             if (self.matchPlatformVersion(rating)) {
                                 var rank = (rating.split("**"))[2];
-                                if (self.cumulativeData[rank - 1]) {
+                                var widget = (rating.split("**"))[3];
+                                if (self.cumulativeData[rank - 1] && idMap[widget]) {
                                     self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
                                     self.count += result[year][month][day][rating].c;
                                     self.sum += (result[year][month][day][rating].c * rank);
