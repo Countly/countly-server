@@ -1125,6 +1125,23 @@
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
+    app.configurationsView.registerInput("security.proxy_hostname", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_port", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_username", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_password", {input: "el-input", attrs: {type: "textarea", rows: 1}});
+
+    app.configurationsView.registerInput("security.proxy_type", {
+        input: "el-select",
+        attrs: {},
+        list: [
+            {value: 'https', label: 'https'},
+            {value: 'http', label: 'http'}
+        ]
+    });
+
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
