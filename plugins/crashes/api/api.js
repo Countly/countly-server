@@ -679,7 +679,10 @@ plugins.setConfigs("crashes", {
                                         update.$max = groupMax;
                                     }
 
-                                    update.$addToSet = {groups: hash};
+                                    update.$addToSet = {
+                                        groups: hash,
+                                        app_version_list: report.app_version,
+                                    };
 
                                     common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: false}, function(crashGroupsErr, crashGroup) {
                                         crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
