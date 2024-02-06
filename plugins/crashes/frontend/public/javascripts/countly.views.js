@@ -292,11 +292,17 @@
                 };
 
                 var self = this;
-                var getAppVersions = function() {
-                    // Get app versions from vuex because drill meta is not always up to date
-                    return self.$store.getters["countlyCrashes/overview/appVersions"].map(function(version) {
-                        var properVersion = version.replace(/:/g, ".");
-                        return { name: properVersion, value: properVersion };
+                var getAppVersions = function(query) {
+                    return new Promise(function(resolve) {
+                        // Get app versions from vuex because drill meta is not always up to date
+                        resolve(self.$store.getters["countlyCrashes/overview/appVersions"].reduce(function(acc, version) {
+                            var properVersion = version.replace(/:/g, ".");
+                            if (!query || properVersion.indexOf(query) > -1) {
+                                acc.push({ name: properVersion, value: properVersion });
+                            }
+
+                            return acc;
+                        }, []));
                     });
                 };
 
