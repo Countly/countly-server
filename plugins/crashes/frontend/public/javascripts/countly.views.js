@@ -304,18 +304,18 @@
 
                 if (window.countlyQueryBuilder) {
                     filterProperties.push({
-                        id: "app_version",
+                        id: "app_version_list",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
+                        type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getAppVersions
+                        searchRemoteList: getAppVersions,
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
+                        type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: getAppVersions
+                        searchRemoteList: getAppVersions,
                     });
                     filterProperties.push({
                         id: "opengl",
@@ -413,7 +413,7 @@
                     new countlyQueryBuilder.RowRule({
                         name: "cly.crashes.no-regex",
                         selector: function(row) {
-                            return row.property && row.property.id !== "error";
+                            return row.property && !["app_version_list", "error", "latest_version"].includes(row.property.id);
                         },
                         actions: [new countlyQueryBuilder.RowAction({
                             id: "disallowOperator",
