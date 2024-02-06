@@ -78,6 +78,13 @@ pluginManager.dbConnection().then(async (countlyDb) => {
             catch (err) {
                 console.error(`Failed updating collection ${crashgroupCollection} meta`, err);
             }
+
+            try {
+                await countlyDb.collection(crashgroupCollection).ensureIndex({ app_version_list: 1 }, { background: true });
+            }
+            catch (err) {
+                console.error(`Failed updating collection ${crashgroupCollection} index`, err);
+            }
         }
         else {
             console.error(`${errCount} batches failed when updating collection ${crashgroupCollection}`);
