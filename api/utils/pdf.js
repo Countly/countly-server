@@ -39,7 +39,7 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
     // else {
     browser = await puppeteer.launch({
         headless: true,
-        debuggingPort: 9229,
+        // debuggingPort: 9229,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
         ignoreHTTPSErrors: true,
         userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
