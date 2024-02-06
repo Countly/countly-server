@@ -62,7 +62,7 @@ exports.renderView = function(options, cb) {
             }
 
             var settings = {
-                headless: false,
+                headless: true,
                 // debuggingPort: 9229,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 ignoreHTTPSErrors: true,
@@ -96,7 +96,7 @@ exports.renderView = function(options, cb) {
                     console.log(`render.js ine 9: Headless chrome page failed request: ${request.failure().errorText}, ${request.url()}`);
                 });
 
-                var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost:6001") + countlyConfig.path;
+                var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + countlyConfig.path;
 
                 if (options.host) {
                     host = options.host + countlyConfig.path;
