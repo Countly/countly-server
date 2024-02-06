@@ -1183,7 +1183,7 @@
     app.configurationsView.registerStructure("api", {
         description: "configs.api.description",
         groups: [
-            {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
+            {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master", "user_merge_paralel"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit", "array_list_limit"]},
             {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period", "trim_trailing_ending_spaces"]},

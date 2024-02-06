@@ -81,6 +81,7 @@ plugins.connectToAllDatabases().then(function() {
         //batch_read_on_master: false,
         batch_read_ttl: 600,
         batch_read_period: 60,
+        user_merge_paralel: 1,
         trim_trailing_ending_spaces: false
     });
 
