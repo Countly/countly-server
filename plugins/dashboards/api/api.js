@@ -1354,17 +1354,51 @@ plugins.setConfigs("dashboards", {
                                 options.source = "dashboards/" + imageName;
                                 options.timeout = 240000;
                                 options.cbFn = function(opt) {
-                                    var rep = opt.report || {};
-                                    var reportDateRange = rep.date_range || "30days";
-                                    // eslint-disable-next-line no-undef
-                                    countlyCommon.setPeriod(reportDateRange);
-                                    // eslint-disable-next-line no-undef
-                                    var app = window.app;
-                                    app.activeView.vm.$emit("cly-date-change");
-                                    // eslint-disable-next-line no-undef
-                                    var $ = window.$;
-                                    $("html").addClass("email-screen");
+                                    return new Promise(function(resolve2) {
+                                        // eslint-disable-next-line require-jsdoc
+                                        function check$emit() {
+                                            // Check if $emit exists
+                                            // eslint-disable-next-line no-undef
+                                            if (window.app && window.app.activeView && window.app.activeView.vm && window.app.activeView.vm.$emit) {
+                                                console.log("dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
+
+                                                var rep = opt.report || {};
+                                                var reportDateRange = rep.date_range || "30days";
+                                                // eslint-disable-next-line no-undef
+                                                countlyCommon.setPeriod(reportDateRange);
+                                                // eslint-disable-next-line no-undef
+                                                var app = window.app;
+                                                app.activeView.vm.$emit("cly-date-change");
+                                                // eslint-disable-next-line no-undef
+                                                var $ = window.$;
+
+                                                console.log("dashboard-api.js check$emit: Finished executing the method.");
+                                                $("html").addClass("email-screen");
+                                                console.log("dashboard-api.js check$emit: $emit exists. Resolving promise.");
+                                                resolve2();
+                                            }
+                                            else {
+                                                // $emit does not exist yet, wait for a short delay and then check again
+                                                setTimeout(check$emit, 100); // Wait for 100 milliseconds before checking again
+                                                console.log("dashboard-api.js check$emit: $emit does not exist yet. Waiting for a short delay and checking again.");
+                                            }
+                                        }
+                                        console.log("dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
+                                        check$emit();
+                                    });
                                 };
+                                // options.cbFn = function(opt) {
+                                //     var rep = opt.report || {};
+                                //     var reportDateRange = rep.date_range || "30days";
+                                //     // eslint-disable-next-line no-undef
+                                //     countlyCommon.setPeriod(reportDateRange);
+                                //     // eslint-disable-next-line no-undef
+                                //     var app = window.app;
+                                //     app.activeView.vm.$emit("cly-date-change");
+                                //     // eslint-disable-next-line no-undef
+                                //     var $ = window.$;
+                                //     $("html").addClass("email-screen");
+                                // };
 
                                 options.waitForRegexAfterCbfn = true;
 

@@ -55,13 +55,15 @@ exports.renderView = function(options, cb) {
 
     (async() => {
         try {
+            console.log('render.js Line 3: Starting rendering process');
 
             if (!chromePath && alternateChrome) {
                 chromePath = await fetchChromeExecutablePath();
             }
 
             var settings = {
-                headless: true,
+                headless: false,
+                debuggingPort: 9229,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
@@ -72,27 +74,29 @@ exports.renderView = function(options, cb) {
             }
 
             var browser = await puppeteer.launch(settings);
+            console.log('render.js Line 4: Browser launched');
 
             try {
                 var page = await browser.newPage();
+                console.log('render.js Line 5: New page created');
 
                 page.on('console', (msg) => {
-                    log.d("Headless chrome page log", msg.text());
+                    console.log(`render.js Line 6: Headless chrome page log: ${msg.text()}`);
                 });
 
                 page.on('pageerror', (error) => {
-                    log.e("Headless chrome page error message", error.message);
+                    console.log(`render.js Line 7: Headless chrome page error message: ${error.message}`);
                 });
 
                 page.on('response', (response) => {
-                    log.d("Headless chrome page response", response.status(), response.url());
+                    console.log(`render.js Line 8: Headless chrome page response: ${response.status()}, ${response.url()}`);
                 });
 
                 page.on('requestfailed', (request) => {
-                    log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+                    console.log(`render.js ine 9: Headless chrome page failed request: ${request.failure().errorText}, ${request.url()}`);
                 });
 
-                var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + countlyConfig.path;
+                var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost:6001") + countlyConfig.path;
 
                 if (options.host) {
                     host = options.host + countlyConfig.path;
@@ -119,28 +123,35 @@ exports.renderView = function(options, cb) {
                 page.setDefaultNavigationTimeout(updatedTimeout);
 
                 await page.goto(host + '/login/token/' + token + '?ssr=true');
+                console.log(`render.js Line 10: Navigated to login page: ${host + '/login/token/' + token + '?ssr=true'}`);
 
                 await page.waitForSelector('countly', {timeout: updatedTimeout});
+                console.log('render.js Line 11: Waited for countly selector');
 
                 await timeout(1500);
 
                 await page.goto(host + view);
+                console.log(`render.js Line 12: Navigated to view: ${host + view}`);
 
                 if (waitForRegex) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
                             if (waitForRegex.test(url) && response.status() === 200) {
+                                console.log(`render.js Line 16: Waited for response matching regex after cbFn: ${url}`);
                                 return true;
                             }
                         },
                         { timeout: updatedTimeout }
                     );
+                    console.log('render.js Line 17: Completed code execution');
+                    console.log('render.js Line 13: Waited for response matching regex');
                 }
 
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
+                console.log('render.js Line 14: Executed cbFn');
 
                 if (waitForRegexAfterCbfn) {
                     if (waitForRegex) {
@@ -148,11 +159,13 @@ exports.renderView = function(options, cb) {
                             function(response) {
                                 var url = response.url();
                                 if (waitForRegex.test(url) && response.status() === 200) {
+                                    console.log(`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
                                     return true;
                                 }
                             },
                             { timeout: updatedTimeout }
                         );
+                        console.log('render.js Line 15: Waited for response matching regex after cbFn');
                     }
                 }
 
@@ -163,6 +176,7 @@ exports.renderView = function(options, cb) {
                     height: parseInt(options.dimensions.height),
                     deviceScaleFactor: options.dimensions.scale
                 });
+                console.log('render.js Line 16: Set viewport dimensions');
 
                 await timeout(1500);
 
@@ -174,10 +188,12 @@ exports.renderView = function(options, cb) {
                     height: parseInt(dimensions.height - options.dimensions.padding),
                     deviceScaleFactor: options.dimensions.scale
                 });
+                console.log('render.js Line 17: Set viewport dimensions based on body bounding box');
 
                 await timeout(1500);
 
                 await page.evaluate(beforeScrnCbFn, options);
+                console.log('render.js Line 18: Executed beforeScrnCbFn');
 
                 await timeout(1500);
 
@@ -189,9 +205,10 @@ exports.renderView = function(options, cb) {
 
                 if (id) {
                     var rect = await page.evaluate(function(selector) {
-                    /*global document */
+                        /*global document */
                         var element = document.querySelector(selector);
                         dimensions = element.getBoundingClientRect();
+                        console.log(`render.js Line 23: Obtained dimensions for element with id: ${element.id}`);
                         return {
                             left: dimensions.x,
                             top: dimensions.y,
@@ -206,7 +223,7 @@ exports.renderView = function(options, cb) {
                         height: parseInt(rect.height),
                         deviceScaleFactor: options.dimensions.scale
                     });
-
+                    console.log('render.js Line 24: Set viewport dimensions');
 
                     var clip = {
                         x: rect.left,
@@ -216,11 +233,14 @@ exports.renderView = function(options, cb) {
                     };
 
                     screenshotOptions.clip = clip;
+                    console.log('render.js Line 25: Set screenshot clip');
                 }
 
                 image = await page.screenshot(screenshotOptions);
+                console.log('render.js Line 19: Captured screenshot');
 
                 await saveScreenshot(image, path, source);
+                console.log('render.js Line 20: Saved screenshot');
 
                 await page.evaluate(function() {
                     var $ = window.$;
@@ -231,23 +251,25 @@ exports.renderView = function(options, cb) {
 
                 await bodyHandle.dispose();
                 await browser.close();
+                console.log('render.js Line 21: Closed browser');
 
                 var imageData = {
                     image: image,
                     path: path
                 };
 
+                console.log('render.js Line 22: Rendering process completed');
                 return cb(null, imageData);
             }
             catch (e) {
-                log.e("Headless chrome browser error", e);
+                console.log(`render.js Line 23: Error: ${e}`);
                 await browser.close();
                 return cb(e);
             }
         }
         catch (err) {
             if (cb) {
-                log.e("Headless chrome error", err);
+                console.log(`render.js Line 24: Error: ${err}`);
                 return cb(err);
             }
         }
