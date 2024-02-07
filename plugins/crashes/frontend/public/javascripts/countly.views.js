@@ -536,6 +536,17 @@
                 var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             },
+            singleAppVersionFilter: function() {
+                var currentFilter = this.$store.getters["countlyCrashes/overview/crashgroupsFilter"];
+
+                if (currentFilter.query) {
+                    if (currentFilter.query.app_version_list && currentFilter.query.app_version_list.$in && Array.isArray(currentFilter.query.app_version_list.$in) && currentFilter.query.app_version_list.$in.length === 1) {
+                        return currentFilter.query.app_version_list.$in[0];
+                    }
+                }
+
+                return '';
+            },
             isLoading: function() {
                 return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
