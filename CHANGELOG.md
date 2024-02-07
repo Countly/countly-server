@@ -1,3 +1,17 @@
+## Version 23.11.12
+Fixes:
+  - [core] Added option to run merges in paralel in merging job.
+  - [core] Report countly track type
+  - [core] Script to reset specific dates from the event timeline to allow regeneration for those dates.
+  - [hooks] Proxy settings for hooks
+  - [hooks] hpagent added to package.json
+  - [ratings] Fixed ratings filter
+
+Enterprise Fixes:
+ - [data-manager] Added option to delete source event when merging events.
+ - [license] Minimal and relevant metrics per month for license
+ - [timeline] Updated timeline merge function to run rechecks only on failure.
+
 ## Version 23.11.11
 Fixes:
   - [install] Minor improvements for RHEL installer
