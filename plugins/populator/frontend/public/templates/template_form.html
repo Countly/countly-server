@@ -1,5 +1,5 @@
 <cly-drawer
-    ref="drawer"
+    ref="populatorDrawer"
     @submit="onSubmit"
     class="populator-template"
     v-bind="$props.controls"
@@ -26,7 +26,7 @@
                         </validation-provider>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-0">
-                        <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users">
+                        <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users" :parent-data="drawerScope.editedObject.behavior">
                             <template v-slot:default>
                                 <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.unique-users")}}</span>
                                 <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.unique-users-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
@@ -46,16 +46,16 @@
                         </cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-1">
-                        <cly-populator-section title="Events" type="eventsSection" v-model="drawerScope.editedObject.events" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Events" type="eventsSection" v-model="drawerScope.editedObject.events" hasSwitch :parent-data="drawerScope.editedObject.sequences"></cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-2">
-                        <cly-populator-section title="Views" type="viewsSection" v-model="drawerScope.editedObject.views" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Views" type="viewsSection" v-model="drawerScope.editedObject.views" hasSwitch :parent-data="drawerScope.editedObject.sequences"></cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-3">
-                        <cly-populator-section title="Sequences" type="sequencesSection" :parent-data="prepareData('sequences', drawerScope.editedObject.events, drawerScope.editedObject.views)" v-model="drawerScope.editedObject.sequences" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Sequences" type="sequencesSection" @deleted-index="onSequenceDeleted" :parent-data="prepareData('sequences', drawerScope.editedObject.events, drawerScope.editedObject.views)" v-model="drawerScope.editedObject.sequences" hasSwitch></cly-populator-section>
                     </div>
                     <div class="cly-vue-drawer-step__section" id="section-4">
-                        <cly-populator-section title="Behavior" type="behaviorSection" :parent-data="prepareData('behavior', drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch></cly-populator-section>
+                        <cly-populator-section title="Behavior" type="behaviorSection" :deleted-index="deletedIndex" :parent-data="prepareData('behavior', drawerScope.editedObject.users, drawerScope.editedObject.sequences)" v-model="drawerScope.editedObject.behavior" hasSwitch ></cly-populator-section>
                     </div>
                 </div>
                 <div></div>

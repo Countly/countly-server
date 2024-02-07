@@ -529,9 +529,13 @@
                     {value: 500, text: 500},
                     {value: 1000, text: 1000}
                 ],
+                deletedIndex: null
             };
         },
         methods: {
+            onSequenceDeleted(index) {
+                this.deletedIndex = index + "_" + Date.now(); // to force trigger watcher for same index
+            },
             onSubmit: function(editedObject) {
                 var self = this;
                 const isEdit = !!editedObject._id;

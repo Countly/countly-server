@@ -196,7 +196,7 @@
             },
             save: function() {
                 if (this.value && typeof this.value.length !== "undefined") { // if it is an array
-                    this.$emit("save-condition", this.type, this.selectedProperty, this.selectedValue, this.conditionType);
+                    this.$emit('save-condition', this.type, this.selectedProperty, this.selectedValue, this.conditionType);
                     this.close();
                 }
                 else {
@@ -302,6 +302,9 @@
                 default: function() {
                     return [];
                 }
+            },
+            parentData: {
+                type: [Object, Array],
             }
         },
         data: function() {
@@ -329,6 +332,16 @@
             },
             onRemoveUserProperty: function(index) {
                 try {
+                    const checkedConditionList = this.checkRemoveValue(this.users[index].key);
+                    if (checkedConditionList.length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                            type: "warning",
+                            sticky: true
+                        });
+                        return;
+                    }
                     this.users.splice(index, 1);
                 }
                 catch (error) {
@@ -356,7 +369,47 @@
                 }
                 this.users[index].values.push({key: "", probability: 0});
             },
+            checkRemoveValue: function(key, value) {
+                let usedProperties = [];
+                this.users.forEach(function(item) {
+                    if (item.condition && item.condition.selectedKey === key && (value === undefined || item.condition.selectedValue === value)) {
+                        usedProperties.push("user");
+                    }
+                });
+                // check if it is used in behavior section
+                this.parentData.generalConditions.forEach(function(item) {
+                    if (item.selectedKey === key && (value === undefined || item.selectedValue === value)) {
+                        usedProperties.push("behavior");
+                    }
+                });
+                this.parentData.sequenceConditions.forEach(function(item) {
+                    if (item.selectedKey === key && (value === undefined || item.selectedValue === value)) {
+                        usedProperties.push("behavior");
+                    }
+                });
+
+                if (usedProperties.length) {
+                    const occurrenceCount = usedProperties.reduce((acc, item) => {
+                        acc[item] = (acc[item] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    const checkedConditionResult = Object.entries(occurrenceCount).map(([k, v]) => `${v} times in "${k}"`);
+                    return checkedConditionResult;
+                }
+                return "";
+            },
             onRemoveValue: function(index, valueIndex) {
+                const checkedConditionList = this.checkRemoveValue(this.users[index].key, this.users[index].values[valueIndex].key);
+                if (checkedConditionList.length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                        type: "warning",
+                        sticky: true
+                    });
+                    return;
+                }
                 if (this.users[index].values.length === 1) {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
@@ -438,6 +491,9 @@
             },
             value: {
                 type: [Object, Array],
+            },
+            parentData: {
+                type: [Object, Array],
             }
         },
         data: function() {
@@ -464,6 +520,16 @@
                 });
             },
             onRemoveEvent(index) {
+                const checkedConditionList = this.checkRemoveValue(this.events[index].key);
+                if (checkedConditionList.length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                        type: "warning",
+                        sticky: true
+                    });
+                    return;
+                }
                 this.events.splice(index, 1);
             },
             onAddEventSegmentation: function(index) {
@@ -472,8 +538,51 @@
                     "values": [{key: "", probability: 0}],
                 });
             },
+            checkRemoveValue: function(key, value, index) {
+                let usedProperties = [];
+                if (this.value[index] && this.value[index].segmentations) {
+                    this.value[index].segmentations.forEach(function(item) {
+                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
+                            usedProperties.push("event");
+                        }
+                    });
+                }
+
+                // check if it is used in sequence section
+                else if (index === undefined && value === undefined) {
+                    for (const item of this.parentData) {
+                        const steps = item.steps;
+                        for (const step of steps) {
+                            if (step.key === 'events' && step.value === key) {
+                                usedProperties.push('sequence');
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (usedProperties.length) {
+                    const occurrenceCount = usedProperties.reduce((acc, item) => {
+                        acc[item] = (acc[item] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    const checkedConditionResult = Object.entries(occurrenceCount).map(([k, v]) => `${v} times in "${k}"`);
+                    return checkedConditionResult;
+                }
+                return "";
+            },
             onRemoveSegment: function(index, segmentIndex, valueIndex) {
                 try {
+                    const checkedConditionList = this.checkRemoveValue(this.events[index].segmentations[segmentIndex].key, this.events[index].segmentations[segmentIndex].values[valueIndex].key, index);
+                    if (checkedConditionList.length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                            type: "warning",
+                            sticky: true
+                        });
+                        return;
+                    }
                     if (this.events[index].segmentations[segmentIndex].values.length === 1) {
                         this.events[index].segmentations.splice(segmentIndex, 1);
                         return;
@@ -556,6 +665,9 @@
             },
             value: {
                 type: [Object, Array],
+            },
+            parentData: {
+                type: [Object, Array],
             }
         },
         data: function() {
@@ -580,7 +692,50 @@
                     "segmentations": []
                 });
             },
+            checkRemoveValue: function(key, value, index) {
+                let usedProperties = [];
+                if (this.value[index] && this.value[index].segmentations) {
+                    this.value[index].segmentations.forEach(function(item) {
+                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
+                            usedProperties.push("views");
+                        }
+                    });
+                }
+
+                // check if it is used in sequence section
+                else if (index === undefined && value === undefined) {
+                    for (const item of this.parentData) {
+                        const steps = item.steps;
+                        for (const step of steps) {
+                            if (step.key === 'views' && step.value === key) {
+                                usedProperties.push('sequence');
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (usedProperties.length) {
+                    const occurrenceCount = usedProperties.reduce((acc, item) => {
+                        acc[item] = (acc[item] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    const checkedConditionResult = Object.entries(occurrenceCount).map(([k, v]) => `${v} times in "${k}"`);
+                    return checkedConditionResult;
+                }
+                return "";
+            },
             onRemoveView: function(index) {
+                const checkedConditionList = this.checkRemoveValue(this.views[index].key);
+                if (checkedConditionList.length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                        type: "warning",
+                        sticky: true
+                    });
+                    return;
+                }
                 this.views.splice(index, 1);
             },
             onAddViewSegmentation: function(index) {
@@ -591,6 +746,16 @@
             },
             onRemoveSegment: function(index, segmentIndex, valueIndex) {
                 try {
+                    const checkedConditionList = this.checkRemoveValue(this.views[index].segmentations[segmentIndex].key, this.views[index].segmentations[segmentIndex].values[valueIndex].key, index);
+                    if (checkedConditionList.length) {
+                        CountlyHelpers.notify({
+                            title: CV.i18n("common.error"),
+                            message: CV.i18n("populator-template.delete-warning-used-in-condition", checkedConditionList.join(", ")),
+                            type: "warning",
+                            sticky: true
+                        });
+                        return;
+                    }
                     if (this.views[index].segmentations[segmentIndex].values.length === 1) {
                         this.views[index].segmentations.splice(segmentIndex, 1);
                         return;
@@ -719,6 +884,7 @@
                     return;
                 }
                 this.sequences.splice(index, 1);
+                this.$emit('deleted-index', index);
             },
             onRemoveStep: function(index, stepIndex) {
                 if (this.sequences[index].steps.length === 3 && this.sequences[index].steps.find(x => x.key === "session" && x.value === "end")) {
@@ -775,8 +941,6 @@
                 this.sequences = [{steps: [{"key": "session", value: "start", "probability": 100, "fixed": true}, {"key": "session", value: "end", "probability": 100, "fixed": true}]}];
             }
             this.sequenceStepValues = this.parentData;
-            // this.sequences = this.value;
-            // this.sequenceStepValues = this.sequenceStepPropertyValues;
         },
         template: CV.T("/populator/templates/sections/sequences.html")
     });
@@ -793,7 +957,10 @@
             },
             parentData: {
                 type: [Object, Array],
-            }
+            },
+            deletedIndex: {
+                type: String,
+            },
         },
         watch: {
             behavior: {
@@ -802,10 +969,22 @@
                 },
                 deep: true
             },
-            "parentData": { // todo: we need check if "up" & "sequences" updated, if so, change the state
+            deletedIndex: function(newValue) {
+                if (!newValue || !newValue.length) {
+                    return;
+                }
+                const index = parseInt(newValue.split("_")[0], 10);
+                this.behavior.sequences.splice(index, 1);
+                if (this.behavior.sequences.length === 2) {
+                    const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
+                    if (indexToRemove !== -1) {
+                        this.behavior.sequences.splice(indexToRemove, 1);
+                    }
+                }
+            },
+            "parentData": {
                 deep: true,
                 handler: function(newValue) {
-                    // this.behavior.sequences = [];
                     const usersUndefinedOrEmpty = typeof newValue.users === 'undefined' || newValue.users.length === 0;
                     const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
 
@@ -822,12 +1001,16 @@
                         this.isSequenceSectionActive = true;
                     }
 
-                    if (newValue.sequences && newValue.sequences.length && newValue.sequences.length !== this.behavior.sequences.filter(obj => obj.key !== 'random').length) {
-                        this.behavior.sequences = [];
-                        for (let i = 0; i < newValue.sequences.length; i++) {
-                            this.behavior.sequences.push({key: 'Sequence_' + (i + 1), probability: 0});
+                    if (newValue.sequences && newValue.sequences.length) {
+                        // adding a new sequence
+                        if (newValue.sequences.length > this.behavior.sequences.filter(obj => obj.key !== 'random').length) {
+                            const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
+                            if (indexToRemove !== -1) {
+                                this.behavior.sequences.splice(indexToRemove, 1);
+                            }
+                            this.behavior.sequences.push({key: 'Sequence_' + (newValue.sequences.length + 1), probability: 0});
                         }
-                        if (newValue.sequences.length > 1) {
+                        if (newValue.sequences.length > 1 && !this.behavior.sequences.find(item => item.key === 'random')) {
                             this.behavior.sequences.push({key: 'random', probability: 0});
                         }
                     }
@@ -935,7 +1118,9 @@
             },
             parentData: {
                 type: [Object, Array],
-
+            },
+            deletedIndex: {
+                type: String,
             }
         },
         data: function() {
@@ -951,8 +1136,13 @@
                 description: '',
                 userProperties: [],
                 disableSwitch: false,
-                disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message')
+                disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message'),
             };
+        },
+        methods: {
+            setDeletedIndex: function(index) {
+                this.$emit('deleted-index', index);
+            }
         },
         created: function() {
             this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type]);
@@ -970,7 +1160,7 @@
                         <span class="text-big bu-has-text-weight-medium">{{title}}</span>\
                     </div>\
                     <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
-                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type">\
+                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" >\
                         <template slot="default">\
                             <slot name="default"></slot>\
                         </template>\

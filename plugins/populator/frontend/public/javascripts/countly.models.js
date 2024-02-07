@@ -142,146 +142,1513 @@
             "DB4B7F70-0399-32B4-9DA3-7218B5A4BA49",
         ],
     };
+    const platformTypes = {mobile: "Mobile", web: "Web", desktop: "Desktop"};
     var defaultTemplates = [
         {
             "_id": "defaultBanking",
             "name": "Banking",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Individual", "Business"],
-                "Has Credit Card": [true, false],
-                "Has Loan": [true, false]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Individual",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Business",
+                            "probability": "50"
+                        }
+                    ]
                 },
-                "Fund Transfer Begin": {
-                    "segments": {"Source Currency": ["EUR", "USD", "GBP"], "Destination Currency": ["EUR", "USD", "GBP"]}
+                {
+                    "key": "Has Credit Card",
+                    "values": [
+                        {
+                            "key": "true",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "false",
+                            "probability": "50"
+                        }
+                    ]
                 },
-                "Fund Transfer": {
-                    "segments": {"Result": ["Success", "Failure"], "Failure Reason": ["Insufficient Funds", "Technical Error"], "Error Code": [100101, 100102, 100103]},
-                    "sum": [50, 10000],
-                    "dur": [10, 60]
-                },
-                "Credit Card Application Begin": {
-                    "segments": {"From": ["Home Banner", "My Credit Cards"]}
-                },
-                "Credit Card Application": {
-                    "segments": {"Card Type": ["Basic", "Premium", "Black"]},
-                    "dur": [60, 600]
-                },
-                "Bill Payment": {
-                    "segments": {"Bill Type": ["Electricity", "Internet", "Phone", "Cable"], "Amount Range": ["0-20", "20-100", "100-500", "500+"]},
-                    "sum": [100, 1000]
+                {
+                    "key": "Has Loan",
+                    "values": [
+                        {
+                            "key": "true",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "false",
+                            "probability": "50"
+                        }
+                    ]
                 }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Method",
+                        "values": [
+                            {
+                                "key": "Face ID",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Password",
+                                "probability": "50"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Fund Transfer Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Source Currency",
+                        "values": [
+                            {
+                                "key": "EUR",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "USD",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "GBP",
+                                "probability": "33"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Destination Currency",
+                        "values": [
+                            {
+                                "key": "EUR",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "USD",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "GBP",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Fund Transfer",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 10,
+                        "maxDurationTime": 60
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 50,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": [{
+                        "key": "Result",
+                        "values": [
+                            {
+                                "key": "Success",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Failure",
+                                "probability": "50"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Failure Reason",
+                        "values": [
+                            {
+                                "key": "Insufficient Funds",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Technical Error",
+                                "probability": "50"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error Code",
+                        "values": [
+                            {
+                                "key": "100101",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "100102",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "100103",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Credit Card Application Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "From",
+                        "values": [
+                            {
+                                "key": "Home Banner",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "My Credit Cards",
+                                "probability": "50"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Credit Card Application",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Card Type",
+                        "values": [
+                            {
+                                "key": "Basic",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "Premium",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "Black",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Bill Payment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 100,
+                        "maxSumValue": 1000
+                    },
+                    "segmentations": [{
+                        "key": "Bill Type",
+                        "values": [
+                            {
+                                "key": "Electricity",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Internet",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Phone",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Cable",
+                                "probability": "25"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Amount Range",
+                        "values": [
+                            {
+                                "key": "0-20",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "20-100",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "100-500",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "500+",
+                                "probability": "25"
+                            }
+                        ]
+                    }]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Fund Transfer Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Fund Transfer",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Credit Card Application Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Credit Card Application",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Bill Payment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultHealthcare",
             "name": "Healthcare",
             "isDefault": true,
-            "up": {
-                "Insurance": ["Cigna", "AARP", "UnitedHealthcare", "Humana"],
-                "Employer": ["Company1", "Company2", "Company3"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Insurance",
+                    "values": [
+                        {
+                            "key": "Cigna",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "AARP",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "UnitedHealthcare",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "Humana",
+                            "probability": "25"
+                        }
+                    ]
                 },
-                "Video Call": {
-                    "segments": {"Clinic": ["Spanish Springs", "North Valleys", "Northwest Reno", "Galena"]},
-                    "dur": [300, 900]
-                },
-                "Schedule Appointment": {
-                    "segments": {"Type": ["In Clinic", "Virtual"], "Clinic Selected": ["Spanish Springs", "North Valleys", "Northwest Reno", "Galena"], "Condition": ["Coronavirus concerns", "Rash", "Travel vaccination", "Sinus infection symptoms", "Acute back pain"]},
-                },
-                "Used Messaging": {
-                    "segments": {"Provided Care Plan": ["no", "yes"]},
-                    "dur": [180, 300]
-                },
-                "Invoice Generated": {
-                    "sum": [100, 10000]
+                {
+                    "key": "Employer",
+                    "values": [
+                        {
+                            "key": "Company1",
+                            "probability": "33"
+                        },
+                        {
+                            "key": "Company2",
+                            "probability": "33"
+                        },
+                        {
+                            "key": "Company3",
+                            "probability": "34"
+                        }
+                    ]
                 }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Video Call",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 300,
+                        "maxDurationTime": 900
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Clinic",
+                            "values": [
+                                {
+                                    "key": "Spanish Springs",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "North Valleys",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Northwest Reno",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Galena",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Schedule Appointment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Type",
+                            "values": [
+                                {
+                                    "key": "In Clinic",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Virtual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Clinic Selected",
+                            "values": [
+                                {
+                                    "key": "Spanish Springs",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "North Valleys",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Northwest Reno",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Galena",
+                                    "probability": "25"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Condition",
+                            "values": [
+                                {
+                                    "key": "Coronavirus concerns",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Rash",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Travel vaccination",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Sinus infection symptoms",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Acute back pain",
+                                    "probability": "20"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Used Messaging",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 180,
+                        "maxDurationTime": 300
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Provided Care Plan",
+                            "values": [
+                                {
+                                    "key": "no",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "yes",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Invoice Generated",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 100,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": []
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Video Call",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Schedule Appointment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Used Messaging",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Invoice Generated",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultNavigation",
             "name": "Navigation",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Basic", "Premium"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Basic",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Premium",
+                            "probability": "50"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey Configure": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]}
+                {
+                    "key": "Journey Configure",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey Begin": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]}
+                {
+                    "key": "Journey Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey End": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]},
-                    "sum": [10, 400],
-                    "dur": [600, 12000]
+                {
+                    "key": "Journey End",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 600,
+                        "maxDurationTime": 12000
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 10,
+                        "maxSumValue": 400
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Settings Changed": {
-                    "segments": {"Setting": ["Route preference", "Vehicle maker", "Vehicle model"]}
-                },
+                {
+                    "key": "Settings Changed",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Setting",
+                            "values": [
+                                {
+                                    "key": "Route preference",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Vehicle maker",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Vehicle model",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey Configure",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey End",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Settings Changed",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultEcommerce",
             "name": "eCommerce",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Basic", "Prime"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Basic",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Prime",
+                            "probability": "50"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Add To Cart": {
-                    "segments": {"Category": ["Books", "Electronics", "Home & Garden"]}
+                {
+                    "key": "Add To Cart",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Category",
+                            "values": [
+                                {
+                                    "key": "Books",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Electronics",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Home & Garden",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Checkout - Begin": {},
-                "Checkout - Address": {},
-                "Checkout - Payment": {},
-                "Checkout": {
-                    "segments": {"Delivery Type": ["Standard", "Express"], "Items": ["1", "2-5", "6-10", "10+"]},
-                    "sum": [50, 10000],
-                    "dur": [60, 600]
+                {
+                    "key": "Checkout - Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
                 },
-                "Settings Changed": {
-                    "segments": {"Setting": ["Address", "Payment method"]}
+                {
+                    "key": "Checkout - Address",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
                 },
+                {
+                    "key": "Checkout - Payment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
+                },
+                {
+                    "key": "Checkout",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 50,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Delivery Type",
+                            "values": [
+                                {
+                                    "key": "Standard",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Express",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Items",
+                            "values": [
+                                {
+                                    "key": "1",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "2-5",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "6-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "10+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Settings Changed",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Setting",
+                            "values": [
+                                {
+                                    "key": "Address",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Payment method",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Add To Cart",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Address",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Payment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Settings Changed",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultGaming",
             "name": "Gaming",
             "isDefault": true,
-            "up": {
-                "Experience Points": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Facebook", "Google", "Email"]}
+            "uniqueUserCount": 100,
+            "platformType": ["mobile", "web", "desktop"],
+            "users": [
+                {
+                    "key": "Experience Points",
+                    "values": [
+                        {
+                            "key": "10",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "20",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "30",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "40",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "50",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "60",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "70",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "80",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "90",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "100",
+                            "probability": "10"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Facebook",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Google",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Email",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Level Up": {
-                    "segments": {"Level": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Used Level Pass": [true, false]},
-                    "dur": [60, 600]
+                {
+                    "key": "Level Up",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Level",
+                            "values": [
+                                {
+                                    "key": "1",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "2",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "3",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "4",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "5",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "6",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "7",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "8",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "9",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "10",
+                                    "probability": "10"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Used Level Pass",
+                            "values": [
+                                {
+                                    "key": "true",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "false",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Purchase": {
-                    "segments": {"Item": ["Level Pass", "Lucky Item", "Item Storage Upgrade"]},
-                    "sum": [1, 100]
+                {
+                    "key": "Purchase",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 1,
+                        "maxSumValue": 100
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Item",
+                            "values": [
+                                {
+                                    "key": "Level Pass",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Lucky Item",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Item Storage Upgrade",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Share Score": {
-                    "segments": {"To": ["Facebook", "Twitter", "Instagram"]}
+                {
+                    "key": "Share Score",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "To",
+                            "values": [
+                                {
+                                    "key": "Facebook",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Twitter",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Instagram",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Invite Friends": {}
+                {
+                    "key": "Invite Friends",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Level Up",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Purchase",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Share Score",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Invite Friends",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         }
     ];
@@ -593,8 +1960,7 @@
 
             const error = this.getError();
             if (typeof error === 'object') {
-                crash._error = error.name;
-                crash._app_version = error.version;
+                crash = error;
             }
             else {
                 crash._error = error;
@@ -618,25 +1984,12 @@
         this.getError = function() {
             var errors = [];
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                if (Math.random() < 0.50) {
-                    if (crashSymbolVersions.javascript.indexOf(this.metrics._app_version) === -1) {
-                        crashSymbolVersions.javascript.push(this.metrics._app_version);
-                    }
-                    return jsErrors[getRandomInt(0, jsErrors.length - 1)].error;
+                if (crashSymbolVersions.javascript.indexOf(this.metrics._app_version) === -1) {
+                    crashSymbolVersions.javascript.push(this.metrics._app_version);
                 }
-                else {
-                    errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-                    var randomError = errors[Math.floor(Math.random() * errors.length)];
-                    var err = new Error(randomError + " in " + randomString(5) + ".js at line " + getRandomInt(1, 100));
-                    if (crashSymbolVersions.javascript.indexOf(this.metrics._app_version) === -1) {
-                        crashSymbolVersions.javascript.push(this.metrics._app_version);
-                    }
-                    return err.stack + "";
-                }
+                return jsErrors[getRandomInt(0, jsErrors.length - 1)].error;
             }
             else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
-                var stacks = 0;
-                var error = "";
                 errors = [{ // android
                     "_error": "03-28 19:55:14.784 20944-20944/? D/SomeImportantTag: java.lang.ArithmeticException: divide by zero\nat tt.rr.testprojsymb.MainActivity.i(Unknown Source)\nat tt.rr.testprojsymb.MainActivity.j(Unknown Source)\nat tt.rr.testprojsymb.MainActivity.OnclickTest(Unknown Source)\nat java.lang.reflect.Method.invoke(Native Method)\nat android.support.v7.app.m$a.onClick(Unknown Source)\nat android.view.View.performClick(View.java:5637)\nat android.view.View$PerformClick.run(View.java:22429)\nat android.os.Handler.handleCallback(Handler.java:751)\nat android.os.Handler.dispatchMessage(Handler.java:95)\nat android.os.Looper.loop(Looper.java:154)\nat android.app.ActivityThread.main(ActivityThread.java:6119)\nat java.lang.reflect.Method.invoke(Native Method)\nat com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:886)\nat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:776)",
                     "_os_version": "8.1",
@@ -674,7 +2027,7 @@
                     "_error": "CoreFoundation                      0x00000001e5669ebc <redacted> + 252\nlibobjc.A.dylib                     0x00000001e4839a50 objc_exception_throw + 56\nCoreFoundation                      0x00000001e55e1384 _CFArgv + 0\nCoreFoundation                      0x00000001e557157c <redacted> + 0\nCountlyTestApp-iOS                  0x0000000104c8910c CountlyTestApp-iOS + 37132\nCountlyTestApp-iOS                  0x0000000104c9a8c0 CountlyTestApp-iOS + 108736\nUIKitCore                           0x0000000212b62458 <redacted> + 1348\nUIKitCore                           0x0000000212b626bc <redacted> + 268\nUIKitCore                           0x000000021296087c <redacted> + 296\nUIKitCore                           0x000000021294e878 <redacted> + 384\nUIKitCore                           0x000000021297d880 <redacted> + 132\nCoreFoundation                      0x00000001e55f96bc <redacted> + 32\nCoreFoundation                      0x00000001e55f4350 <redacted> + 412\nCoreFoundation                      0x00000001e55f48f0 <redacted> + 1264\nCoreFoundation                      0x00000001e55f40e0 CFRunLoopRunSpecific + 436\nGraphicsServices                    0x00000001e786d584 GSEventRunModal + 100\nUIKitCore                           0x0000000212954c00 UIApplicationMain + 212\nCountlyTestApp-iOS                  0x0000000104ca2c3c CountlyTestApp-iOS + 142396\nlibdyld.dylib                       0x00000001e50b2bb4 <redacted> + 4",
                     "_executable_name": "CountlyTestApp-iOS",
                     "_os_version": "12.1.4",
-                    "_app_version": this.metrics._app_version,
+                    "_app_version": "22.02.0",
                     "_os": "iOS",
                     "_build_uuid": crashBuildIds.ios[getRandomInt(0, crashBuildIds.ios.length - 1)]
                 },
@@ -729,7 +2082,7 @@
                     "_error": "Incident Identifier: C2F3B745-3450-49B1-B225-85A2795DDBAF\nCrashReporter Key:   TODO\nHardware Model:      iPhone9,1\nProcess:         CountlyTestApp-i [10790]\nPath:            /private/var/containers/Bundle/Application/35CC04E6-3BCF-4929-B2EA-999D3BC48136/CountlyTestApp-iOS.app/CountlyTestApp-iOS\nIdentifier:      ly.count.CountlyTestApp-iOS\nVersion:         1.0 (3.9)\nCode Type:       ARM-64\nParent Process:  ??? [1]\n\nDate/Time:       2020-03-18 14:55:59 +0000\nOS Version:      iPhone OS 13.3.1 (17D50)\nReport Version:  104\n\nException Type:  SIGABRT\nException Codes: #0 at 0x1ae2e5ec4\nCrashed Thread:  0\n\nApplication Specific Information:\n*** Terminating app due to uncaught exception 'NSGenericException', reason: 'This is the exception!'\n\nLast Exception Backtrace:\n0   CoreFoundation                      0x00000001ae4eea48 0x1ae3c3000 + 1227336\n1   libobjc.A.dylib                     0x00000001ae215fa4 0x1ae210000 + 24484\n2   CoreFoundation                      0x00000001ae3f30ec 0x1ae3c3000 + 196844\n3   CountlyTestApp-iOS                  0x0000000102514e88 0x10250c000 + 36488\n4   CountlyTestApp-iOS                  0x00000001025264a4 0x10250c000 + 107684\n5   UIKitCore                           0x00000001b273e948 0x1b1b71000 + 12376392\n6   UIKitCore                           0x00000001b273e464 0x1b1b71000 + 12375140\n7	0x1e401d000 -        0x1e401efff  libsystem_featureflags.dylib arm64  <00868befdde137a1a5d357ef7ae81db4> /usr/lib/system/libsystem_featureflags.dylib\n       0x1e401f000 -        0x1e404cfff  libsystem_m.dylib arm64  <51f1ec8ae61d3e2b821a8e0de77fc175> /usr/lib/system/libsystem_m.dylib\n       0x1e404d000 -        0x1e4052fff  libunwind.dylib arm64  <af53a4f641833a108f50e58c82933157> /usr/lib/system/libunwind.dylib\n       0x1e4332000 -        0x1e439afff  NanoRegistry arm64  <a24beb81e9cd32b59dde4cbb6d824c56> /System/Library/PrivateFrameworks/NanoRegistry.framework/NanoRegistry\n       0x1e439b000 -        0x1e43a8fff  NanoPreferencesSync arm64  <e302f1d35c6834bdb3effeb7e57cd6a5> /System/Library/PrivateFrameworks/NanoPreferencesSync.framework/NanoPreferencesSync\n       0x1e5dc7000 -        0x1e5ddafff  AppSSOCore arm64  <9e6cdcd2edef37dba4177852d95adfe7> /System/Library/PrivateFrameworks/AppSSOCore.framework/AppSSOCore",
                     "_executable_name": "CountlyTestApp-iOS",
                     "_os_version": "13.3.1",
-                    "_app_version": this.metrics._app_version,
+                    "_app_version": "22.02.0", //this.metrics._app_version,
                     "_os": "iOS",
                     "_plcrash": true,
                     "_build_uuid": crashBuildIds.plc[getRandomInt(0, crashBuildIds.plc.length - 1)]
@@ -738,65 +2091,19 @@
                 if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === 'ios') {
                     const iosErrors = errors.filter(x=>x._os.toLocaleLowerCase() === 'ios');
                     const iosError = iosErrors[getRandomInt(0, iosErrors.length - 1)];
-                    if (Math.random() < 0.5) {
-                        errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
-                            "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
-                            "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
-                            "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552",
-                            "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752",
-                            "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100",
-                            "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80",
-                            "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436",
-                            "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572",
-                            "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988",
-                            "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132",
-                            "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764",
-                            "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248",
-                            "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568",
-                            "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24",
-                            "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540",
-                            "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724",
-                            "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384",
-                            "GraphicsServices                0x184600088 GSEventRunModal + 180",
-                            "UIKit                           0x188002088 UIApplicationMain + 204",
-                            "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
-                            "libdyld.dylib                   0x1828b68b8 start + 4"
-                        ];
-                        error = "";
-                        stacks = getRandomInt(9, 19);
-                        for (var stackIndex2 = 0; stackIndex2 < stacks; stackIndex2++) {
-                            error += stackIndex2 + " " + errors[Math.floor(Math.random() * errors.length)] + "\n";
-                        }
-                        iosError._error = error;
+                    if (!crashSymbolVersions.iOS.filter(x=>x._build_uuid === iosError._build_uuid).length) {
+                        crashSymbolVersions.iOS.push(iosError);
                     }
-                    if (crashSymbolVersions.iOS.indexOf(iosError._build_uuid) === -1) {
-                        crashSymbolVersions.iOS.push(iosError._build_uuid);
-                    }
-                    return {name: iosError._error, version: crashSymbolVersions.iOS[crashSymbolVersions.iOS.length - 1]};
+                    return crashSymbolVersions.iOS[crashSymbolVersions.iOS.length - 1];
                 }
                 else if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === 'android') {
                     const androidErrors = errors.filter(x=>x._os.toLocaleLowerCase() === 'android');
                     const androidError = androidErrors[getRandomInt(0, androidErrors.length - 1)];
-                    if (Math.random() < 0.5) {
-                        errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
-                        error = errors[Math.floor(Math.random() * errors.length)] + ": com.domain.app.Exception<init>\n";
-                        stacks = getRandomInt(5, 9);
-                        for (var stackIndex = 0; stackIndex < stacks; stackIndex++) {
-                            error += "at com.domain.app.<init>(Activity.java:" + (stackIndex * 32) + ")\n";
-                        }
-                        androidError._error = error;
-                    }
 
-                    if (crashSymbolVersions.android.indexOf(androidError._app_version) === -1) {
-                        crashSymbolVersions.android.push(androidError._app_version);
+                    if (!crashSymbolVersions.android.filter(x=>x._app_version === androidError._app_version).length) {
+                        crashSymbolVersions.android.push(androidError);
                     }
-                    return {name: androidError._error, version: androidError._app_version};
-                }
-                else {
-                    return "System.ArgumentOutOfRangeException\n" +
-                    "   at System.ThrowHelper.ThrowArgumentOutOfRangeException()\n" +
-                    "   at System.Collections.Generic.List`1.get_Item(Int32 index)\n" +
-                    "   at StorePuzzle.PuzzleRenderer.HandleTileReleased(Object sender, PointerRoutedEventArgs e)";
+                    return crashSymbolVersions.android[crashSymbolVersions.android.length - 1];
                 }
             }
             else {
@@ -828,7 +2135,7 @@
                         "_error": "0   CoreFoundation                      0x00007fff41e90acd __exceptionPreprocess + 256\n1   libobjc.A.dylib                     0x00007fff6c596a17 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff41eaa629 -[NSException raise] + 9\n3   CountlyTestApp-macOS                0x000000010990560d -[AppDelegate onClick_events:] + 565\n4   AppKit                              0x00007fff3f6c1644 -[NSApplication(NSResponder) sendAction:to:from:] + 312\n5   AppKit                              0x00007fff3f72b992 -[NSControl sendAction:to:] + 86\n6   AppKit                              0x00007fff3f72b8c4 __26-[NSCell _sendActionFrom:]_block_invoke + 136\n7   AppKit                              0x00007fff3f72b7c6 -[NSCell _sendActionFrom:] + 178\n8   AppKit                              0x00007fff3f75854b -[NSButtonCell _sendActionFrom:] + 96\n9   AppKit                              0x00007fff3f72a0e1 -[NSCell trackMouse:inRect:ofView:untilMouseUp:] + 2375\n10  AppKit                              0x00007fff3f75829c -[NSButtonCell trackMouse:inRect:ofView:untilMouseUp:] + 698\n11  AppKit                              0x00007fff3f728b1e -[NSControl mouseDown:] + 791\n12  AppKit                              0x00007fff3f604937 -[NSWindow(NSEventRouting) _handleMouseDownEvent:isDelayedEvent:] + 5724\n13  AppKit                              0x00007fff3f53b1a6 -[NSWindow(NSEventRouting) _reallySendEvent:isDelayedEvent:] + 2295\n14  AppKit                              0x00007fff3f53a667 -[NSWindow(NSEventRouting) sendEvent:] + 478\n15  AppKit                              0x00007fff3f3d9e4b -[NSApplication(NSEvent) sendEvent:] + 331\n16  CountlyTestApp-macOS                0x00000001099184f6 -[CLYExceptionHandlingApplication sendEvent:] + 61\n17  AppKit                              0x00007fff3f3c85c0 -[NSApplication run] + 755\n18  AppKit                              0x00007fff3f3b7ac8 NSApplicationMain + 777\n19  libdyld.dylib                       0x00007fff6dd653d5 start + 1\n20  ???                                 0x0000000000000001 0x0 + 1",
                         "_executable_name": "CountlyTestApp-macOS",
                         "_os_version": "10.14.6",
-                        "_app_version": this.metrics._app_version,
+                        "_app_version": "22.02.0", //this.metrics._app_version,
                         "_os": "macOS",
                         "_build_uuid": "530CF9BF-974B-3B37-B976-309A522FB6AC"
                     },
@@ -863,24 +2170,24 @@
                         "_error": "0   CoreFoundation                      0x00000001b3884e28 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 1224232\n1   libobjc.A.dylib                     0x00000001b318e8b0 objc_exception_throw + 56\n2   CoreFoundation                      0x00000001b38da57c ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 1574268\n3   CoreFoundation                      0x00000001b377c90c ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 141580\n4   CountlyTestApp-tvOS                 0x000000010077f8e0 +[ViewController crashTest1] + 128\n5   UIKitCore                           0x00000001d66ed4f4 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9442548\n6   UIKitCore                           0x00000001d61f0ee4 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 4214500\n7   UIKitCore                           0x00000001d61f1248 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 4215368\n8   UIKitCore                           0x00000001d633e744 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5580612\n9   UIKitCore                           0x00000001d6346c84 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5614724\n10  UIKitCore                           0x00000001d6344420 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5604384\n11  UIKitCore                           0x00000001d6343980 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5601664\n12  UIKitCore                           0x00000001d6337b74 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5553012\n13  UIKitCore                           0x00000001d63372ec 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5550828\n14  UIKitCore                           0x00000001d63370b0 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5550256\n15  UIKitCore                           0x00000001d67256b0 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9672368\n16  UIKitCore                           0x00000001d6702f04 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9531140\n17  UIKitCore                           0x00000001d67750cc 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9998540\n18  UIKitCore                           0x00000001d6776e94 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 10006164\n19  UIKitCore                           0x00000001d6770a8c 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9980556\n20  CoreFoundation                      0x00000001b3802eec ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 691948\n21  CoreFoundation                      0x00000001b3802e44 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 691780\n22  CoreFoundation                      0x00000001b38025dc ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 689628\n23  CoreFoundation                      0x00000001b37fd728 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 669480\n24  CoreFoundation                      0x00000001b37fcfc8 CFRunLoopRunSpecific + 464\n25  GraphicsServices                    0x00000001b5cca328 GSEventRunModal + 104\n26  UIKitCore                           0x00000001d66ec40c UIApplicationMain + 1852\n27  CountlyTestApp-tvOS                 0x000000010078e96c main + 88\n28  libdyld.dylib                       0x00000001b32955f8 3DB3C039-2550-3901-A3AE-7C4EAE3C548E + 13816",
                         "_executable_name": "CountlyTestApp-tvOS",
                         "_os_version": "13.3.1",
-                        "_app_version": this.metrics._app_version,
+                        "_app_version": "22.02.0", //this.metrics._app_version,
                         "_os": "tvOS",
                         "_build_uuid": "71881E31-A5A0-326A-BC1E-92F0C5885C03"
                     }
                 ];
                 if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === "tvos") {
                     const tvosError = errors.filter(x=>x._os.toLocaleLowerCase() === "tvos")[0];
-                    if (!crashSymbolVersions.tvOS.length) {
-                        crashSymbolVersions.tvOS.push(tvosError._build_uuid);
+                    if (!crashSymbolVersions.tvOS.filter(x=>x._build_uuid === tvosError._build_uuid).length) {
+                        crashSymbolVersions.tvOS.push(tvosError);
                     }
-                    return {name: tvosError._error, version: tvosError._build_uuid};
+                    return crashSymbolVersions.tvOS[crashSymbolVersions.tvOS.length - 1];
                 }
                 else if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === "macos") {
                     const macosError = errors.filter(x=>x._os.toLocaleLowerCase() === "macos")[0];
-                    if (!crashSymbolVersions.macOS.length) {
-                        crashSymbolVersions.macOS.push(macosError._build_uuid);
+                    if (!crashSymbolVersions.macOS.filter(x=>x._build_uuid === macosError._build_uuid).length) {
+                        crashSymbolVersions.macOS.push(macosError);
                     }
-                    return {name: macosError._error, version: macosError._build_uuid};
+                    return crashSymbolVersions.macOS[crashSymbolVersions.macOS.length - 1];
                 }
                 else {
                     return "System.ArgumentOutOfRangeException\n" +
@@ -2082,13 +3389,14 @@
             success: function(data) {
                 var link = data.link.replace('&amp;', '&');
                 var queryString = link.split('?')[1];
-                var parameters = parseQueryString(queryString);
-                campaingClicks.push({
-                    name: name,
-                    cly_id: parameters.cly_id,
-                    cly_uid: parameters.cly_uid
-                });
-
+                if (queryString) {
+                    var parameters = parseQueryString(queryString);
+                    campaingClicks.push({
+                        name: name,
+                        cly_id: parameters.cly_id,
+                        cly_uid: parameters.cly_uid
+                    });
+                }
             }
         });
     }
@@ -2585,7 +3893,7 @@
                         form_data.append('build', crashSymbolVersions[crashPlatforms[i]]); // send all js versions at once as they have same symbolication file
                     }
                     else {
-                        form_data.append('build', platformVersions[j]);
+                        form_data.append('build', platformVersions[j]._build_uuid ? platformVersions[j]._build_uuid : platformVersions[j]._app_version);
                     }
                     form_data.append('platform', crashPlatforms[i]);
                     form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
