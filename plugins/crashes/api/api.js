@@ -1054,6 +1054,7 @@ plugins.setConfigs("crashes", {
                         total--;
                         var cursor = common.db.collection('app_crashgroups' +
                         params.app_id).find(filter, {
+                            app_version: 1,
                             uid: 1,
                             is_new: 1,
                             is_renewed: 1,
