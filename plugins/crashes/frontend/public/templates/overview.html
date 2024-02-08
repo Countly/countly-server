@@ -31,7 +31,7 @@
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
                             <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable>
+                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable :sort-method="occurrenceSort">
                                 <template slot-scope="rowScope">
                                     <span v-if="singleAppVersionFilter.length">{{rowScope.row.app_version[singleAppVersionFilter.replace(/\./g, ':')]}}</span>
                                     <span v-else>{{rowScope.row.reports}}</span>

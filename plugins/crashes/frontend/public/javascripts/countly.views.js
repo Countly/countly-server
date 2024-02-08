@@ -635,6 +635,15 @@
 
                 return item1.latest_version.localeCompare(item2.latest_version);
             },
+            occurrenceSort: function(item1, item2) {
+                if (this.singleAppVersionFilter.length) {
+                    var appVersion = this.singleAppVersionFilter.replace(/\./g, ':');
+
+                    return item1.app_version[appVersion] - item2.app_version[appVersion];
+                }
+
+                return item1.reports - item2.reports;
+            },
         },
         beforeCreate: function() {
             var query = {};

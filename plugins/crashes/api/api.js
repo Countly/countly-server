@@ -1085,6 +1085,11 @@ plugins.setConfigs("crashes", {
                                 if (sortByField === 'latest_version' && crashgroupMeta.latest_version_sorter_added) {
                                     sortByField = 'latest_version_for_sort';
                                 }
+                                else if (sortByField === 'reports') {
+                                    if (filter.app_version_list && filter.app_version_list.$in && Array.isArray(filter.app_version_list.$in) && filter.app_version_list.$in.length === 1) {
+                                        sortByField = `app_version.${filter.app_version_list.$in[0].replace(/\./g, ':')}`;
+                                    }
+                                }
 
                                 obj[sortByField] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                                 cursor.sort(obj);
