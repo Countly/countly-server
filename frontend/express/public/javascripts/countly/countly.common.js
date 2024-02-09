@@ -1746,7 +1746,12 @@
                 }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
-                        if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
+                        if (countlyCommon.periodObj.isHourly) {
+                            periodMin = 0;
+                            periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+                            activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+                        }
+                        else if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                             periodMin = 0;
                             periodMax = 24;
                             activeDate = countlyCommon.periodObj.currentPeriodArr[0];
@@ -1799,6 +1804,10 @@
                             }
 
                             dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        }
+                        else if (countlyCommon.periodObj.isHourly) {
+                            formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                            dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
                         }
                         else if (countlyCommon.periodObj.daysInPeriod === 1 && !disableHours) {
                             formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
@@ -3938,8 +3947,6 @@
                     previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
                 });
             }
-            // EMRE: adding minutes and hours checks
-            // startTimestamp and endTimestamp should be adjusted, like with hours
             else if (/([1-9][0-9]*)minutes/.test(period)) {
                 const nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
                 startTimestamp = currentTimestamp.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
@@ -3954,11 +3961,9 @@
                 startTimestamp = currentTimestamp.clone().startOf("hour").subtract(nHours - 1, "hours");
                 endTimestamp = currentTimestamp.clone().endOf("hour"),
                 cycleDuration = moment.duration(nHours, "hours");
-                console.log("startTimestamp " + startTimestamp.format("D MMM, HH:mm") + " endTimestamp: " + endTimestamp.format("D MMM, HH:mm"));
                 Object.assign(periodObject, {
-                    // EMRE: added hourly flag
                     isHourly: true,
-                    dateString: "HH:mm",
+                    dateString: "D MMM, HH:mm",
                     isSpecialPeriod: true,
                 });
             }
@@ -4060,11 +4065,9 @@
                         uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] = uniqueMap[dateVal[0]][dateVal[1]]["w" + week][dateVal[2]] || {}; //each day
                     }
                 }
-
                 if (!periodObject.isHourly) {
                     periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
                     periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
-
                 }
                 dateVal = dayIt.clone().subtract(cycleDuration).format("YYYY.M.D");
                 week = Math.ceil(dayIt.clone().subtract(cycleDuration).format("DDD") / 7);
@@ -4083,19 +4086,14 @@
             if (periodObject.daysInPeriod === 1 && periodObject.currentPeriodArr && Array.isArray(periodObject.currentPeriodArr)) {
                 periodObject.activePeriod = periodObject.currentPeriodArr[0];
             }
-            // EMRE: check for if it's hour pick, or not.
             if (periodObject.isHourly) {
                 var startHour = startTimestamp.clone(),
                     endHour = endTimestamp.clone();
                 for (startHour; startHour < endHour; startHour.add(1, "hours")) {
-                    periodObject.currentPeriodArr.push(startHour.format("D MMM, HH:mm"));
-                    periodObject.previousPeriodArr.push(startHour.clone().subtract(cycleDuration).format("D MMM, HH:mm"));
+                    periodObject.currentPeriodArr.push(startHour.format("YYYY.M.D.H"));
+                    periodObject.previousPeriodArr.push(startHour.clone().subtract(cycleDuration).format("YYYY.M.D.H"));
                 }
             }
-            console.log("currentPeriodArr:");
-            console.log(periodObject.currentPeriodArr);
-            console.log("previousPeriodArr:");
-            console.log(periodObject.previousPeriodArr);
             var currentYear = 0,
                 currWeeksArr = [],
                 currWeekCounts = {},

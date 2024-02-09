@@ -133,12 +133,6 @@
     var globalDaysRange = [],
         globalMonthsRange = [],
         globalYearsRange = [],
-        // EMRE: global and globalFuture ranges for minutes and hours added
-        // globalMinutesRange = [],
-        // globalHoursRange = [],
-        // globalFutureMinutesRange = [],
-        // globalFutureHoursRange = [],
-
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
         globalFutureYearsRange = [],
@@ -146,58 +140,9 @@
         globalMax = moment().endOf('day'),
         globalFutureMin = moment().startOf('day'),
         globalFutureMax = moment().startOf('day').add(10, "y"),
-        // EMRE: hours and minutes cursors from min date
-        // minutesCursor = moment(globalMin.toDate()),
-        // hoursCursor = moment(globalMin.toDate()),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate()),
         yearsCursor = moment(globalMin.toDate());
-
-    // EMRE: Cursor handling over ranges of minutes and hours
-    // adjustments of adding to the cursor remains for both, and formats
-    // while (minutesCursor < globalMax) {
-    //     globalMinutesRange.push({
-    //         date: minutesCursor.toDate(),
-    //         title: minutesCursor.format("MMMM YYYY"),
-    //         key: minutesCursor.unix(),
-    //         anchorClass: "anchor-" + minutesCursor.unix(),
-    //     });
-    //     minutesCursor = minutesCursor.add(1, "M");
-    // }
-
-    // globalFutureMinutesRange.push(globalMinutesRange[globalMinutesRange.length - 1]);
-
-    // while (minutesCursor < globalFutureMax) {
-    //     globalFutureMinutesRange.push({
-    //         date: minutesCursor.toDate(),
-    //         title: minutesCursor.format("MMMM YYYY"),
-    //         key: minutesCursor.unix(),
-    //         anchorClass: "anchor-" + minutesCursor.unix(),
-    //     });
-    //     minutesCursor = minutesCursor.add(1, "M");
-    // }
-
-    // while (hoursCursor < globalMax) {
-    //     globalHoursRange.push({
-    //         date: hoursCursor.toDate(),
-    //         title: hoursCursor.format("MMMM YYYY"),
-    //         key: hoursCursor.unix(),
-    //         anchorClass: "anchor-" + hoursCursor.unix(),
-    //     });
-    //     hoursCursor = hoursCursor.add(1, "M");
-    // }
-
-    // globalFutureHoursRange.push(globalHoursRange[globalHoursRange.length - 1]);
-
-    // while (hoursCursor < globalFutureMax) {
-    //     globalFutureHoursRange.push({
-    //         date: hoursCursor.toDate(),
-    //         title: hoursCursor.format("MMMM YYYY"),
-    //         key: hoursCursor.unix(),
-    //         anchorClass: "anchor-" + hoursCursor.unix(),
-    //     });
-    //     hoursCursor = hoursCursor.add(1, "M");
-    // }
 
     while (daysCursor < globalMax) {
         globalDaysRange.push({
@@ -271,17 +216,11 @@
         yearsCursor = yearsCursor.add(10, "Y");
     }
 
-    // EMRE: Freeze global objects of minutes and hours.
-    // Object.freeze(globalMinutesRange);
-    // Object.freeze(globalHoursRange);
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
-    // Object.freeze(globalFutureMinutesRange);
-    // Object.freeze(globalFutureHoursRange);
     Object.freeze(globalFutureDaysRange);
     Object.freeze(globalFutureMonthsRange);
     Object.freeze(globalYearsRange);
-    // EMRE: Has Object.freeze(globaFutureYearsRange); been missing here?
 
     /**
      * Creates an initial state object 
@@ -294,17 +233,16 @@
             globalRange = null,
             inputDisable = false;
 
-        // EMRE: minutes and hours added
-        // if (instance.type.includes("minutes")) {
-        //     formatter = "YYYY-MM";
-        //     tableType = "minutes";
-        //     globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
-        // }
-        // if (instance.type.includes("hours")) {
-        //     formatter = "YYYY-MM";
-        //     tableType = "hours";
-        //     globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
-        // }
+        if (instance.type.includes("minute")) {
+            formatter = "YYYY-MM";
+            tableType = "minute";
+            globalRange = null;
+        }
+        if (instance.type.includes("hour")) {
+            formatter = "YYYY-MM";
+            tableType = "hour";
+            globalRange = null;
+        }
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
@@ -349,9 +287,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            // EMRE: added minutes and hours
-            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day"},
-            // tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day", hours: "hours", minutes: "minutes"},
+            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day", hours: "hour", minutes: "minute"},
             inputDisable: inputDisable,
             leftSideShortcuts: [
                 {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
@@ -360,9 +296,6 @@
                 {label: CV.i18n('common.time-period-select.last-n'), value: "inTheLast"},
                 {label: CV.i18n('common.all-time'), value: "0days"},
             ],
-            // EMRE: added global minutes and hours ranges
-            // globalMinutesRange: globalMinutesRange,
-            // globalHoursRange: globalHoursRange,
             globalMonthsRange: globalMonthsRange,
             globalYearsRange: globalYearsRange,
             globalMin: instance.isFuture ? globalFutureMin : globalMin,
@@ -452,21 +385,6 @@
                         <div v-if="!visible" style="height:180px"></div>\
                     </div>',
     };
-
-    // EMRE: minuteTableComponent and hoursTableComponent
-    // var minuteTableComponent = {
-    //     components: {
-    //         'table-component': ELEMENT.MinuteTable
-    //     },
-    //     mixins: [AbstractTableComponent]
-    // };
-
-    // var hourTableComponent = {
-    //     components: {
-    //         'table-component': ELEMENT.HourTable
-    //     },
-    //     mixins: [AbstractTableComponent]
-    // };
 
     var dateTableComponent = {
         components: {
@@ -594,15 +512,13 @@
                     this.tableType = "day";
                     inputObj = this.onmInput.parsed;
                     break;
-                ///////////////////////////////////////////////////////////////////////////////////////////
                 case 'inTheLast':
-                    // EMRE: added tableType checks for minutes and hours
-                    // if (this.inTheLastInput.raw.level === "minutes") {
-                    //     this.tableType = "minutes";
-                    // }
-                    // if (this.inTheLastInput.raw.level === "hours") {
-                    //     this.tableType = "hours";
-                    // }
+                    if (this.inTheLastInput.raw.level === "minutes") {
+                        this.tableType = "minute";
+                    }
+                    if (this.inTheLastInput.raw.level === "hours") {
+                        this.tableType = "hour";
+                    }
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
@@ -629,7 +545,7 @@
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
-                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
+                if (this.tableType !== ("hour" || "minute") && inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
                 }
@@ -648,21 +564,14 @@
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
                 }
-                // EMRE: hours and minutes here
-                // else if (this.tableType === "minute") {
-                //     this.formatter = "YYYY-MM";
-                //     this.globalRange = this.isFuture ? globalFutureMinutesRange : globalMinutesRange;
-                //     setTimeout(function() {
-                //         self.scrollTo(self.inTheLastInput.parsed[0]);
-                //     }, 0);
-                // }
-                // else if (this.tableType === "hour") {
-                //     this.formatter = "YYYY-MM";
-                //     this.globalRange = this.isFuture ? globalFutureHoursRange : globalHoursRange;
-                //     setTimeout(function() {
-                //         self.scrollTo(self.inTheLastInput.parsed[0]);
-                //     }, 0);
-                // }
+                else if (this.tableType === "minute") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = null;
+                }
+                else if (this.tableType === "hour") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = null;
+                }
                 else {
                     this.formatter = "YYYY-MM-DD";
                     this.globalRange = this.isFuture ? globalFutureDaysRange : globalDaysRange;
@@ -735,7 +644,6 @@
             'beforeInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.beforeInput, 1);
             },
-            ///////////////////////////////////////////////////////////////////////////////////////////
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
@@ -788,14 +696,14 @@
                             self.scrollTo(self.inTheLastInput.parsed[0]);
                         }, 0);
                     }
-                    // EMRE: newVal.level checkds for minutes and hours
+
                     else if (newVal.level === "hours") {
                         this.globalRange = this.globalHoursRange;
-                        this.tableType = "month";
+                        this.tableType = "hour";
                     }
                     else if (newVal.level === "minutes") {
                         this.globalRange = this.globalMinutesRange;
-                        this.tableType = "month";
+                        this.tableType = "day";
                     }
                 }
             },
@@ -966,9 +874,6 @@
             ELEMENT.utils.Emitter
         ],
         components: {
-            // EMRE: minute and hour table components added
-            // 'minute-table': minuteTableComponent,
-            // 'hour-table': hourTableComponent,
             'date-table': dateTableComponent,
             'month-table': monthTableComponent,
             'year-table': yearTableComponent,
@@ -1035,9 +940,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    // EMRE: modified value check array to include minute and hour
                     return ['date', 'daterange', 'month', 'monthrange', "week", 'year', 'yearrange'].includes(value);
-                    // return ['date', 'daterange', 'month', 'monthrange', "week", 'year', 'yearrange', 'minute', 'hour'].includes(value);
                 }
             },
             displayShortcuts: {
@@ -1139,7 +1042,6 @@
                 default: false,
                 required: false
             },
-            // EMRE: props for minutes and hours added
             inTheLastMinutes: {
                 type: Boolean,
                 default: false,
@@ -1282,8 +1184,18 @@
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
-                    state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
-                    state.maxDate = now;
+                    if (meta.level === "hours") {
+                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("hour").toDate();
+                        state.maxDate = now;
+                    }
+                    else if (meta.level === "minutes") {
+                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("minute").toDate();
+                        state.maxDate = now;
+                    }
+                    else {
+                        state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
+                        state.maxDate = now;
+                    }
                     state.inTheLastInput = {
                         raw: {
                             text: meta.value + '',
@@ -1318,7 +1230,7 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
-                if (!this.retentionConfiguration) {
+                if (this.tableType !== ("hour" || "minute") && !this.retentionConfiguration) {
                     this.tableType = "day";
                 }
                 this.abortPicking();
@@ -1358,9 +1270,7 @@
                 if (this.isGlobalDatePicker) {
                     try {
                         var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
-                        // EMRE: added hour and minute mappings
-                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days"};
-                        // var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days", "hour": "hours", "minute": "minutes"};
+                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days", "hour": "hours", "minute": "minutes"};
                         this.rangeMode = storedDateItems.rangeMode;
                         this.tableType = storedDateItems.tableType;
                         if (this.rangeMode === "inTheLast") {
@@ -1392,6 +1302,10 @@
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
+                }
+                else if (this.tableType === ("hour" || "minute")) {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = null;
                 }
                 else {
                     this.formatter = "YYYY-MM-DD";
@@ -1482,7 +1396,6 @@
                     var _maxDate = new Date(this.maxDate);
                     var currentDate = new Date(_maxDate.getTime());
                 }
-                // EMRE: checking modelMode === absolute along with level !== hours, is minutes useful here?
                 if (this.rangeMode === 'inBetween' || (this.modelMode === "absolute" && this.inTheLastInput.raw.level !== "hours" && this.inTheLastInput.raw.level !== "minutes")) {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     if (this.type === "date" && !this.selectTime) {
@@ -1536,7 +1449,6 @@
                 this.handleDropdownHide(true);
                 this.doClose();
             },
-            // EMRE: 12minutes, false
             doCommit: function(value, isShortcut) {
                 if (value) {
                     if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
