@@ -1,0 +1,156 @@
+<div class="populator-template populator-template__events">
+    <cly-populator-section-detail  v-if="isOpen" class="bu-mb-3 populator-template__events--property-section" :title="i18n('populator-template.event-details')" entity="Event" @remove="() => onRemoveEvent(index)" :key="index" v-for="(event, index) in events">
+        <div class="bu-mt-2">
+            <div>
+              <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator.event-key')}}</span>
+              <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.event-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+            </div>
+            <div class="bu-mt-2">
+              <validation-provider name="name" rules="required" v-slot="v">
+                  <el-input style="width: 100%;" :placeholder="i18n('populator-template.enter-your-event-key')" class="input" v-model="event.key" :class="{'is-error': v.errors.length > 0}"></el-input>
+              </validation-provider>
+            </div>
+            <div class="populator-template__events--segmentation-section">
+                <div class="bu-container populator-template__events--duration-and-sum-container">
+                    <div class="bu-columns bu-p-3">
+                        <div class="left-container bu-level-left bu column bu-is-6">
+                            <el-checkbox v-model="event.duration.isActive">
+                                <span class="text-smallish">{{ i18n('populator.duration-help-title') }}</span>
+                            </el-checkbox>
+                            <span class="duration-text">{{ i18n('populator.duration-help-subtitle') }}</span>
+                        </div>
+                        <div class="right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
+                            <el-input :disabled="!event.duration.isActive" v-model="event.duration.minDurationTime" class="bu-is-shadowless duration-input"></el-input> 
+                            <span class="bu-p-1">-</span>
+                            <el-input :disabled="!event.duration.isActive" class="bu-is-shadowless duration-input" v-model="event.duration.maxDurationTime"></el-input>
+                        </div>
+                    </div>
+                    <div class="bu-columns bu-p-3">
+                        <div class="left-container bu-level-left bu column bu-is-6">
+                            <el-checkbox v-model="event.sum.isActive">
+                                <span class="text-smallish">{{ i18n('populator.sum-help-title') }}</span>
+                            </el-checkbox>
+                            <span class="duration-text">{{ i18n('populator.sum-help-subtitle') }}</span>
+                        </div>
+                        <div class="right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
+                            <el-input :disabled="!event.sum.isActive" class="bu-is-shadowless duration-input" v-model="event.sum.minSumValue"></el-input> 
+                            <span class="bu-p-1">-</span>
+                            <el-input :disabled="!event.sum.isActive" class="bu-is-shadowless duration-input" v-model="event.sum.maxSumValue"></el-input>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider bu-mt-5">
+                <div class="bu-mt-4" v-if="event.segmentations.length">
+                    <span class="text-small text-uppercase populator-template--text-custom-detail">{{i18n('populator-template.segment-details')}}</span>
+                    <div class="bu-mb-4" v-for="(segment, segmentIndex) in event.segmentations">
+                        <div>
+                            <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
+                                <div class="bu-mr-2">
+                                <div>
+                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-key')}}</span>
+                                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.segment-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                </div>
+                                <div class="bu-mt-2">
+                                    <validation-provider name="name" rules="required" v-slot="v">
+                                        <el-input class="input" v-model="segment.key" :class="{'is-error': v.errors.length > 0}"></el-input>
+                                    </validation-provider>
+                                </div>
+                                </div>
+                                <div class="bu-mr-2">
+                                    <div>
+                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-values')}}</span>
+                                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.segment-values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    </div>
+                                    <div class="bu-mt-2" v-for="(value, index) in segment.values">
+                                    <el-input class="input" v-model="value.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div>
+                                        <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
+                                        <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    </div>
+                                    <div v-for="(value, valueIndex) in segment.values">
+                                        <div class="bu-is-flex">
+                                            <div class="bu-mt-2">
+                                                <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
+                                                        <template slot="suffix">
+                                                            <span class="text-medium color-cool-gray-50">%</span>
+                                                        </template>
+                                                    </el-input>
+                                                </validation-provider>
+                                            </div>
+                                            <div class="override-buttons">
+                                                <i class="el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveSegment(index, segmentIndex, valueIndex)"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper override-buttons">
+                            <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherValue(index, segmentIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
+                        </div>
+                        <hr class="divider">
+                        <div v-if="segment.condition" class="populator-template__events--condition">
+                            <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline">
+                                <div class="bu-mr-5"></div>
+                                <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ segment.condition.conditionType === 1 ? i18n('populator-template.condition-is', segment.condition.selectedKey, segment.condition.selectedValue) : i18n('populator-template.condition-is-not', segment.condition.selectedKey, segment.condition.selectedValue) }}</div>
+                                <el-button type="text" @click="onDeleteCondition(index, segmentIndex)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
+                            </div>
+                            <div class="bu-is-flex bu-is-justify-content-flex-end">
+                                <div class="bu-mr-2">
+                                    <span class="text-smallish bu-has-text-weight-medium">{{ i18n('populator-template.values') }}</span>
+                                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    <div class="bu-mt-2" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
+                                        <el-input class="input" v-model="segmentValue.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div>
+                                        <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
+                                        <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    </div>
+                                    <div>
+                                        <div class="bu-is-flex" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
+                                            <div class="bu-mt-2">
+                                                <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                                    <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}">
+                                                        <template slot="suffix">
+                                                            <span class="text-medium color-cool-gray-50">%</span>
+                                                        </template>
+                                                    </el-input>
+                                                </validation-provider>
+                                            </div>
+                                            <div class="override-buttons">
+                                                <i class="el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, segmentIndex, segmentValueIndex)"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper override-buttons">
+                                <el-button type="text" class=" bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherConditionValue(index, segmentIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
+                            </div>
+                        </div>
+                        <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center" v-if="!segment.condition">
+                            <cly-populator-condition-selector
+                                :disabled="events[index].segmentations.length > 1 ? false : true"
+                                :condition-properties="events[index].segmentations.filter(item=>item.key !== segment.key && item.key.length).map(item => item.key)"
+                                :condition-property-values="conditionPropertyValues"
+                                @selected-key-change="(param) => onConditionSelectedKeyChange(param, index)"
+                                v-model="segment.condition">
+                            </cly-populator-condition-selector>
+                        </div>
+                        <hr class="divider">
+                    </div>
+                </div>
+                <div class="bu-my-2 btn-another-value-wrapper override-buttons">
+                    <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddEventSegmentation(index)">{{i18n('populator.add-segmentation')}}</el-button>
+                </div>
+            </div>
+        </div>
+    </cly-populator-section-detail>
+    <el-button :disabled="!isOpen" class="populator-template--btn-add bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text" @click="onAddEvent()">{{ i18n("populator.add-event") }}</el-button>
+</div>

@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment*/
+/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, jQuery, app, moment, CV*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
@@ -8,7 +8,7 @@
     var props = {
         _os: ["Android", "iOS"],
         _os_web: ["Android", "iOS", "Windows", "MacOS"],
-        _os_desktop: ["Windows", "MacOS", "Linux"],
+        _os_desktop: ["Windows", "MacOS", "Linux", "tvOS"],
         _os_version_android: ["11", "12", "12L"],
         _os_version_ios: ["10.3.4", "12.5.5", "15.5"],
         _os_version_windows: ["7", "8", "10"],
@@ -40,6 +40,7 @@
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.qihoo.appstore", "com.dragon.android.pandaspace", "me.onemobile.android", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "um.market.android"],
         _source: ["https://www.google.lv/search?q=countly+analytics", "https://www.google.co.in/search?q=mobile+analytics", "https://www.google.ru/search?q=product+analytics", "http://stackoverflow.com/questions?search=what+is+mobile+analytics", "http://stackoverflow.com/unanswered?search=game+app+analytics", "http://stackoverflow.com/tags?search=product+dashboard", "http://r.search.yahoo.com/?query=analytics+product+manager"]
     };
+
     var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
     var viewSegments = {
         name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
@@ -119,146 +120,1535 @@
             name: "Error: ReferenceError"
         }
     ];
+    const crashBuildIds = {
+        plc: [
+            "1b7d7184-05d6-3a83-bb1b-f9af6aef61f3",
+            "1ff7a2fb-9f28-37b7-af39-344206a322bd",
+            "7b531a15-3e73-3185-90e2-b88d9476da5e",
+            "7b1733b1-74c9-3a33-8a58-853b0a029826",
+            "83ba0b04-af12-301a-a7e5-bbbb20af0738",
+            "295d93e6-ac06-384a-a469-2df327f697fc",
+            "7519e999-1053-3367-b9d5-8844f6d3bdc6",
+            "61459536-a83b-36a0-9004-5d168317d2a6",
+            "a697479d-4c5c-391e-b117-85b894ab94c6",
+            "cefbbc61-fdb3-3db7-86bf-337e511616db",
+            "d7630067-7a00-3cb7-99e1-e7f6c55d85c5",
+        ],
+        ios: [
+            "0D63A05D-8C80-3E93-B5FE-8A52208271B4",
+            "3C1DC6C9-3E27-3DD3-938E-146C18CC5188",
+            "65DB57E4-7B15-316D-8E61-C7E9B36D6EF5",
+            "757F024F-EA35-3322-9E77-3AE793023AC3",
+            "DB4B7F70-0399-32B4-9DA3-7218B5A4BA49",
+        ],
+    };
+    const platformTypes = {mobile: "Mobile", web: "Web", desktop: "Desktop"};
     var defaultTemplates = [
         {
             "_id": "defaultBanking",
             "name": "Banking",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Individual", "Business"],
-                "Has Credit Card": [true, false],
-                "Has Loan": [true, false]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Individual",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Business",
+                            "probability": "50"
+                        }
+                    ]
                 },
-                "Fund Transfer Begin": {
-                    "segments": {"Source Currency": ["EUR", "USD", "GBP"], "Destination Currency": ["EUR", "USD", "GBP"]}
+                {
+                    "key": "Has Credit Card",
+                    "values": [
+                        {
+                            "key": "true",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "false",
+                            "probability": "50"
+                        }
+                    ]
                 },
-                "Fund Transfer": {
-                    "segments": {"Result": ["Success", "Failure"], "Failure Reason": ["Insufficient Funds", "Technical Error"], "Error Code": [100101, 100102, 100103]},
-                    "sum": [50, 10000],
-                    "dur": [10, 60]
-                },
-                "Credit Card Application Begin": {
-                    "segments": {"From": ["Home Banner", "My Credit Cards"]}
-                },
-                "Credit Card Application": {
-                    "segments": {"Card Type": ["Basic", "Premium", "Black"]},
-                    "dur": [60, 600]
-                },
-                "Bill Payment": {
-                    "segments": {"Bill Type": ["Electricity", "Internet", "Phone", "Cable"], "Amount Range": ["0-20", "20-100", "100-500", "500+"]},
-                    "sum": [100, 1000]
+                {
+                    "key": "Has Loan",
+                    "values": [
+                        {
+                            "key": "true",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "false",
+                            "probability": "50"
+                        }
+                    ]
                 }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Method",
+                        "values": [
+                            {
+                                "key": "Face ID",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Password",
+                                "probability": "50"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Fund Transfer Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Source Currency",
+                        "values": [
+                            {
+                                "key": "EUR",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "USD",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "GBP",
+                                "probability": "33"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Destination Currency",
+                        "values": [
+                            {
+                                "key": "EUR",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "USD",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "GBP",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Fund Transfer",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 10,
+                        "maxDurationTime": 60
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 50,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": [{
+                        "key": "Result",
+                        "values": [
+                            {
+                                "key": "Success",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Failure",
+                                "probability": "50"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Failure Reason",
+                        "values": [
+                            {
+                                "key": "Insufficient Funds",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "Technical Error",
+                                "probability": "50"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Error Code",
+                        "values": [
+                            {
+                                "key": "100101",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "100102",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "100103",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Credit Card Application Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "From",
+                        "values": [
+                            {
+                                "key": "Home Banner",
+                                "probability": "50"
+                            },
+                            {
+                                "key": "My Credit Cards",
+                                "probability": "50"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Credit Card Application",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [{
+                        "key": "Card Type",
+                        "values": [
+                            {
+                                "key": "Basic",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "Premium",
+                                "probability": "33"
+                            },
+                            {
+                                "key": "Black",
+                                "probability": "33"
+                            }
+                        ]
+                    }]
+                },
+                {
+                    "key": "Bill Payment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 100,
+                        "maxSumValue": 1000
+                    },
+                    "segmentations": [{
+                        "key": "Bill Type",
+                        "values": [
+                            {
+                                "key": "Electricity",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Internet",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Phone",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "Cable",
+                                "probability": "25"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "Amount Range",
+                        "values": [
+                            {
+                                "key": "0-20",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "20-100",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "100-500",
+                                "probability": "25"
+                            },
+                            {
+                                "key": "500+",
+                                "probability": "25"
+                            }
+                        ]
+                    }]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Fund Transfer Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Fund Transfer",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Credit Card Application Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Credit Card Application",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Bill Payment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultHealthcare",
             "name": "Healthcare",
             "isDefault": true,
-            "up": {
-                "Insurance": ["Cigna", "AARP", "UnitedHealthcare", "Humana"],
-                "Employer": ["Company1", "Company2", "Company3"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Insurance",
+                    "values": [
+                        {
+                            "key": "Cigna",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "AARP",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "UnitedHealthcare",
+                            "probability": "25"
+                        },
+                        {
+                            "key": "Humana",
+                            "probability": "25"
+                        }
+                    ]
                 },
-                "Video Call": {
-                    "segments": {"Clinic": ["Spanish Springs", "North Valleys", "Northwest Reno", "Galena"]},
-                    "dur": [300, 900]
-                },
-                "Schedule Appointment": {
-                    "segments": {"Type": ["In Clinic", "Virtual"], "Clinic Selected": ["Spanish Springs", "North Valleys", "Northwest Reno", "Galena"], "Condition": ["Coronavirus concerns", "Rash", "Travel vaccination", "Sinus infection symptoms", "Acute back pain"]},
-                },
-                "Used Messaging": {
-                    "segments": {"Provided Care Plan": ["no", "yes"]},
-                    "dur": [180, 300]
-                },
-                "Invoice Generated": {
-                    "sum": [100, 10000]
+                {
+                    "key": "Employer",
+                    "values": [
+                        {
+                            "key": "Company1",
+                            "probability": "33"
+                        },
+                        {
+                            "key": "Company2",
+                            "probability": "33"
+                        },
+                        {
+                            "key": "Company3",
+                            "probability": "34"
+                        }
+                    ]
                 }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Video Call",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 300,
+                        "maxDurationTime": 900
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Clinic",
+                            "values": [
+                                {
+                                    "key": "Spanish Springs",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "North Valleys",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Northwest Reno",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Galena",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Schedule Appointment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Type",
+                            "values": [
+                                {
+                                    "key": "In Clinic",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Virtual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Clinic Selected",
+                            "values": [
+                                {
+                                    "key": "Spanish Springs",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "North Valleys",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Northwest Reno",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "Galena",
+                                    "probability": "25"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Condition",
+                            "values": [
+                                {
+                                    "key": "Coronavirus concerns",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Rash",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Travel vaccination",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Sinus infection symptoms",
+                                    "probability": "20"
+                                },
+                                {
+                                    "key": "Acute back pain",
+                                    "probability": "20"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Used Messaging",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 180,
+                        "maxDurationTime": 300
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Provided Care Plan",
+                            "values": [
+                                {
+                                    "key": "no",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "yes",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Invoice Generated",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 100,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": []
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Video Call",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Schedule Appointment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Used Messaging",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Invoice Generated",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultNavigation",
             "name": "Navigation",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Basic", "Premium"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Basic",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Premium",
+                            "probability": "50"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey Configure": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]}
+                {
+                    "key": "Journey Configure",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey Begin": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]}
+                {
+                    "key": "Journey Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Journey End": {
-                    "segments": {"Vehicle Type": ["Fleet", "Individual"], "Range": ["0-10", "11-50", "51-100", "100+"]},
-                    "sum": [10, 400],
-                    "dur": [600, 12000]
+                {
+                    "key": "Journey End",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 600,
+                        "maxDurationTime": 12000
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 10,
+                        "maxSumValue": 400
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Vehicle Type",
+                            "values": [
+                                {
+                                    "key": "Fleet",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Individual",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Range",
+                            "values": [
+                                {
+                                    "key": "0-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "11-50",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "51-100",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "100+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Settings Changed": {
-                    "segments": {"Setting": ["Route preference", "Vehicle maker", "Vehicle model"]}
-                },
+                {
+                    "key": "Settings Changed",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Setting",
+                            "values": [
+                                {
+                                    "key": "Route preference",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Vehicle maker",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Vehicle model",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey Configure",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Journey End",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Settings Changed",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultEcommerce",
             "name": "eCommerce",
             "isDefault": true,
-            "up": {
-                "Account Type": ["Basic", "Prime"]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Face ID", "Password"]}
+            "uniqueUserCount": 100,
+            "platformType": [platformTypes.mobile, platformTypes.web, platformTypes.desktop],
+            "users": [
+                {
+                    "key": "Account Type",
+                    "values": [
+                        {
+                            "key": "Basic",
+                            "probability": "50"
+                        },
+                        {
+                            "key": "Prime",
+                            "probability": "50"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Face ID",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Password",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Add To Cart": {
-                    "segments": {"Category": ["Books", "Electronics", "Home & Garden"]}
+                {
+                    "key": "Add To Cart",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Category",
+                            "values": [
+                                {
+                                    "key": "Books",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Electronics",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Home & Garden",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Checkout - Begin": {},
-                "Checkout - Address": {},
-                "Checkout - Payment": {},
-                "Checkout": {
-                    "segments": {"Delivery Type": ["Standard", "Express"], "Items": ["1", "2-5", "6-10", "10+"]},
-                    "sum": [50, 10000],
-                    "dur": [60, 600]
+                {
+                    "key": "Checkout - Begin",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
                 },
-                "Settings Changed": {
-                    "segments": {"Setting": ["Address", "Payment method"]}
+                {
+                    "key": "Checkout - Address",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
                 },
+                {
+                    "key": "Checkout - Payment",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
+                },
+                {
+                    "key": "Checkout",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 50,
+                        "maxSumValue": 10000
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Delivery Type",
+                            "values": [
+                                {
+                                    "key": "Standard",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Express",
+                                    "probability": "50"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Items",
+                            "values": [
+                                {
+                                    "key": "1",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "2-5",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "6-10",
+                                    "probability": "25"
+                                },
+                                {
+                                    "key": "10+",
+                                    "probability": "25"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "Settings Changed",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Setting",
+                            "values": [
+                                {
+                                    "key": "Address",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "Payment method",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Add To Cart",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Begin",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Address",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout - Payment",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Checkout",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Settings Changed",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         },
         {
             "_id": "defaultGaming",
             "name": "Gaming",
             "isDefault": true,
-            "up": {
-                "Experience Points": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-            },
-            "events": {
-                "Login": {
-                    "segments": {"Method": ["Facebook", "Google", "Email"]}
+            "uniqueUserCount": 100,
+            "platformType": ["mobile", "web", "desktop"],
+            "users": [
+                {
+                    "key": "Experience Points",
+                    "values": [
+                        {
+                            "key": "10",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "20",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "30",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "40",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "50",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "60",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "70",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "80",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "90",
+                            "probability": "10"
+                        },
+                        {
+                            "key": "100",
+                            "probability": "10"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                    "key": "Login",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Method",
+                            "values": [
+                                {
+                                    "key": "Facebook",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Google",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Email",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Level Up": {
-                    "segments": {"Level": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Used Level Pass": [true, false]},
-                    "dur": [60, 600]
+                {
+                    "key": "Level Up",
+                    "duration": {
+                        "isActive": true,
+                        "minDurationTime": 60,
+                        "maxDurationTime": 600
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Level",
+                            "values": [
+                                {
+                                    "key": "1",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "2",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "3",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "4",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "5",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "6",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "7",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "8",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "9",
+                                    "probability": "10"
+                                },
+                                {
+                                    "key": "10",
+                                    "probability": "10"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "Used Level Pass",
+                            "values": [
+                                {
+                                    "key": "true",
+                                    "probability": "50"
+                                },
+                                {
+                                    "key": "false",
+                                    "probability": "50"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Purchase": {
-                    "segments": {"Item": ["Level Pass", "Lucky Item", "Item Storage Upgrade"]},
-                    "sum": [1, 100]
+                {
+                    "key": "Purchase",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": true,
+                        "minSumValue": 1,
+                        "maxSumValue": 100
+                    },
+                    "segmentations": [
+                        {
+                            "key": "Item",
+                            "values": [
+                                {
+                                    "key": "Level Pass",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Lucky Item",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Item Storage Upgrade",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Share Score": {
-                    "segments": {"To": ["Facebook", "Twitter", "Instagram"]}
+                {
+                    "key": "Share Score",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": [
+                        {
+                            "key": "To",
+                            "values": [
+                                {
+                                    "key": "Facebook",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Twitter",
+                                    "probability": "33"
+                                },
+                                {
+                                    "key": "Instagram",
+                                    "probability": "34"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "Invite Friends": {}
+                {
+                    "key": "Invite Friends",
+                    "duration": {
+                        "isActive": false,
+                        "minDurationTime": 0,
+                        "maxDurationTime": 0
+                    },
+                    "sum": {
+                        "isActive": false,
+                        "minSumValue": 0,
+                        "maxSumValue": 0
+                    },
+                    "segmentations": []
+                }
+            ],
+            "views": [],
+            "sequences": [
+                {
+                    "steps": [
+                        {
+                            "key": "session",
+                            "value": "start",
+                            "probability": 100
+                        },
+                        {
+                            "key": "events",
+                            "value": "Login",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Level Up",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Purchase",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Share Score",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "events",
+                            "value": "Invite Friends",
+                            "probability": "100"
+                        },
+                        {
+                            "key": "session",
+                            "value": "end",
+                            "probability": 100
+                        }
+                    ]
+                }
+            ],
+            "behavior": {
+                "runningSession": [
+                    "2",
+                    "5"
+                ],
+                "generalConditions": [],
+                "sequences": [
+                    {
+                        "key": "Sequence_1",
+                        "probability": 80
+                    },
+                    {
+                        "key": "random",
+                        "probability": 20
+                    }
+                ],
+                "sequenceConditions": []
             }
         }
     ];
@@ -271,6 +1661,71 @@
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+
+    /**
+     * 
+     * @param {array} arr - array of objects with probability property
+     * @returns {string} returns random key from array
+     */
+    function randomGetOne(arr) {
+        var randomNum = Math.random() * 100;
+        for (let i = 0; i < arr.length; i++) {
+            if (randomNum < parseInt(arr[i].probability, 10)) {
+                return arr[i].key;
+            }
+            else {
+                randomNum -= parseInt(arr[i].probability, 10);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 
+     * @param {string} jsonString - stringified json
+     * @returns {object} returns parsed json or string
+     */
+    function tryToParseJSON(jsonString) {
+        try {
+            jsonString.forEach(function(item) {
+                item.key = JSON.parse(item.key);
+            });
+        }
+        catch (e) {
+            //
+        }
+        return jsonString;
+    }
+
+    /**
+     * 
+     * @param {Array} array - array of objects with probability property
+     * @returns {string} returns random string from array 
+     */
+    function randomSelectByProbability(array) {
+        const totalProbability = array.reduce(function(sum, item) {
+            return sum + parseInt(item.probability, 10);
+        }, 0);
+
+        const randomNum = Math.random() * totalProbability;
+        let selectedValue = null;
+        let cumulativeProbability = 0;
+
+        for (let i = 0; i < array.length; i++) {
+            cumulativeProbability += parseInt(array[i].probability, 10);
+            if (array[i].probability === 100) {
+                selectedValue = array[i].key;
+                break;
+            }
+            else if (randomNum <= cumulativeProbability) {
+                selectedValue = array[i].key;
+                break;
+            }
+        }
+        return selectedValue;
+    }
+
+
     /**
      * Capitalize first letter of string
      * @param {string} string - input string
@@ -300,6 +1755,9 @@
      * @returns {object} returns user properties
      **/
     function getUserProperties(templateUp) {
+        if (!templateUp) {
+            return {};
+        }
         var up = {populator: true};
 
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (Math.random() > 0.5)) {
@@ -308,12 +1766,18 @@
             up.utm_campaign = campaigns[getRandomInt(0, campaigns.length - 1)].id;
         }
 
-        Object.keys(templateUp || {}).forEach(function(key) {
-            var values = templateUp[key];
-            up[key] = values[getRandomInt(0, values.length - 1)];
+        templateUp.forEach(function(item) {
+            up[item.key] = randomSelectByProbability(tryToParseJSON(item.values));
         });
 
-        return up;
+        let modifiedUpOnConditions = {};
+        templateUp.forEach(function(item) {
+            if (item.condition && up[item.condition.selectedKey] === item.condition.selectedValue) {
+                modifiedUpOnConditions[item.key] = randomSelectByProbability(tryToParseJSON(item.condition.values));
+            }
+        });
+        const mergedUp = Object.assign({}, up, modifiedUpOnConditions);
+        return mergedUp;
     }
 
     // helper functions
@@ -365,78 +1829,110 @@
         return year + "." + d.format('MM') + "." + day;
     }
     /**
+     * 
+     * @param {object} userDetails - user details
+     * @param {array} conditions - array of conditions
+     * @returns {array} - returns null or array of values
+     */
+    function pickBehaviorConditionValue(userDetails, conditions) {
+        const userCustom = userDetails.custom;
+        if (!userCustom) {
+            return null;
+        }
+        for (const condition of conditions) {
+            const conditionKey = condition.selectedKey;
+            const conditionValue = condition.selectedValue;
+            if (userCustom[conditionKey] && userCustom[conditionKey] === conditionValue) {
+                return condition.values;
+            }
+        }
+        return null;
+    }
+    /**
      * Generate a user with random properties and actions
      * @param {object} templateUp user properties template, if available
      **/
-    function getUser(templateUp) {
-        this.getId = function() {
-            /**
-             * Generate hash for id
-             * @returns {string} returns string contains 4 characters
-             **/
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            }
-            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-        };
-
+    function User() {
         this.getProp = getProp;
-
-        var that = this;
-        this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-        this.id = this.getId();
-        this.isRegistered = false;
-
-        this.hasSession = false;
-        this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        if ((totalUserCount % 3 === 0)) {
-            this.userdetails = { custom: getUserProperties(templateUp) };
-        }
-        else {
-            this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
-        }
-        totalUserCount++;
-        this.userdetails.custom.populator = true;
-        this.metrics = {};
         this.startTs = startTs;
         this.endTs = endTs;
-        this.events = [];
         this.ts = getRandomInt(this.startTs, this.endTs);
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-            this.platform = this.getProp("_os_web");
-        }
-        else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
-            this.platform = this.getProp("_os_desktop");
-        }
-        else {
-            this.platform = this.getProp("_os");
-        }
-        this.app_version = getVersion(this.ts, true);
-        this.metrics._os = this.platform;
-        this.metrics._app_version = this.app_version;
-        var m_props = metric_props.mobile;
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
-            m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
-        }
-        for (var mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
-            if (m_props[mPropsIndex] !== "_os") {
-                //handle specific cases
-                if (m_props[mPropsIndex] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    this.metrics[m_props[mPropsIndex]] = this.getProp("_source");
+        this.events = [];
+        this.metrics = {};
+        this.isRegistered = false;
+
+        this.getUserFromTemplate = function(templateUp, index = 0) {
+            this.getId = function() {
+                /**
+                 * Generate hash for id
+                 * @returns {string} returns string contains 4 characters
+                 **/
+                function s4() {
+                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
                 }
-                else {
-                    //check os specific metric
-                    if (typeof props[m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
-                        this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+            };
+            this.id = this.getId();
+            this.isRegistered = false;
+
+            // this.hasSession = false;
+            this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+            if ((index % 3 === 0)) {
+                this.userdetails = { custom: getUserProperties(templateUp) };
+            }
+            else {
+                this.userdetails = { name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp) };
+            }
+            this.userdetails.custom.populator = true;
+
+
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                this.platform = this.getProp("_os_web");
+            }
+            else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
+                this.platform = this.getProp("_os_desktop");
+            }
+            else {
+                this.platform = this.getProp("_os");
+            }
+            this.app_version = getVersion(this.ts, true);
+            this.metrics._os = this.platform;
+            this.metrics._app_version = this.app_version;
+            var m_props = metric_props.mobile;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
+                m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
+            }
+            for (var mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
+                if (m_props[mPropsIndex] !== "_os") {
+                    //handle specific cases
+                    if (m_props[mPropsIndex] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        this.metrics[m_props[mPropsIndex]] = this.getProp("_source");
                     }
-                    //default metric set
                     else {
-                        this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex]);
+                        //check os specific metric
+                        if (typeof props[m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
+                            this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
+                        }
+                        //default metric set
+                        else {
+                            this.metrics[m_props[mPropsIndex]] = this.getProp(m_props[mPropsIndex]);
+                        }
                     }
                 }
             }
-        }
+        };
+        this.getUserFromEnvironment = function(env) {
+            this.id = env._id.split('_', 3)[0]; //device_id
+            if (!this.userdetails) {
+                this.userdetails = {};
+            }
+            this.platform = env.platform;
+            this.app_version = env.appVersion;
+            this.userdetails.custom = env.custom;
 
+            this.metrics._os = this.platform;
+            this.metrics._app_version = this.app_version;
+        };
         this.getCrash = function() {
             var crash = {};
             crash._os = this.metrics._os;
@@ -462,7 +1958,13 @@
             crash._muted = (Math.random() > 0.5) ? true : false;
             crash._background = (Math.random() > 0.5) ? true : false;
 
-            crash._error = this.getError();
+            const error = this.getError();
+            if (typeof error === 'object') {
+                crash = error;
+            }
+            else {
+                crash._error = error;
+            }
             crash._name = (crash._error.split('\n')[0] + "").trim();
             crash._logs = this.getLog();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
@@ -481,56 +1983,218 @@
 
         this.getError = function() {
             var errors = [];
-            var error = "";
-            var stacks = 0;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                return jsErrors[Math.floor(Math.random() * jsErrors.length)].error;
-            }
-            else if (this.platform === "Android") {
-                errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
-                error = errors[Math.floor(Math.random() * errors.length)] + ": com.domain.app.Exception<init>\n";
-                stacks = getRandomInt(5, 9);
-                for (var stackIndex = 0; stackIndex < stacks; stackIndex++) {
-                    error += "at com.domain.app.<init>(Activity.java:" + (stackIndex * 32) + ")\n";
+                if (crashSymbolVersions.javascript.indexOf(this.metrics._app_version) === -1) {
+                    crashSymbolVersions.javascript.push(this.metrics._app_version);
                 }
-                return error;
+                return jsErrors[getRandomInt(0, jsErrors.length - 1)].error;
             }
-            else if (this.platform === "iOS") {
-                errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
-                    "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
-                    "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
-                    "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552",
-                    "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752",
-                    "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100",
-                    "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80",
-                    "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436",
-                    "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572",
-                    "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988",
-                    "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132",
-                    "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764",
-                    "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248",
-                    "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568",
-                    "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24",
-                    "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540",
-                    "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724",
-                    "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384",
-                    "GraphicsServices                0x184600088 GSEventRunModal + 180",
-                    "UIKit                           0x188002088 UIApplicationMain + 204",
-                    "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
-                    "libdyld.dylib                   0x1828b68b8 start + 4"
+            else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+                errors = [{ // android
+                    "_error": "03-28 19:55:14.784 20944-20944/? D/SomeImportantTag: java.lang.ArithmeticException: divide by zero\nat tt.rr.testprojsymb.MainActivity.i(Unknown Source)\nat tt.rr.testprojsymb.MainActivity.j(Unknown Source)\nat tt.rr.testprojsymb.MainActivity.OnclickTest(Unknown Source)\nat java.lang.reflect.Method.invoke(Native Method)\nat android.support.v7.app.m$a.onClick(Unknown Source)\nat android.view.View.performClick(View.java:5637)\nat android.view.View$PerformClick.run(View.java:22429)\nat android.os.Handler.handleCallback(Handler.java:751)\nat android.os.Handler.dispatchMessage(Handler.java:95)\nat android.os.Looper.loop(Looper.java:154)\nat android.app.ActivityThread.main(ActivityThread.java:6119)\nat java.lang.reflect.Method.invoke(Native Method)\nat com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:886)\nat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:776)",
+                    "_os_version": "8.1",
+                    "_os": "android",
+                    "_app_version": "22.02.0"
+                },
+                { //ios
+                    "_architecture": "arm64",
+                    "_binary_images": {
+                        "GraphicsServices": {
+                            "la": "0x1E7862000",
+                            "id": "0D63A05D-8C80-3E93-B5FE-8A52208271B4"
+                        },
+                        "UIKitCore": {
+                            "la": "0x21206C000",
+                            "id": "DB4B7F70-0399-32B4-9DA3-7218B5A4BA49"
+                        },
+                        "libdyld.dylib": {
+                            "la": "0x1E50B2000",
+                            "id": "C6BB1027-199D-3836-888A-BC946A5055F5"
+                        },
+                        "CountlyTestApp-iOS": {
+                            "la": "0x104C80000",
+                            "id": "757F024F-EA35-3322-9E77-3AE793023AC3"
+                        },
+                        "libobjc.A.dylib": {
+                            "la": "0x1E4833000",
+                            "id": "3C1DC6C9-3E27-3DD3-938E-146C18CC5188"
+                        },
+                        "CoreFoundation": {
+                            "la": "0x1E554D000",
+                            "id": "65DB57E4-7B15-316D-8E61-C7E9B36D6EF5"
+                        }
+                    },
+                    "_error": "CoreFoundation                      0x00000001e5669ebc <redacted> + 252\nlibobjc.A.dylib                     0x00000001e4839a50 objc_exception_throw + 56\nCoreFoundation                      0x00000001e55e1384 _CFArgv + 0\nCoreFoundation                      0x00000001e557157c <redacted> + 0\nCountlyTestApp-iOS                  0x0000000104c8910c CountlyTestApp-iOS + 37132\nCountlyTestApp-iOS                  0x0000000104c9a8c0 CountlyTestApp-iOS + 108736\nUIKitCore                           0x0000000212b62458 <redacted> + 1348\nUIKitCore                           0x0000000212b626bc <redacted> + 268\nUIKitCore                           0x000000021296087c <redacted> + 296\nUIKitCore                           0x000000021294e878 <redacted> + 384\nUIKitCore                           0x000000021297d880 <redacted> + 132\nCoreFoundation                      0x00000001e55f96bc <redacted> + 32\nCoreFoundation                      0x00000001e55f4350 <redacted> + 412\nCoreFoundation                      0x00000001e55f48f0 <redacted> + 1264\nCoreFoundation                      0x00000001e55f40e0 CFRunLoopRunSpecific + 436\nGraphicsServices                    0x00000001e786d584 GSEventRunModal + 100\nUIKitCore                           0x0000000212954c00 UIApplicationMain + 212\nCountlyTestApp-iOS                  0x0000000104ca2c3c CountlyTestApp-iOS + 142396\nlibdyld.dylib                       0x00000001e50b2bb4 <redacted> + 4",
+                    "_executable_name": "CountlyTestApp-iOS",
+                    "_os_version": "12.1.4",
+                    "_app_version": "22.02.0",
+                    "_os": "iOS",
+                    "_build_uuid": crashBuildIds.ios[getRandomInt(0, crashBuildIds.ios.length - 1)]
+                },
+                { //plc
+                    "_architecture": "arm64",
+                    "_binary_images": {
+                        "CountlyTestApp-iOS": {
+                            "la": "0x10250c000",
+                            "id": "83ba0b04-af12-301a-a7e5-bbbb20af0738"
+                        },
+                        "CoreFoundation": {
+                            "la": "0x1ae3c3000",
+                            "id": "7519e999-1053-3367-b9d5-8844f6d3bdc6"
+                        },
+                        "libobjc.A.dylib": {
+                            "la": "0x1ae210000",
+                            "id": "a697479d-4c5c-391e-b117-85b894ab94c6"
+                        },
+                        "UIKitCore": {
+                            "la": "0x1b1b71000",
+                            "id": "d7630067-7a00-3cb7-99e1-e7f6c55d85c5"
+                        },
+                        "GraphicsServices": {
+                            "la": "0x1b8404000",
+                            "id": "cefbbc61-fdb3-3db7-86bf-337e511616db"
+                        },
+                        "libdyld.dylib": {
+                            "la": "0x1ae2ef000",
+                            "id": "7b531a15-3e73-3185-90e2-b88d9476da5e"
+                        },
+                        "libsystem_kernel.dylib": {
+                            "la": "0x1ae2c1000",
+                            "id": "1b7d7184-05d6-3a83-bb1b-f9af6aef61f3"
+                        },
+                        "libsystem_c.dylib": {
+                            "la": "0x1ae0e2000",
+                            "id": "61459536-a83b-36a0-9004-5d168317d2a6"
+                        },
+                        "libc++abi.dylib": {
+                            "la": "0x1ae2ad000",
+                            "id": "295d93e6-ac06-384a-a469-2df327f697fc"
+                        },
+                        "libsystem_pthread.dylib": {
+                            "la": "0x1ae1ff000",
+                            "id": "1ff7a2fb-9f28-37b7-af39-344206a322bd"
+                        },
+                        "Foundation": {
+                            "la": "0x1ae79f000",
+                            "id": "7b1733b1-74c9-3a33-8a58-853b0a029826"
+                        }
+                    },
+                    "_error": "Incident Identifier: C2F3B745-3450-49B1-B225-85A2795DDBAF\nCrashReporter Key:   TODO\nHardware Model:      iPhone9,1\nProcess:         CountlyTestApp-i [10790]\nPath:            /private/var/containers/Bundle/Application/35CC04E6-3BCF-4929-B2EA-999D3BC48136/CountlyTestApp-iOS.app/CountlyTestApp-iOS\nIdentifier:      ly.count.CountlyTestApp-iOS\nVersion:         1.0 (3.9)\nCode Type:       ARM-64\nParent Process:  ??? [1]\n\nDate/Time:       2020-03-18 14:55:59 +0000\nOS Version:      iPhone OS 13.3.1 (17D50)\nReport Version:  104\n\nException Type:  SIGABRT\nException Codes: #0 at 0x1ae2e5ec4\nCrashed Thread:  0\n\nApplication Specific Information:\n*** Terminating app due to uncaught exception 'NSGenericException', reason: 'This is the exception!'\n\nLast Exception Backtrace:\n0   CoreFoundation                      0x00000001ae4eea48 0x1ae3c3000 + 1227336\n1   libobjc.A.dylib                     0x00000001ae215fa4 0x1ae210000 + 24484\n2   CoreFoundation                      0x00000001ae3f30ec 0x1ae3c3000 + 196844\n3   CountlyTestApp-iOS                  0x0000000102514e88 0x10250c000 + 36488\n4   CountlyTestApp-iOS                  0x00000001025264a4 0x10250c000 + 107684\n5   UIKitCore                           0x00000001b273e948 0x1b1b71000 + 12376392\n6   UIKitCore                           0x00000001b273e464 0x1b1b71000 + 12375140\n7	0x1e401d000 -        0x1e401efff  libsystem_featureflags.dylib arm64  <00868befdde137a1a5d357ef7ae81db4> /usr/lib/system/libsystem_featureflags.dylib\n       0x1e401f000 -        0x1e404cfff  libsystem_m.dylib arm64  <51f1ec8ae61d3e2b821a8e0de77fc175> /usr/lib/system/libsystem_m.dylib\n       0x1e404d000 -        0x1e4052fff  libunwind.dylib arm64  <af53a4f641833a108f50e58c82933157> /usr/lib/system/libunwind.dylib\n       0x1e4332000 -        0x1e439afff  NanoRegistry arm64  <a24beb81e9cd32b59dde4cbb6d824c56> /System/Library/PrivateFrameworks/NanoRegistry.framework/NanoRegistry\n       0x1e439b000 -        0x1e43a8fff  NanoPreferencesSync arm64  <e302f1d35c6834bdb3effeb7e57cd6a5> /System/Library/PrivateFrameworks/NanoPreferencesSync.framework/NanoPreferencesSync\n       0x1e5dc7000 -        0x1e5ddafff  AppSSOCore arm64  <9e6cdcd2edef37dba4177852d95adfe7> /System/Library/PrivateFrameworks/AppSSOCore.framework/AppSSOCore",
+                    "_executable_name": "CountlyTestApp-iOS",
+                    "_os_version": "13.3.1",
+                    "_app_version": "22.02.0", //this.metrics._app_version,
+                    "_os": "iOS",
+                    "_plcrash": true,
+                    "_build_uuid": crashBuildIds.plc[getRandomInt(0, crashBuildIds.plc.length - 1)]
+                }
                 ];
-                error = "";
-                stacks = getRandomInt(9, 19);
-                for (var stackIndex2 = 0; stackIndex2 < stacks; stackIndex2++) {
-                    error += stackIndex2 + " " + errors[Math.floor(Math.random() * errors.length)] + "\n";
+                if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === 'ios') {
+                    const iosErrors = errors.filter(x=>x._os.toLocaleLowerCase() === 'ios');
+                    const iosError = iosErrors[getRandomInt(0, iosErrors.length - 1)];
+                    if (!crashSymbolVersions.iOS.filter(x=>x._build_uuid === iosError._build_uuid).length) {
+                        crashSymbolVersions.iOS.push(iosError);
+                    }
+                    return crashSymbolVersions.iOS[crashSymbolVersions.iOS.length - 1];
                 }
-                return error;
+                else if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === 'android') {
+                    const androidErrors = errors.filter(x=>x._os.toLocaleLowerCase() === 'android');
+                    const androidError = androidErrors[getRandomInt(0, androidErrors.length - 1)];
+
+                    if (!crashSymbolVersions.android.filter(x=>x._app_version === androidError._app_version).length) {
+                        crashSymbolVersions.android.push(androidError);
+                    }
+                    return crashSymbolVersions.android[crashSymbolVersions.android.length - 1];
+                }
             }
             else {
-                return "System.ArgumentOutOfRangeException\n" +
+                errors = [
+                    { // macos
+                        "_architecture": "x86_64",
+                        "_binary_images": {
+                            "CountlyTestApp-macOS": {
+                                "la": "0x109904000",
+                                "id": "530CF9BF-974B-3B37-B976-309A522FB6AC"
+                            },
+                            "CoreFoundation": {
+                                "la": "0x7FFF41D9F000",
+                                "id": "596DBC2A-60E3-3A73-AA5F-7A1806CF3204"
+                            },
+                            "libobjc.A.dylib": {
+                                "la": "0x7FFF6C582000",
+                                "id": "7C312627-43CB-3234-9324-4DEA92D59F50"
+                            },
+                            "libdyld.dylib": {
+                                "la": "0x7FFF6DD4F000",
+                                "id": "002418CC-AD11-3D10-865B-015591D24E6C"
+                            },
+                            "AppKit": {
+                                "la": "0x7FFF3F3B5000",
+                                "id": "E23B2968-32EA-340D-9E5E-12F5370DC55D"
+                            }
+                        },
+                        "_error": "0   CoreFoundation                      0x00007fff41e90acd __exceptionPreprocess + 256\n1   libobjc.A.dylib                     0x00007fff6c596a17 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff41eaa629 -[NSException raise] + 9\n3   CountlyTestApp-macOS                0x000000010990560d -[AppDelegate onClick_events:] + 565\n4   AppKit                              0x00007fff3f6c1644 -[NSApplication(NSResponder) sendAction:to:from:] + 312\n5   AppKit                              0x00007fff3f72b992 -[NSControl sendAction:to:] + 86\n6   AppKit                              0x00007fff3f72b8c4 __26-[NSCell _sendActionFrom:]_block_invoke + 136\n7   AppKit                              0x00007fff3f72b7c6 -[NSCell _sendActionFrom:] + 178\n8   AppKit                              0x00007fff3f75854b -[NSButtonCell _sendActionFrom:] + 96\n9   AppKit                              0x00007fff3f72a0e1 -[NSCell trackMouse:inRect:ofView:untilMouseUp:] + 2375\n10  AppKit                              0x00007fff3f75829c -[NSButtonCell trackMouse:inRect:ofView:untilMouseUp:] + 698\n11  AppKit                              0x00007fff3f728b1e -[NSControl mouseDown:] + 791\n12  AppKit                              0x00007fff3f604937 -[NSWindow(NSEventRouting) _handleMouseDownEvent:isDelayedEvent:] + 5724\n13  AppKit                              0x00007fff3f53b1a6 -[NSWindow(NSEventRouting) _reallySendEvent:isDelayedEvent:] + 2295\n14  AppKit                              0x00007fff3f53a667 -[NSWindow(NSEventRouting) sendEvent:] + 478\n15  AppKit                              0x00007fff3f3d9e4b -[NSApplication(NSEvent) sendEvent:] + 331\n16  CountlyTestApp-macOS                0x00000001099184f6 -[CLYExceptionHandlingApplication sendEvent:] + 61\n17  AppKit                              0x00007fff3f3c85c0 -[NSApplication run] + 755\n18  AppKit                              0x00007fff3f3b7ac8 NSApplicationMain + 777\n19  libdyld.dylib                       0x00007fff6dd653d5 start + 1\n20  ???                                 0x0000000000000001 0x0 + 1",
+                        "_executable_name": "CountlyTestApp-macOS",
+                        "_os_version": "10.14.6",
+                        "_app_version": "22.02.0", //this.metrics._app_version,
+                        "_os": "macOS",
+                        "_build_uuid": "530CF9BF-974B-3B37-B976-309A522FB6AC"
+                    },
+                    { // smartTv
+                        "_architecture": "arm64",
+                        "_binary_images": {
+                            "GraphicsServices": {
+                                "la": "0x1B5CC4000",
+                                "id": "A6C6685B-0224-3FFE-8B15-6018960EF344"
+                            },
+                            "UIKitCore": {
+                                "la": "0x1D5DEC000",
+                                "id": "21E54528-6817-398D-B9C3-79C9B69F1EB9"
+                            },
+                            "CoreFoundation": {
+                                "la": "0x1B375A000",
+                                "id": "ADFE7F81-D7AC-3AE1-9517-5BF663E733FF"
+                            },
+                            "CountlyTestApp-tvOS": {
+                                "la": "0x100778000",
+                                "id": "71881E31-A5A0-326A-BC1E-92F0C5885C03"
+                            },
+                            "libobjc.A.dylib": {
+                                "la": "0x1B3186000",
+                                "id": "17E94787-C2CC-32BA-B81B-6766FCA70EEA"
+                            },
+                            "libdyld.dylib": {
+                                "la": "0x1B3292000",
+                                "id": "3DB3C039-2550-3901-A3AE-7C4EAE3C548E"
+                            }
+                        },
+                        "_error": "0   CoreFoundation                      0x00000001b3884e28 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 1224232\n1   libobjc.A.dylib                     0x00000001b318e8b0 objc_exception_throw + 56\n2   CoreFoundation                      0x00000001b38da57c ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 1574268\n3   CoreFoundation                      0x00000001b377c90c ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 141580\n4   CountlyTestApp-tvOS                 0x000000010077f8e0 +[ViewController crashTest1] + 128\n5   UIKitCore                           0x00000001d66ed4f4 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9442548\n6   UIKitCore                           0x00000001d61f0ee4 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 4214500\n7   UIKitCore                           0x00000001d61f1248 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 4215368\n8   UIKitCore                           0x00000001d633e744 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5580612\n9   UIKitCore                           0x00000001d6346c84 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5614724\n10  UIKitCore                           0x00000001d6344420 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5604384\n11  UIKitCore                           0x00000001d6343980 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5601664\n12  UIKitCore                           0x00000001d6337b74 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5553012\n13  UIKitCore                           0x00000001d63372ec 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5550828\n14  UIKitCore                           0x00000001d63370b0 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 5550256\n15  UIKitCore                           0x00000001d67256b0 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9672368\n16  UIKitCore                           0x00000001d6702f04 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9531140\n17  UIKitCore                           0x00000001d67750cc 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9998540\n18  UIKitCore                           0x00000001d6776e94 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 10006164\n19  UIKitCore                           0x00000001d6770a8c 21E54528-6817-398D-B9C3-79C9B69F1EB9 + 9980556\n20  CoreFoundation                      0x00000001b3802eec ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 691948\n21  CoreFoundation                      0x00000001b3802e44 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 691780\n22  CoreFoundation                      0x00000001b38025dc ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 689628\n23  CoreFoundation                      0x00000001b37fd728 ADFE7F81-D7AC-3AE1-9517-5BF663E733FF + 669480\n24  CoreFoundation                      0x00000001b37fcfc8 CFRunLoopRunSpecific + 464\n25  GraphicsServices                    0x00000001b5cca328 GSEventRunModal + 104\n26  UIKitCore                           0x00000001d66ec40c UIApplicationMain + 1852\n27  CountlyTestApp-tvOS                 0x000000010078e96c main + 88\n28  libdyld.dylib                       0x00000001b32955f8 3DB3C039-2550-3901-A3AE-7C4EAE3C548E + 13816",
+                        "_executable_name": "CountlyTestApp-tvOS",
+                        "_os_version": "13.3.1",
+                        "_app_version": "22.02.0", //this.metrics._app_version,
+                        "_os": "tvOS",
+                        "_build_uuid": "71881E31-A5A0-326A-BC1E-92F0C5885C03"
+                    }
+                ];
+                if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === "tvos") {
+                    const tvosError = errors.filter(x=>x._os.toLocaleLowerCase() === "tvos")[0];
+                    if (!crashSymbolVersions.tvOS.filter(x=>x._build_uuid === tvosError._build_uuid).length) {
+                        crashSymbolVersions.tvOS.push(tvosError);
+                    }
+                    return crashSymbolVersions.tvOS[crashSymbolVersions.tvOS.length - 1];
+                }
+                else if (this.metrics._os && this.metrics._os.toLocaleLowerCase() === "macos") {
+                    const macosError = errors.filter(x=>x._os.toLocaleLowerCase() === "macos")[0];
+                    if (!crashSymbolVersions.macOS.filter(x=>x._build_uuid === macosError._build_uuid).length) {
+                        crashSymbolVersions.macOS.push(macosError);
+                    }
+                    return crashSymbolVersions.macOS[crashSymbolVersions.macOS.length - 1];
+                }
+                else {
+                    return "System.ArgumentOutOfRangeException\n" +
                     "   at System.ThrowHelper.ThrowArgumentOutOfRangeException()\n" +
                     "   at System.Collections.Generic.List`1.get_Item(Int32 index)\n" +
                     "   at StorePuzzle.PuzzleRenderer.HandleTileReleased(Object sender, PointerRoutedEventArgs e)";
+                }
             }
         };
 
@@ -609,47 +2273,52 @@
             return trace;
         };
 
-        this.getEvent = function(id, eventTemplates) {
-            this.stats.e++;
-
+        this.getEvent = function(id, eventTemplate, ts, isRandom) {
             var event = {
                 "key": id,
                 "count": 1,
-                "timestamp": this.ts,
+                "timestamp": ts || this.ts,
                 "hour": getRandomInt(0, 23),
                 "dow": getRandomInt(0, 6)
             };
 
-            this.ts += 1000;
-
-            if (Array.isArray(eventTemplates)) {
-                var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
-            }
-            else {
-                eventTemplate = eventTemplates;
+            if (!id && eventTemplate && Object.keys(eventTemplate).length) {
+                event.key = eventTemplate.key;
             }
 
-            if (eventTemplate && eventTemplate.duration) {
-                event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
-            }
-            else if (id === "[CLY]_view") {
-                event.dur = getRandomInt(0, 100);
+            if (eventTemplate && eventTemplate.duration && eventTemplate.duration.isActive) {
+                event.dur = getRandomInt(parseInt(eventTemplate.duration.minDurationTime, 10), parseInt(eventTemplate.duration.maxDurationTime, 10) || 10);
             }
 
-            if (eventTemplate && eventTemplate.sum) {
-                event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
+            if (eventTemplate && eventTemplate.sum && eventTemplate.sum.isActive) {
+                event.sum = getRandomInt(parseInt(eventTemplate.sum.minSumValue, 10), parseInt(eventTemplate.sum.maxSumValue, 10) || 10);
             }
-
-            if (eventTemplate && eventTemplate.segments) {
+            else if (eventTemplate && eventTemplate.segmentations && eventTemplate.segmentations.length) {
                 event.segmentation = {};
-                Object.keys(eventTemplate.segments).forEach(function(key) {
-                    var values = eventTemplate.segments[key];
-                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
+                var eventSegmentations = {};
+                var modifiedSegmentationsOnCondition = {};
+                eventTemplate.segmentations.forEach(function(item) {
+                    var values = item.values;
+                    var key = item.key;
+                    eventSegmentations[key] = randomSelectByProbability(tryToParseJSON(values));
+                    if (id === "[CLY]_view") {
+                        eventSegmentations.name = eventTemplate.key;
+                        eventSegmentations.visit = 1;
+                        eventSegmentations.start = 1;
+                        eventSegmentations.bounce = 1;
+                    }
                 });
+                eventTemplate.segmentations.forEach(function(item) {
+                    if (item.condition && Object.keys(eventSegmentations).includes(item.condition.selectedKey) && eventSegmentations[item.condition.selectedKey] === item.condition.selectedValue) {
+                        var values = item.condition.values;
+                        var key = item.key;
+                        modifiedSegmentationsOnCondition[key] = randomSelectByProbability(tryToParseJSON(values));
+                    }
+                });
+                event.segmentation = Object.assign({}, eventSegmentations, modifiedSegmentationsOnCondition);
             }
-            else if (id === "[CLY]_view") {
+            else if (id === "[CLY]_view" && isRandom) {
                 event.segmentation = {};
-                // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
                 var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
@@ -665,22 +2334,26 @@
             else if (id === "[CLY]_orientation") {
                 event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
             }
+            else if (id === "[CLY]_view" && eventTemplate && (!eventTemplate.segmentations || !eventTemplate.segmentations.length)) {
+                event.segmentation = {};
+                event.segmentation.name = eventTemplate.key;
+                event.segmentation.visit = 1;
+                event.segmentation.start = 1;
+                event.segmentation.bounce = 1;
+            }
 
             return [event];
         };
 
-
         this.getEvents = function(count, templateEvents) {
-            if (!_.isObject(templateEvents) || Object.keys(templateEvents).length === 0) {
+            if (!templateEvents || !templateEvents.length) {
                 return [];
             }
 
             var events = [];
-            var eventKeys = Object.keys(templateEvents || {});
-
             for (var eventIndex = 0; eventIndex < count; eventIndex++) {
-                var eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
-                events.push(this.getEvent(eventKey, templateEvents[eventKey])[0]);
+                var randomEvent = templateEvents[getRandomInt(0, templateEvents.length - 1)]; //eventKeys[getRandomInt(0, eventKeys.length - 1)];
+                events.push(this.getEvent(randomEvent.key, randomEvent));
             }
 
             return events;
@@ -697,8 +2370,6 @@
         };
 
         this.getRatingEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_star_rating",
                 "count": 1,
@@ -714,7 +2385,7 @@
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
             event.segmentation.app_version = this.app_version;
-            event.segmentation.platform = this.metrics._os;
+            event.segmentation.platform = this.platform ? this.platform : this.metrics._os;
             if (ratingWidgetList.length) {
                 event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
             }
@@ -722,8 +2393,6 @@
         };
 
         this.getNPSEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_nps",
                 "count": 1,
@@ -747,8 +2416,6 @@
         };
 
         this.getSurveyEvent = function() {
-            this.stats.e++;
-
             var event = {
                 "key": "[CLY]_survey",
                 "count": 1,
@@ -816,24 +2483,7 @@
             return events;
         };
 
-        this.createUsersForAB = function(device_id, callback) {
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/o/sdk",
-                data: {
-                    app_key: countlyCommon.ACTIVE_APP_KEY,
-                    device_id: device_id,
-                    keys: JSON.stringify([abExampleName]),
-                    method: "ab"
-                },
-                success: callback,
-                error: callback
-            });
-        };
-
         this.getHeatmapEvent = function() {
-            this.stats.e++;
-            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
             var views = getPageTemplates(populatorType);
@@ -885,8 +2535,6 @@
         };
 
         this.getScrollmapEvent = function() {
-            this.stats.e++;
-            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
             var views = getPageTemplates(populatorType);
@@ -912,34 +2560,35 @@
             return [event];
         };
 
-        this.startSession = function(template) {
-            this.ts = this.ts + 60 * 60 * 24 + 100;
-            this.stats.s++;
+        this.getAllEventsAndSessionsForRandomSequence = function(template) {
             var req = {};
             var events;
 
             if (!this.isRegistered) {
                 this.isRegistered = true;
-                this.stats.u++;
-                // note login event was here
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
-                //force users to generate first event in the template to be used later in Funnels
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
+                    .concat(
+                        this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvents(4, template && template.events)
+                    );
                 if (template && template.events && Object.keys(template.events).length > 0) {
-                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                    events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
-                this.stats.p++;
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
                 req.events = req.events.concat(this.getHeatmapEvents());
                 req.events = req.events.concat(this.getFeedbackEvents());
                 req.events = req.events.concat(this.getScrollmapEvents());
             }
             else {
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
-                //force users to generate first event in the template to be used later in Funnels
-                if (template && template.events && Object.keys(template.events).length > 0) {
-                    events = events.concat(this.getEvent(Object.keys(template.events)[0], template && template.events && template.events[Object.keys(template.events)[0]]));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
+                    .concat(
+                        this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvents(4, template && template.events)
+                    );
+                if (template && template.events && template.events.length) {
+                    events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
+                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
             }
 
             if (Math.random() > 0.10) {
@@ -949,8 +2598,9 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            this.stats.c++;
-            req.crash = this.getCrash();
+            if (Math.random() > 0.50) {
+                req.crash = this.getCrash();
+            }
 
             var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
             req.consent = {};
@@ -958,63 +2608,24 @@
             for (var consentIndex = 0; consentIndex < consents.length; consentIndex++) {
                 req.consent[consents[consentIndex]] = (Math.random() > 0.8) ? false : true;
             }
+            req.user_details = this.userdetails;
+            return req;
+        };
 
-            this.hasSession = true;
+        this.startSessionForAb = function(user) {
+            var req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: user, ignore_cooldown: '1'};
             this.request(req);
-            this.timer = setTimeout(function() {
-                that.extendSession(template);
-            }, timeout);
-        };
-
-        this.startSessionForAb = function() {
-            this.createUsersForAB(this.id);
-        };
-
-        this.extendSession = function(template) {
-            if (this.hasSession) {
-                var req = {};
-                this.ts = this.ts + 30;
-                this.stats.x++;
-                this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(2, template && template.events));
-                req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
-                if (Math.random() > 0.8) {
-                    this.timer = setTimeout(function() {
-                        that.extendSession(template);
-                    }, timeout);
-                }
-                else {
-                    if (Math.random() > 0.5) {
-                        this.stats.c++;
-                        req.crash = this.getCrash();
-                    }
-                    this.timer = setTimeout(function() {
-                        that.endSession(template);
-                    }, timeout);
-                }
-                this.request(req);
-            }
-        };
-
-        this.endSession = function(template) {
-            if (this.timer) {
-                clearTimeout(this.timer);
-                this.timer = null;
-            }
-            if (this.hasSession) {
-                this.hasSession = false;
-                var events = this.getEvents(2, template && template.events);
-                this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()});
-            }
+            flushAllRequests([req]);
+            this.ts = this.ts + getRandomInt(100, 300);
         };
 
         this.request = function(params) {
-            this.stats.r++;
             params.device_id = this.id;
-            params.ip_address = this.ip;
+            if (this.ip) {
+                params.ip_address = this.ip;
+            }
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
-            params.stats = JSON.parse(JSON.stringify(this.stats));
             params.populator = true;
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                 params.sdk_name = "javascript_native_web";
@@ -1024,11 +2635,9 @@
             }
             params.sdk_version = getVersion(params.timestamp);
             bulk.push(params);
-            this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-            countlyPopulator.sync();
         };
 
-        this.reportConversion = function(uid, campaingId) {
+        this.reportConversion = function(uid, campaingId, deviceId) {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i",
@@ -1036,41 +2645,190 @@
                     campaign_id: uid,
                     campaign_user: campaingId,
                     app_key: countlyCommon.ACTIVE_APP_KEY,
-                    device_id: this.id,
+                    device_id: deviceId,
                     timestamp: getRandomInt(startTs, endTs),
                     populator: true
                 },
                 success: function() {}
             });
         };
+
+        this.generateAllEventsAndSessions = function(template, runCount, hasEnvironment) {
+            return new Promise((resolve) => {
+                completedRequestCount++;
+                this.ts = getRandomInt(startTs, endTs);
+                var endSessionTs = null;
+                var req = {};
+                let selectedSequence = null;
+                if (template && template.behavior && template.behavior.sequences && template.behavior.sequences.length) {
+                    // process every sequence
+                    while (runCount > 0) {
+                        // select random sequence from behavior
+                        if (template.behavior.sequenceConditions && template.behavior.sequenceConditions.length) {
+                            const matchedConditionValues = pickBehaviorConditionValue(this.userdetails, template.behavior.sequenceConditions);
+                            selectedSequence = matchedConditionValues ? randomSelectByProbability(matchedConditionValues) : randomSelectByProbability(template.behavior.sequences);
+                        }
+                        else {
+                            selectedSequence = randomSelectByProbability(template.behavior.sequences);
+                        }
+                        if (selectedSequence === "random") {
+                            req = this.getAllEventsAndSessionsForRandomSequence(template);
+                        }
+                        else {
+                            selectedSequence = template.sequences[parseInt(selectedSequence.split('_', 2)[1], 10) - 1];
+                            // process every step of a sequence
+                            for (let i = 0; i < selectedSequence.steps.length; i++) {
+                                let sequenceEvents = [];
+                                let sequenceViews = [];
+                                let selectedSequenceStep = selectedSequence.steps[i];
+                                // decides if step should be executed in accordance with probability.
+                                // e.g./ if the probability of a step is %20, it will be executed with a %20 probability otherwise it will be skipped
+                                if (!randomGetOne([selectedSequenceStep])) {
+                                    continue;
+                                }
+
+                                switch (selectedSequenceStep.key) {
+                                case "session":
+                                    if (selectedSequenceStep.value === "start") {
+                                        // this.hasSession = true;
+                                        this.isRegistered = true;
+                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
+                                        if (!hasEnvironment) {
+                                            req.metrics = this.metrics;
+                                            req.user_details = this.userdetails;
+                                        }
+                                        this.ts = this.ts + getRandomInt(100, 300);
+                                    }
+                                    break;
+                                case "events":
+                                    sequenceEvents = template.events.filter(x=>x.key === selectedSequenceStep.value);
+                                    if (sequenceEvents && sequenceEvents.length) {
+                                        var randomGapBetweenEvents = getRandomInt(100, 300);
+                                        this.ts = this.ts + randomGapBetweenEvents;
+                                        if (!req.events) {
+                                            req.events = [];
+                                        }
+                                        req.events = req.events.concat(this.getEvent(null, sequenceEvents[0], this.ts));
+                                    }
+                                    break;
+                                case "views":
+                                    var randomGapBetweenViews = getRandomInt(100, 300);
+                                    this.ts = this.ts + randomGapBetweenViews;
+                                    sequenceViews = template.views.filter(x=>x.key === selectedSequenceStep.value);
+                                    if (!req.events) {
+                                        req.events = [];
+                                    }
+                                    req.events = req.events.concat(this.getEvent("[CLY]_view", sequenceViews[0], this.ts));
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        runCount--;
+                        this.request(req);
+                        req = {};
+                        let minRunningSession = parseInt(template.behavior.runningSession[0], 10);
+                        let maxRunningSession = parseInt(template.behavior.runningSession[1], 10);
+
+                        if (template.behavior.generalConditions && template.behavior.generalConditions.length) {
+                            const matchedConditionValues = pickBehaviorConditionValue(this.userdetails, template.behavior.generalConditions);
+                            if (matchedConditionValues) {
+                                minRunningSession = parseInt(matchedConditionValues[0], 10);
+                                maxRunningSession = parseInt(matchedConditionValues[1], 10);
+                            }
+                        }
+
+                        endSessionTs = this.ts;
+                        var randomHours = getRandomInt(minRunningSession, maxRunningSession);
+                        var randomSeconds = randomHours * 3600;
+                        this.ts = this.ts + randomSeconds;
+                        if (runCount === 0) {
+                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1'};
+                            this.request(req);
+                            resolve(bulk);
+                        }
+                    }
+                }
+            });
+        };
+
+        this.saveEnvironment = function(environmentUserList) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/i/populator/environment/save",
+                    data: {
+                        app_key: countlyCommon.ACTIVE_APP_KEY,
+                        users: JSON.stringify(environmentUserList),
+                        populator: true
+                    },
+                    success: function() {
+                        resolve(true);
+                    },
+                    error: function() {
+                        reject(false);
+                    }
+                });
+            });
+        };
     }
-    var crashSymbolVersions = {};
+
     var bulk = [];
     var campaingClicks = [];
     var startTs = 1356998400;
     var endTs = new Date().getTime() / 1000;
-    var timeout = 1000;
-    var bucket = 50;
     var generating = false;
     var stopCallback = null;
     var users = [];
-    var usersForAb = [];
     var userAmount = 1000;
-    var totalUserCount = 0;
-    var queued = 0;
     var abExampleCount = 1;
     var abExampleName = "Pricing";
-    var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
     var _templateType = '';
+    var runCount = 0;
+    var completedRequestCount = 0;
+    var crashSymbolVersions = {
+        javascript: [],
+        iOS: [],
+        android: [],
+        macOS: [],
+        tvOS: [],
+        plc: []
+    };
+
     /**
-     * Update populator UI
-     * @param {object} stats - current populator stats
-     **/
-    function updateUI(stats) {
-        for (var i in stats) {
-            totalStats[i] += stats[i];
-            $(".populate-stats-" + i).text(totalStats[i]);
-        }
+     * 
+     * @param {array} req - request 
+     * @returns {promise} returns promise
+     */
+    function flushAllRequests(req) {
+        return new Promise((resolve, reject) => {
+            if (generating) {
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/i/bulk",
+                    data: {
+                        app_key: countlyCommon.ACTIVE_APP_KEY,
+                        requests: JSON.stringify(req),
+                        populator: true
+                    },
+                    success: function(response) {
+                        if (response && response.status === 504) {
+                            reject(false);
+                        }
+                        else {
+                            resolve(true);
+                        }
+                    },
+                    error: function() {
+                        reject(false);
+                    }
+                });
+            }
+            else {
+                resolve(true);
+            }
+        });
     }
     /**
      * Create campaign
@@ -1563,7 +3321,7 @@
                                     generateSurveyWidgets3(done);
                                 });
                             });
-                        }, 1000);
+                        }, 100);
                     });
                 }
                 else {
@@ -1631,13 +3389,14 @@
             success: function(data) {
                 var link = data.link.replace('&amp;', '&');
                 var queryString = link.split('?')[1];
-                var parameters = parseQueryString(queryString);
-                campaingClicks.push({
-                    name: name,
-                    cly_id: parameters.cly_id,
-                    cly_uid: parameters.cly_uid
-                });
-
+                if (queryString) {
+                    var parameters = parseQueryString(queryString);
+                    campaingClicks.push({
+                        name: name,
+                        cly_id: parameters.cly_id,
+                        cly_uid: parameters.cly_uid
+                    });
+                }
             }
         });
     }
@@ -1663,198 +3422,31 @@
                 campaignsIndex++; // future async issues?
             }
             else {
-                for (var clickIndex = 0; clickIndex < (campaigns.length * 33); clickIndex++) {
+                const randomCampaignClick = getRandomInt(3, campaigns.length * 5);
+                for (var clickIndex = 0; clickIndex < randomCampaignClick; clickIndex++) {
                     clickCampaign(campaigns[getRandomInt(0, campaigns.length - 1)].id);
                 }
-                setTimeout(callback, 3000);
+                setTimeout(callback, 50);
             }
         }
 
         recursiveCallback();
     }
 
-
-    /**
-     * Generate retention user
-     * @param {date} ts - date as timestamp
-     * @param {number} userCount - users count will be generated
-     * @param {array} ids - ids array
-     * @param {object} template template object
-     * @param {callback} callback - callback function
-     **/
-    function generateRetentionUser(ts, userCount, ids, template, callback) {
-        var bulker = [];
-        for (var userIndex = 0; userIndex < userCount; userIndex++) {
-            for (var j = 0; j < ids.length; j++) {
-                var metrics = {};
-                var platform;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    platform = getProp("_os_web");
-                }
-                else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
-                    platform = getProp("_os_desktop");
-                }
-                else {
-                    platform = getProp("_os");
-                }
-                metrics._os = platform;
-                var m_props = metric_props.mobile;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
-                    m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
-                }
-                for (var k = 0; k < m_props.length; k++) {
-                    if (m_props[k] !== "_os") {
-                        //handle specific cases
-                        if (m_props[k] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            metrics[m_props[k]] = getProp("_source");
-                        }
-                        else {
-                            //check os specific metric
-                            if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
-                                metrics[m_props[k]] = getProp(m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_"));
-                            }
-                            //default metric set
-                            else {
-                                metrics[m_props[k]] = getProp(m_props[k]);
-                            }
-                        }
-                    }
-                }
-
-                var userdetails = new getUser(template && template.up);
-                userdetails.begin_session = 1;
-                userdetails.device_id = userIndex + "" + ids[j];
-                userdetails.dow = getRandomInt(0, 6);
-                userdetails.hour = getRandomInt(0, 23);
-                userdetails.ip_address = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-                delete userdetails.ip;
-                userdetails.request_id = userIndex + "" + ids[j] + "_" + ts;
-                userdetails.timestamp = ts;
-                delete userdetails.metrics;
-                userdetails.metrics = metrics;
-
-                bulker.push(userdetails);
-                totalStats.s++;
-                totalStats.u++;
-            }
-        }
-
-        totalStats.r++;
-        for (var index = 0; index < bulker.length; index++) {
-            bulker[index].startSession(template);
-        }
-
-        callback("");
-    }
-
-    /**
-     * Generate retentions
-     * @param {object} template template object
-     * @param {callback} callback - callback function
-     **/
-    function generateRetention(template, callback) {
-        if (typeof countlyRetention === "undefined") {
-            callback();
-            return;
-        }
-        var ts = endTs - 60 * 60 * 24 * 9;
-        var ids = [ts];
-        var userCount = 10;
-        var retentionCall = 8; // number of generateRetentionUser function call
-        var retentionLastUserCount = (userCount - retentionCall) + 1;
-
-        var idCount = 1;
-        for (var i = userCount; i >= retentionLastUserCount; i--) { //total retension user
-            totalUserCount += idCount * i;
-            idCount++;
-        }
-
-
-        generateRetentionUser(ts, userCount--, ids, template, function() {
-            ts += 60 * 60 * 24;
-            ids.push(ts);
-            generateRetentionUser(ts, userCount--, ids, template, function() {
-                ts += 60 * 60 * 24;
-                ids.push(ts);
-                generateRetentionUser(ts, userCount--, ids, template, function() {
-                    ts += 60 * 60 * 24;
-                    ids.push(ts);
-                    generateRetentionUser(ts, userCount--, ids, template, function() {
-                        ts += 60 * 60 * 24;
-                        ids.push(ts);
-                        generateRetentionUser(ts, userCount--, ids, template, function() {
-                            ts += 60 * 60 * 24;
-                            ids.push(ts);
-                            generateRetentionUser(ts, userCount--, ids, template, function() {
-                                ts += 60 * 60 * 24;
-                                ids.push(ts);
-                                generateRetentionUser(ts, userCount--, ids, template, function() {
-                                    ts += 60 * 60 * 24;
-                                    ids.push(ts);
-                                    generateRetentionUser(ts, userCount--, ids, template, callback);
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    }
-
     /**
      * To report campaign clicks conversion
      */
     function reportConversions() {
-        for (var i = 0; i < campaingClicks.length; i++) {
+        var i = 0;
+        for (i = 0; i < campaingClicks.length; i++) {
             var click = campaingClicks[i];
-            if ((Math.random() > 0.5)) {
-                users[i].reportConversion(click.cly_id, click.cly_uid);
+            if (i > users.length - 1) {
+                break;
+            }
+            if (Math.random() > 0.5) {
+                users[i].reportConversion(click.cly_id, click.cly_uid, users[i].id);
             }
         }
-    }
-
-    /**
-     * Serializes a template object members for API use
-     * @param {object} template a template object
-     * @returns {object} an API-safe template object
-     **/
-    function serializeTemplate(template) {
-        if (template && template.up && !_.isString(template.up)) {
-            delete template.up[""]; // delete user properties without keys
-
-            if (Object.keys(template.up).length === 0) {
-                delete template.up;
-            }
-            else {
-                template.up = JSON.stringify(template.up);
-            }
-        }
-
-        if (template && template.events && !_.isString(template.events)) {
-            delete template.events[""]; // delete events without keys
-            Object.keys(template.events).forEach(function(key) {
-                var event = template.events[key];
-
-                if (event.segments) {
-                    delete event.segments[""];
-                }
-
-                if (event.segments && event.segments.length === 0) {
-                    delete event.segments;
-                }
-
-                template.events[key] = event;
-            });
-
-            if (template.events.length === 0) {
-                delete template.events;
-            }
-            else {
-                template.events = JSON.stringify(template.events);
-            }
-        }
-        template.app_id = countlyCommon.ACTIVE_APP_ID;
-        return template;
     }
 
     //Public Methods
@@ -1873,138 +3465,218 @@
     countlyPopulator.getUserAmount = function() {
         return userAmount;
     };
-    countlyPopulator.generateUI = function() {
-        for (var i in totalStats) {
-            $(".populate-stats-" + i).text(totalStats[i]);
-        }
-    };
-    countlyPopulator.generateUsers = function(amount, template) {
+
+    countlyPopulator.generateUsers = function(run, template, environment) {
         this.currentTemplate = template;
         stopCallback = null;
-        userAmount = amount;
+        userAmount = template.uniqueUserCount || 100;
         bulk = [];
-        totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-        bucket = Math.max(amount / 50, 10);
-        var mult = (Math.round(queued / 10) + 1);
-        timeout = bucket * 10 * mult * mult;
+        users = [];
+        runCount = run;
         generating = true;
+        completedRequestCount = 0;
+        crashSymbolVersions = {
+            javascript: [],
+            iOS: [],
+            android: [],
+            macOS: [],
+            tvOS: [],
+            plc: []
+        };
         /**
-         * Create new user
-         **/
-        function createUser() {
-            var u = new getUser(template && template.up);
-            users.push(u);
-            u.timer = setTimeout(function() {
-                u.startSession(template);
-            }, Math.random() * timeout);
-        }
+         * Get users from environment 
+        **/
+        async function getUsers() {
+            let batchSize = getRandomInt(3, 10); //5;
+            let currentIndex = 0;
+            userAmount = environment.length;
 
-        /**
-         * Create new user for ab test
-         **/
-        function createUsersForABTest() {
-            var u = new getUser(template && template.up);
-            usersForAb.push(u);
-            u.timer = setTimeout(function() {
-                u.startSession(template);
-            }, Math.random() * timeout);
-        }
-
-        var seg = {};
-
-        if (template && template.name) {
-            seg.template = template.name;
-        }
-
-        app.recordEvent({
-            "key": "populator-execute",
-            "count": 1,
-            "segmentation": seg
-        });
-
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUser(u) {
-            if (u && !u.hasSession) {
-                u.timer = setTimeout(function() {
-                    u.startSession(template);
-                }, Math.random() * timeout);
-            }
-        }
-        /**
-         * Start user session process for AB
-         * @param {object} u - user object
-         **/
-        function processUserForAb(u) {
-            if (u && !u.hasSession) {
-                u.timer = setTimeout(function() {
-                    u.startSessionForAb();
-                }, Math.random() * timeout);
-            }
-        }
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUsers() {
-            if (bulk.length < 10) {
-                for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                    processUser(users[userAmountIndex]);
+            /**
+             * 
+             * @returns {array} - array of users
+             */
+            async function getUserBatch() {
+                const userBatch = [];
+                for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
+                    const u = new User();
+                    u.getUserFromEnvironment(environment[currentIndex]);
+                    const requests = u.generateAllEventsAndSessions(template, runCount, true);
+                    userBatch.push(requests);
+                    bulk = [];
+                    currentIndex++;
                 }
-                if (users.length > 0 && generating) {
-                    setTimeout(processUsers, timeout);
+                try {
+                    const partialUserList = await Promise.allSettled(userBatch);
+                    return partialUserList;
                 }
-                else {
-                    countlyPopulator.sync(true);
+                catch (error) {
+                    return [];
                 }
             }
-            else {
-                if (generating) {
-                    setTimeout(processUsers, timeout);
-                }
-                else {
-                    countlyPopulator.sync(true);
-                }
-            }
-        }
-        /**
-         * Start user session process
-         * @param {object} u - user object
-         **/
-        function processUsersForAb() {
-            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
-                processUserForAb(usersForAb[userAmountIndex]);
-            }
-        }
 
-        generateWidgets(function() {
-            generateRetention(template, function() {
-                countlyPopulator.sync(true);
-                generateCampaigns(function() {
-                    countlyPopulator.sync(true);
-                    for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                        createUser();
+            /**
+             * 
+             * @param {array} userBatch - array of users
+             */
+            async function processUserBatch(userBatch) {
+                for (const u of userBatch) {
+                    const startTime = new Date().getTime();
+                    await flushAllRequests(u.value);
+                    const endTime = new Date().getTime();
+                    const timeDiff = endTime - startTime;
+                    if (timeDiff > 3000 && batchSize > 3) { // process min 3 batch at a time
+                        batchSize--;
                     }
-                    // Generate campaigns conversion for web
+                }
+            }
+
+            /**
+             * 
+             * 
+             */
+            async function createAndProcessUsers() {
+                const userBatch = await getUserBatch();
+                await processUserBatch(userBatch);
+
+                if (currentIndex < userAmount) {
+                    await createAndProcessUsers();
+                }
+                if (environment.length < template.uniqueUserCount) { // if environment users are less than template user count(in case of stop generate or error), complete the rest with new users in next run
+                    CountlyHelpers.notify({type: 'warning', message: CV.i18n("populator.warning-environment-users", environment.length, template.uniqueUserCount, template.uniqueUserCount - environment.length), sticky: true});
+
+                    userAmount = template.uniqueUserCount - environment.length;
+                    template.saveEnvironment = true;
+                    template.environmentName = environment[0].name;
+                    await createUsers();
+                }
+                else {
+                    generating = false;
+                }
+            }
+            await createAndProcessUsers();
+        }
+
+        /**
+         * Create new user 
+        **/
+        async function createUsers() {
+            let batchSize = getRandomInt(3, 10); //5;
+            let currentIndex = 0;
+
+            /**
+             * Create batch of users
+             * @returns {array} - array of users
+             * */
+            async function createUserBatch() {
+                const batchPromises = [];
+
+                for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
+                    const u = new User();
+                    u.getUserFromTemplate(template.users, currentIndex);
+                    const requests = u.generateAllEventsAndSessions(template, runCount);
+                    batchPromises.push(requests);
+                    bulk = [];
+
+                    if (template.saveEnvironment) {
+                        await checkEnvironment(u);
+                    }
+                    if (currentIndex < userAmount && users.length < 50 && Math.random() > 0.5) {
+                        users.push(u);
+                    }
+                    currentIndex++;
+                }
+                try {
+                    const partialUserList = await Promise.allSettled(batchPromises);
+                    return partialUserList;
+                }
+                catch (error) {
+                    return [];
+                }
+            }
+
+            /**
+             * 
+             * @param {object} user - user object
+             */
+            async function checkEnvironment(user) {
+                let environmentUsers = [];
+                const requestEnv = {
+                    deviceId: user.id,
+                    templateId: template._id,
+                    appId: countlyCommon.ACTIVE_APP_ID,
+                    environmentName: template.environmentName,
+                    userName: user.userdetails.name ? user.userdetails.name : user.id,
+                    platform: user.platform,
+                    device: user.metrics._device || 'Unknown',
+                    appVersion: user.metrics._app_version || 'Unknown',
+                    custom: user.userdetails.custom || {},
+                };
+                environmentUsers.push(requestEnv);
+                if (environmentUsers.length > 0) {
+                    await user.saveEnvironment(environmentUsers);
+                    environmentUsers = [];
+                }
+            }
+
+            /**
+             * Process batch of users
+             * @param {array} userBatch - request array
+             * */
+            async function processUsers(userBatch) {
+                for (const u of userBatch) {
+                    const startTime = new Date().getTime();
+                    await flushAllRequests(u.value);
+                    const endTime = new Date().getTime();
+                    const timeDiff = endTime - startTime;
+                    if (timeDiff > 3000 && batchSize > 3) { // process min 3 batch at a time
+                        batchSize--;
+                    }
+                }
+            }
+
+            /**
+             * Create and process users
+             * */
+            async function createAndProcessUsers() {
+                const u = await createUserBatch();
+                await processUsers(u);
+
+                if (currentIndex < userAmount) {
+                    await createAndProcessUsers();
+                }
+                else {
+                    generating = false;
+                }
+            }
+            await createAndProcessUsers();
+        }
+
+        if (environment && environment.length) {
+            getUsers();
+        }
+        else {
+            generateWidgets(function() {
+                generateCampaigns(async function() {
+                    await createUsers();
+
+                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+                        abExampleName = "Pricing" + abExampleCount++;
+                        generateAbTests(function() {
+                            if (users.length) {
+                                const usersForAbTests = getRandomInt(1, users.length / 2);
+                                for (var i = 0; i < usersForAbTests; i++) {
+                                    users[i].startSessionForAb(users[i]);
+                                }
+                            }
+                        });
+                    }
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                        setTimeout(reportConversions, timeout);
+                        setTimeout(reportConversions, 100);
                     }
-                    setTimeout(processUsers, timeout);
                 });
             });
-        });
-
-        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-            abExampleName = "Pricing" + abExampleCount++;
-            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                createUsersForABTest();
-            }
-            generateAbTests(function() {
-                processUsersForAb();
-            });
         }
+
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
@@ -2018,31 +3690,28 @@
                 success: function() {}
             });
         }
+        var seg = {};
 
-        //if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-        //    generateWidgets(function() {});
-        //}
+        if (template.name) {
+            seg.template = template.name;
+        }
+
+        app.recordEvent({
+            "key": "populator-execute",
+            "count": 1,
+            "segmentation": seg
+        });
     };
 
     countlyPopulator.stopGenerating = function(ensureJobs, callback) {
         stopCallback = callback;
         generating = false;
 
-        var u;
-        for (var userGenerationIndex = 0; userGenerationIndex < users.length; userGenerationIndex++) {
-            u = users[userGenerationIndex];
-            if (u) {
-                u.endSession(this.currentTemplate);
-            }
-        }
-        users = [];
-
         if (ensureJobs) {
             countlyPopulator.ensureJobs();
         }
-
         if (stopCallback) {
-            stopCallback(!countlyPopulator.bulking);
+            stopCallback(true);
         }
     };
 
@@ -2050,72 +3719,7 @@
         return generating;
     };
 
-    countlyPopulator.sync = function(force) {
-        if (generating && (force || bulk.length > 1) && !countlyPopulator.bulking) {
-            queued++;
-            var mult = Math.round(queued / 10) + 1;
-            timeout = bucket * 10 * mult * mult;
-            $(".populate-stats-br").text(queued);
-            countlyPopulator.bulking = true;
-            var req = bulk.splice(0, bucket);
-            var temp = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-            for (var i in req) {
-                if (req[i].stats) {
-                    for (var stat in req[i].stats) {
-                        temp[stat] += req[i].stats[stat];
-                    }
-                    delete req[i].stats;
-                }
-                if (req[i].crash && Object.keys(req[i].crash).length) {
-                    crashSymbolVersions[req[i].crash._app_version] = true;
-                }
-            }
-            $.ajax({
-                type: "POST",
-                url: countlyCommon.API_URL + "/i/bulk",
-                data: {
-                    app_key: countlyCommon.ACTIVE_APP_KEY,
-                    requests: JSON.stringify(req),
-                    populator: true
-                },
-                success: function() {
-                    queued--;
-                    $(".populate-stats-br").text(queued);
-                    updateUI(temp);
-                    countlyPopulator.bulking = false;
-                    countlyPopulator.sync();
-                },
-                error: function() {
-                    queued--;
-                    $(".populate-stats-br").text(queued);
-                    countlyPopulator.bulking = false;
-                    countlyPopulator.sync();
-                }
-            });
-        }
-    };
-
     countlyPopulator.ensureJobs = function() {
-
-        //upload all version at once
-        var crashVersions = Object.keys(crashSymbolVersions);
-        var form_data = new FormData();
-        form_data.append('build', crashVersions);
-        form_data.append('platform', 'javascript');
-        form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
-        form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
-        form_data.append('populator', true);
-
-        $.ajax({
-            url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
-            data: form_data,
-            processData: false,
-            contentType: false,
-            type: "POST",
-            success: function() {},
-            error: function() {}
-        });
-
         messages.forEach(function(m) {
             m.apps = [countlyCommon.ACTIVE_APP_ID];
         });
@@ -2126,9 +3730,9 @@
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
-                if (template.up && Object.keys(template.up).length > 0) {
-                    var firstUserProperty = Object.keys(template.up)[0];
-                    var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
+                if (template.users && Object.keys(template.users).length > 0) {
+                    var firstUserProperty = Object.keys(template.users)[0];
+                    var firstUserPropertyValue = JSON.stringify(template.users[firstUserProperty][0]);
 
                     countlyCohorts.add({
                         cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
@@ -2276,6 +3880,42 @@
             }
         }
 
+        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication')) {
+            const crashPlatforms = Object.keys(crashSymbolVersions).filter(key => crashSymbolVersions[key].length);
+
+
+            // process every platform and their versions one by one
+            for (let i = 0; i < crashPlatforms.length; i++) {
+                const platformVersions = crashSymbolVersions[crashPlatforms[i]];
+                for (let j = 0; j < platformVersions.length; j++) {
+                    let form_data = new FormData();
+                    if (crashPlatforms[i] === "javascript") {
+                        form_data.append('build', crashSymbolVersions[crashPlatforms[i]]); // send all js versions at once as they have same symbolication file
+                    }
+                    else {
+                        form_data.append('build', platformVersions[j]._build_uuid ? platformVersions[j]._build_uuid : platformVersions[j]._app_version);
+                    }
+                    form_data.append('platform', crashPlatforms[i]);
+                    form_data.append('app_key', countlyCommon.ACTIVE_APP_KEY);
+                    form_data.append("app_id", countlyCommon.ACTIVE_APP_ID);
+                    form_data.append('populator', true);
+
+                    $.ajax({
+                        url: countlyCommon.API_URL + "/i/crash_symbols/add_symbol",
+                        data: form_data,
+                        processData: false,
+                        contentType: false,
+                        type: "POST",
+                        success: function() {},
+                        error: function() {}
+                    });
+                    if (crashPlatforms[i] === "javascript") {
+                        break;
+                    }
+                }
+            }
+        }
+
         createMessage(messages[0]);
         createMessage(messages[1]);
         createMessage(messages[2]);
@@ -2283,6 +3923,10 @@
 
     countlyPopulator.getSelectedTemplate = function() {
         return _templateType;
+    };
+
+    countlyPopulator.getCompletedRequestCount = function() {
+        return completedRequestCount;
     };
 
     countlyPopulator.setSelectedTemplate = function(value) {
@@ -2304,21 +3948,25 @@
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"});
+                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-template", templateId), type: "error"});
                 }
             });
         }
     };
 
-    countlyPopulator.getTemplates = function(callback) {
+    countlyPopulator.getTemplates = function(platformType, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        if (platformType) {
+            data.platform_type = platformType.charAt(0).toUpperCase() + platformType.slice(1);
+        }
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/templates",
-            data: {
-                app_id: countlyCommon.ACTIVE_APP_ID
-            },
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
             success: function(templates) {
-                callback(templates.concat(defaultTemplates));
+                callback(defaultTemplates.concat(templates));
             },
             error: function() {
                 CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-templates"], type: "error"});
@@ -2327,10 +3975,14 @@
     };
 
     countlyPopulator.createTemplate = function(template, callback) {
+        template.app_id = countlyCommon.ACTIVE_APP_ID;
+
         $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/populator/templates/create",
-            data: serializeTemplate(template),
+            data: JSON.stringify(template),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
             success: callback || function() {},
             error: function() {
                 CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-create-template"], type: "error"});
@@ -2340,7 +3992,7 @@
 
     countlyPopulator.editTemplate = function(templateId, newTemplate, callback) {
         newTemplate.template_id = templateId;
-
+        newTemplate.generated_on = newTemplate.generatedOnTs;
         var foundDefault = defaultTemplates.find(function(template) {
             return template._id === templateId;
         });
@@ -2352,12 +4004,14 @@
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
-                data: serializeTemplate(newTemplate),
+                data: JSON.stringify(newTemplate),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
                 success: callback || function() {},
                 error: function(err) {
                     CountlyHelpers.notify({
-                        title: $.i18n.prop('common.error'),
-                        message: $.i18n.prop("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
+                        title: CV.i18n('common.error'),
+                        message: CV.i18n("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
                         type: "error"
                     });
                 }
@@ -2380,10 +4034,78 @@
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"});
+                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
                 }
             });
         }
+    };
+
+    countlyPopulator.checkEnvironment = function(environmentName, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_name: environmentName};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/check",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.getEnvironments = function(callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/list",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroments) {
+                callback(enviroments);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environments"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.getEnvironment = function(environmentId, callback) {
+        const data = {environment_id: environmentId};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/get",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.removeEnvironment = function(environmentId, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/remove",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-delete-environment"], type: "error"});
+            }
+        });
     };
 
     countlyPopulator.defaultTemplates = defaultTemplates;

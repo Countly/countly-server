@@ -21,6 +21,11 @@
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
                 hasCancelButton: {type: Boolean, required: false, default: true},
+                hasBackLink: {
+                    type: [Object, Boolean],
+                    default: false,
+                    required: false
+                },
                 toggleTransition: {
                     type: String,
                     default: 'stdt-slide-right'
