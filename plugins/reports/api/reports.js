@@ -659,11 +659,11 @@ var metricProps = {
                     html: html,
                 };
 
-                console.log(`reports.js Step 1 (Line ${i + 1}): Unsubscribe link and HTML retrieved`);
-                console.log(`reports.js Context (Line ${i + 1}):`, { report, message, i, unsubscribeLink, html });
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Step 1 (Line ${i + 1}): Unsubscribe link and HTML retrieved`);
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, i, unsubscribeLink, html });
 
-                console.log(`reports.js Step 2 (Line ${i + 1}): Message object created`);
-                console.log(`reports.js Context (Line ${i + 1}):`, { report, message, i, msg });
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Step 2 (Line ${i + 1}): Message object created`);
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, i, msg });
 
 
                 const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
@@ -692,21 +692,21 @@ var metricProps = {
                                     }
                                 });
                             }
-                            console.log(`reports.js Step 3 (Line ${i + 1}): PDF file deleted`);
-                            console.log(`reports.js Context (Line ${i + 1}):`, { filePath });
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Step 3 (Line ${i + 1}): PDF file deleted`);
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { filePath });
                         };
                         if (mail.sendPoolMail) {
                             mail.sendPoolMail(msg, deletePDFCallback);
-                            console.log(`reports.js Step 4 (Line ${i + 1}): Email sent with PDF attachment`);
-                            console.log(`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Step 4 (Line ${i + 1}): Email sent with PDF attachment`);
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
                         }
                         else {
                             mail.sendMail(msg, deletePDFCallback);
-                            console.log(`reports.js Step 5 (Line ${i + 1}): Email sent with PDF attachment`);
-                            console.log(`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Step 5 (Line ${i + 1}): Email sent with PDF attachment`);
+                            console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
                         }
-                        console.log(`reports.js Step 6 (Line ${i + 1}): Email sent with PDF attachment`);
-                        console.log(`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
+                        console.log('[' + new Date().toUTCString() + ']',`reports.js Step 6 (Line ${i + 1}): Email sent with PDF attachment`);
+                        console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
                     }, options, {
                         args: ['--no-sandbox', '--disable-setuid-sandbox'],
                     }, true).catch(err => {
@@ -721,16 +721,16 @@ var metricProps = {
                     else {
                         mail.sendMail(msg);
                     }
-                    console.log(`reports.js Step 7 (Line ${i + 1}): Email sent`);
-                    console.log(`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
+                    console.log('[' + new Date().toUTCString() + ']',`reports.js Step 7 (Line ${i + 1}): Email sent`);
+                    console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
                 }
-                console.log(`reports.js Step 8 (Line ${i + 1}): Email details logged`);
-                console.log(`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Step 8 (Line ${i + 1}): Email details logged`);
+                console.log('[' + new Date().toUTCString() + ']',`reports.js Context (Line ${i + 1}):`, { report, message, callback, unsubscribeLink, html, msg, filePath, options });
             }
         }
         callback();
-        console.log("reports.js Step 9: Callback executed");
-        console.log("reports.js Context:", { report, message, callback });
+        console.log('[' + new Date().toUTCString() + ']',"reports.js Step 9: Callback executed");
+        console.log('[' + new Date().toUTCString() + ']',"reports.js Context:", { report, message, callback });
     };
 
     /**

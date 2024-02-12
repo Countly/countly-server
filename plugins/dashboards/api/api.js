@@ -1360,7 +1360,7 @@ plugins.setConfigs("dashboards", {
                                             // Check if $emit exists
                                             // eslint-disable-next-line no-undef
                                             if (window.app && window.app.activeView && window.app.activeView.vm && window.app.activeView.vm.$emit) {
-                                                console.log("dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
+                                                console.log('[' + new Date().toUTCString() + ']',"dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
 
                                                 var rep = opt.report || {};
                                                 var reportDateRange = rep.date_range || "30days";
@@ -1372,18 +1372,18 @@ plugins.setConfigs("dashboards", {
                                                 // eslint-disable-next-line no-undef
                                                 var $ = window.$;
 
-                                                console.log("dashboard-api.js check$emit: Finished executing the method.");
+                                                console.log('[' + new Date().toUTCString() + ']',"dashboard-api.js check$emit: Finished executing the method.");
                                                 $("html").addClass("email-screen");
-                                                console.log("dashboard-api.js check$emit: $emit exists. Resolving promise.");
+                                                console.log('[' + new Date().toUTCString() + ']',"dashboard-api.js check$emit: $emit exists. Resolving promise.");
                                                 resolve2();
                                             }
                                             else {
                                                 // $emit does not exist yet, wait for a short delay and then check again
                                                 setTimeout(check$emit, 100); // Wait for 100 milliseconds before checking again
-                                                console.log("dashboard-api.js check$emit: $emit does not exist yet. Waiting for a short delay and checking again.");
+                                                console.log('[' + new Date().toUTCString() + ']',"dashboard-api.js check$emit: $emit does not exist yet. Waiting for a short delay and checking again.");
                                             }
                                         }
-                                        console.log("dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
+                                        console.log('[' + new Date().toUTCString() + ']',"dashboard-api.js check$emit: Verbose logging enabled. Starting check$emit method.");
                                         check$emit();
                                     });
                                 };

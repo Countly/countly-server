@@ -27,7 +27,7 @@ catch (err) {
   */
 exports.renderPDF = async function(html, callback, options = null, puppeteerArgs = null, remoteContent = true) {
     if (typeof html !== 'string') {
-        console.log(puppeteerArgs);
+        console.log('[' + new Date().toUTCString() + ']',puppeteerArgs);
         throw new Error(
             'Invalid Argument: HTML expected as type of string and received a value of a different type. Check your request body and request headers.'
         );
@@ -52,26 +52,26 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
     }
 
     if (remoteContent === true) {
-        console.log('pdf.js Step 1: New page created');
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 1: New page created');
         await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
             waitUntil: 'networkidle0'
         });
-        console.log('pdf.js Step 2: Page loaded with remote content');
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 2: Page loaded with remote content');
     }
     else {
-        console.log('pdf.js Step 3: New page created');
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 3: New page created');
         //page.setContent will be faster than page.goto if html is a static
         await page.setContent(html);
-        console.log('pdf.js Step 4: Page content set');
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 4: Page content set');
     }
 
-    console.log('pdf.js Step 5: Puppeteer launched');
-    console.log('pdf.js Step 6: New page created');
+    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 5: Puppeteer launched');
+    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 6: New page created');
 
     await page.pdf(options).then(callback, function(error) {
-        console.log('pdf.js Step 7: PDF generated');
-        console.log('pdf.js Error:', error);
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 7: PDF generated');
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Error:', error);
     });
     await browser.close();
-    console.log('pdf.js Step 8: Browser closed');
+    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 8: Browser closed');
 };
