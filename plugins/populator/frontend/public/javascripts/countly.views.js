@@ -485,7 +485,7 @@
         pluginName: "populator",
         beforeCreate: function() {
             var self = this;
-            countlyPopulator.getTemplates(function(templates) {
+            countlyPopulator.getTemplates(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type, function(templates) {
                 var templateList = [];
                 templates.forEach(function(template) {
                     if (!template.isDefault) {
