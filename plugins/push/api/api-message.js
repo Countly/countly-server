@@ -149,7 +149,7 @@ async function validate(args, draft = false) {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/test Message / test
- * @apiName message/test
+ * @apiName message test
  * @apiDescription Send push notification to test users specified in application plugin configuration
  * @apiGroup Push Notifications
  *
@@ -256,7 +256,7 @@ module.exports.test = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/create Message / create
- * @apiName message/create
+ * @apiName message create
  * @apiDescription Create push notification.
  * Set status to "draft" to create a draft, leave it unspecified otherwise.
  * @apiGroup Push Notifications
@@ -308,7 +308,7 @@ module.exports.create = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/update Message / update
- * @apiName message/update
+ * @apiName message update
  * @apiDescription Update push notification
  * @apiGroup Push Notifications
  *
@@ -383,7 +383,7 @@ module.exports.update = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/remove Message / remove
- * @apiName message/remove
+ * @apiName message remove
  * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
  * @apiGroup Push Notifications
  *
@@ -441,7 +441,7 @@ module.exports.remove = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
- * @apiName message/toggle
+ * @apiName message toggle
  * @apiDescription Stop active or start inactive API or automated message
  * @apiGroup Push Notifications
  *
@@ -525,7 +525,7 @@ module.exports.toggle = async params => {
  * @param {object} params params object
  * 
  * @api {POST} o/push/message/estimate Message / estimate audience
- * @apiName message/estimate
+ * @apiName message estimate
  * @apiDescription Estimate message audience
  * @apiGroup Push Notifications
  *
@@ -619,7 +619,7 @@ module.exports.estimate = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/mime Message / attachment MIME
- * @apiName message/mime
+ * @apiName message mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
  * @apiGroup Push Notifications
  *
@@ -686,7 +686,7 @@ module.exports.mime = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/GET Message / GET
- * @apiName message/GET
+ * @apiName message
  * @apiDescription Get message by ID
  * @apiGroup Push Notifications
  *
@@ -1023,7 +1023,7 @@ module.exports.notificationsForUser = async params => {
  * @returns {Promise} resolves to true
  * 
  * @api {GET} o/push/message/all Message / find
- * @apiName message/all
+ * @apiName message all
  * @apiDescription Get messages
  * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
  * @apiGroup Push Notifications

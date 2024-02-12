@@ -1,3 +1,52 @@
+## Version 23.11.12
+Fixes:
+  - [core] Added option to run merges in paralel in merging job.
+  - [core] Report countly track type
+  - [core] Script to reset specific dates from the event timeline to allow regeneration for those dates.
+  - [hooks] Proxy settings for hooks
+  - [hooks] hpagent added to package.json
+  - [ratings] Fixed ratings filter
+
+Enterprise Fixes:
+ - [data-manager] Added option to delete source event when merging events.
+ - [license] Minimal and relevant metrics per month for license
+ - [timeline] Updated timeline merge function to run rechecks only on failure.
+
+## Version 23.11.11
+Fixes:
+  - [install] Minor improvements for RHEL installer
+  - [scripts] remove_user command for informative output
+  - [cms] fixed permissions for /clear endpoint
+  - [push] fix apidoc comment
+  - [scripts] fixes for dry run mode in recheck_merges script
+  - [scripts] Script to process unfinished merges
+  - [push] fix for updating message state properly while populating push queue
+
+Enterprise Fixes:
+ - [drill] Fixes to show session table in users profile
+
+
+## Version 23.11.10
+Fixes:
+- [core] Record consent and push sent events
+- [core] Allow extending geojson map through themes
+- [core] Save last merged uid and did in users document
+- [core] Fix for Checksum not working for form data
+- [core] Add link to cly-notification
+- [consolidate] Preserve metrics from original request
+- [star-rating] Sanitize star rating content
+- [data-manager] Sanitize content Data manager ui
+- [account-settings] allow generating new api key
+- [reports] Increase timeouts for report generation
+- [flows] Fixed bug with incorrectly seletcing date range when calculating flows
+  
+Enterprise Fixes:
+- [heatmaps] Display a warning on heatmaps if domain is not setup
+- [license] Fix license metrics dp endpoint calculation
+- [surveys] Sanitize content for surveys
+- [users] include more fields in debug log
+- [drill] Changed metric name from "Average Session Duration" to "Average Duration"
+
 ## Version 23.11.9
 Fixes:
 - [core] Add option to pass bucket (daily, monthly) for /o/analytics/session and /o/analytics/events endpoints

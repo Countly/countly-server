@@ -193,7 +193,19 @@
                 required: false
             }
         },
+        watch: {
+            filter: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.filterVal = newValue;
+                    this.tableStore.dispatch("fetchCommentsTable");
+                }
+            },
+        },
         methods: {
+            dateChanged: function() {
+                this.tableStore.dispatch("fetchCommentsTable");
+            },
             decode: function(str) {
                 if (typeof str === 'string') {
                     return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
@@ -218,7 +230,7 @@
                 columns: ['comment', 'cd', 'email', 'rating'],
                 onRequest: function() {
                     const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
-                    var filter = self.filter;
+                    var filter = self.filterVal;
                     if (filter) {
                         if (filter.rating && filter.rating !== "") {
                             data.rating = filter.rating;
@@ -255,6 +267,8 @@
                 },
             }));
             return {
+                tableStore: tableStore,
+                filterVal: this.filter,
                 commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "commentsTable"),
             };
@@ -492,6 +506,11 @@
                 var result = self.rating;
                 var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
 
+                var idMap = {};
+                self.widgets.forEach(function(obj) {
+                    idMap[obj._id] = obj;
+                });
+
                 // prepare cumulative data by period object
                 for (var i = 0; i < periodArray.length; i++) {
                     var dateArray = periodArray[i].split('.');
@@ -502,7 +521,8 @@
                         for (var rating in result[year][month][day]) {
                             if (self.matchPlatformVersion(rating)) {
                                 var rank = (rating.split("**"))[2];
-                                if (self.cumulativeData[rank - 1]) {
+                                var widget = (rating.split("**"))[3];
+                                if (self.cumulativeData[rank - 1] && idMap[widget]) {
                                     self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
                                     self.count += result[year][month][day][rating].c;
                                     self.sum += (result[year][month][day][rating].c * rank);
