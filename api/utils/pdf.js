@@ -46,7 +46,9 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
     });
     // }
 
+    const updatedTimeout = 240000;
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(updatedTimeout);
     if (!options) {
         options = { format: 'Letter' };
     }
