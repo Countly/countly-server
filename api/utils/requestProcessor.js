@@ -1251,14 +1251,14 @@ const processRequest = (params) => {
                                             event_key: idss[i],
                                             appId: app_id
                                         }, function(_, otherPluginResults) {
-                                            const rejectReasons = otherPluginResults.reduce((acc, result) => {
-                                                if (result.status === "rejected") {
+                                            const rejectReasons = otherPluginResults?.reduce((acc, result) => {
+                                                if (result?.status === "rejected") {
                                                     acc.push((result.reason && result.reason.message) || '');
                                                 }
                                                 return acc;
                                             }, []);
 
-                                            if (rejectReasons.length > 0) {
+                                            if (rejectReasons?.length) {
                                                 failedIds.push(idss[i]);
                                                 log.e("Event deletion failed\n%j", rejectReasons.join("\n"));
                                                 reject("Event deletion failed. Failed to delete some data related to this Event.");
