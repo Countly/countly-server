@@ -39,8 +39,8 @@
 		  <div class="cly-vue-events-all" v-else>
 			{{decode(groupData.name)}}<span class="cly-vue-events-group bu-ml-4">{{i18n('events.all.group')}}</span>
 		  </div>
-		  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description" v-html="groupData.description"></div>
-		  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription" v-html="eventDescription"></div>
+          <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description" >{{unescapeHtml(groupData.description)}}</div>
+          <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription" >{{unescapeHtml(eventDescription)}}</div>
 		  <div class="bu-is-flex cly-vue-events-all--padding">
 			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments">
 			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
@@ -69,7 +69,7 @@
 			  <cly-date-picker-g class="cly-vue-events-all-date-picker"></cly-date-picker-g>
 			</div>
 		  </div>
-		  <div  class="color-cool-gray-100 font-weight-normal text-medium bu-pt-4" v-if="segmentDescription!=''" v-html="segmentDescription"></div>
+          <div  class="color-cool-gray-100 font-weight-normal text-medium bu-pt-4" v-if="segmentDescription!=''" >{{unescapeHtml(segmentDescription)}}</div>
 		  <cly-section class="bu-mt-5 bu-mr-5">
 			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading">	
 			</cly-chart-bar>

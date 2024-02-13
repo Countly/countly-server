@@ -10,7 +10,7 @@ var APP_ID = "5ab0c3ef92938d0e61cf77f4";
 
 var plugins = require("../../../plugins/pluginManager.js");
 var crypto = require("crypto");
-var internalDrillEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
+var internalDrillEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 var result = [];
 plugins.dbConnection("countly").then(function(db) {
     db.collection("events").findOne({_id: db.ObjectID(APP_ID)}, {"list": true}, function(err, event) {

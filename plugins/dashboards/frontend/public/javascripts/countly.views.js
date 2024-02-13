@@ -1644,7 +1644,7 @@
 
     var DashboardsMenu = countlyVue.views.create({
         template: CV.T('/dashboards/templates/dashboards-menu.html'),
-        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin, countlyVue.mixins.commonFormatters],
         components: {
             "dashboards-drawer": DashboardDrawer
         },

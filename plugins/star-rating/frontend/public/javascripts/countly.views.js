@@ -15,12 +15,12 @@
     }
 
     var Drawer = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/drawer.html"),
         props: {
             settings: Object,
             controls: Object
         },
-        mixins: [],
         data: function() {
             return {
                 imageSource: '',
@@ -182,6 +182,7 @@
 
     // these table components should be 3 different components
     var CommentsTable = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/comments-table.html"),
         props: {
             comments: Array,
@@ -192,7 +193,19 @@
                 required: false
             }
         },
+        watch: {
+            filter: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.filterVal = newValue;
+                    this.tableStore.dispatch("fetchCommentsTable");
+                }
+            },
+        },
         methods: {
+            dateChanged: function() {
+                this.tableStore.dispatch("fetchCommentsTable");
+            },
             decode: function(str) {
                 if (typeof str === 'string') {
                     return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
@@ -217,7 +230,7 @@
                 columns: ['comment', 'cd', 'email', 'rating'],
                 onRequest: function() {
                     const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
-                    var filter = self.filter;
+                    var filter = self.filterVal;
                     if (filter) {
                         if (filter.rating && filter.rating !== "") {
                             data.rating = filter.rating;
@@ -254,6 +267,8 @@
                 },
             }));
             return {
+                tableStore: tableStore,
+                filterVal: this.filter,
                 commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "commentsTable"),
             };
@@ -284,7 +299,8 @@
     var WidgetsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/widgets-table.html"),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters
         ],
         props: {
             rows: {
@@ -490,6 +506,11 @@
                 var result = self.rating;
                 var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
 
+                var idMap = {};
+                self.widgets.forEach(function(obj) {
+                    idMap[obj._id] = obj;
+                });
+
                 // prepare cumulative data by period object
                 for (var i = 0; i < periodArray.length; i++) {
                     var dateArray = periodArray[i].split('.');
@@ -500,7 +521,8 @@
                         for (var rating in result[year][month][day]) {
                             if (self.matchPlatformVersion(rating)) {
                                 var rank = (rating.split("**"))[2];
-                                if (self.cumulativeData[rank - 1]) {
+                                var widget = (rating.split("**"))[3];
+                                if (self.cumulativeData[rank - 1] && idMap[widget]) {
                                     self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
                                     self.count += result[year][month][day][rating].c;
                                     self.sum += (result[year][month][day][rating].c * rank);
@@ -821,7 +843,8 @@
         },
         mixins: [
             countlyVue.mixins.hasDrawers("widget"),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters
         ],
         data: function() {
             return {
@@ -958,7 +981,19 @@
             },
             setWidget: function(state) {
                 var self = this;
-                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state) }, function() {
+                var finalizedTargeting = null;
+                var target_pages = this.widget.target_pages === "-" ? [] : this.widget.target_pages;
+                if (this.cohortsEnabled) {
+                    var exported = this.widget.targeting;
+                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
+                        finalizedTargeting = Object.assign({}, {
+                            user_segmentation: JSON.stringify(exported.user_segmentation),
+                            steps: JSON.stringify(exported.steps)
+                        });
+                    }
+
+                }
+                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting }, function() {
                     self.widget.is_active = (state ? "true" : "false");
                     self.widget.status = state;
 
@@ -1071,7 +1106,7 @@
                 starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                     self.widget = widget;
                     self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
-                    self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
+                    self.widget.created_at = countlyCommon.formatTimeAgoText(self.widget.created_at).text;
                     if (self.cohortsEnabled) {
                         self.widget = self.parseTargeting(widget);
                     }
@@ -1165,6 +1200,7 @@
     });
 
     var UserFeedbackRatingsTable = countlyVue.views.create({
+        mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T('/star-rating/templates/users-feedback-ratings-table.html'),
         props: {
             ratings: {

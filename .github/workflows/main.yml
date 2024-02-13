@@ -199,12 +199,18 @@ jobs:
         shell: bash
         run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
 
+      - name: Install plugins
+        shell: bash
+        run: |
+         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
+         node /opt/countly/bin/scripts/install_plugins.js --force
+
       - name: Run tests
         shell: bash
         working-directory: /opt/countly
         run: |
-          /sbin/my_init &
           npm install
+          /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   ui-test:
@@ -282,16 +288,3 @@ jobs:
           mkdir -p screenshots videos
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
-
-  notify:
-    runs-on: ubuntu-latest
-    needs: [ install, lint, test-api-core, test-api-plugins ]
-    steps:
-      - name: Send slack notification
-        id: slack
-        if: always()
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

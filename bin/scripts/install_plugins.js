@@ -3,6 +3,10 @@ var manager = require('../../plugins/pluginManager.js');
 var plugins = manager.getPlugins();
 require('../../api/utils/log').setLevel('db:write', 'mute');
 
+if (process.argv && process.argv.length > 2 && process.argv[2] === '--force') {
+    process.env.FORCE_NPM_INSTALL = true;
+}
+
 if (plugins.length > 0) {
     manager.connectToAllDatabases().then(async() => {
         if (!manager.getConfig("api").offline_mode) {

@@ -80,9 +80,10 @@ function create() {
 
     /**
     * Get metric data by periods
+    * @param {object} options - options object (options.bucket - daily or monthly)
     * @returns {array} with metric data objects
     */
-    countlySession.getSubperiodData = function() {
+    countlySession.getSubperiodData = function(options) {
 
         var dataProps = [
             { name: "t" },
@@ -91,8 +92,7 @@ function create() {
             { name: "d" },
             { name: "e" }
         ];
-
-        return countlyCommon.extractData(countlySession.getDb(), countlySession.clearObject, dataProps);
+        return countlyCommon.extractData(countlySession.getDb(), countlySession.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
     };
     return countlySession;
 }

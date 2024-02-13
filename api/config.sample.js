@@ -119,28 +119,26 @@ var countlyConfig = {
      * If omited, sendmail will be used. Sendmail is not installed in Docker images.
      * @type {Object}
      */
-    /*
     mail: {
-        // provide optional transported if needed
+        // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
         //transport: 'nodemailer-smtp-transport',
-        
+
         // config object passed to the transport
         config: {
-            host: 'smtp.example.com',
-            port: 25,
-            auth: {
-                user: 'USER',
-                pass: 'PASSWORD'
-            },
+            //host: 'smtp.example.com',
+            //port: 25,
+            //auth: {
+            //user: 'USER',
+            //pass: 'PASSWORD'
+            //},
         },
-        
+
         // standard strings used in email templates
         strings: {
-            from: 'countly@example.com',
-            hithere: 'there' // as in "Hi, there" when name is unknown
+            //from: 'countly@example.com',
+            //hithere: 'there' // as in "Hi, there" when name is unknown
         }
     }
-    */
 };
 
 module.exports = require('./configextender')('API', countlyConfig, process.env);

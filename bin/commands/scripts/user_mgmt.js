@@ -59,7 +59,7 @@ manager.dbConnection().then((db) => {
                                 console.log(err);
                             }
                             else {
-                                console.log(member.result);
+                                console.log(member);
                             }
                             db.close();
                         });
