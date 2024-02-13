@@ -461,8 +461,8 @@ const FEATURE_NAME = 'reports';
         common.db.collection("reports").update({}, {$pull:{apps:appId+""}}, { multi: true }, function(err, res){});
 	});*/
 
-    plugins.register("/i/users/delete", function(ob) {
-        common.db.collection("reports").remove({user: common.db.ObjectID(ob.data._id)}, { multi: true }, function() {});
+    plugins.register("/i/users/delete", async function(ob) {
+        await common.db.collection("reports").remove({user: common.db.ObjectID(ob.data._id)}, { multi: true }, function() {});
     });
 
     /**
