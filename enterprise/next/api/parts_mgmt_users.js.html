@@ -634,13 +634,14 @@ usersApi.updateUser = async function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user was deleted
 **/
-usersApi.deleteUser = function(params) {
+usersApi.deleteUser = async function(params) {
     var argProps = {
             'user_ids': {
                 'required': true,
                 'type': 'Array'
             }
         },
+        fails = 0,
         userIds = [];
 
     var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
@@ -655,21 +656,52 @@ usersApi.deleteUser = function(params) {
             continue;
         }
         else {
-            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] }, function() {});
-            common.db.collection('members').findAndModify({ '_id': common.db.ObjectID(userIds[i]) }, {}, {}, { remove: true }, function(err, user) {
-                if (!err &amp;&amp; user &amp;&amp; user.ok &amp;&amp; user.value) {
+            const user = await common.db.collection('members').findOne({ '_id': common.db.ObjectID(userIds[i]) });
+            const promisifiedDispatch = function(prms, data) {
+                return new Promise((resolve, reject) => {
                     plugins.dispatch("/i/users/delete", {
-                        params: params,
-                        data: user.value
+                        params: prms,
+                        data,
+                    }, async(__, otherPluginResults) => {
+                        const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                            if (result.status === "rejected") {
+                                acc.push((result.reason &amp;&amp; result.reason.message) || '');
+                            }
+
+                            return acc;
+                        }, []);
+
+                        if (rejectReasons.length > 0) {
+                            log.e("User " + userIds[i] + " deletion failed\n%j", rejectReasons.join("\n"));
+                            fails += 1;
+                            reject(false);
+                        }
+                        else {
+                            await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+                            await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
+                            await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
+                            resolve(true);
+                        }
                     });
-                    usersApi.deleteUserNotes({member: {_id: user.value._id.toString()}});
-                }
-            });
+                });
+            };
+
+            await promisifiedDispatch(params, user);
         }
     }
 
-    common.returnMessage(params, 200, 'Success');
-    return true;
+    if (fails === 0) {
+        common.returnMessage(params, 200, 'Success');
+        return true;
+    }
+    else if (fails === userIds.length) {
+        common.returnMessage(params, 500, 'User deletion failed, please see logs for more detail');
+        return false;
+    }
+    else {
+        common.returnMessage(params, 200, 'Some users cannot be deleted, please see logs for more detail');
+        return true;
+    }
 };
 
 // created functions below are for account deletion. when merging together with next should remove  and include from members utility !!!!!! 
@@ -784,6 +816,32 @@ function verifyMemberArgon2Hash(username, password, callback) {
 usersApi.deleteOwnAccount = function(params) {
     if (params.qstring.password &amp;&amp; params.qstring.password !== "") {
         verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
+            const dispatchDeleteCallback = async function(__, otherPluginResults) {
+                const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                    if (result.status === "rejected") {
+                        acc.push((result.reason &amp;&amp; result.reason.message) || '');
+                    }
+
+                    return acc;
+                }, []);
+
+                if (rejectReasons.length > 0) {
+                    log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                    common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                }
+                else {
+                    try {
+                        await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
+                        killAllSessionForUser(member._id);
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                    catch (err1) {
+                        console.log(err1);
+                        common.returnMessage(params, 400, 'Mongo error');
+                    }
+                }
+            };
+
             if (member) {
                 if (member.global_admin) {
                     common.db.collection('members').count({'global_admin': true}, function(err2, count) {
@@ -795,40 +853,18 @@ usersApi.deleteOwnAccount = function(params) {
                             common.returnMessage(params, 400, 'global admin limit');
                         }
                         else {
-                            common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err1 /*, res1*/) {
-                                if (err1) {
-                                    console.log(err1);
-                                    common.returnMessage(params, 400, 'Mongo error');
-                                }
-                                else {
-                                    plugins.dispatch("/i/users/delete", {
-                                        params: params,
-                                        data: member
-                                    });
-                                    killAllSessionForUser(member._id);
-                                    common.returnMessage(params, 200, 'Success');
-                                }
-                            });
-                        }
-
-                    });
-
-                }
-                else {
-                    common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err3 /* , res1*/) {
-                        if (err3) {
-                            console.log(err3);
-                            common.returnMessage(params, 400, 'Mongo error');
-                        }
-                        else {
                             plugins.dispatch("/i/users/delete", {
                                 params: params,
                                 data: member
-                            });
-                            killAllSessionForUser(member._id);
-                            common.returnMessage(params, 200, 'Success');
+                            }, dispatchDeleteCallback);
                         }
                     });
+                }
+                else {
+                    plugins.dispatch("/i/users/delete", {
+                        params: params,
+                        data: member
+                    }, dispatchDeleteCallback);
                 }
             }
             else {
@@ -1178,7 +1214,7 @@ module.exports = usersApi;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Mon Feb 12 2024 17:18:09 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Tue Feb 13 2024 12:18:46 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
