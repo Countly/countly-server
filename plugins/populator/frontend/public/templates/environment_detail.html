@@ -44,21 +44,21 @@
                 </template>
                 <template v-slot="scope">
                     <div>
-                        <el-table-column fixed="left" width="320" sortable="true" prop="userName" :label="i18n('populator.user-name')">
+                        <el-table-column fixed="left" width="350" sortable="true" prop="userName" :label="i18n('populator.user-name')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.userName}}
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="true" width="150" prop="platform" :label="i18n('populator.platform')">
+                        <el-table-column sortable="true" width="250" prop="platform" :label="i18n('populator.platform')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.platform}}
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="true" width="140" prop="device" :label="i18n('populator.device')">
+                        <el-table-column sortable="true" width="200" prop="device" :label="i18n('populator.device')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.device}}
@@ -67,10 +67,10 @@
                         </el-table-column>
                     </div>
                     <div v-for="(item, index) in customProperties">
-                        <el-table-column width="160" sortable="true" prop="item" :label="item">
+                        <el-table-column width="200" sortable="true" :prop="item" :label="item">
                             <template v-slot="rowScope">
                                 <div>
-                                    {{rowScope.row.custom[item] || '-'}}
+                                    {{rowScope.row.custom[item] === null || typeof rowScope.row.custom[item] === 'undefined' ? '-' : rowScope.row.custom[item]}}
                                 </div>
                             </template>
                         </el-table-column>

@@ -1922,7 +1922,7 @@
             }
         };
         this.getUserFromEnvironment = function(env) {
-            this.id = env._id.split('_', 3)[0]; //device_id
+            this.id = env._id.split('_', 3)[2]; //device_id
             if (!this.userdetails) {
                 this.userdetails = {};
             }
@@ -2753,7 +2753,7 @@
             });
         };
 
-        this.saveEnvironment = function(environmentUserList) {
+        this.saveEnvironment = function(environmentUserList, hasEnvironmentOption) {
             return new Promise((resolve, reject) => {
                 $.ajax({
                     type: "POST",
@@ -2761,6 +2761,7 @@
                     data: {
                         app_key: countlyCommon.ACTIVE_APP_KEY,
                         users: JSON.stringify(environmentUserList),
+                        has_environment: hasEnvironmentOption,
                         populator: true
                     },
                     success: function() {
@@ -3483,6 +3484,7 @@
             tvOS: [],
             plc: []
         };
+        let environmentUsers = [];
         /**
          * Get users from environment 
         **/
@@ -3548,6 +3550,7 @@
                     template.saveEnvironment = true;
                     template.environmentName = environment[0].name;
                     await createUsers();
+                    environment.length = template.uniqueUserCount;
                 }
                 else {
                     generating = false;
@@ -3565,11 +3568,11 @@
 
             /**
              * Create batch of users
+             * @param {boolean} setHasEnvironment - set has environment
              * @returns {array} - array of users
              * */
-            async function createUserBatch() {
+            async function createUserBatch(setHasEnvironment) {
                 const batchPromises = [];
-
                 for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
                     const u = new User();
                     u.getUserFromTemplate(template.users, currentIndex);
@@ -3577,8 +3580,9 @@
                     batchPromises.push(requests);
                     bulk = [];
 
-                    if (template.saveEnvironment) {
-                        await checkEnvironment(u);
+                    if (template.saveEnvironment && generating) {
+                        await checkEnvironment(u, setHasEnvironment);
+                        setHasEnvironment = false;
                     }
                     if (currentIndex < userAmount && users.length < 50 && Math.random() > 0.5) {
                         users.push(u);
@@ -3597,9 +3601,9 @@
             /**
              * 
              * @param {object} user - user object
+             * @param {boolean} hasEnvironment - has environment
              */
-            async function checkEnvironment(user) {
-                let environmentUsers = [];
+            async function checkEnvironment(user, hasEnvironment) {
                 const requestEnv = {
                     deviceId: user.id,
                     templateId: template._id,
@@ -3612,8 +3616,8 @@
                     custom: user.userdetails.custom || {},
                 };
                 environmentUsers.push(requestEnv);
-                if (environmentUsers.length > 0) {
-                    await user.saveEnvironment(environmentUsers);
+                if (environmentUsers.length > 10 || hasEnvironment) { // send them in batch of 10 to overload the server
+                    await user.saveEnvironment(environmentUsers, hasEnvironment);
                     environmentUsers = [];
                 }
             }
@@ -3635,20 +3639,21 @@
             }
 
             /**
+             * @param {boolean} setHasEnvironment - set has environment
              * Create and process users
              * */
-            async function createAndProcessUsers() {
-                const u = await createUserBatch();
+            async function createAndProcessUsers(setHasEnvironment) {
+                const u = await createUserBatch(setHasEnvironment);
                 await processUsers(u);
 
                 if (currentIndex < userAmount) {
-                    await createAndProcessUsers();
+                    await createAndProcessUsers(false);
                 }
                 else {
                     generating = false;
                 }
             }
-            await createAndProcessUsers();
+            await createAndProcessUsers(true);
         }
 
         if (environment && environment.length) {
@@ -3969,7 +3974,7 @@
                 callback(defaultTemplates.concat(templates));
             },
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-templates"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-templates"), type: "error"});
             }
         });
     };
@@ -3985,7 +3990,7 @@
             dataType: "json",
             success: callback || function() {},
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-create-template"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-create-template"), type: "error"});
             }
         });
     };
@@ -4052,13 +4057,16 @@
                 callback(enviroment);
             },
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-environment"), type: "error"});
             }
         });
     };
 
-    countlyPopulator.getEnvironments = function(callback) {
+    countlyPopulator.getEnvironments = function(templateId, callback) {
         const data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        if (templateId) {
+            data.template_id = templateId;
+        }
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/list",
@@ -4069,13 +4077,13 @@
                 callback(enviroments);
             },
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environments"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-environments"), type: "error"});
             }
         });
     };
 
-    countlyPopulator.getEnvironment = function(environmentId, callback) {
-        const data = {environment_id: environmentId};
+    countlyPopulator.getEnvironment = function(templateId, environmentId, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, template_id: templateId, environment_id: environmentId};
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/get",
@@ -4086,13 +4094,30 @@
                 callback(enviroment);
             },
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-environment"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-environment"), type: "error"});
             }
         });
     };
 
-    countlyPopulator.removeEnvironment = function(environmentId, callback) {
+    countlyPopulator.getEnvironmentsById = function(environmentId, callback) {
         const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId};
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/populator/environment/get-by-id",
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(enviroment) {
+                callback(enviroment);
+            },
+            error: function() {
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-environment"), type: "error"});
+            }
+        });
+    };
+
+    countlyPopulator.removeEnvironment = function(environmentId, templateId, callback) {
+        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId, template_id: templateId};
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/remove",
@@ -4103,7 +4128,7 @@
                 callback(enviroment);
             },
             error: function() {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-delete-environment"], type: "error"});
+                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-delete-environment"), type: "error"});
             }
         });
     };

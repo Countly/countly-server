@@ -61,7 +61,7 @@
                             </div>
                             <div class="bu-column main-page-container">
                                 <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-template')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
+                                    <el-option :key="item.environmentId" :value="item.environmentId" :label="item.name" v-for="item in environments"></el-option>
                                 </el-select>
                             </div>
                         </cly-sub-section>
