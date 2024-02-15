@@ -1922,7 +1922,7 @@
             }
         };
         this.getUserFromEnvironment = function(env) {
-            this.id = env._id.split('_', 3)[2]; //device_id
+            this.id = env._id.split('_', 4)[3]; //device_id
             if (!this.userdetails) {
                 this.userdetails = {};
             }
@@ -2753,17 +2753,20 @@
             });
         };
 
-        this.saveEnvironment = function(environmentUserList, hasEnvironmentOption) {
+        this.saveEnvironment = function(environmentUserList, setEnviromentInformationOnce) {
+            const data = {
+                app_key: countlyCommon.ACTIVE_APP_KEY,
+                users: JSON.stringify(environmentUserList),
+                populator: true
+            };
+            if (setEnviromentInformationOnce) {
+                data.setEnviromentInformationOnce = true;
+            }
             return new Promise((resolve, reject) => {
                 $.ajax({
                     type: "POST",
                     url: countlyCommon.API_URL + "/i/populator/environment/save",
-                    data: {
-                        app_key: countlyCommon.ACTIVE_APP_KEY,
-                        users: JSON.stringify(environmentUserList),
-                        has_environment: hasEnvironmentOption,
-                        populator: true
-                    },
+                    data: data,
                     success: function() {
                         resolve(true);
                     },
@@ -3485,6 +3488,7 @@
             plc: []
         };
         let environmentUsers = [];
+
         /**
          * Get users from environment 
         **/
@@ -3549,7 +3553,7 @@
                     userAmount = template.uniqueUserCount - environment.length;
                     template.saveEnvironment = true;
                     template.environmentName = environment[0].name;
-                    await createUsers();
+                    await createUsers(false);
                     environment.length = template.uniqueUserCount;
                 }
                 else {
@@ -3560,19 +3564,21 @@
         }
 
         /**
+         * @param {boolean} setEnvironmentInformationOnce - set environment information once
          * Create new user 
         **/
-        async function createUsers() {
+        async function createUsers(setEnvironmentInformationOnce) {
             let batchSize = getRandomInt(3, 10); //5;
             let currentIndex = 0;
 
             /**
              * Create batch of users
-             * @param {boolean} setHasEnvironment - set has environment
+             * @param {boolean} setEnviromentInformationOnce - set environment information once
              * @returns {array} - array of users
              * */
-            async function createUserBatch(setHasEnvironment) {
+            async function createUserBatch(setEnviromentInformationOnce) {
                 const batchPromises = [];
+
                 for (let i = 0; i < batchSize && currentIndex < userAmount; i++) {
                     const u = new User();
                     u.getUserFromTemplate(template.users, currentIndex);
@@ -3581,8 +3587,8 @@
                     bulk = [];
 
                     if (template.saveEnvironment && generating) {
-                        await checkEnvironment(u, setHasEnvironment);
-                        setHasEnvironment = false;
+                        await checkEnvironment(u, setEnviromentInformationOnce);
+                        setEnviromentInformationOnce = false;
                     }
                     if (currentIndex < userAmount && users.length < 50 && Math.random() > 0.5) {
                         users.push(u);
@@ -3601,9 +3607,9 @@
             /**
              * 
              * @param {object} user - user object
-             * @param {boolean} hasEnvironment - has environment
+             * @param {boolean} setEnviromentInformationOnce - set environment information once
              */
-            async function checkEnvironment(user, hasEnvironment) {
+            async function checkEnvironment(user, setEnviromentInformationOnce) {
                 const requestEnv = {
                     deviceId: user.id,
                     templateId: template._id,
@@ -3616,8 +3622,8 @@
                     custom: user.userdetails.custom || {},
                 };
                 environmentUsers.push(requestEnv);
-                if (environmentUsers.length > 10 || hasEnvironment) { // send them in batch of 10 to overload the server
-                    await user.saveEnvironment(environmentUsers, hasEnvironment);
+                if (environmentUsers.length > 10 || setEnviromentInformationOnce) {
+                    await user.saveEnvironment(environmentUsers, setEnviromentInformationOnce);
                     environmentUsers = [];
                 }
             }
@@ -3639,11 +3645,11 @@
             }
 
             /**
-             * @param {boolean} setHasEnvironment - set has environment
+             * @param {boolean} setEnviromentInformationOnce - set environment information once
              * Create and process users
              * */
-            async function createAndProcessUsers(setHasEnvironment) {
-                const u = await createUserBatch(setHasEnvironment);
+            async function createAndProcessUsers(setEnviromentInformationOnce) {
+                const u = await createUserBatch(setEnviromentInformationOnce);
                 await processUsers(u);
 
                 if (currentIndex < userAmount) {
@@ -3653,7 +3659,7 @@
                     generating = false;
                 }
             }
-            await createAndProcessUsers(true);
+            await createAndProcessUsers(typeof setEnvironmentInformationOnce !== "undefined" ? setEnvironmentInformationOnce : true);
         }
 
         if (environment && environment.length) {
@@ -4062,11 +4068,8 @@
         });
     };
 
-    countlyPopulator.getEnvironments = function(templateId, callback) {
+    countlyPopulator.getEnvironments = function(callback) {
         const data = {app_id: countlyCommon.ACTIVE_APP_ID};
-        if (templateId) {
-            data.template_id = templateId;
-        }
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/list",
@@ -4083,7 +4086,7 @@
     };
 
     countlyPopulator.getEnvironment = function(templateId, environmentId, callback) {
-        const data = {app_id: countlyCommon.ACTIVE_APP_ID, template_id: templateId, environment_id: environmentId};
+        const data = { app_id: countlyCommon.ACTIVE_APP_ID, template_id: templateId, environment_id: environmentId };
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/get",
@@ -4099,25 +4102,8 @@
         });
     };
 
-    countlyPopulator.getEnvironmentsById = function(environmentId, callback) {
-        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId};
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_URL + "/o/populator/environment/get-by-id",
-            data: data,
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(enviroment) {
-                callback(enviroment);
-            },
-            error: function() {
-                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-fetch-environment"), type: "error"});
-            }
-        });
-    };
-
-    countlyPopulator.removeEnvironment = function(environmentId, templateId, callback) {
-        const data = {app_id: countlyCommon.ACTIVE_APP_ID, environment_id: environmentId, template_id: templateId};
+    countlyPopulator.removeEnvironment = function(templateId, environmentId, callback) {
+        const data = { app_id: countlyCommon.ACTIVE_APP_ID, template_id: templateId, environment_id: environmentId };
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/environment/remove",

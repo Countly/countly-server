@@ -196,10 +196,13 @@
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
-                    countlyPopulator.getEnvironmentsById(self.selectedEnvironment, function(env) {
+                    const { templateId, name } = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
+                    countlyPopulator.getEnvironment(templateId, self.selectedEnvironment, function(env) {
                         if (env && env.length) {
-                            const templateIdOfEnv = env[0]._id.split('_', 3)[1];
-                            countlyPopulator.getTemplate(templateIdOfEnv, function(template) {
+                            countlyPopulator.getTemplate(templateId, function(template) {
+                                env = env.map(environmentName => {
+                                    return { ...environmentName, name: name };
+                                });
                                 countlyPopulator.generateUsers(self.selectedRunCount, template, env);
                                 self.moveProgressBar(template);
                             });
@@ -257,6 +260,8 @@
                     countlyPopulator.checkEnvironment(this.environmentName, function(res) {
                         if (res.errorMsg) {
                             CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.errorMsg, sticky: false, clearAll: true});
+                            self.environmentName = '';
+                            self.isOpen = false;
                         }
                         else {
                             self.dialog.showDialog = true;
@@ -276,11 +281,17 @@
                 var self = this;
                 self.isLoading = force;
                 self.templates = [];
-                countlyPopulator.getEnvironments(null, function(environments) {
+                countlyPopulator.getEnvironments(function(environments) {
                     self.environments = environments;
 
                     countlyPopulator.getTemplates(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type, function(templates) {
                         templates.forEach(function(item) {
+                            if (self.environments.filter(x => x.templateId === item._id).length) {
+                                item.hasEnvironment = true;
+                            }
+                            else {
+                                item.hasEnvironment = false;
+                            }
                             self.templates.push({
                                 _id: item._id,
                                 name: item.name,
@@ -337,12 +348,11 @@
         data: function() {
             return {
                 environmentInformations: [],
-                allEnvironments: [],
                 templateInformations: {},
                 templateId: this.$route.params.id,
                 customProperties: [],
                 isLoading: true,
-                environmentId: null,
+                environmentId: '',
                 filterByEnvironmentOptions: [],
                 dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''},
             };
@@ -361,7 +371,7 @@
             },
             submitConfirmDialog: function() {
                 var self = this;
-                countlyPopulator.removeEnvironment(this.environmentId, this.templateId, function(res) {
+                countlyPopulator.removeEnvironment(this.templateId, this.environmentId, function(res) {
                     if (res.result) {
                         CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n('populator-success-delete-environment'), sticky: true, clearAll: true});
                         self.dialog.showDialog = false;
@@ -381,6 +391,15 @@
                     title: CV.i18n('populator.environment-delete-warning-title', this.environmentId),
                     text: CV.i18n('populator.environment-delete-warning-description')
                 };
+            },
+            calculateWidth: function(percentage) {
+                //added to use the "fixed" prop on the table.
+                //fixed only works if width = px, and since the columns are dynamic, we have to make this conversion to fit columns properly
+                if (document.querySelector('#populator-environment-table')) {
+                    const tableWidth = document.querySelector('#populator-environment-table').offsetWidth;
+                    return (tableWidth * percentage) / 100;
+                }
+                return 300;
             }
         },
         watch: {
@@ -407,12 +426,13 @@
         mounted: function() {
             var self = this;
             this.templateId = this.$route.params.id;
-            countlyPopulator.getEnvironments(this.templateId, function(envs) {
-                self.filterByEnvironmentOptions = envs.map(x => ({value: x.environmentId, label: x.name}));
+            countlyPopulator.getEnvironments(function(envs) {
+                self.filterByEnvironmentOptions = envs.filter(x => x.templateId === self.templateId)
+                    .map(x => ({value: x._id, label: x.name}));
                 self.environmentId = self.filterByEnvironmentOptions[0].value;
                 countlyPopulator.getEnvironment(self.templateId, self.environmentId, function(env) {
                     self.isLoading = false;
-                    self.environmentInformations = env.filter(x => x.environmentId === self.environmentId);
+                    self.environmentInformations = env;
                     env.forEach(item => {
                         if (item.custom) {
                             const customKeys = Object.keys(item.custom);

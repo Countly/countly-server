@@ -36,7 +36,7 @@
                     <div v-html="dialog.text"></div>
                 </template>
             </cly-confirm-dialog>
-            <cly-datatable-n :rows="environmentInformations" :force-loading="isLoading" searchPlaceholder="Search in Environment" :hasExport="false">
+            <cly-datatable-n id="populator-environment-table" :rows="environmentInformations" :force-loading="isLoading" searchPlaceholder="Search in Environment" :hasExport="false">
                 <template v-slot:header-left>
                     <el-select v-model="environmentId">
                         <el-option v-for="item in filterByEnvironmentOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -44,21 +44,21 @@
                 </template>
                 <template v-slot="scope">
                     <div>
-                        <el-table-column fixed="left" width="350" sortable="true" prop="userName" :label="i18n('populator.user-name')">
+                        <el-table-column fixed="left" :width="calculateWidth(30)" sortable="true" prop="userName" :label="i18n('populator.user-name')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.userName}}
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="true" width="250" prop="platform" :label="i18n('populator.platform')">
+                        <el-table-column sortable="true" :width="calculateWidth(20)"  prop="platform" :label="i18n('populator.platform')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.platform}}
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="true" width="200" prop="device" :label="i18n('populator.device')">
+                        <el-table-column sortable="true" :width="calculateWidth(20)" prop="device" :label="i18n('populator.device')">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.device}}
@@ -67,7 +67,7 @@
                         </el-table-column>
                     </div>
                     <div v-for="(item, index) in customProperties">
-                        <el-table-column width="200" sortable="true" :prop="item" :label="item">
+                        <el-table-column :width="calculateWidth(15)" sortable="true" :prop="item" :label="item">
                             <template v-slot="rowScope">
                                 <div>
                                     {{rowScope.row.custom[item] === null || typeof rowScope.row.custom[item] === 'undefined' ? '-' : rowScope.row.custom[item]}}
