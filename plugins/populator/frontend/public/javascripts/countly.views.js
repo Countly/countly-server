@@ -354,7 +354,7 @@
                 isLoading: true,
                 environmentId: '',
                 filterByEnvironmentOptions: [],
-                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''},
+                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''}
             };
         },
         computed: {
@@ -400,6 +400,11 @@
                     return (tableWidth * percentage) / 100;
                 }
                 return 300;
+            },
+            formatTableCell: function(item) {
+                return function(row) {
+                    return row.custom[item] === null || typeof row.custom[item] === 'undefined' ? '-' : row.custom[item].toString();
+                };
             }
         },
         watch: {
