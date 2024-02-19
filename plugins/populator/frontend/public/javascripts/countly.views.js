@@ -196,10 +196,13 @@
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
-                    countlyPopulator.getEnvironment(self.selectedEnvironment, function(env) {
+                    const { templateId, name } = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
+                    countlyPopulator.getEnvironment(templateId, self.selectedEnvironment, function(env) {
                         if (env && env.length) {
-                            const templateIdOfEnv = env[0]._id.split('_', 3)[2];
-                            countlyPopulator.getTemplate(templateIdOfEnv, function(template) {
+                            countlyPopulator.getTemplate(templateId, function(template) {
+                                env = env.map(environmentName => {
+                                    return { ...environmentName, name: name };
+                                });
                                 countlyPopulator.generateUsers(self.selectedRunCount, template, env);
                                 self.moveProgressBar(template);
                             });
@@ -236,6 +239,7 @@
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
                     if (self.isOpen) {
                         self.isOpen = false;
+                        self.getTemplateList(); // refresh the environment list and template
                     }
                     self.environmentName = '';
                 });
@@ -256,6 +260,8 @@
                     countlyPopulator.checkEnvironment(this.environmentName, function(res) {
                         if (res.errorMsg) {
                             CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.errorMsg, sticky: false, clearAll: true});
+                            self.environmentName = '';
+                            self.isOpen = false;
                         }
                         else {
                             self.dialog.showDialog = true;
@@ -348,7 +354,7 @@
                 isLoading: true,
                 environmentId: '',
                 filterByEnvironmentOptions: [],
-                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''},
+                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''}
             };
         },
         computed: {
@@ -365,7 +371,7 @@
             },
             submitConfirmDialog: function() {
                 var self = this;
-                countlyPopulator.removeEnvironment(this.environmentId, function(res) {
+                countlyPopulator.removeEnvironment(this.templateId, this.environmentId, function(res) {
                     if (res.result) {
                         CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n('populator-success-delete-environment'), sticky: true, clearAll: true});
                         self.dialog.showDialog = false;
@@ -385,13 +391,27 @@
                     title: CV.i18n('populator.environment-delete-warning-title', this.environmentId),
                     text: CV.i18n('populator.environment-delete-warning-description')
                 };
+            },
+            calculateWidth: function(percentage) {
+                //added to use the "fixed" prop on the table.
+                //fixed only works if width = px, and since the columns are dynamic, we have to make this conversion to fit columns properly
+                if (document.querySelector('#populator-environment-table')) {
+                    const tableWidth = document.querySelector('#populator-environment-table').offsetWidth;
+                    return (tableWidth * percentage) / 100;
+                }
+                return 300;
+            },
+            formatTableCell: function(item) {
+                return function(row) {
+                    return row.custom[item] === null || typeof row.custom[item] === 'undefined' ? '-' : row.custom[item].toString();
+                };
             }
         },
         watch: {
             environmentId: function(newVal) {
                 var self = this;
                 this.isLoading = true;
-                countlyPopulator.getEnvironment(newVal, function(env) {
+                countlyPopulator.getEnvironment(this.templateId, newVal, function(env) {
                     self.isLoading = false;
                     self.environmentInformations = env;
                     env.forEach(item => {
@@ -415,7 +435,7 @@
                 self.filterByEnvironmentOptions = envs.filter(x => x.templateId === self.templateId)
                     .map(x => ({value: x._id, label: x.name}));
                 self.environmentId = self.filterByEnvironmentOptions[0].value;
-                countlyPopulator.getEnvironment(self.environmentId, function(env) {
+                countlyPopulator.getEnvironment(self.templateId, self.environmentId, function(env) {
                     self.isLoading = false;
                     self.environmentInformations = env;
                     env.forEach(item => {
