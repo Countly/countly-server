@@ -302,6 +302,19 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
+
+        //Record as restarted
+
+        var utcMoment = moment.utc();
+
+        var incObj = {};
+        incObj.r = 1;
+        incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
+        common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
+            if (err) {
+                log.e(err);
+            }
+        });
     }
     else {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
