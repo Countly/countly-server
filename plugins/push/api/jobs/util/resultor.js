@@ -220,14 +220,6 @@ class Resultor extends DoFinish {
                 });
                 this.log.d('Added %d results', results.length);
             }
-
-            // // in case no more data is expected, we can safely close the stream
-            // if (this.check()) {
-            //     for (let _ in this.state.pushes) {
-            //         return;
-            //     }
-            //     this.do_flush(() => this.end());
-            // }
         }
         else if (frame & FRAME.ERROR) {
             let error = results.messageError(),
@@ -321,9 +313,10 @@ class Resultor extends DoFinish {
             promises = this.data.messages().map(m => {
                 m.result.lastRun.ended = new Date();
 
+                // if (await Message.hasPushRecords(m.id)) {
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
-                    return syncTotalProp(this.db, m).then(() => m.save());
+                    return m.save();
                 }
                 this.log.d('message %s is done processing', m.id);
                 let state, status, error;
@@ -358,11 +351,13 @@ class Resultor extends DoFinish {
                     else { // shouldn't happen, but possible in some weird cases
                         state = m.state & ~State.Streaming;
                         status = Status.Scheduled;
-                        m.schedule(this.log).then(() => {
-                            this.log.i('Rescheduled %s from resultor', m.id);
-                        }, e => {
-                            this.log.e('Rescheduling error for %s from resultor', m.id, e);
-                        });
+                        // TODO: We're already scheduling the next message on jobs/schedule.js after creating push records.
+                        // It shouldn't matter if all of the queue processed or not.
+                        // m.schedule(this.log).then(() => {
+                        //     this.log.i('Rescheduled %s from resultor', m.id);
+                        // }, e => {
+                        //     this.log.e('Rescheduling error for %s from resultor', m.id, e);
+                        // });
                     }
                 }
                 else {
@@ -392,11 +387,11 @@ class Resultor extends DoFinish {
                     if (error) {
                         m.result.error = error;
                     }
-                    return syncTotalProp(this.db, m).then(() => m.save());
+                    return m.save();
                 }
                 else {
                     this.log.d('message %s is in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
-                    return syncTotalProp(this.db, m).then(() => m.save());
+                    return m.save();
                 }
             }).concat(Object.keys(this.noMessage).map(mid => {
                 this.log.e('Message %s doesn\'t exist, ignoring result %j', mid, this.noMessage[mid]);
@@ -514,6 +509,7 @@ class Resultor extends DoFinish {
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
+                        //plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: params.qstring.events});
 
                         try {
                             this.log.d('Recording %d data points', sent);
@@ -823,34 +819,3 @@ class Resultor extends DoFinish {
 }
 
 module.exports = { Resultor };
-/**
- * This function is required to be called before making any updates to the "message".
- * It is implemented because of the race condition between the Job and the Runner.
- * Sometimes Job starts creating "push" records (queue items) but the Runner
- * starts consuming before all of the push records created. Then the race condition
- * occurs and the "total" property gets overwritten by the Runner.
- * @param {MongoClient} db mongo client
- * @param {Message} message message model instance
- */
-async function syncTotalProp(db, message) {
-    const saved = await db.collection("messages").findOne({ _id: message._id });
-
-    // fields to sync:
-    // m.result.total
-    // m.result.subs.a.total
-    // m.result.subs.a.subs.en.total
-
-    if (saved?.result?.total !== undefined) {
-        message.result.total = saved.result.total;
-    }
-    if (typeof saved?.result?.subs === "object") {
-        for (let key in saved.result.subs) {
-            message.result.subs[key].total = saved.result.subs[key].total;
-            if (typeof saved.result.subs[key]?.subs === "object") {
-                for (let key2 in saved.result.subs[key].subs) {
-                    message.result.subs[key].subs[key2].total = saved.result.subs[key].subs[key2].total;
-                }
-            }
-        }
-    }
-}

@@ -62,7 +62,7 @@ var versionInfo = require('./version.info'),
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
-var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
+var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
@@ -77,7 +77,7 @@ if (versionInfo.footer) {
     }
 }
 else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v" + COUNTLY_VERSION;
+    COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
     COUNTLY_TRACK_TYPE = "Enterprise";
 }
@@ -463,22 +463,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(cookieParser());
     //server theme images
     app.use(function(req, res, next) {
-        if (req.url.indexOf(countlyConfig.path + '/images/') === 0) {
-            var urlPath = req.url.replace(countlyConfig.path, "");
-            var theme = req.cookies.theme || curTheme;
-            if (theme && theme.length) {
-                fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
-                    if (exists) {
-                        res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
-                    }
-                    else {
-                        next();
-                    }
-                });
-            }
-            else { //serve default location
-                next();
-            }
+        var urlPath = req.url.replace(countlyConfig.path, "");
+        var theme = req.cookies.theme || curTheme;
+        if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
+            fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
+                if (exists) {
+                    res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
+                }
+                else {
+                    next();
+                }
+            });
         }
         else {
             next();
@@ -976,6 +971,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
+                countlyTypeTrack: COUNTLY_TRACK_TYPE,
                 countly_tracking,
                 countly_domain,
                 frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',

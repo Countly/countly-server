@@ -246,6 +246,9 @@
                 }
 
                 if ((response.logo && !response.logoType) || (response.logo && response.logoType && response.logoType === "custom")) {
+                    if (typeof response.globalLogo === 'string') {
+                        response.globalLogo = response.globalLogo.toLowerCase() === 'true';
+                    }
                     if(response.globalLogo){
                         $('#powered-by-countly').attr('src', url + response.logo);
                     }

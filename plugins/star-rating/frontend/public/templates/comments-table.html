@@ -9,7 +9,7 @@
           </div>
         </template>
       </el-table-column>
-        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')" min-width="60">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')" min-width="80">
           <template v-slot="rowScope">
               <span class="text-medium" :data-test-id="'ratings-comment-table-rating-row-' + rowScope.$index">
                 <span :class="'rating-color rating-comments-color-' + rowScope.row.rating"></span> {{ rowScope.row.rating}}
@@ -18,7 +18,7 @@
       </el-table-column>
       <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')" min-width="120">
         <template v-slot="rowScope">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index" v-html="rowScope.row.cd"></span>
+            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index">{{unescapeHtml(rowScope.row.cd)}}</span>
         </template>
       </el-table-column>
       <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">
@@ -26,6 +26,15 @@
             <span class="text-medium" :data-test-id="'ratings-comment-table-time-email-row' + rowScope.$index">
               {{ rowScope.row.email }}
             </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="userLink"	min-width="120">
+        <template v-slot="rowScope">
+          <span v-if="rowScope.row.hover">
+            <a :href="'#/users/' + rowScope.row.uid" target="_blank">
+              <el-button class="text-smallish bu-is-clickable">{{ i18n('feedback.view.user') }}</el-button>
+            </a>
+          </span>
         </template>
       </el-table-column>
   </template>

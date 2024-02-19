@@ -203,6 +203,7 @@
                     this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
                         name: countlyGlobal.member.full_name.split(' ')[0],
                         email: countlyGlobal.member.email,
+                        countlyType: countlyGlobal.countlyTypeTrack
                     });
                 }
 
@@ -297,6 +298,7 @@
                     this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
                         name: countlyGlobal.member.full_name.split(' ')[0],
                         email: countlyGlobal.member.email,
+                        countlyType: countlyGlobal.countlyTypeTrack
                     });
                 }
 

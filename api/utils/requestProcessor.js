@@ -2848,8 +2848,16 @@ const processRequest = (params) => {
                 case 'entries':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
                     break;
+                }
+                break;
+            }
+            case '/i/cms': {
+                switch (paths[3]) {
+                case 'save_entries':
+                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    break;
                 case 'clear':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -2860,17 +2868,8 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
                     }
-                    break;
-                }
-
-                break;
-            }
-            case '/i/cms': {
-                switch (paths[3]) {
-                case 'save_entries':
-                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
                     break;
                 }
                 break;
@@ -3098,7 +3097,13 @@ const checksumSaltVerification = (params) => {
         payloads.push(params.href.substr(params.fullPath.length + 1));
 
         if (params.req.method.toLowerCase() === 'post') {
-            payloads.push(params.req.body);
+            // Check if we have 'multipart/form-data'
+            if (params.formDataUrl) {
+                payloads.push(params.formDataUrl);
+            }
+            else {
+                payloads.push(params.req.body);
+            }
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
@@ -3260,7 +3265,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
-        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
+        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24) && !params.populator && !params.qstring.populator) { //update if more than day passed
             //set new value
             common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
                 if (err1) {

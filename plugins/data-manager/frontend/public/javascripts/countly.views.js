@@ -321,7 +321,8 @@
         template: CV.T('/data-manager/templates/event-group-detail.html'),
         mixins: [
             countlyVue.mixins.hasDrawers(["eventgroup"]),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'event-group-drawer': EventGroupDrawer,
@@ -386,7 +387,8 @@
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'data-manager-manage-category': ManageCategory
@@ -783,7 +785,8 @@
     var EventsGroupsTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-groups.html'),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             return {
@@ -1169,7 +1172,8 @@
             countlyVue.container.mixins(["/manage/data-manager"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager"
-            })
+            }),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             var localTabs = [];
@@ -1198,7 +1202,8 @@
         template: CV.T('/data-manager/templates/event-detail.html'),
         mixins: [
             countlyVue.mixins.hasDrawers(["events", "segments"]),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         components: {
             'events-drawer': EventsDrawer,

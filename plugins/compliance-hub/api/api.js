@@ -1,4 +1,5 @@
 var plugin = {},
+    crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
@@ -12,6 +13,9 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
+
+    plugins.internalDrillEvents.push("[CLY]_consent");
+
     //write api call
     plugins.register("/sdk/user_properties", function(ob) {
         var params = ob.params;
@@ -92,6 +96,13 @@ const FEATURE_NAME = 'compliance_hub';
                     av: params.app_user.av || m._app_version,
                     sc: params.app_user.sc || 0
                 });
+
+                var events = [{
+                    key: "[CLY]_consent",
+                    count: 1,
+                    segmentation: params.qstring.consent
+                }];
+                plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: events});
 
                 plugins.dispatch("/consent/change", {params: params, changes: changes});
             }
@@ -361,23 +372,35 @@ const FEATURE_NAME = 'compliance_hub';
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
         common.db.collection('consent_history' + appId).drop(function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+        }
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
         common.db.collection('consent_history' + appId).drop(function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+        }
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+        }
     });
 
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
+        }
     });
 }(plugin));
 
