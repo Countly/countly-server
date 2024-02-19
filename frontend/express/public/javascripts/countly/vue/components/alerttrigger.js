@@ -1,7 +1,7 @@
 /* global Vue, ELEMENT, moment, countlyCommon, _, CV */
 (function(countlyVue) {
     var _mixins = countlyVue.mixins;
-    Vue.component("cly-alert-trigger", Vue.extend({
+    Vue.component("cly-alert-trigger", countlyVue.components.create({
         mixins: [
             _mixins.i18n
         ],
