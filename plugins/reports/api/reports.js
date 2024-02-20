@@ -605,7 +605,7 @@ var metricProps = {
         try {
             const reportConfig = plugins.getConfig("reports", null, true);
             const key = reportConfig.secretKey;
-            const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(data.iv, 'hex'));
+            const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(data.iv, 'hex'), {authTagLength: 16});
             decipher.setAuthTag(Buffer.from(data.authTag, 'hex'));
             const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
             const result = JSON.parse(decrpyted.toString());
