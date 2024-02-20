@@ -112,11 +112,11 @@ var countlyConfig = {
     * @type {integer} [default=10000]
     **/
     reloadConfigAfter: 10000,
-	/**
+    /**
 	* Specifies if jobs are run on this countly instance
 	* Usable only in case when there are multiple countly instances connected to single database. Has to be set to true for at least one instance.
 	*/
-	preventJobs:false,
+    preventJobs: false,
     /**
      * Simple SMTP mail sender configuration.
      * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
