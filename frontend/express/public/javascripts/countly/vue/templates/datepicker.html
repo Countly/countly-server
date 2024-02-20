@@ -88,6 +88,8 @@
                         <div v-if="!retentionConfiguration" class="cly-vue-daterp__input-wrapper">
                             <el-input :test-id="testId + '-in-the-last-start-date-input'" size="small" v-model.number="inTheLastInput.raw.text"></el-input>
                             <el-select :test-id="testId + '-in-the-last-start-date'" size="small" v-model="inTheLastInput.raw.level">
+                                <el-option v-if="inTheLastMinutes" :label="i18n('common.buckets.minutes')" value="minutes"></el-option>
+                                <el-option v-if="inTheLastHours" :label="i18n('common.buckets.hours')" value="hours"></el-option>
                                 <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                                 <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                                 <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
@@ -117,6 +119,8 @@
                     <div v-if="rangeMode === 'inTheLast'" class="cly-vue-daterp__input-wrapper-content">
                         <el-input size="small" :test-id="testId + '-in-the-last-date-raw'" v-model.number="inTheLastInput.raw.text"></el-input>
                         <el-select size="small" v-model="inTheLastInput.raw.level" :test-id="testId + '-in-the-last-date-input'">
+                            <el-option v-if="inTheLastMinutes" :label="i18n('common.buckets.minutes')" value="minutes"></el-option>
+                            <el-option v-if="inTheLastHours" :label="i18n('common.buckets.hours')" value="hours"></el-option>
                             <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
                             <el-option :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
                             <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
@@ -184,6 +188,40 @@
                                 @pick="handleRangePick"
                                 @changerange="handleChangeRange">
                             </date-table>
+                        </div>
+                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'hour'">
+                            <hour-table
+                                v-for="item in globalRange"
+                                :key="item.key"
+                                :date-meta="item"
+                                :in-viewport-requires-root="true"
+                                :in-viewport-root="$refs.calendarsViewport"
+                                selection-mode="range"
+                                :date="item.date"
+                                :min-date="minDate"
+                                :max-date="maxDate"
+                                :disabled-date="disabledDateFn"
+                                :rangeState="rangeState"
+                                @pick="handleRangePick"
+                                @changerange="handleChangeRange">
+                            </hour-table>
+                        </div>
+                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'minute'">
+                            <minute-table
+                                v-for="item in globalRange"
+                                :key="item.key"
+                                :date-meta="item"
+                                :in-viewport-requires-root="true"
+                                :in-viewport-root="$refs.calendarsViewport"
+                                selection-mode="range"
+                                :date="item.date"
+                                :min-date="minDate"
+                                :max-date="maxDate"
+                                :disabled-date="disabledDateFn"
+                                :rangeState="rangeState"
+                                @pick="handleRangePick"
+                                @changerange="handleChangeRange">
+                            </minute-table>
                         </div>
                     </vue-scroll>
                 </div>
