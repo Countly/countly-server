@@ -328,6 +328,14 @@
             selectedTemplate: function() {
                 this.isOpen = false;
                 this.environmentName = '';
+            },
+            environmentName: function(newVal) {
+                if (newVal.length) {
+                    this.isOpen = true;
+                }
+                else {
+                    this.isOpen = false;
+                }
             }
         },
         beforeCreate: function() {

@@ -49,7 +49,7 @@
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
-                            <el-button type="success" :disabled="!selectedTemplate.length" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                            <el-button type="success" :disabled="!selectedTemplate.length || !environmentName.length" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
                     </cly-section>
 
