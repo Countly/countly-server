@@ -489,11 +489,8 @@
                 backToDBViewer: function() {
                     window.location = '#/manage/db/' + this.db + '/' + this.collection;
                 },
-                decode: function(value) {
-                    if (typeof value === "string") {
-                        return value.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-                    }
-                    return value;
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
                 },
                 executeQuery: function() {
                     var self = this;
@@ -508,7 +505,7 @@
                                 res.aaData.forEach(row => {
                                     Object.keys(row).forEach(key => {
                                         map[key] = true;
-                                        row[key] = self.decode(row[key]);
+                                        row[key] = self.decodeHtml(row[key]);
                                     });
                                 });
                                 self.aggregationResult = res.aaData;
