@@ -489,6 +489,12 @@
                 backToDBViewer: function() {
                     window.location = '#/manage/db/' + this.db + '/' + this.collection;
                 },
+                decode: function(value) {
+                    if (typeof value === "string") {
+                        return value.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                    }
+                    return value;
+                },
                 executeQuery: function() {
                     var self = this;
 
@@ -498,9 +504,16 @@
                         countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
                             self.updatePath(self.query);
                             if (res) {
+                                var map = [];
+                                res.aaData.forEach(row => {
+                                    Object.keys(row).forEach(key => {
+                                        map[key] = true;
+                                        row[key] = self.decode(row[key]);
+                                    });
+                                });
                                 self.aggregationResult = res.aaData;
                                 if (res.aaData.length) {
-                                    self.fields = Object.keys(res.aaData[0]);
+                                    self.fields = Object.keys(map);
                                 }
                             }
                             if (err) {
