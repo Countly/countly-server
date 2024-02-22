@@ -489,6 +489,9 @@
                 backToDBViewer: function() {
                     window.location = '#/manage/db/' + this.db + '/' + this.collection;
                 },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
                 executeQuery: function() {
                     var self = this;
 
@@ -502,7 +505,6 @@
                                 res.aaData.forEach(row => {
                                     Object.keys(row).forEach(key => {
                                         map[key] = true;
-                                        row[key] = countlyCommon.unescapeHtml(row[key]);
                                     });
                                 });
                                 self.aggregationResult = res.aaData;
