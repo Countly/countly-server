@@ -1,4 +1,4 @@
-var pluginManager = require('../../../../plugins/pluginManager.js'),
+var pluginManager = require('../../../plugins/pluginManager.js'),
     asyncjs = require('async');
 
 console.log("Removing old flows collections");
