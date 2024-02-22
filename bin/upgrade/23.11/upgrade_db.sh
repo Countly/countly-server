@@ -31,7 +31,6 @@ then
 
     #run upgrade scripts
     nodejs "$SCRIPTS/scripts/check_app_images.js"
-    nodejs "$SCRIPTS/scripts/remove_unused_apms.js"
     nodejs "$SCRIPTS/scripts/remove_deleted_recors_from_widgets.js"
     nodejs "$SCRIPTS/scripts/update_timestamps_in_consent_history.js"
 

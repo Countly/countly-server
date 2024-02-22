@@ -12,13 +12,7 @@ function process_cohort_docs(options, callback) {
             callback(err);
         }
         else {
-            //clear out right away.
-            options.countlyDrillDB.collection(options.coll).remove({"_id": {$regex: "^cohorts_"}}, function(err2) {
-                if (err2) {
-                    console.log(err2);
-                }
-                callback();
-            });
+            callback();
         }
     });
 }
@@ -31,12 +25,7 @@ function move_biglists(options, callback) {
             callback(err);
         }
         else {
-            options.countlyDrillDB.collection(options.coll).remove({'biglist': true}, function(err2) {
-                if (err2) {
-                    console.log(err2);
-                }
-                callback();
-            });
+            callback();
         }
     });
 }
@@ -211,13 +200,7 @@ function merge_meta_from_collection(countlyDB, countlyDrillDB, coll) {
                                             reject(err);
                                         }
                                         else {
-                                            console.log('removing collection');
-                                            countlyDrillDB.collection(coll).drop(function(err2) {
-                                                if (err2) {
-                                                    console.log(err2);
-                                                }
-                                                resolve();
-                                            });
+                                            resolve();
                                         }
                                     });
                                 });
@@ -225,14 +208,7 @@ function merge_meta_from_collection(countlyDB, countlyDrillDB, coll) {
                         });
                     }
                     else {
-                        //as app does not exist just drop collection
-                        console.log('This app does not exist. Dropping meta collection.');
-                        countlyDrillDB.collection(coll).drop(function(err3) {
-                            if (err3) {
-                                console.log(err3);
-                            }
-                            resolve();
-                        });
+                        resolve();
                     }
                 }
             });
