@@ -308,11 +308,12 @@
         },
         methods: {
             getProbabilityRules: function(valueIndex, values) {
-                return "required|integer|min_value:0|max_value:" + (this.totalProbability(valueIndex, values));
-            },
-            totalProbability: function(valueIndex, values) {
                 if (values && values.length) {
-                    return 100 - (values.reduce((total, value, index) => index !== valueIndex ? parseInt(value.probability) + total : total, 0));
+                    const totalValue = (values.reduce((total, value) => parseInt(value.probability) + total, 0));
+                    if (totalValue > 100) {
+                        CountlyHelpers.notify({ message: this.i18n("populator-template.warning-probability-validation"), type: "error" });
+                        values[valueIndex].probability = "";
+                    }
                 }
             },
         }
