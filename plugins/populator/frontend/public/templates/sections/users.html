@@ -31,11 +31,12 @@
                 <div>
                     <div class="bu-is-flex" v-for="(value, valueIndex) in user.values">
                         <div class="bu-mt-2">
-                            <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                            <validation-provider name="probability" v-slot="v" :rules="getProbabilityRules(valueIndex, user.values)">
+                                {{v.errors}}
                                 <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
-                                    <template slot="suffix">
-                                        <span class="text-medium color-cool-gray-50">%</span>
-                                    </template>
+                                  <template slot="suffix">
+                                    <span class="text-medium color-cool-gray-50">%</span>
+                                  </template>
                                 </el-input>
                             </validation-provider>
                         </div>
@@ -72,7 +73,8 @@
                     <div>
                         <div class="bu-is-flex" v-for="(value, valueIndex) in user.condition.values">
                             <div class="bu-mt-2">
-                                <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                <validation-provider name="probability" v-slot="v" :rules="getProbabilityRules(valueIndex, user.condition.values)">
+                                <!-- <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v"> -->
                                     <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
                                         <template slot="suffix">
                                             <span class="text-medium color-cool-gray-50">%</span>

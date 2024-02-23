@@ -111,7 +111,7 @@ const FEATURE_NAME = 'populator';
 
             common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
                 if (!removeTemplateErr) {
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: templateId});
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
                     common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
                         if (errEnvUsers) {
                             log.e("Error deleting populator environment users while deleting template", errEnvUsers);
@@ -126,7 +126,7 @@ const FEATURE_NAME = 'populator';
                                     return false;
                                 }
                                 common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed", data: ob.params.qstring.template_id});
+                                plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed_through_template", data: {templateId: ob.params.qstring.template_id, appId: ob.params.qstring.app_id}});
                                 return true;
                             });
                         }
@@ -222,12 +222,12 @@ const FEATURE_NAME = 'populator';
                         common.returnMessage(ob.params, 500, err.message);
                         return false;
                     }
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: {environmentId: environmentId, environmentName: users[0].environmentName, appId: users[0].appId, templateId: users[0].templateId}});
                 });
             }
             common.db.collection('populator_environment_users').insertMany(insertedInformations, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, 'Successfully created ');
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: insertedInformations[0].name});
                     return true;
                 }
                 else {
@@ -683,6 +683,7 @@ const FEATURE_NAME = 'populator';
                             common.returnMessage(obParams, 500, err_.message);
                         }
                         else {
+                            plugins.dispatch("/systemlogs", {params: obParams, action: "populator_environment_removed", data: {environmentId: obParams.qstring.environment_id, app_id: obParams.qstring.app_id, template_id: obParams.qstring.template_id}});
                             common.returnOutput(obParams, {result: true});
                         }
                     });

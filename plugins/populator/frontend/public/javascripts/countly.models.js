@@ -3927,6 +3927,24 @@
             }
         }
 
+        if (countlyGlobal.plugins.indexOf('drill') !== -1) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/i/drill/regenerate_meta",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    period: countlyCommon.getPeriodForAjax(),
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function() {
+                },
+                error: function() {
+                    CountlyHelpers.notify({message: CV.i18n("populator.failed-message-regenerate-meta"), type: "error"});
+                }
+            });
+        }
+
         createMessage(messages[0]);
         createMessage(messages[1]);
         createMessage(messages[2]);

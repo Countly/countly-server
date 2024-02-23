@@ -30,10 +30,10 @@
         },
         methods: {
             scrollToSection(index) {
-                const sectionId = "section-" + index;
+                const sectionId = "section-" + index + '-title';
                 const section = document.getElementById(sectionId);
                 if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
+                    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     this.steps[index].isActive = true;
                     this.steps.map((item, i) => {
                         if (i !== index) {
@@ -44,8 +44,14 @@
             },
             handleScroll: function() {
                 if (this.fireMouseWheeler) {
+                    const headerHeight = 79;
+                    const windowHeight = window.innerHeight - headerHeight;
+                    const pageCenter = windowHeight / 2;
+
                     for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
-                        const element = document.getElementById(Object.keys(this.sectionThresholds)[index]);
+                        const elementId = Object.keys(this.sectionThresholds)[index];
+                        const element = document.getElementById(elementId);
+
                         if (!element) {
                             return;
                         }
@@ -53,14 +59,16 @@
                         const elementDimension = element.getBoundingClientRect();
                         const elementTop = elementDimension.top;
                         const elementHeight = elementDimension.height;
-                        const headerHeight = 79;
-                        if (elementTop + elementHeight - headerHeight > 0) {
+
+                        if (elementTop <= pageCenter && elementTop + elementHeight >= pageCenter) {
+
                             this.steps[index].isActive = true;
-                            this.steps.map((item, i) => {
+                            this.steps.forEach((item, i) => {
                                 if (i !== index) {
                                     item.isActive = false;
                                 }
                             });
+
                             return;
                         }
                     }
@@ -294,8 +302,25 @@
                 </div>'
     }));
 
+    var PopulatorFormCommonMethods = {
+        data: function() {
+            return { };
+        },
+        methods: {
+            getProbabilityRules: function(valueIndex, values) {
+                return "required|integer|min_value:0|max_value:" + (this.totalProbability(valueIndex, values));
+            },
+            totalProbability: function(valueIndex, values) {
+                if (values && values.length) {
+                    return 100 - (values.reduce((total, value, index) => index !== valueIndex ? parseInt(value.probability) + total : total, 0));
+                }
+            },
+        }
+    };
+    countlyVue.mixins.populatorFormCommonMethods = PopulatorFormCommonMethods;
+
     const userSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
         props: {
             value: {
                 type: [Object, Array],
@@ -477,13 +502,13 @@
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
                 }
-            }
+            },
         },
         template: CV.T("/populator/templates/sections/users.html")
     });
 
     const eventsSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
         props: {
             isOpen: {
                 type: Boolean,
@@ -505,6 +530,9 @@
         watch: {
             events: {
                 handler: function(newValue) {
+                    if (!newValue.length) {
+                        this.$parent.isSectionActive = false;
+                    }
                     this.$emit('input', newValue);
                 },
                 deep: true
@@ -657,7 +685,7 @@
     });
 
     const viewsSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
         props: {
             isOpen: {
                 type: Boolean,
@@ -679,6 +707,9 @@
         watch: {
             views: {
                 handler: function(newValue) {
+                    if (!newValue.length) {
+                        this.$parent.isSectionActive = false;
+                    }
                     this.$emit('input', newValue);
                 },
                 deep: true
@@ -1136,6 +1167,7 @@
                 description: '',
                 userProperties: [],
                 disableSwitch: false,
+                sectionIndex: -1,
                 disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message'),
             };
         },
@@ -1146,6 +1178,8 @@
         },
         created: function() {
             this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type]);
+            const keys = Object.keys(this.descriptionEnum);
+            this.sectionIndex = keys.indexOf(this.type);
         },
         components: {
             userSection,
@@ -1157,7 +1191,7 @@
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\
                         <el-switch v-if="hasSwitch" v-tooltip="disableSwitch ? disableSwitchMessage : null" :disabled="disableSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
-                        <span class="text-big bu-has-text-weight-medium">{{title}}</span>\
+                        <span class="text-big bu-has-text-weight-medium" :id="\'section-\' + sectionIndex + \'-title\'">{{title}}</span>\
                     </div>\
                     <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
                     <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" >\
