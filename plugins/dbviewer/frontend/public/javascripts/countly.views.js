@@ -489,6 +489,9 @@
                 backToDBViewer: function() {
                     window.location = '#/manage/db/' + this.db + '/' + this.collection;
                 },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
                 executeQuery: function() {
                     var self = this;
 
@@ -498,9 +501,15 @@
                         countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
                             self.updatePath(self.query);
                             if (res) {
+                                var map = [];
+                                res.aaData.forEach(row => {
+                                    Object.keys(row).forEach(key => {
+                                        map[key] = true;
+                                    });
+                                });
                                 self.aggregationResult = res.aaData;
                                 if (res.aaData.length) {
-                                    self.fields = Object.keys(res.aaData[0]);
+                                    self.fields = Object.keys(map);
                                 }
                             }
                             if (err) {
