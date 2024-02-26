@@ -43,5 +43,7 @@ fi
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf "$DIR/../node_modules"
+rm -rf "$DIR/../plugins/hooks/node_modules"
 
 (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
+(cd "$DIR/../plugins/hooks" && sudo npm install --unsafe-perm)
