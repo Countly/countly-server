@@ -229,31 +229,8 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.is_os_processed = true;
             }
             else {
-                var value;
-                var length;
-                for (var key in common.os_mapping) {
-                    if (params.qstring.metrics._os.toLowerCase().startsWith(key)) {
-                        if (value) {
-                            if (length < key.length) {
-                                value = common.os_mapping[key];
-                                length = key.length;
-                            }
-                        }
-                        else {
-                            value = common.os_mapping[key];
-                            length = key.length;
-                        }
-                    }
-                }
-
-                if (!value) {
-                    params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
-                else {
-                    params.qstring.metrics._os_version = value + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
+                params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
             }
         }
         if (params.qstring.metrics._app_version) {
