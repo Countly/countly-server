@@ -212,48 +212,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         });
-
-
-                        var unset = {};
-                        for (var zz = 0; zz < omit.length; zz++) {
-                            unset["segments." + omit[zz]] = "";
-                        }
-                        common.db.collection('views').updateOne({"_id": common.db.ObjectID(appId)}, {$set: {omit: omit}, "$unset": unset}, function(err5) {
-                            if (err5) {
-                                log.e(err5);
-                                common.returnMessage(params, 400, "Updating database failed");
-                                resolve();
-                            }
-                            else {
-                                plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit", data: { update: omit}});
-
-                                var promises = [];
-                                var errCn = 0;
-                                for (var z = 0; z < omit.length; z++) {
-                                    var colName = "app_viewdata" + crypto.createHash('sha1').update(omit[z] + appId).digest('hex');
-                                    promises.push(new Promise(function(resolve2) {
-                                        common.db.collection(colName).drop(function(err) {
-                                            if (err && err.code !== 26) { //if error is not collection not found.(Because it is possible for it to not exist)
-                                                log.e(JSON.stringify(err));
-                                                errCn++;
-                                            }
-                                            resolve2();
-                                        });
-                                    }));
-                                }
-                                Promise.all(promises).then(function() {
-                                    log.d("Segments omittion compleated  for:" + JSON.stringify(omit));
-                                    if (errCn > 0) {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit_complete", data: { update: omit, error: "Failed to delete some(" + errCn + ") collections. Please call omiting again."}});
-                                    }
-                                    else {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit_complete", data: { update: omit}});
-                                    }
-                                });
-                                common.returnMessage(params, 200, 'Success');
-                                resolve();
-                            }
-                        });
                     }
                     else {
                         common.returnMessage(params, 400, 'Nothing is passed for omiting');
