@@ -66,7 +66,7 @@
     "grunt-contrib-uglify": "5.2.2",
     "hpagent": "^1.2.0",
     "icanhazip": "^1.0.3",
-    "jimp": "0.22.10",
+    "jimp": "0.22.12",
     "json2csv": "5.0.7",
     "jsonwebtoken": "^9.0.1",
     "later": "1.2.0",
