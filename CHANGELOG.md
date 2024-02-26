@@ -1,3 +1,22 @@
+## Version 23.11.13
+Fixes:
+- [star-rating] Changes to add view user button in ratings
+- [star-rating] Fixes to ratings logo in feedback popup
+- [core] Record in diagnostic collection each time server is restarted
+- [core] Added config to allow preventing running jobs on specific servers
+- [reports] unsubscribe decrypt gcm fix
+- [crashes] Update statistics calculation
+- [scripts] Changes in upgrade scripts do do not clear out old collections, but rather have dedicated scripts for it to be run when upgrade is verified.
+- [scripts] Script to remove apm events per app
+- [core] Check correct sdk instance for reporting data
+
+Enterprise Fixes:
+- [geo] UI for geolocations
+- [drill] Fixed drill events when applied new filter
+- [drill] Fix toggle for drill segmentation 
+- [formulas] Fix for formulas graph becomes unresponsive
+- [data-manager] CSV export breaks if there is big_list or array type
+
 ## Version 23.11.12
 Fixes:
   - [core] Added option to run merges in paralel in merging job.

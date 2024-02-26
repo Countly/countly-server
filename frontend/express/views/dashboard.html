@@ -2009,7 +2009,7 @@
     <% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
-        if (typeof Countly !== "undefined" && Countly.add_event) {
+        if (typeof Countly !== "undefined" && Countly.i && Countly.i[countlyGlobal.frontend_app] && Countly.add_event) {
             Countly.add_event(event);
         }
     };
