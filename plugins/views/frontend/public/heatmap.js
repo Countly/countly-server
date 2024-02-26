@@ -66,6 +66,59 @@
         }
     }
 
+    function log(level, message) {
+        if (Countly && Countly.debug && typeof console !== 'undefined') {
+            var logLevelEnums = {
+                ERROR: "[ERROR] ",
+                WARNING: "[WARNING] ",
+                INFO: "[INFO] ",
+                DEBUG: "[DEBUG] ",
+                VERBOSE: "[VERBOSE] "
+            };
+
+            // parse the arguments into a string if it is an object
+            if (arguments[2] && _typeof(arguments[2]) === "object") {
+                arguments[2] = JSON.stringify(arguments[2]);
+            }
+            // append app_key to the start of the message if it is not the first instance (for multi instancing)
+            if (!global) {
+                message = "[" + self.app_key + "] " + message;
+            }
+            // if the provided level is not a proper log level re-assign it as [DEBUG]
+            if (!level) {
+                level = logLevelEnums.DEBUG;
+            }
+            // append level, message and args
+            var extraArguments = "";
+            for (var i = 2; i < arguments.length; i++) {
+                extraArguments += arguments[i];
+            }
+            // eslint-disable-next-line no-shadow
+            var content = level + "[Countly] " + message + extraArguments;
+            // decide on the console
+            if (level === logLevelEnums.ERROR) {
+                // eslint-disable-next-line no-console
+                console.error(content);
+                HealthCheck.incrementErrorCount();
+            } else if (level === logLevelEnums.WARNING) {
+                // eslint-disable-next-line no-console
+                console.warn(content);
+                HealthCheck.incrementWarningCount();
+            } else if (level === logLevelEnums.INFO) {
+                // eslint-disable-next-line no-console
+                console.info(content);
+            } else if (level === logLevelEnums.VERBOSE) {
+                // eslint-disable-next-line no-console
+                console.log(content);
+            }
+            // if none of the above must be [DEBUG]
+            else {
+                // eslint-disable-next-line no-console
+                console.debug(content);
+            }
+        }
+    }
+
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
     loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
@@ -789,7 +842,7 @@
 
     function sendXmlHttpRequest(params, apiPath, callback) {
         try {
-            Countly._internals.log("Sending XML HTTP request");
+            log("Sending XML HTTP request");
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
             var data = Countly._internals.prepareParams(params);
@@ -817,7 +870,7 @@
                         Countly._internals.setToken(xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
-                        Countly._internals.log("failed, trying fallback header");
+                        log("failed, trying fallback header");
                         Countly.token = xhr.getResponseHeader("content-language");
                     }
                 }
@@ -827,7 +880,7 @@
                     }
                 }
                 else if (this.readyState === 4) {
-                    Countly._internals.log("Failed Server XML HTTP request", this.status);
+                    log("Failed Server XML HTTP request", this.status);
                     if (typeof callback === 'function') {
                         callback(true, params);
                     }
@@ -842,7 +895,7 @@
         }
         catch (e) {
             // fallback
-            Countly._internals.log("Failed XML HTTP request", e);
+            log("Failed XML HTTP request", e);
             if (typeof callback === 'function') {
                 callback(true, params);
             }
