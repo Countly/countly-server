@@ -162,7 +162,7 @@ exports.renderView = function(options, cb) {
                         await page.waitForResponse(
                             function (response) {
                                 console.log('[' + new Date().toUTCString() + ']', `reached page.waitForResponse url: ${response.url()}`);
-                                console.log('[' + new Date().toUTCString() + ']', `response object: ${JSON.en(response.status())}`);
+                                console.log('[' + new Date().toUTCString() + ']', `response object: ${response.status()}`);
                                 var url = response.url();
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
@@ -186,7 +186,7 @@ exports.renderView = function(options, cb) {
                     height: parseInt(options.dimensions.height),
                     deviceScaleFactor: options.dimensions.scale
                 });
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Set viewport dimensions');
+                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Set viewport dimensions');s
 
                 await timeout(1500);
 
