@@ -61,7 +61,7 @@
                                         <div class="bu-is-flex">
                                             <div class="bu-mt-2">
                                                 <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
+                                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}" @input="getProbabilityRules(valueIndex, segment.values)">
                                                         <template slot="suffix">
                                                             <span class="text-medium color-cool-gray-50">%</span>
                                                         </template>
@@ -103,7 +103,7 @@
                                         <div class="bu-is-flex" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
                                             <div class="bu-mt-2">
                                                 <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                                    <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}">
+                                                    <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}" @input="getProbabilityRules(segmentValueIndex, segment.condition.values)">
                                                         <template slot="suffix">
                                                             <span class="text-medium color-cool-gray-50">%</span>
                                                         </template>
