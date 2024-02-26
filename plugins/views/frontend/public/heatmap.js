@@ -7,6 +7,11 @@
         clickMap,
         scrollMap;
 
+    /**
+     *  Load external js files
+     *  @param {String} js - path to JS file
+     *  @param {Function} callback - callback when done
+     */
     function loadFile(tag, attr, type, src, data, callback) {
         var fileRef = document.createElement(tag);
         var loaded;
@@ -25,21 +30,37 @@
         document.getElementsByTagName("head")[0].appendChild(fileRef);
     }
 
+    /**
+     *  Get height of whole document
+     *  @returns {Number} height in pixels
+     */
     function getDocHeight() {
         var D = document;
         return Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
     }
 
+    /**
+     *  Get width of whole document
+     *  @returns {Number} width in pixels
+     */
     function getDocWidth() {
         var D = document;
         return Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
     }
 
+    /**
+     *  Get height of viewable area
+     *  @returns {Number} height in pixels
+     */
     function getViewportHeight() {
         var D = document;
         return Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
     }
 
+    /**
+     *  Checks if sdk debug mode is true and console is available in Countly object
+     * @returns {Boolean} true if debug is true and console is available in Countly object
+     */
     function checkIfLoggingIsOn() {
         // check if logging is enabled
         if (Countly && Countly.debug && typeof console !== "undefined") {
@@ -48,6 +69,12 @@
         return false;
     }
         
+    /**
+     *  Listen to specific browser event
+     *  @param {HTMLElement} element - HTML element that should listen to event
+     *  @param {String} type - event name or action
+     *  @param {Function} listener - callback when event is fired
+     */
     function add_event_listener(element, type, listener) {
         if (element === null || typeof element === "undefined") {
             // element can be null so lets check it first
@@ -66,6 +93,11 @@
         }
     }
 
+    /**
+     *  Logging stuff, works only when sdk debug mode is true
+     * @param {string} level - log level (error, warning, info, debug, verbose)
+     * @param {string} message - any string message
+     */
     function log(level, message) {
         if (Countly && Countly.debug && typeof console !== 'undefined') {
             var logLevelEnums = {
@@ -117,6 +149,19 @@
                 console.debug(content);
             }
         }
+    }
+
+    /**
+     *  Convert JSON object to URL encoded query parameter string
+     *  @param {Object} params - object with query parameters
+     *  @returns {String} URL encode query string
+     */
+    function prepareParams(params) {
+        var str = [];
+        for (var i in params) {
+            str.push(i + "=" + encodeURIComponent(params[i]));
+        }
+        return str.join("&");
     }
 
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
@@ -845,7 +890,7 @@
             log("Sending XML HTTP request");
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
-            var data = Countly._internals.prepareParams(params);
+            var data = prepareParams(params);
             var method = "GET";
             if (data.length >= 2000) {
                 method = "POST";
