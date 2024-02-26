@@ -158,19 +158,24 @@ exports.renderView = function(options, cb) {
                     console.log('[' + new Date().toUTCString() + ']',`waitForRegexAfterCbfn: ${waitForRegexAfterCbfn}`);
                     if (waitForRegex) {
                         console.log('[' + new Date().toUTCString() + ']', 'waitForRegex if block');
-                        console.log('[' + new Date().toUTCString() + ']',`waitforRegex: ${waitForRegex}`);
-                        await page.waitForResponse(
-                            function (response) {
-                                console.log('[' + new Date().toUTCString() + ']', `reached page.waitForResponse url: ${response.url()}`);
-                                console.log('[' + new Date().toUTCString() + ']', `response object: ${response.status()}`);
-                                var url = response.url();
-                                if (waitForRegex.test(url) && response.status() === 200) {
-                                    console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
-                                    return true;
-                                }
-                            },
-                            { timeout: updatedTimeout }
-                        );
+                        console.log('[' + new Date().toUTCString() + ']', `waitforRegex: ${waitForRegex}`);
+                        try {
+                            let res = await page.waitForResponse(
+                                function (response) {
+                                    console.log('[' + new Date().toUTCString() + ']', `reached page.waitForResponse url: ${response.url()}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `response object: ${response.status()}`);
+                                    var url = response.url();
+                                    if (waitForRegex.test(url) && response.status() === 200) {
+                                        console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
+                                        return true;
+                                    }
+                                },
+                                { timeout: updatedTimeout }
+                            );
+                            console.log('[' + new Date().toUTCString() + ']', `res: ${res}`);
+                        } catch (urlTryError) {
+                            console.log('[' + new Date().toUTCString() + ']', `urlTryError: ${urlTryError}`);
+                        }
                         console.log('[' + new Date().toUTCString() + ']','render.js Line 15: Waited for response matching regex after cbFn');
                     }
                 }
