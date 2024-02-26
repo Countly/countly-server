@@ -10,6 +10,7 @@ var pluginOb = {},
     log = common.log('views:api'),
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
+const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
@@ -30,6 +31,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/worker", function() {
         common.dbUniqueMap.users.push("vc");
+    });
+
+    plugins.register("/master", function() {
+        // Allow configs to load & scanner to find all jobs classes
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('views:cleanupMeta').replace().schedule("every 1 day");
+        }, 3000);
     });
 
     plugins.register("/i/user_merge", function(ob) {
@@ -193,6 +201,19 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
+
+                        viewsUtils.ommit_segments({params: params, db: common.db, omit: omit, appId: params.qstring.app_id}, function(err) {
+                            if (err) {
+                                common.returnMessage(params, 400, "Updating database failed");
+                            }
+                            else {
+                                common.returnMessage(params, 200, 'Success');
+                            }
+                            resolve();
+                            return;
+                        });
+
+
                         var unset = {};
                         for (var zz = 0; zz < omit.length; zz++) {
                             unset["segments." + omit[zz]] = "";
@@ -244,6 +265,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 resolve();
             }
         });
+    });
+
+    plugins.register("/batcher/fail", function(ob) {
+        if (ob.db === "countly" && (ob.collection.indexOf("app_viewdata") === 0)) {
+            //omit segment using app_id and segment name
+            if (ob.data && ob.data.updateOne && ob.data.updateOne.update && ob.data.updateOne.update.$set) {
+                var appId = ob.data.updateOne.update.$set.a;
+                var segment = ob.data.updateOne.update.$set.s;
+                if (appId && segment) {
+                    log.d("calling segment omiting for " + appId + " - " + segment);
+                    viewsUtils.ommit_segments({extend: true, db: common.db, omit: [segment], appId: appId, params: {"qstring": {}, "user": {"_id": "SYSTEM", "username": "SYSTEM"}}}, function(err) {
+                        if (err) {
+                            log.e(err);
+                        }
+                    });
+                }
+
+            }
+        }
     });
 
     plugins.register("/i/device_id", function(ob) {
