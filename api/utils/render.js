@@ -97,10 +97,10 @@ exports.renderView = function(options, cb) {
                 });
 
                 var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + countlyConfig.path;
-
                 if (options.host) {
                     host = options.host + countlyConfig.path;
                 }
+                console.log('[' + new Date().toUTCString() + ']',`render.js Host: ${host}`);
 
                 var token = options.token;
                 var view = options.view;
@@ -154,9 +154,15 @@ exports.renderView = function(options, cb) {
                 console.log('[' + new Date().toUTCString() + ']','render.js Line 14: Executed cbFn');
 
                 if (waitForRegexAfterCbfn) {
+                    console.log('[' + new Date().toUTCString() + ']', 'waitForRegexAfterCbfn if block');
+                    console.log('[' + new Date().toUTCString() + ']',`waitForRegexAfterCbfn: ${waitForRegexAfterCbfn}`);
                     if (waitForRegex) {
+                        console.log('[' + new Date().toUTCString() + ']', 'waitForRegex if block');
+                        console.log('[' + new Date().toUTCString() + ']',`waitforRegex: ${waitForRegex}`);
                         await page.waitForResponse(
-                            function(response) {
+                            function (response) {
+                                console.log('[' + new Date().toUTCString() + ']', `reached page.waitForResponse url: ${response.url()}`);
+                                console.log('[' + new Date().toUTCString() + ']', `response object: ${JSON.en(response.status())}`);
                                 var url = response.url();
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
@@ -170,6 +176,10 @@ exports.renderView = function(options, cb) {
                 }
 
                 await timeout(1500);
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 15: Before setting viewport dimensions');
+                console.log('[' + new Date().toUTCString() + ']', `options.dimensions.width: ${options.dimensions.width}`);
+                console.log('[' + new Date().toUTCString() + ']', `options.dimensions.height: ${options.dimensions.height}`);
+                console.log('[' + new Date().toUTCString() + ']', `options.dimensions.scale: ${options.dimensions.scale}`);
 
                 await page.setViewport({
                     width: parseInt(options.dimensions.width),
@@ -181,7 +191,9 @@ exports.renderView = function(options, cb) {
                 await timeout(1500);
 
                 var bodyHandle = await page.$('body');
+                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Obtained body handle');
                 var dimensions = await bodyHandle.boundingBox();
+                console.log('[' + new Date().toUTCString() + ']',`render.js Line 16: Obtained body bounding box: ${JSON.stringify(dimensions)}`);
 
                 await page.setViewport({
                     width: parseInt(options.dimensions.width || dimensions.width),
