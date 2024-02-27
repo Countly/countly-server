@@ -15,33 +15,33 @@ var async = require('async'),
 //var db = plugins.dbConnection("countly");
 //var db_drill = plugins.dbConnection("countly_drill");
 
-var apps = []//leave empty to set to all apps or put in some apps
+var apps = [];//leave empty to set to all apps or put in some apps
 
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
     db.collections(function(err, collections) {
-        if(err){
-            log.e(err);
+        if (err) {
+            console.log(err);
         }
         collections = collections || [];
         console.log("collection list loaded");
         collections = collections.filter(function(c) {
-            if(c && c.collectionName){
-                    if(c.collectionName.indexOf("eventTimes") === 0){
-                        if(apps.length>0){
-                            for(var i = 0; i < apps.length; i++){
-                                if(c.collectionName === ("eventTimes"+apps[i])){
-                                    return true;
-                                }
+            if (c && c.collectionName) {
+                if (c.collectionName.indexOf("eventTimes") === 0) {
+                    if (apps.length > 0) {
+                        for (var i = 0; i < apps.length; i++) {
+                            if (c.collectionName === ("eventTimes" + apps[i])) {
+                                return true;
                             }
-                            return false;
                         }
-                        else {
-                        return true;
-                        }
+                        return false;
                     }
                     else {
-                        return false;
-                 }
+                        return true;
+                    }
+                }
+                else {
+                    return false;
+                }
             }
             else {
                 return false;
@@ -50,7 +50,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         function eventIterator(coll, done) {
             var collection = coll.collectionName;
             console.log("processing", collection);
-			db.collection(collection).indexes(function(err, indexes) {
+            db.collection(collection).indexes(function(err, indexes) {
                 if (err) {
                     console.log(err);
                 }
