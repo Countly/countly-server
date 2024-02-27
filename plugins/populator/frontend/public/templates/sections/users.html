@@ -6,7 +6,7 @@
             <div class="bu-mr-2">
               <div>
                 <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.key')}}</span>
-                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                <cly-tooltip-icon :tooltip="i18n('populator-template.key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
               </div>
               <div class="bu-mt-2">
                 <validation-provider name="name" rules="required" v-slot="v">
@@ -17,7 +17,7 @@
             <div class="bu-mr-2">
                 <div>
                   <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.values')}}</span>
-                  <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                  <cly-tooltip-icon :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                 </div>
                 <div class="bu-mt-2" v-for="(value, index) in user.values">
                   <el-input class="input" v-model="value.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
@@ -26,7 +26,7 @@
             <div>
                 <div>
                     <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
-                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                    <cly-tooltip-icon :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                 </div>
                 <div>
                     <div class="bu-is-flex" v-for="(value, valueIndex) in user.values">
@@ -59,7 +59,7 @@
             <div class="bu-is-flex bu-is-justify-content-flex-end">
                 <div class="bu-mr-2">
                     <span class="text-smallish bu-has-text-weight-medium">{{ i18n('populator-template.values') }}</span>
-                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                    <cly-tooltip-icon :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                     <div class="bu-mt-2" v-for="(value, valueIndex) in user.condition.values">
                         <el-input class="input" v-model="value.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
                     </div>
@@ -67,7 +67,7 @@
                 <div>
                     <div>
                         <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
-                        <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                     </div>
                     <div>
                         <div class="bu-is-flex" v-for="(value, valueIndex) in user.condition.values">

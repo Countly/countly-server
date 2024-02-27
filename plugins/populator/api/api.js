@@ -664,6 +664,10 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter environment_id");
             return false;
         }
+        if (!obParams.qstring.template_id) {
+            common.returnMessage(obParams, 401, "Missing parameter template_id");
+            return false;
+        }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
                 "_id": {

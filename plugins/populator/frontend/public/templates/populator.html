@@ -3,7 +3,7 @@
         <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')">
             <cly-header
                 :title="i18n('populator.plugin-title')"
-                :tooltip="{description: i18n('description')}"
+                :tooltip="{description: i18n('populator.plugin-description')}"
             >
             </cly-header>
             <cly-main>
@@ -109,11 +109,9 @@
             </cly-main>
         </el-tab-pane>
         <el-tab-pane name="templates" :label="i18n('populator.templates-tab-title')">
-            <cly-header>
-                <template v-slot:header-left>
-                    <h2> {{i18n('populator.templates-tab-title')}} </h2>
-                    <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator.templates-tooltip')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-                </template>
+            <cly-header
+                :title="i18n('populator.templates-tab-title')"
+                :tooltip="{description: i18n('populator.templates-tooltip')}">
                 <template v-slot:header-right>
                     <el-button type="success" v-if="canUserCreate" icon="el-icon-circle-plus" @click="newTemplate">{{i18n("populator.create-new-template")}}</el-button>
                 </template> 
