@@ -1,6 +1,6 @@
 <div class="bu-mt-3 populator-template populator-template__users">
     <slot name="default"></slot>
-    <div class="text-medium bu-has-text-weight-medium bu-mt-5 bu-mb-4">{{i18n("populator.custom-user-props")}}</div>
+    <div class="text-big bu-has-text-weight-medium bu-mt-5 bu-mb-4">{{i18n("populator.custom-user-props")}}</div>
     <cly-populator-section-detail class="bu-mb-4 populator-template__users--property-section" :title="i18n('populator-template.property-details')" entity="Property" @remove="() => onRemoveUserProperty(index)" :key="index" v-for="(user, index) in users">
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-2">
             <div class="bu-mr-2">
