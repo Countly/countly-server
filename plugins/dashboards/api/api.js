@@ -1409,7 +1409,7 @@ plugins.setConfigs("dashboards", {
                                 //$(".funnels table colgroup col:last-child").width("80px");
                                 //};
 
-                                options.waitForRegex = new RegExp(/o\/dashboards?/gi);
+                                options.waitForRegex = new RegExp(/o\/dashboards?/i);
 
                                 options.id = "#content";
 
