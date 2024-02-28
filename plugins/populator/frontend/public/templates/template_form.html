@@ -29,10 +29,10 @@
                         <cly-populator-section title="Users" type="userSection" v-model="drawerScope.editedObject.users" :parent-data="drawerScope.editedObject.behavior">
                             <template v-slot:default>
                                 <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.unique-users")}}</span>
-                                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.unique-users-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                <cly-tooltip-icon :tooltip="i18n('populator-template.unique-users-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                 <cly-populator-number-selector class="bu-mb-5 bu-mt-3" :items="uniqueUserItems" v-model="drawerScope.editedObject.uniqueUserCount"></cly-populator-number-selector>
                                 <span class="text-medium bu-has-text-weight-medium">{{i18n("populator-template.platforms")}}</span>
-                                <cly-tooltip-icon class="bu-ml-1" :tooltip="i18n('populator-template.platforms-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                <cly-tooltip-icon :tooltip="i18n('populator-template.platforms-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                 <validation-provider name="platform" rules="required" v-slot="v">
                                     <div class="bu-mt-1 populator-template__users--platform-type">
                                         <el-checkbox-group v-model="drawerScope.editedObject.platformType" size="medium" :class="{'is-error': v.errors.length > 0}">
