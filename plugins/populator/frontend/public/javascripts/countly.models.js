@@ -1767,13 +1767,19 @@
         }
 
         templateUp.forEach(function(item) {
-            up[item.key] = randomSelectByProbability(tryToParseJSON(item.values));
+            let selectedValue = randomSelectByProbability(tryToParseJSON(item.values));
+            if (selectedValue !== "") {
+                up[item.key] = selectedValue;
+            }
         });
 
         let modifiedUpOnConditions = {};
         templateUp.forEach(function(item) {
             if (item.condition && up[item.condition.selectedKey] === item.condition.selectedValue) {
-                modifiedUpOnConditions[item.key] = randomSelectByProbability(tryToParseJSON(item.condition.values));
+                let selectedValue = randomSelectByProbability(tryToParseJSON(item.condition.values));
+                if (selectedValue !== "") {
+                    modifiedUpOnConditions[item.key] = selectedValue;
+                }
             }
         });
         const mergedUp = Object.assign({}, up, modifiedUpOnConditions);
@@ -2300,19 +2306,25 @@
                 eventTemplate.segmentations.forEach(function(item) {
                     var values = item.values;
                     var key = item.key;
-                    eventSegmentations[key] = randomSelectByProbability(tryToParseJSON(values));
-                    if (id === "[CLY]_view") {
-                        eventSegmentations.name = eventTemplate.key;
-                        eventSegmentations.visit = 1;
-                        eventSegmentations.start = 1;
-                        eventSegmentations.bounce = 1;
+                    let selectedSegmentation = randomSelectByProbability(tryToParseJSON(values));
+                    if (selectedSegmentation !== "") {
+                        eventSegmentations[key] = selectedSegmentation;
+                        if (id === "[CLY]_view") {
+                            eventSegmentations.name = eventTemplate.key;
+                            eventSegmentations.visit = 1;
+                            eventSegmentations.start = 1;
+                            eventSegmentations.bounce = 1;
+                        }
                     }
                 });
                 eventTemplate.segmentations.forEach(function(item) {
                     if (item.condition && Object.keys(eventSegmentations).includes(item.condition.selectedKey) && eventSegmentations[item.condition.selectedKey] === item.condition.selectedValue) {
                         var values = item.condition.values;
                         var key = item.key;
-                        modifiedSegmentationsOnCondition[key] = randomSelectByProbability(tryToParseJSON(values));
+                        let selectedSegmentationCondition = randomSelectByProbability(tryToParseJSON(values));
+                        if (selectedSegmentationCondition !== "") {
+                            modifiedSegmentationsOnCondition[key] = selectedSegmentationCondition;
+                        }
                     }
                 });
                 event.segmentation = Object.assign({}, eventSegmentations, modifiedSegmentationsOnCondition);

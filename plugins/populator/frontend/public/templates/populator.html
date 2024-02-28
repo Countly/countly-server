@@ -60,7 +60,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-template')">
+                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')">
                                     <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
                                 </el-select>
                             </div>

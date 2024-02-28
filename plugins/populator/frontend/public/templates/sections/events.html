@@ -2,12 +2,12 @@
     <cly-populator-section-detail  v-if="isOpen" class="bu-mb-3 populator-template__events--property-section" :title="i18n('populator-template.event-details')" entity="Event" @remove="() => onRemoveEvent(index)" :key="index" v-for="(event, index) in events">
         <div class="bu-mt-2">
             <div>
-              <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator.event-key')}}</span>
-              <cly-tooltip-icon :tooltip="i18n('populator-template.event-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+              <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator.event-name')}}</span>
+              <cly-tooltip-icon :tooltip="i18n('populator-template.event-name-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
             </div>
             <div class="bu-mt-2">
               <validation-provider name="name" rules="required" v-slot="v">
-                  <el-input style="width: 100%;" :placeholder="i18n('populator-template.enter-your-event-key')" class="input" v-model="event.key" :class="{'is-error': v.errors.length > 0}"></el-input>
+                  <el-input style="width: 100%;" :placeholder="i18n('populator-template.enter-your-event-name')" class="input" v-model="event.key" :class="{'is-error': v.errors.length > 0}"></el-input>
               </validation-provider>
             </div>
             <div class="populator-template__events--segmentation-section">
@@ -47,8 +47,8 @@
                             <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
                                 <div class="bu-mr-2">
                                 <div>
-                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-key')}}</span>
-                                    <cly-tooltip-icon :tooltip="i18n('populator-template.segment-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-name')}}</span>
+                                    <cly-tooltip-icon :tooltip="i18n('populator-template.segment-name-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                 </div>
                                 <div class="bu-mt-2">
                                     <validation-provider name="name" rules="required" v-slot="v">
@@ -102,7 +102,7 @@
                             <div class="bu-is-flex bu-is-justify-content-flex-end">
                                 <div class="bu-mr-2">
                                     <span class="text-smallish bu-has-text-weight-medium">{{ i18n('populator-template.values') }}</span>
-                                    <cly-tooltip-icon :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    <cly-tooltip-icon :tooltip="i18n('populator-template.condition-value-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                     <div class="bu-mt-2" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
                                         <el-input class="input" v-model="segmentValue.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
                                     </div>

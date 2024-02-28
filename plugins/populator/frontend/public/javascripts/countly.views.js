@@ -396,8 +396,8 @@
                     showDialog: true,
                     saveButtonLabel: CV.i18n('common.yes'),
                     cancelButtonLabel: CV.i18n('common.cancel'),
-                    title: CV.i18n('populator.environment-delete-warning-title', this.environmentId),
-                    text: CV.i18n('populator.environment-delete-warning-description')
+                    title: CV.i18n('populator.environment-delete-warning-title'),
+                    text: CV.i18n('populator.environment-delete-warning-description', this.filterByEnvironmentOptions.filter(x => x.value === this.environmentId)[0].label)
                 };
             },
             calculateWidth: function(percentage) {
