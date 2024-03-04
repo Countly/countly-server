@@ -1334,7 +1334,7 @@ plugins.setConfigs("dashboards", {
                         owner: report.user,
                         purpose: "LoginAuthToken",
                         temporary: true,
-                        ttl: 540, //9 minutes
+                        ttl: 900, //15 minutes
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();
