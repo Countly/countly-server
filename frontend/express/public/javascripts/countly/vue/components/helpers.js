@@ -35,8 +35,8 @@
                     return this.i18n("common.back");
                 }
             },
-            template: '<a @click="back" class="cly-vue-back-link"> \n' +
-                            '<span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
+            template: '<a @click="back" class="cly-vue-back-link" :data-test-id="testId + \'-back-link-label\'"> \n' +
+                            '<span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3" :data-test-id="testId + \'-back-link-icon\'"></i>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));
