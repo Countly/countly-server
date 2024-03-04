@@ -3,7 +3,6 @@
  * Module for pdf export
  * @module api/utils/pdf
  */
-var pathModule = require('path');
 var puppeteer;
 try {
     puppeteer = require('puppeteer');
@@ -33,47 +32,45 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         );
     }
     let browser;
-    // if (puppeteerArgs) {
-    //     browser = await puppeteer.launch(puppeteerArgs);
-    // }
-    // else {
-    browser = await puppeteer.launch({
-        headless: true,
-        // debuggingPort: 9229,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        ignoreHTTPSErrors: true,
-        userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
-    });
-    // }
+    try {
+        if (puppeteerArgs) {
+            browser = await puppeteer.launch(puppeteerArgs);
+        }
+        else {
+            browser = await puppeteer.launch();
+        }
+        const updatedTimeout = 240000;
+        const page = await browser.newPage();
+        page.setDefaultNavigationTimeout(updatedTimeout);
+        if (!options) {
+            options = { format: 'Letter' };
+        }
 
-    const updatedTimeout = 240000;
-    const page = await browser.newPage();
-    page.setDefaultNavigationTimeout(updatedTimeout);
-    if (!options) {
-        options = { format: 'Letter' };
-    }
+        if (remoteContent === true) {
+            console.log('[' + new Date().toUTCString() + ']','pdf.js Step 1: New page created');
+            await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
+                waitUntil: 'networkidle0'
+            });
+            console.log('[' + new Date().toUTCString() + ']','pdf.js Step 2: Page loaded with remote content');
+        }
+        else {
+            //page.setContent will be faster than page.goto if html is a static
+            console.log('[' + new Date().toUTCString() + ']','pdf.js Step 3: New page created');
+            await page.setContent(html);
+            console.log('[' + new Date().toUTCString() + ']','pdf.js Step 4: Page content set');
+        }
 
-    if (remoteContent === true) {
-        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 1: New page created');
-        await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
-            waitUntil: 'networkidle0'
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 6: New page created');
+        await page.pdf(options).then(callback, function (error) {
+            console.log('[' + new Date().toUTCString() + ']','pdf.js LINE 64 Error:', error);
         });
-        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 2: Page loaded with remote content');
-    }
-    else {
-        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 3: New page created');
-        //page.setContent will be faster than page.goto if html is a static
-        await page.setContent(html);
-        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 4: Page content set');
-    }
-
-    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 5: Puppeteer launched');
-    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 6: New page created');
-
-    await page.pdf(options).then(callback, function(error) {
         console.log('[' + new Date().toUTCString() + ']','pdf.js Step 7: PDF generated');
+    }
+    catch (error) {
         console.log('[' + new Date().toUTCString() + ']','pdf.js Error:', error);
-    });
-    await browser.close();
-    console.log('[' + new Date().toUTCString() + ']','pdf.js Step 8: Browser closed');
+    }
+    finally {
+        console.log('[' + new Date().toUTCString() + ']','pdf.js Step 8: Browser closed');
+        await browser.close();
+    }
 };

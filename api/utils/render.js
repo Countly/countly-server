@@ -199,7 +199,7 @@ exports.renderView = function(options, cb) {
                     height: parseInt(options.dimensions.height),
                     deviceScaleFactor: options.dimensions.scale
                 });
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Set viewport dimensions');s
+                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Set viewport dimensions');
 
                 await timeout(1500);
 
