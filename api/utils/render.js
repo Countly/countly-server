@@ -137,6 +137,11 @@ exports.renderView = function(options, cb) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
+                            console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 reached page.waitForResponse url: ${url}`);
+                            console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 response status: ${response.status()}`);
+                            console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 waitForRegex.test(url): ${waitForRegex.test(url)}`);
+                            console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 response.status() === 200: ${response.status() === 200}`);
+                            console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 waitForRegex.test(url) && response.status() === 200: ${waitForRegex.test(url) && response.status() === 200}`);
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 console.log('[' + new Date().toUTCString() + ']',`render.js Line 16: Waited for response matching regex after cbFn: ${url}`);
                                 return true;
@@ -163,11 +168,11 @@ exports.renderView = function(options, cb) {
                             let res = await page.waitForResponse(
                                 function (response) {
                                     var url = response.url();
-                                    console.log('[' + new Date().toUTCString() + ']', `reached page.waitForResponse url: ${url}`);
-                                    console.log('[' + new Date().toUTCString() + ']', `response object: ${response.status()}`);
-                                    console.log('[' + new Date().toUTCString() + ']', `waitForRegex.test(url): ${waitForRegex.test(url)}`);
-                                    console.log('[' + new Date().toUTCString() + ']', `response.status() === 200: ${response.status() === 200}`);
-                                    console.log('[' + new Date().toUTCString() + ']', `waitForRegex.test(url) && response.status() === 200: ${waitForRegex.test(url) && response.status() === 200}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 reached page.waitForResponse url: ${url}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 response status: ${response.status()}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 waitForRegex.test(url): ${waitForRegex.test(url)}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 response.status() === 200: ${response.status() === 200}`);
+                                    console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 waitForRegex.test(url) && response.status() === 200: ${waitForRegex.test(url) && response.status() === 200}`);
                                     if (waitForRegex.test(url) && response.status() === 200) {
                                         console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
                                         return true;
