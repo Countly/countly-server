@@ -39,60 +39,82 @@
                 defaultAlertDefine: {
                     metric: {
                         target: [
-                            { value: 'Total users', label: 'Total users' },
-                            { value: 'New users', label: 'New users' },
-                            { value: 'Total sessions', label: 'Total sessions' },
-                            { value: 'Average session duration', label: 'Average session duration' },
-                            { value: 'Purchases', label: 'Purchases' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
+                            { value: 'count', label: 'count' },
+                            { value: 'sum', label: 'sum' },
+                            { value: 'duration', label: 'duration' },
+                            { value: 'average sum', label: 'average sum' },
+                            { value: 'average duration', label: 'average duration' },
                         ]
                     },
                     event: {
-                        target: [],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
+                        target: [
+                            { value: 'bounce rate', label: 'bounce rate' },
+                            { value: '# of page views', label: '# of page views' }
                         ]
                     },
                     crash: {
                         target: [
-                            { value: 'Total crashes', label: 'Total crashes' },
-                            { value: 'New crash occurence', label: 'New crash occurence' },
-                            { value: 'None fatal crash per session', label: 'None fatal crash per session' },
-                            { value: 'Fatal crash per session', label: 'Fatal crash per session' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
+                            { value: 'average session duration', label: 'average session duration' },
+                            { value: '# of sessions', label: '# of sessions' },
                         ]
                     },
                     rating: {
                         target: [
-                            { value: 'Number of ratings', label: 'Number of ratings' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
+                            { value: '# of responses', label: '# of responses' },
+                            { value: 'new rating response', label: 'new rating response' },
                         ]
                     },
                     dataPoint: {
                         target: [
-                            { value: 'Number of daily DP', label: 'Daily data points' },
-                            { value: 'Hourly data points', label: 'Hourly data points' },
-                            { value: 'Monthly data points', label: 'Monthly data points' }
+                            { value: 'number of daily DP', label: 'daily data points' },
+                            { value: 'hourly data points', label: 'hourly data points' },
+                            { value: 'monthly data points', label: 'monthly data points' }
                         ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
                     },
+                },
+                defaultAlertVariable: {
+                    condition: [
+                        { label: "decreased", value: "decreased" },
+                        { label: "increased", value: "increased" },
+                        { label: "more", value: "more" }
+                    ]
+                },
+                defaultAlertTime: {
+                    time: [
+                        { label: "month", value: "monthly" },
+                        { label: "day", value: "daily" },
+                        { label: "hour", value: "hourly" }
+                    ]
                 }
             };
         },
         computed: {
+            isCompareTypeSelectAvailable: function() {
+                const disabledMetrics = [
+                    "new survey response",
+                    "new NPS response",
+                    "new rating response",
+                    "o",
+                    "m",
+                ];
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
+                    return false;
+                }
+                return true;
+            },
+            isPeriodSelectAvailable: function() {
+                const disabledMetrics = [
+                    "new survey response",
+                    "new NPS response",
+                    "new rating response",
+                    "o",
+                    "m",
+                ];
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
+                    return false;
+                }
+                return true;
+            },
             alertDataTypeOptions: function() {
                 var alertDataTypeOptions = [
                     {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
@@ -127,6 +149,7 @@
             }
         },
         props: {
+            placeholder: {type: String, default: 'Select'},
             controls: {
                 type: Object
             }
@@ -192,57 +215,18 @@
                 this.$refs.drawerData.editedObject.alertDataSubType2 = null;
                 this.$refs.drawerData.editedObject.compareType = null;
                 this.$refs.drawerData.editedObject.compareValue = null;
-            },
-            resetAlertConditionShow: function() {
-                this.showSubType1 = true;
-                this.showSubType2 = false;
-                this.showCondition = true;
-                this.showConditionValue = true;
-            },
-            alertDataSubTypeSelected: function(alertDataSubType, notReset) {
-                this.resetAlertConditionShow();
-                switch (alertDataSubType) {
-                case 'New crash occurence':
-                    this.showSubType2 = false;
-                    this.showCondition = false;
-                    this.showConditionValue = false;
-                    break;
-                case 'Number of ratings':
-                    if (!notReset) {
-                        this.resetAlertConditionShow();
-                    }
-                    this.showSubType2 = true;
-                    this.alertDataSubType2Options = countlyAlerts.RatingOptions;
-                    break;
-                case 'Number of page views':
-                case 'Bounce rate':
-                    this.resetAlertConditionShow();
-                    this.showSubType2 = true;
-                    var self = this;
-                    countlyAlerts.getViewForApp(this.apps[0], function(viewList) {
-                        self.alertDataSubType2Options = viewList.map(function(v) {
-                            return {value: v.value, label: v.name};
-                        });
-                    });
-                    break;
-                case 't':
-                    this.showUserCount = true;
-                    this.showSubType2 = false;
-                    this.showCondition = false;
-                    this.showConditionValue = false;
-                    break;
-                case 'o':
-                case 'm':
-                    this.showSubType2 = false;
-                    this.showCondition = false;
-                    this.showConditionValue = false;
-                    break;
-                default:
-                    if (!notReset) {
-                        this.resetAlertConditionShow();
-                    }
-                    return;
-                }
+                this.$refs.drawerData.editedObject.period = null;
+                // Reset the background color for all input elements
+                const inputs = this.$refs.drawerData.$el.querySelectorAll('input');
+                inputs.forEach(input => {
+                    this.resetColor(input);
+                });
+
+                // Reset the background color for all select elements
+                const selects = this.$refs.drawerData.$el.querySelectorAll('select');
+                selects.forEach(select => {
+                    this.resetColor(select);
+                });
             },
             onSubmit: function(settings) {
                 settings.selectedApps = [settings.selectedApps];
@@ -349,7 +333,6 @@
                 newState.selectedApps = newState.selectedApps[0];
 
                 this.onAppChange(newState.selectedApps, true);
-                this.alertDataSubTypeSelected(newState.alertDataSubType, true);
 
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
@@ -359,6 +342,21 @@
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.add-alert"];
             },
+            // Handle the change event of the element
+            handleChange(element) {
+                this.changeColor(element);
+            },
+            changeColor(element) {
+                // Set the background color of the element to green when a selection is made
+                element.style.backgroundColor = "#E1EFFF";
+                element.style.color = "#333C48";
+                element.style.fontWeight = "500";
+            },
+            resetColor(element) {
+                // Remove the inline background color style to reset to default
+                element.style.backgroundColor = '';
+                element.style.color = '';
+            }
         }
     });
 

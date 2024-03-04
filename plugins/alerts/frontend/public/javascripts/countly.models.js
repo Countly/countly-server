@@ -410,10 +410,9 @@
             alertDataSubType: null,
             alertDataSubType2: null,
             compareType: null,
+            period: null,
             compareValue: null,
             selectedApps: [""],
-
-            period: "every 1 hour on the 59th min",
             alertBy: "email",
             enabled: true,
             compareDescribe: '',

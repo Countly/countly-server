@@ -40,3 +40,40 @@
     }
     
 }
+
+#alert-drawer {
+
+    .alert-trigger{
+        font-size: 14px;
+    }
+
+    .alert-drawer-trigger-select-and-input{
+        /* The "appearance: none" property is used to remove the default arrow icon from the select button. */
+        -webkit-appearance: none; /* remove default appearance on Webkit-based browsers */
+        -moz-appearance: none; /* remove default appearance on Mozilla-based browsers */
+        appearance: none; /* remove default appearance on all other browsers */
+
+        display: inline-block; 
+        width: auto; 
+        padding: 6px;
+        text-align: center; 
+        border-width: 0px; 
+        background-color: #F8FAFD;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family:Inter;
+        font-weight: 500;
+        color: #0166D6;
+    } 
+    
+    .alert-drawer-trigger-input{
+        width:48px;
+        height: auto;
+    }
+    
+    .alert-drawer-trigger-input::placeholder{
+        font-weight: 500;
+        opacity: 1;
+        color:#0166D6;
+    }
+}
