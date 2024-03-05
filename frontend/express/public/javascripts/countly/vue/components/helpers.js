@@ -15,7 +15,8 @@
             ],
             props: {
                 title: {type: String, required: false},
-                link: {type: String, required: false}
+                link: {type: String, required: false},
+                testId: {type: String, required: false}
             },
             methods: {
                 back: function() {
