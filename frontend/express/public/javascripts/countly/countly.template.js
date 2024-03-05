@@ -1589,9 +1589,9 @@ var AppRouter = Backbone.Router.extend({
                     }
                 });
             };
-            setTimeout(function() {
-                validateSession();
-            }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
+            // setTimeout(function() {
+            //     validateSession();
+            // }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
             if (parseInt(countlyGlobal.config.session_timeout)) {
                 var minTimeout, tenSecondTimeout, logoutTimeout;
                 var shouldRecordAction = false;
@@ -1659,13 +1659,13 @@ var AppRouter = Backbone.Router.extend({
                 if (myTimeoutValue > 2147483647) {
                     myTimeoutValue = 1800000;
                 }//30 minutes
-                resetSessionTimeouts(myTimeoutValue);
-                $(document).on("click mousemove extend-dashboard-user-session", function() {
-                    if (shouldRecordAction) {
-                        extendSession();
-                    }
-                });
-                extendSession();
+                // resetSessionTimeouts(myTimeoutValue);
+                // $(document).on("click mousemove extend-dashboard-user-session", function() {
+                //     if (shouldRecordAction) {
+                //         extendSession();
+                //     }
+                // });
+                // extendSession();
             }
 
             // If date range is selected initialize the calendar with these
