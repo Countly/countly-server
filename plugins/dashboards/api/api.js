@@ -1330,11 +1330,11 @@ plugins.setConfigs("dashboards", {
                     var dashboardName = dashboard.name;
                     authorize.save({
                         db: db,
-                        multi: false,
+                        multi: true,
                         owner: report.user,
                         purpose: "LoginAuthToken",
                         temporary: true,
-                        ttl: 900, //15 minutes
+                        ttl: 1200, //20 minutes
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();

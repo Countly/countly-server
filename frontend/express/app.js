@@ -769,7 +769,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         if (req.query && req.query.ssr) {
             next();
         }
-        if (parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)) {
+        else if (parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)) {
             if (req.session.uid) {
                 if (Date.now() > req.session.expires) {
                     membersUtility.logout(req, res);
