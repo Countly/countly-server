@@ -766,6 +766,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         membersUtility.extendSession(req);
     };
     var checkRequestForSession = function(req, res, next) {
+        if (req.query && req.query.ssr) {
+            next();
+        }
         if (parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)) {
             if (req.session.uid) {
                 if (Date.now() > req.session.expires) {
