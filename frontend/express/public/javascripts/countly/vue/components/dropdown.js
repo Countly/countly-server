@@ -371,6 +371,10 @@
                                                 <template v-slot:action v-if="field.action">\
                                                     <slot name="action"></slot>\
                                                 </template>\
+                                                <!-- EMRE: added selectList slot --> \
+                                                <template v-slot:selectList="selectListScope" v-if="field.selectList">\
+                                                <slot name="selectList" v-bind="selectListScope"></slot>\
+                                            </template>\
                                             </cly-select-x>\
                                         </tr>\
                                     </table>\

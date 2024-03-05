@@ -433,8 +433,15 @@
                 }
             }
             return {"data": data};
+        },
+        // EMRE: getOmittedSegments placed in helpers
+        getOmittedSegments: function(selectedEventName, res) {
+            var omittedSegments = [];
+            if (res && res.omitted_segments) {
+                omittedSegments = res.omitted_segments[selectedEventName] || [];
+            }
+            return omittedSegments.sort();
         }
-
     };
 
     countlyViews.getVuexModule = function() {
@@ -452,7 +459,8 @@
                 selectedViews: [],
                 segments: {},
                 domains: [],
-                totalViewsCount: 0
+                totalViewsCount: 0,
+                omittedSegments: [],
             };
         };
 
@@ -593,6 +601,10 @@
             setSelectedViews: function(state, value) {
                 state.selectedViews = value;
                 _selectedViews = value;
+            },
+            // EMRE: setOmittedSegments
+            setOmittedSegments: function(state, value) {
+                state.omittedSegments = value;
             },
         };
         return countlyVue.vuex.Module("countlyViews", {
@@ -811,8 +823,9 @@
 
             //if refresh
             for (var i = 0; i < _selectedViews.length; i++) {
-                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && _graphDataObj[_selectedViews[i]]['_no-segment'] !== {}) ||
-                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && _graphDataObj[_selectedViews[i]][_segment] !== {}))
+                // EMRE: changes to _graphDataObj[_selectedViews[i]]['_no-segment']) !== {} always being true
+                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']) !== 0) ||
+                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]) !== 0))
                 ) {
                     selected.push({'view': _selectedViews[i], "action": "refresh"});
                 }
