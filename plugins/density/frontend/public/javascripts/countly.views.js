@@ -199,6 +199,13 @@
                         "color": k > 3 ? this.graphColors[k % 4] : this.graphColors[k]
                     });
                 }
+                display.sort(function(a, b) {
+                    let totalDiff = b.value - a.value;
+                    if (totalDiff === 0) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return totalDiff;
+                });
                 return display;
             },
             densityVersions: function() {
@@ -229,7 +236,13 @@
                     });
                     returnData[i].values = returnData[i].values.slice(0, 12);
                 }
-
+                returnData.sort(function(a, b) {
+                    let totalDiff = b.itemCn - a.itemCn;
+                    if (totalDiff === 0) {
+                        return a.label.localeCompare(b.label);
+                    }
+                    return totalDiff;
+                });
                 return returnData;
             },
             appDensityRows: function() {
