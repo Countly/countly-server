@@ -94,6 +94,7 @@
         },
         fixOSVersion: function(osName) {
             osName = (osName + "").replace(/:/g, ".");
+            osName = osName.replace(/\[|\]/g, '');
 
             for (var i in countlyDeviceDetails.os_mapping) {
                 osName = osName.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].short, "g"), countlyDeviceDetails.os_mapping[i].name + " ");
