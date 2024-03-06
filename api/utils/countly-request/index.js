@@ -39,13 +39,19 @@ var initParams = function(uri, options, callback) {
             params.options = {}; // Create options object if it's undefined
         }
 
-        let proxyUrlBase;
+        let proxyUrl;
         const hasCredentials = config.proxy_username && config.proxy_password;
-        const protocol = config.proxy_hostname.startsWith("https://") || config.proxy_hostname.startsWith("http://") ? "" : "http://";
+        const protocol = config.proxy_hostname.startsWith("https://") ? "https://" : "http://";
         const credentials = hasCredentials ? `${config.proxy_username}:${config.proxy_password}@` : "";
 
-        proxyUrlBase = `${protocol}${config.proxy_hostname}:${config.proxy_port}`;
-        const proxyUrl = `${credentials}${proxyUrlBase}`;
+        let proxyHostName = config.proxy_hostname.replace(protocol, "");
+
+        if (hasCredentials) {
+            proxyUrl = `${protocol}${credentials}${proxyHostName}:${config.proxy_port}`;
+        }
+        else {
+            proxyUrl = `${protocol}${proxyHostName}:${config.proxy_port}`;
+        }
 
         // Determine the target URL from the available options
         const targetUrl = params.uri || params.options.url || params.options.uri;
@@ -65,7 +71,7 @@ var initParams = function(uri, options, callback) {
 
         params.options.agent = isHttps ?
             { https: new HttpsProxyAgent(agentOptions) } :
-            { http: new HttpProxyAgent(agentOptions) };
+            { https: new HttpProxyAgent(agentOptions) };
 
     }
 
