@@ -175,9 +175,6 @@
             if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
                 osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
             }
-            else {
-                osName = osSegmentation;
-            }
         }
 
         if (oSVersionData.chartData) {
