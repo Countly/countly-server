@@ -39,34 +39,34 @@ var initParams = function(uri, options, callback) {
             params.options = {}; // Create options object if it's undefined
         }
 
-        const proxyType = config.proxy_type || "https";
-        const proxyUrlBase = `${proxyType}://${config.proxy_hostname}:${config.proxy_port}`;
+        let proxyUrlBase;
+        const hasCredentials = config.proxy_username && config.proxy_password;
+        const protocol = config.proxy_hostname.startsWith("https://") || config.proxy_hostname.startsWith("http://") ? "" : "http://";
+        const credentials = hasCredentials ? `${config.proxy_username}:${config.proxy_password}@` : "";
 
-        let proxyUrl = proxyUrlBase;
+        proxyUrlBase = `${protocol}${config.proxy_hostname}:${config.proxy_port}`;
+        const proxyUrl = `${credentials}${proxyUrlBase}`;
 
-        if (config.proxy_username && config.proxy_password) {
-            proxyUrl = `${proxyType}://${config.proxy_username}:${config.proxy_password}@${config.proxy_hostname}:${config.proxy_port}`;
-        }
+        // Determine the target URL from the available options
+        const targetUrl = params.uri || params.options.url || params.options.uri;
 
+        // Check if the target URL uses HTTPS
+        const isHttps = targetUrl.startsWith('https');
+
+        // Define common agent options
         const agentOptions = {
             keepAlive: true,
             keepAliveMsecs: 1000,
             maxSockets: 256,
             maxFreeSockets: 256,
             scheduling: 'lifo',
-            proxy: proxyUrl,
+            proxy: proxyUrl, // Set the proxy URL
         };
 
-        if (proxyType === "https") {
-            params.options.agent = {
-                https: new HttpsProxyAgent(agentOptions)
-            };
-        }
-        else {
-            params.options.agent = {
-                http: new HttpProxyAgent(agentOptions)
-            };
-        }
+        params.options.agent = isHttps ?
+            { https: new HttpsProxyAgent(agentOptions) } :
+            { http: new HttpProxyAgent(agentOptions) };
+
     }
 
     return params;
