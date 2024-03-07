@@ -691,7 +691,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
@@ -756,7 +756,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
                             drawData();
