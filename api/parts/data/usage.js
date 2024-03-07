@@ -180,6 +180,7 @@ usage.processSessionDuration = function(params, callback) {
         session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
 
     if (session_duration) {
+        var original_duration = session_duration;
         if (session_duration_limit && session_duration > session_duration_limit) {
             session_duration = session_duration_limit;
         }
@@ -200,7 +201,8 @@ usage.processSessionDuration = function(params, callback) {
         if (!params.qstring.begin_session) {
             plugins.dispatch("/session/duration", {
                 params: params,
-                session_duration: session_duration
+                session_duration: session_duration,
+                od: original_duration
             });
         }
 
