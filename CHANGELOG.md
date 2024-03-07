@@ -1,3 +1,17 @@
+## Version 23.11.14
+Fixes:
+- [core] Fixes for proxy agent
+- [core] Script to list all indexes
+- [core] Script to set TTL index on timeline collection
+- [core] Ensure persistent _id, api_key, and member creation date
+- [events] Show dropdown with omitted segments even if all segments are omitted
+- [views] Auto omit views segment from aggregated data on document overflow or too many values for a single segment.
+
+Enterprise Fixes:
+- [dashboard] Fixed bug with duplicate graph lines for dill widgets
+- [drill] Record maximum original duration on duration update
+- [ldap] postinstall script to copy config.js
+
 ## Version 23.11.13
 Fixes:
 - [star-rating] Changes to add view user button in ratings
