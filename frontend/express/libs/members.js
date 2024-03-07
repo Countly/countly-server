@@ -1104,7 +1104,8 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
             return reject(ex);
         }
 
-        // ensures that the following fields are not updated
+        // _id and api_key are immutable(unique fields. They should not be updated)
+        // created_at is set on user creation and should not be updated)
         delete copy._id;
         delete copy.api_key;
         delete copy.created_at;
