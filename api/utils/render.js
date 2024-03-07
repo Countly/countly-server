@@ -197,7 +197,7 @@ exports.renderView = function(options, cb) {
                     }
                 }
 
-                await timeout(1500);
+                await timeout(2500);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 15: Before setting viewport dimensions');
                 console.log('[' + new Date().toUTCString() + ']', `options.dimensions.width: ${options.dimensions.width}`);
                 console.log('[' + new Date().toUTCString() + ']', `options.dimensions.height: ${options.dimensions.height}`);
