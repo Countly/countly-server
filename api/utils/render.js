@@ -148,7 +148,7 @@ exports.renderView = function(options, cb) {
                             }
                             else if (response.status() === 304) {
                                 console.log("BLOCK 1:  miss me with this 304");
-                                return true;
+                                return false;
                             }
                         },
                         { timeout: updatedTimeout }
@@ -183,7 +183,7 @@ exports.renderView = function(options, cb) {
                                     }
                                     else if (response.status() === 304) {
                                         console.log("BLOCK 2:  miss me with another 304");
-                                        return true;
+                                        return false;
                                     }
                                 },
                                 { timeout: updatedTimeout }
