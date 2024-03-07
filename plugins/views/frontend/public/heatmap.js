@@ -891,21 +891,10 @@
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
             var data = prepareParams(params);
-            var method = "GET";
-            if (data.length >= 2000) {
-                method = "POST";
-            }
-            else if (Countly.force_post) {
-                method = "POST";
-            }
+            var method = "POST";
 
-            if (method === "GET") {
-                xhr.open('GET', Countly.passed_data.url + apiPath + "?" + data, true);
-            }
-            else {
-                xhr.open('POST', Countly.passed_data.url + apiPath, true);
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            }
+            xhr.open('POST', Countly.passed_data.url + apiPath, true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.setRequestHeader("countly-token", Countly._internals.getToken());
 
             // fallback on error
@@ -931,12 +920,8 @@
                     }
                 }
             };
-            if (method == "GET") {
-                xhr.send();
-            }
-            else {
-                xhr.send(data);
-            }
+
+            xhr.send(data);
         }
         catch (e) {
             // fallback
