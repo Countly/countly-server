@@ -8,7 +8,7 @@
         scrollMap;
 
     /**
-     *  Load external js files
+     *  Load external files
      *  @param {String} js - path to JS file
      *  @param {Function} callback - callback when done
      */
@@ -56,43 +56,7 @@
         var D = document;
         return Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
     }
-
-    /**
-     *  Checks if sdk debug mode is true and console is available in Countly object
-     * @returns {Boolean} true if debug is true and console is available in Countly object
-     */
-    function checkIfLoggingIsOn() {
-        // check if logging is enabled
-        if (Countly && Countly.debug && typeof console !== "undefined") {
-            return true;
-        }
-        return false;
-    }
         
-    /**
-     *  Listen to specific browser event
-     *  @param {HTMLElement} element - HTML element that should listen to event
-     *  @param {String} type - event name or action
-     *  @param {Function} listener - callback when event is fired
-     */
-    function add_event_listener(element, type, listener) {
-        if (element === null || typeof element === "undefined") {
-            // element can be null so lets check it first
-            if (checkIfLoggingIsOn()) {
-                // eslint-disable-next-line no-console
-                console.warn("[WARNING] [Countly] add_event_listener, Can't bind [" + type + "] event to nonexisting element");
-            }
-            return;
-        }
-        if (typeof element.addEventListener !== "undefined") {
-            element.addEventListener(type, listener, false);
-        }
-        // for old browser use attachEvent instead
-        else {
-            element.attachEvent("on" + type, listener);
-        }
-    }
-
     var logLevelEnums = {
         ERROR: "[ERROR] ",
         WARNING: "[WARNING] ",
@@ -122,7 +86,7 @@
                 extraArguments += arguments[i];
             }
             // eslint-disable-next-line no-shadow
-            var content = level + "[Countly] [Heatmap]" + message + extraArguments;
+            var content = level + "[Countly] [Heatmap] " + message + extraArguments;
             // decide on the console
             if (level === logLevelEnums.ERROR) {
                 // eslint-disable-next-line no-console
@@ -142,6 +106,27 @@
                 // eslint-disable-next-line no-console
                 console.debug(content);
             }
+        }
+    }
+
+    /**
+     *  Listen to specific browser event
+     *  @param {HTMLElement} element - HTML element that should listen to event
+     *  @param {String} type - event name or action
+     *  @param {Function} listener - callback when event is fired
+     */
+    function add_event_listener(element, type, listener) {
+        // element can be null so lets check it first
+        if (element === null || typeof element === "undefined") {
+            log(logLevelEnums.WARNING, "[add_event_listener] Can't bind [" + type + "] event to nonexisting element");
+            return;
+        }
+        if (typeof element.addEventListener !== "undefined") {
+            element.addEventListener(type, listener, false);
+        }
+        // for old browser use attachEvent instead
+        else {
+            element.attachEvent("on" + type, listener);
         }
     }
 
@@ -881,7 +866,7 @@
 
     function sendXmlHttpRequest(params, apiPath, callback) {
         try {
-            log("Sending XML HTTP request");
+            log(logLevelEnums.INFO, "[sendXmlHttpRequest] Sending XML HTTP request");
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
             var data = prepareParams(params);
@@ -898,7 +883,7 @@
                         Countly._internals.setValueInStorage('cly_token', xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
-                        log("failed, trying fallback header");
+                        log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed, trying fallback header");
                         Countly.token = xhr.getResponseHeader("content-language");
                     }
                 }
@@ -908,7 +893,7 @@
                     }
                 }
                 else if (this.readyState === 4) {
-                    log("Failed Server XML HTTP request", this.status);
+                    log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed Server XML HTTP request", this.status);
                     if (typeof callback === 'function') {
                         callback(true, params);
                     }
@@ -919,7 +904,7 @@
         }
         catch (e) {
             // fallback
-            log("Failed XML HTTP request", e);
+            log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed XML HTTP request", e);
             if (typeof callback === 'function') {
                 callback(true, params);
             }
