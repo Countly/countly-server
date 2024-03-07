@@ -525,7 +525,7 @@
                     if (this.inTheLastInput.raw.level === "years") {
                         this.tableType = "year";
                     }
-                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || "day";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || this.tableType;
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 case 'before':
@@ -545,7 +545,7 @@
                 else if (inputObj[0]) {
                     this.scrollTo(inputObj[0]);
                 }
-                if (this.tableType !== ("hour" || "minute") && inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
+                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
                 }
@@ -650,7 +650,6 @@
                     this.$emit("update-stringified-value", newVal);
                     var self = this;
                     var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
-                    // EMRE: Checks for minutes and hours
                     if (newVal.level === "minutes") {
                         parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("minute");
                     }
@@ -696,14 +695,13 @@
                             self.scrollTo(self.inTheLastInput.parsed[0]);
                         }, 0);
                     }
-
                     else if (newVal.level === "hours") {
                         this.globalRange = this.globalHoursRange;
                         this.tableType = "hour";
                     }
                     else if (newVal.level === "minutes") {
                         this.globalRange = this.globalMinutesRange;
-                        this.tableType = "day";
+                        this.tableType = "minute";
                     }
                 }
             },
@@ -927,6 +925,9 @@
                     return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
                 }
                 return {};
+            },
+            setMinuteAndHourStyle: function() {
+                return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };
             }
         },
         props: {
@@ -1396,9 +1397,12 @@
                     var _maxDate = new Date(this.maxDate);
                     var currentDate = new Date(_maxDate.getTime());
                 }
-                if (this.rangeMode === 'inBetween' || (this.modelMode === "absolute" && this.inTheLastInput.raw.level !== "hours" && this.inTheLastInput.raw.level !== "minutes")) {
+                if (this.rangeMode === 'inBetween' || (this.modelMode === "absolute")) {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
-                    if (this.type === "date" && !this.selectTime) {
+                    if (this.tableType === "minute" || this.tableType === "hour") {
+                        this.maxDate = new Date(); // take current date as max
+                    }
+                    else if (this.type === "date" && !this.selectTime) {
                         effectiveMinDate.setHours(23, 59);
                         this.maxDate.setHours(23, 59);
                     }
