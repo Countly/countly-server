@@ -16,7 +16,7 @@ module.exports = {
         }
         var updateOp = {};
         if (options.extend) {
-            updateOp = {$addToSet: {omit: omit}, "$unset": unset};
+            updateOp = {$addToSet: {omit: {"$each": omit}}, "$unset": unset};
 
         }
         else {

@@ -54,10 +54,12 @@ class CleanupMetaJob extends job.Job {
                         }
                         else {
                             let listToOmit = [];
+
                             if (view && view.segments) {
+                                var omittedList = view.omit || [];
                                 for (var key in view.segments) {
                                     //console.log(key+" "+Object.keys(listed[z].segments[key]).length);
-                                    if (Object.keys(view.segments[key]).length > 100) {
+                                    if (omittedList.indexOf(key) !== -1) {
                                         listToOmit.push(key);
                                     }
                                 }
