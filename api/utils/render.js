@@ -69,11 +69,10 @@ exports.renderView = function(options, cb) {
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
                     '--disable-dev-shm-usage',
-                    '--window-size=1920x1080',
                     '--enable-features=NetworkService'
                 ],
                 ignoreHTTPSErrors: true,
-                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+                // userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
 
             if (chromePath) {
@@ -85,7 +84,18 @@ exports.renderView = function(options, cb) {
 
             try {
                 var page = await browser.newPage();
+                await page.setRequestInterception(true);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 5: New page created');
+
+                page.on('request', (request) => {
+                    if (request.url().includes('session_check')) {
+                        request.abort();
+                        console.log("------------------------- aborted the session_check call");
+                    }
+                    else {
+                        request.continue();
+                    }
+                });
 
                 page.on('console', (msg) => {
                     console.log('[' + new Date().toUTCString() + ']', `render.js Line 6: Headless chrome page log: ${msg.text()}`);
@@ -157,6 +167,9 @@ exports.renderView = function(options, cb) {
                                 console.log("BLOCK 1:  miss me with this 304");
                                 return false;
                             }
+                            else {
+                                return false;
+                            }
                         },
                         { timeout: updatedTimeout }
                     );
@@ -190,6 +203,9 @@ exports.renderView = function(options, cb) {
                                     }
                                     else if (response.status() === 304) {
                                         console.log("BLOCK 2:  miss me with another 304");
+                                        return false;
+                                    }
+                                    else {
                                         return false;
                                     }
                                 },
@@ -239,8 +255,8 @@ exports.renderView = function(options, cb) {
                 await timeout(1500);
 
                 await page.waitForNetworkIdle({
-                    idleTime: 3000, // Consider the network idle after 5 seconds of no activity
-                    timeout: 60000, // Timeout after 60 seconds
+                    idleTime: 5000, // Consider the network idle after 5 seconds of no activity
+                    timeout: 100000, // Timeout after 100 seconds
                 });
 
                 var image = "";
