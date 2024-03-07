@@ -93,6 +93,14 @@
         }
     }
 
+    var logLevelEnums = {
+        ERROR: "[ERROR] ",
+        WARNING: "[WARNING] ",
+        INFO: "[INFO] ",
+        DEBUG: "[DEBUG] ",
+        VERBOSE: "[VERBOSE] "
+    };
+
     /**
      *  Logging stuff, works only when sdk debug mode is true
      * @param {string} level - log level (error, warning, info, debug, verbose)
@@ -100,21 +108,9 @@
      */
     function log(level, message) {
         if (Countly && Countly.debug && typeof console !== 'undefined') {
-            var logLevelEnums = {
-                ERROR: "[ERROR] ",
-                WARNING: "[WARNING] ",
-                INFO: "[INFO] ",
-                DEBUG: "[DEBUG] ",
-                VERBOSE: "[VERBOSE] "
-            };
-
             // parse the arguments into a string if it is an object
-            if (arguments[2] && _typeof(arguments[2]) === "object") {
+            if (arguments[2] && typeof arguments[2] === "object") {
                 arguments[2] = JSON.stringify(arguments[2]);
-            }
-            // append app_key to the start of the message if it is not the first instance (for multi instancing)
-            if (!global) {
-                message = "[" + self.app_key + "] " + message;
             }
             // if the provided level is not a proper log level re-assign it as [DEBUG]
             if (!level) {
@@ -126,16 +122,14 @@
                 extraArguments += arguments[i];
             }
             // eslint-disable-next-line no-shadow
-            var content = level + "[Countly] " + message + extraArguments;
+            var content = level + "[Countly] [Heatmap]" + message + extraArguments;
             // decide on the console
             if (level === logLevelEnums.ERROR) {
                 // eslint-disable-next-line no-console
                 console.error(content);
-                HealthCheck.incrementErrorCount();
             } else if (level === logLevelEnums.WARNING) {
                 // eslint-disable-next-line no-console
                 console.warn(content);
-                HealthCheck.incrementWarningCount();
             } else if (level === logLevelEnums.INFO) {
                 // eslint-disable-next-line no-console
                 console.info(content);
