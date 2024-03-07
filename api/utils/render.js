@@ -130,7 +130,7 @@ exports.renderView = function(options, cb) {
 
                 await timeout(1500);
 
-                await page.goto(host + view);
+                await page.goto(host + view, { waitUntil: 'networkidle0' });
                 console.log('[' + new Date().toUTCString() + ']', `render.js Line 12: Navigated to view: ${host + view}`);
 
                 if (waitForRegex) {
