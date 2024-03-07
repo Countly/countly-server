@@ -282,6 +282,11 @@
                 self.isLoading = force;
                 self.templates = [];
                 countlyPopulator.getEnvironments(function(environments) {
+                    if (environments && environments.length) {
+                        environments.map(env => {
+                            env.name = self.decodeHtml(env.name);
+                        });
+                    }
                     self.environments = environments;
 
                     countlyPopulator.getTemplates(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type, function(templates) {
@@ -294,7 +299,7 @@
                             }
                             self.templates.push({
                                 _id: item._id,
-                                name: item.name,
+                                name: self.decodeHtml(item.name),
                                 buttonShow: !item.isDefault,
                                 isDefault: item.isDefault === true ? CV.i18n('populator.template-type-default') : CV.i18n('populator.template-type-custom'),
                                 // Could also use uniqueUserCount property instead?
@@ -322,6 +327,9 @@
             },
             onRowClick: function(params) {
                 app.navigate("/manage/populate/environment/" + params._id, true);
+            },
+            decodeHtml: function(str) {
+                return countlyCommon.unescapeHtml(str);
             },
         },
         watch: {
@@ -464,7 +472,7 @@
             this.templateId = this.$route.params.id;
             countlyPopulator.getEnvironments(function(envs) {
                 self.filterByEnvironmentOptions = envs.filter(x => x.templateId === self.templateId)
-                    .map(x => ({value: x._id, label: x.name}));
+                    .map(x => ({value: x._id, label: countlyCommon.unescapeHtml(x.name)}));
                 self.environmentId = self.filterByEnvironmentOptions[0].value;
                 self.refresh(true);
             });
