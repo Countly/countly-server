@@ -55,7 +55,7 @@ exports.renderView = function(options, cb) {
 
     (async() => {
         try {
-            console.log('[' + new Date().toUTCString() + ']','render.js Line 3: Starting rendering process');
+            console.log('[' + new Date().toUTCString() + ']', 'render.js Line 3: Starting rendering process');
 
             if (!chromePath && alternateChrome) {
                 chromePath = await fetchChromeExecutablePath();
@@ -74,33 +74,33 @@ exports.renderView = function(options, cb) {
             }
 
             var browser = await puppeteer.launch(settings);
-            console.log('[' + new Date().toUTCString() + ']','render.js Line 4: Browser launched');
+            console.log('[' + new Date().toUTCString() + ']', 'render.js Line 4: Browser launched');
 
             try {
                 var page = await browser.newPage();
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 5: New page created');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 5: New page created');
 
                 page.on('console', (msg) => {
-                    console.log('[' + new Date().toUTCString() + ']',`render.js Line 6: Headless chrome page log: ${msg.text()}`);
+                    console.log('[' + new Date().toUTCString() + ']', `render.js Line 6: Headless chrome page log: ${msg.text()}`);
                 });
 
                 page.on('pageerror', (error) => {
-                    console.log('[' + new Date().toUTCString() + ']',`render.js Line 7: Headless chrome page error message: ${error.message}`);
+                    console.log('[' + new Date().toUTCString() + ']', `render.js Line 7: Headless chrome page error message: ${error.message}`);
                 });
 
                 page.on('response', (response) => {
-                    console.log('[' + new Date().toUTCString() + ']',`render.js Line 8: Headless chrome page response: ${response.status()}, ${response.url()}`);
+                    console.log('[' + new Date().toUTCString() + ']', `render.js Line 8: Headless chrome page response: ${response.status()}, ${response.url()}`);
                 });
 
                 page.on('requestfailed', (request) => {
-                    console.log('[' + new Date().toUTCString() + ']',`render.js ine 9: Headless chrome page failed request: ${request.failure().errorText}, ${request.url()}`);
+                    console.log('[' + new Date().toUTCString() + ']', `render.js ine 9: Headless chrome page failed request: ${request.failure().errorText}, ${request.url()}`);
                 });
 
                 var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + countlyConfig.path;
                 if (options.host) {
                     host = options.host + countlyConfig.path;
                 }
-                console.log('[' + new Date().toUTCString() + ']',`render.js Host: ${host}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Host: ${host}`);
 
                 var token = options.token;
                 var view = options.view;
@@ -123,15 +123,15 @@ exports.renderView = function(options, cb) {
                 page.setDefaultNavigationTimeout(updatedTimeout);
 
                 await page.goto(host + '/login/token/' + token + '?ssr=true');
-                console.log('[' + new Date().toUTCString() + ']',`render.js Line 10: Navigated to login page: ${host + '/login/token/' + token + '?ssr=true'}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Line 10: Navigated to login page: ${host + '/login/token/' + token + '?ssr=true'}`);
 
                 await page.waitForSelector('countly', {timeout: updatedTimeout});
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 11: Waited for countly selector');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 11: Waited for countly selector');
 
                 await timeout(1500);
 
                 await page.goto(host + view);
-                console.log('[' + new Date().toUTCString() + ']',`render.js Line 12: Navigated to view: ${host + view}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Line 12: Navigated to view: ${host + view}`);
 
                 if (waitForRegex) {
                     await page.waitForResponse(
@@ -143,30 +143,34 @@ exports.renderView = function(options, cb) {
                             console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 response.status() === 200: ${response.status() === 200}`);
                             console.log('[' + new Date().toUTCString() + ']', `BLOCK 1 waitForRegex.test(url) && response.status() === 200: ${waitForRegex.test(url) && response.status() === 200}`);
                             if (waitForRegex.test(url) && response.status() === 200) {
-                                console.log('[' + new Date().toUTCString() + ']',`render.js Line 16: Waited for response matching regex after cbFn: ${url}`);
+                                console.log('[' + new Date().toUTCString() + ']', `render.js Line 16: Waited for response matching regex after cbFn: ${url}`);
+                                return true;
+                            }
+                            else if (response.status() === 304) {
+                                console.log("BLOCK 1:  miss me with this 304");
                                 return true;
                             }
                         },
                         { timeout: updatedTimeout }
                     );
-                    console.log('[' + new Date().toUTCString() + ']','render.js Line 17: Completed code execution');
-                    console.log('[' + new Date().toUTCString() + ']','render.js Line 13: Waited for response matching regex');
+                    console.log('[' + new Date().toUTCString() + ']', 'render.js Line 17: Completed code execution');
+                    console.log('[' + new Date().toUTCString() + ']', 'render.js Line 13: Waited for response matching regex');
                 }
 
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 14: Executed cbFn');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 14: Executed cbFn');
 
                 if (waitForRegexAfterCbfn) {
                     console.log('[' + new Date().toUTCString() + ']', 'waitForRegexAfterCbfn if block');
-                    console.log('[' + new Date().toUTCString() + ']',`waitForRegexAfterCbfn: ${waitForRegexAfterCbfn}`);
+                    console.log('[' + new Date().toUTCString() + ']', `waitForRegexAfterCbfn: ${waitForRegexAfterCbfn}`);
                     if (waitForRegex) {
                         console.log('[' + new Date().toUTCString() + ']', 'waitForRegex if block');
                         console.log('[' + new Date().toUTCString() + ']', `waitforRegex: ${waitForRegex}`);
                         try {
                             let res = await page.waitForResponse(
-                                function (response) {
+                                function(response) {
                                     var url = response.url();
                                     console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 reached page.waitForResponse url: ${url}`);
                                     console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 response status: ${response.status()}`);
@@ -174,17 +178,22 @@ exports.renderView = function(options, cb) {
                                     console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 response.status() === 200: ${response.status() === 200}`);
                                     console.log('[' + new Date().toUTCString() + ']', `BLOCK 2 waitForRegex.test(url) && response.status() === 200: ${waitForRegex.test(url) && response.status() === 200}`);
                                     if (waitForRegex.test(url) && response.status() === 200) {
-                                        console.log('[' + new Date().toUTCString() + ']',`render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
+                                        console.log('[' + new Date().toUTCString() + ']', `render.js Line 15: Waited for response matching regex after cbFn: ${url}`);
+                                        return true;
+                                    }
+                                    else if (response.status() === 304) {
+                                        console.log("BLOCK 2:  miss me with another 304");
                                         return true;
                                     }
                                 },
                                 { timeout: updatedTimeout }
                             );
                             console.log('[' + new Date().toUTCString() + ']', `res: ${res}`);
-                        } catch (urlTryError) {
+                        }
+                        catch (urlTryError) {
                             console.log('[' + new Date().toUTCString() + ']', `urlTryError: ${urlTryError}`);
                         }
-                        console.log('[' + new Date().toUTCString() + ']','render.js Line 15: Waited for response matching regex after cbFn');
+                        console.log('[' + new Date().toUTCString() + ']', 'render.js Line 15: Waited for response matching regex after cbFn');
                     }
                 }
 
@@ -199,26 +208,26 @@ exports.renderView = function(options, cb) {
                     height: parseInt(options.dimensions.height),
                     deviceScaleFactor: options.dimensions.scale
                 });
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Set viewport dimensions');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 16: Set viewport dimensions');
 
                 await timeout(1500);
 
                 var bodyHandle = await page.$('body');
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 16: Obtained body handle');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 16: Obtained body handle');
                 var dimensions = await bodyHandle.boundingBox();
-                console.log('[' + new Date().toUTCString() + ']',`render.js Line 16: Obtained body bounding box: ${JSON.stringify(dimensions)}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Line 16: Obtained body bounding box: ${JSON.stringify(dimensions)}`);
 
                 await page.setViewport({
                     width: parseInt(options.dimensions.width || dimensions.width),
                     height: parseInt(dimensions.height - options.dimensions.padding),
                     deviceScaleFactor: options.dimensions.scale
                 });
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 17: Set viewport dimensions based on body bounding box');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 17: Set viewport dimensions based on body bounding box');
 
                 await timeout(1500);
 
                 await page.evaluate(beforeScrnCbFn, options);
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 18: Executed beforeScrnCbFn');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 18: Executed beforeScrnCbFn');
 
                 await timeout(1500);
 
@@ -233,7 +242,7 @@ exports.renderView = function(options, cb) {
                         /*global document */
                         var element = document.querySelector(selector);
                         dimensions = element.getBoundingClientRect();
-                        console.log('[' + new Date().toUTCString() + ']',`render.js Line 23: Obtained dimensions for element with id: ${element.id}`);
+                        console.log('[' + new Date().toUTCString() + ']', `render.js Line 23: Obtained dimensions for element with id: ${element.id}`);
                         return {
                             left: dimensions.x,
                             top: dimensions.y,
@@ -248,7 +257,7 @@ exports.renderView = function(options, cb) {
                         height: parseInt(rect.height),
                         deviceScaleFactor: options.dimensions.scale
                     });
-                    console.log('[' + new Date().toUTCString() + ']','render.js Line 24: Set viewport dimensions');
+                    console.log('[' + new Date().toUTCString() + ']', 'render.js Line 24: Set viewport dimensions');
 
                     var clip = {
                         x: rect.left,
@@ -258,14 +267,14 @@ exports.renderView = function(options, cb) {
                     };
 
                     screenshotOptions.clip = clip;
-                    console.log('[' + new Date().toUTCString() + ']','render.js Line 25: Set screenshot clip');
+                    console.log('[' + new Date().toUTCString() + ']', 'render.js Line 25: Set screenshot clip');
                 }
 
                 image = await page.screenshot(screenshotOptions);
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 19: Captured screenshot');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 19: Captured screenshot');
 
                 await saveScreenshot(image, path, source);
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 20: Saved screenshot');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 20: Saved screenshot');
 
                 await page.evaluate(function() {
                     var $ = window.$;
@@ -276,25 +285,25 @@ exports.renderView = function(options, cb) {
 
                 await bodyHandle.dispose();
                 await browser.close();
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 21: Closed browser');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 21: Closed browser');
 
                 var imageData = {
                     image: image,
                     path: path
                 };
 
-                console.log('[' + new Date().toUTCString() + ']','render.js Line 22: Rendering process completed');
+                console.log('[' + new Date().toUTCString() + ']', 'render.js Line 22: Rendering process completed');
                 return cb(null, imageData);
             }
             catch (e) {
-                console.log('[' + new Date().toUTCString() + ']',`render.js Line 23: Error: ${e}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Line 23: Error: ${e}`);
                 await browser.close();
                 return cb(e);
             }
         }
         catch (err) {
             if (cb) {
-                console.log('[' + new Date().toUTCString() + ']',`render.js Line 24: Error: ${err}`);
+                console.log('[' + new Date().toUTCString() + ']', `render.js Line 24: Error: ${err}`);
                 return cb(err);
             }
         }
