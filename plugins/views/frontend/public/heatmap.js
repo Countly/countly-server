@@ -895,13 +895,13 @@
 
             xhr.open('POST', Countly.passed_data.url + apiPath, true);
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader("countly-token", Countly._internals.getToken());
+            xhr.setRequestHeader("countly-token", Countly._internals.getValueFromStorage('cly_token'));
 
             // fallback on error
             xhr.onreadystatechange = function() {
                 if (this.readyState == this.HEADERS_RECEIVED) {
                     try {
-                        Countly._internals.setToken(xhr.getResponseHeader("content-language"));
+                        Countly._internals.setValueInStorage('cly_token', xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
                         log("failed, trying fallback header");
