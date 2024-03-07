@@ -400,9 +400,11 @@
                     {value: "/systemlogs", label: "/systemlogs"},
                     {value: "/crashes/new", label: "/crashes/new"},
                     {value: "/hooks/trigger", label: "/hooks/trigger"},
+                    {value: "/alerts/trigger", label: "/alerts/trigger"}
                 ],
                 cohortOptions: [],
                 hookOptions: [],
+                alertOptions: []
             };
         },
         computed: {
@@ -421,11 +423,13 @@
         mounted: function() {
             this.getCohortOptioins();
             this.getHookOptions();
+            this.getAlertOptions();
         },
         watch: {
             selectedApp: function() {
                 this.getCohortOptioins();
                 this.getHookOptions();
+                this.getAlertOptions();
             }
         },
         methods: {
@@ -470,6 +474,25 @@
                     }
                 });
 
+            },
+            getAlertOptions: function() {
+                var self = this;
+                var selectedApps = [this.$props.app];
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + '/alert/list',
+                    data: {app_id: this.$props.app},
+                    dataType: "json",
+                    success: function(data) {
+                        var alertList = [];
+                        data.alertsList.forEach(function(alert) {
+                            if (alert.selectedApps.indexOf(selectedApps[0]) > -1) {
+                                alertList.push({value: alert._id, label: alert.alertName});
+                            }
+                        });
+                        self.alertOptions = alertList;
+                    }
+                });
             },
         }
     });
@@ -621,7 +644,7 @@
                     this.value.configuration = {event: [null], filter: null};
                     break;
                 case 'InternalEventTrigger':
-                    this.value.configuration = {eventType: null, cohortID: null, hookID: null };
+                    this.value.configuration = {eventType: null, cohortID: null, hookID: null, alertID: null};
                     break;
                 case 'ScheduledTrigger':
                     this.value.configuration = {period1: 'month', cron: null};

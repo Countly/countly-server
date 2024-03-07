@@ -237,7 +237,21 @@
                :options="hookOptions">
             </cly-select-x>
             </validation-provider>
-         </div>
+        </div>
+        <div class="cly-vue-drawer-step__section" v-if="value.eventType === '/alerts/trigger'">
+            <div class="text-medium text-heading">
+              Alert 
+            </div>
+            <validation-provider name="trigger-internal-alert" rules="required">
+            <cly-select-x
+               placeholder="Select a Alert"
+               mode="single-list"
+               v-model="value.alertID"
+               :class="{'cly-vue-hook-drawer__is-full-line':true}"
+               :options="alertOptions">
+            </cly-select-x>
+            </validation-provider>
+        </div>
     </div>
 </script>
 
