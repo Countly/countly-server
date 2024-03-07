@@ -622,19 +622,44 @@ const FEATURE_NAME = 'populator';
             return false;
         }
         validateRead(obParams, FEATURE_NAME, function() {
-            common.db.collection('populator_environment_users').find({
-                "_id": {
-                    $regex: new RegExp("^" + obParams.qstring.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id)
+            let startPos = 0;
+            let dataLength = 0;
+            let pipeline = [{
+                $match: {
+                    "_id": { $regex: new RegExp("^" + obParams.qstring.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id) }
                 }
-            }).toArray(function(errEnv, environments) {
-                if (errEnv) {
-                    common.returnMessage(obParams, 500, errEnv.message);
+            }];
+            if (obParams.qstring.iDisplayStart && parseInt(obParams.qstring.iDisplayStart, 10) !== 0) {
+                startPos = parseInt(obParams.qstring.iDisplayStart, 10);
+            }
+            if (obParams.qstring.iDisplayLength && parseInt(obParams.qstring.iDisplayLength, 10) !== -1) {
+                dataLength = parseInt(obParams.qstring.iDisplayLength, 10);
+            }
+            if (obParams.qstring.sSearch && obParams.qstring.sSearch.length) {
+                pipeline[0].$match.userName = {$regex: obParams.qstring.sSearch, $options: 'i'};
+            }
+
+            common.db.collection('populator_environment_users').count(pipeline[0].$match, function(errCount, totalCount) {
+                if (errCount) {
+                    common.returnMessage(obParams, 500, errCount.message);
+                    return false;
                 }
-                else {
-                    common.returnOutput(obParams, environments);
+                pipeline.push({$skip: startPos});
+                if (dataLength !== 0) {
+                    pipeline.push({$limit: dataLength});
                 }
+                common.db.collection('populator_environment_users').aggregate(pipeline).toArray(function(errEnv, environments) {
+                    if (errEnv) {
+                        common.returnMessage(obParams, 500, errEnv.message);
+                    }
+                    else {
+                        common.returnOutput(obParams, {sEcho: obParams.qstring.sEcho, iTotalRecords: totalCount, iTotalDisplayRecords: totalCount, aaData: environments});
+                    }
+                });
             });
         });
+
+
         return true;
     });
 

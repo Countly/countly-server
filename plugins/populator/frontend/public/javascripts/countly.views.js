@@ -354,15 +354,49 @@
 
     var EnvironmentDetail = countlyVue.views.create({
         data: function() {
+            var self = this;
+            var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("environmentUsersTable", {
+                columns: ['userName', "platform", "device"],
+                onRequest: function() {
+                    self.isLoading = true;
+                    if (self.environmentId) {
+                        return {
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/populator/environment/get",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                template_id: self.$route.params.id,
+                                environment_id: self.environmentId
+                            }
+                        };
+                    }
+                },
+                onReady: function(context, rows) {
+                    self.isLoading = false;
+                    rows.forEach(item => {
+                        if (item.custom) {
+                            const customKeys = Object.keys(item.custom);
+                            customKeys.forEach(key => {
+                                if (!self.customProperties.includes(key)) {
+                                    self.customProperties.push(key);
+                                }
+                            });
+                        }
+                    });
+                    return rows;
+                }
+            }));
             return {
                 environmentInformations: [],
                 templateInformations: {},
                 templateId: this.$route.params.id,
                 customProperties: [],
-                isLoading: true,
+                isLoading: false,
                 environmentId: '',
                 filterByEnvironmentOptions: [],
-                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''}
+                dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''},
+                tableStore,
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "environmentUsersTable")
             };
         },
         computed: {
@@ -371,6 +405,12 @@
             },
         },
         methods: {
+            refresh: function(force) {
+                if (this.isLoading || force) {
+                    this.isLoading = false;
+                    this.tableStore.dispatch("fetchEnvironmentUsersTable");
+                }
+            },
             deleteEnvironment: function() {
                 this.openDialog();
             },
@@ -413,50 +453,20 @@
                 return function(row) {
                     return row.custom[item] === null || typeof row.custom[item] === 'undefined' ? '-' : row.custom[item].toString();
                 };
-            }
-        },
-        watch: {
-            environmentId: function(newVal) {
-                var self = this;
-                this.isLoading = true;
-                countlyPopulator.getEnvironment(this.templateId, newVal, function(env) {
-                    self.isLoading = false;
-                    self.environmentInformations = env;
-                    env.forEach(item => {
-                        if (item.custom) {
-                            const customKeys = Object.keys(item.custom);
-                            customKeys.forEach(key => {
-                                if (!self.customProperties.includes(key)) {
-                                    self.customProperties.push(key);
-                                }
-                            });
-                        }
-                    });
-                });
+            },
+            onEnvironmentChange: function() {
+                this.refresh(true);
             }
         },
         template: countlyVue.T("/populator/templates/environment_detail.html"),
-        mounted: function() {
+        created: function() {
             var self = this;
             this.templateId = this.$route.params.id;
             countlyPopulator.getEnvironments(function(envs) {
                 self.filterByEnvironmentOptions = envs.filter(x => x.templateId === self.templateId)
                     .map(x => ({value: x._id, label: x.name}));
                 self.environmentId = self.filterByEnvironmentOptions[0].value;
-                countlyPopulator.getEnvironment(self.templateId, self.environmentId, function(env) {
-                    self.isLoading = false;
-                    self.environmentInformations = env;
-                    env.forEach(item => {
-                        if (item.custom) {
-                            const customKeys = Object.keys(item.custom);
-                            customKeys.forEach(key => {
-                                if (!self.customProperties.includes(key)) {
-                                    self.customProperties.push(key);
-                                }
-                            });
-                        }
-                    });
-                });
+                self.refresh(true);
             });
         },
         beforeCreate: function() {
@@ -564,23 +574,73 @@
             onSequenceDeleted(index) {
                 this.deletedIndex = index + "_" + Date.now(); // to force trigger watcher for same index
             },
+            checkInputProbabilities(editedObject) {
+                let warningMessage = "";
+                let sectionsToVerify = ["users", "views", "events"];
+
+                sectionsToVerify.forEach(function(sectionName) {
+                    editedObject[sectionName].forEach(item => {
+                        let sectionTotal = null;
+                        let conditionTotal = null;
+                        if (item.segmentations) {
+                            item.segmentations.forEach(segmentation => {
+                                sectionTotal = 0;
+                                if (segmentation.values) {
+                                    segmentation.values.forEach(value => {
+                                        sectionTotal += parseInt(value.probability, 10) || 0;
+                                    });
+                                }
+                                if (segmentation.condition) {
+                                    segmentation.condition.values.forEach(conditionValue => {
+                                        conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                    });
+                                }
+                                if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, segmentation.key) + "<br/></br>";
+                                }
+                            });
+                        }
+                        else if (item.values) {
+                            item.values.forEach(value => {
+                                sectionTotal += parseInt(value.probability, 10) || 0;
+                            });
+                            if (item.condition) {
+                                item.condition.values.forEach(conditionValue => {
+                                    conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                });
+                            }
+                            if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
+                                warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, item.key) + "<br/></br>";
+                            }
+                        }
+                    });
+                });
+                return warningMessage;
+            },
             onSubmit: function(editedObject) {
-                var self = this;
                 const isEdit = !!editedObject._id;
                 const isDuplicate = editedObject.is_duplicate;
+                const validationMessages = this.checkInputProbabilities(editedObject);
+                if (validationMessages && validationMessages.length) {
+                    CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: validationMessages, sticky: true, clearAll: true});
+                    this.$refs.populatorDrawer.disableAutoClose = true;
+                    return;
+                }
                 if (isEdit && !isDuplicate) {
                     countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
                         if (res.result) {
                             CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
                         }
-                        self.$emit('closeHandler', res);
                     });
                 }
                 else {
                     countlyPopulator.createTemplate(editedObject, function(res) {
-                        self.$emit('closeHandler', res);
+                        if (res && res.result) {
+                            CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-create-template"), sticky: false, clearAll: true});
+                        }
                     });
                 }
+                this.$refs.populatorDrawer.disableAutoClose = false;
             },
             prepareData: function(type, data1, data2) {
                 if (type === 'behavior') {

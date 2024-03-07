@@ -36,41 +36,43 @@
                     <div v-html="dialog.text"></div>
                 </template>
             </cly-confirm-dialog>
-            <cly-datatable-n ref="populatorEnvTable" id="populator-environment-table" :rows="environmentInformations" :force-loading="isLoading" searchPlaceholder="Search in Environment" :hasExport="false">
+            <cly-datatable-n ref="populatorEnvTable" id="populator-environment-table" :data-source="remoteTableDataSource" :force-loading="isLoading" searchPlaceholder="Search in User Name" :hasExport="false">
                 <template v-slot:header-left>
-                    <el-select v-model="environmentId">
+                    <el-select v-model="environmentId" @change="onEnvironmentChange()">
                         <el-option v-for="item in filterByEnvironmentOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                 </template>
                 <template v-slot="scope">
-                    <el-table-column fixed="left" :width="calculateWidth(30)" sortable="true" prop="userName" :label="i18n('populator.user-name')">
+                    <el-table-column fixed="left" :width="calculateWidth(30)" prop="userName" :label="i18n('populator.user-name')">
                         <template v-slot="rowScope">
                             <div>
                                 {{rowScope.row.userName}}
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="true" :width="calculateWidth(20)"  prop="platform" :label="i18n('populator.platform')">
+                    <el-table-column :width="calculateWidth(20)"  prop="platform" :label="i18n('populator.platform')">
                         <template v-slot="rowScope">
                             <div>
                                 {{rowScope.row.platform}}
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="true" :width="calculateWidth(20)" prop="device" :label="i18n('populator.device')">
+                    <el-table-column :width="calculateWidth(20)" prop="device" :label="i18n('populator.device')">
                         <template v-slot="rowScope">
                             <div>
                                 {{rowScope.row.device}}
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column 
-                            sortable="true" 
-                            v-for="item in customProperties" 
-                            :formatter="formatTableCell(item)"
-                            :prop="item" 
-                            :label="item"
-                            :width="calculateWidth(15)">
+                    <el-table-column v-if="!customProperties.length" :width="calculateWidth(30)">
+                    </el-table-column>
+                    <el-table-column
+                        v-else
+                        :key="item"
+                        v-for="item in customProperties" 
+                        :formatter="formatTableCell(item)"
+                        :label="item"
+                        :width="calculateWidth(15)">
                     </el-table-column>
                 </template>
             </cly-datatable-n>

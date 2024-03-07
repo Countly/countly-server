@@ -302,26 +302,8 @@
                 </div>'
     }));
 
-    var PopulatorFormCommonMethods = {
-        data: function() {
-            return { };
-        },
-        methods: {
-            getProbabilityRules: function(valueIndex, values) {
-                if (values && values.length) {
-                    const totalValue = (values.reduce((total, value) => parseInt(value.probability) + total, 0));
-                    if (totalValue > 100) {
-                        CountlyHelpers.notify({ message: this.i18n("populator-template.warning-probability-validation"), type: "error" });
-                        values[valueIndex].probability = "";
-                    }
-                }
-            },
-        }
-    };
-    countlyVue.mixins.populatorFormCommonMethods = PopulatorFormCommonMethods;
-
     const userSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
+        mixins: [countlyVue.mixins.i18n],
         props: {
             value: {
                 type: [Object, Array],
@@ -509,7 +491,7 @@
     });
 
     const eventsSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
+        mixins: [countlyVue.mixins.i18n],
         props: {
             isOpen: {
                 type: Boolean,
@@ -686,7 +668,7 @@
     });
 
     const viewsSection = countlyVue.views.create({
-        mixins: [countlyVue.mixins.i18n, countlyVue.mixins.populatorFormCommonMethods],
+        mixins: [countlyVue.mixins.i18n],
         props: {
             isOpen: {
                 type: Boolean,
