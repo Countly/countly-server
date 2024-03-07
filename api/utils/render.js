@@ -63,8 +63,15 @@ exports.renderView = function(options, cb) {
 
             var settings = {
                 headless: true,
+                defaultViewport: null,
                 // debuggingPort: 9229,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--window-size=1920x1080',
+                    '--enable-features=NetworkService'
+                ],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
@@ -230,6 +237,11 @@ exports.renderView = function(options, cb) {
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 18: Executed beforeScrnCbFn');
 
                 await timeout(1500);
+
+                await page.waitForNetworkIdle({
+                    idleTime: 3000, // Consider the network idle after 5 seconds of no activity
+                    timeout: 60000, // Timeout after 60 seconds
+                });
 
                 var image = "";
                 var screenshotOptions = {
