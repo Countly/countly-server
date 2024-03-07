@@ -1103,7 +1103,13 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
         catch (ex) {
             return reject(ex);
         }
-        delete copy._id; // update on the path '_id' would modify the immutable field '_id'
+
+        // _id and api_key are immutable(unique fields. They should not be updated)
+        // created_at is set on user creation and should not be updated)
+        delete copy._id;
+        delete copy.api_key;
+        delete copy.created_at;
+
         this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
             if (err) {
                 reject(err);
