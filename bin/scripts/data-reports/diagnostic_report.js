@@ -1,7 +1,10 @@
-/*
-Script runs queries to try determining if there are any signs of issues.
+/**
+ *  Script runs queries to try to determine if there are any signs of issues.
+ *  Server: countly
+ *  Path: $(countly dir)/bin/scripts/data-reports
+ *  Command: node diagnostic_report.js
+ */
 
-*/
 var Promise = require("bluebird");
 const pluginManager = require('../../../plugins/pluginManager.js');
 
