@@ -157,7 +157,7 @@ exports.renderView = function(options, cb) {
                     console.log('[' + new Date().toUTCString() + ']', 'render.js Line 13: Waited for response matching regex');
                 }
 
-                await timeout(500);
+                await timeout(1500);
 
                 await page.evaluate(cbFn, options);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 14: Executed cbFn');
