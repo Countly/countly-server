@@ -160,6 +160,18 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            countTotals: function(data) {
+                var totalCount = 0;
+                data.forEach(element => {
+                    element.values.forEach(value => {
+                        if (countlyCommon.isNumber(value.description)) {
+                            totalCount += parseInt(value.description, 10);
+                        }
+                    });
+                    element.total = totalCount;
+                    totalCount = 0;
+                });
             }
         },
         computed: {
@@ -236,8 +248,9 @@
                     });
                     returnData[i].values = returnData[i].values.slice(0, 12);
                 }
+                this.countTotals(returnData);
                 returnData.sort(function(a, b) {
-                    let totalDiff = b.itemCn - a.itemCn;
+                    let totalDiff = b.total - a.total;
                     if (totalDiff === 0) {
                         return a.label.localeCompare(b.label);
                     }
