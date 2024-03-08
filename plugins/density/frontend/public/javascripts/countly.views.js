@@ -165,9 +165,7 @@
                 var totalCount = 0;
                 data.forEach(element => {
                     element.values.forEach(value => {
-                        if (countlyCommon.isNumber(value.description)) {
-                            totalCount += parseInt(value.description, 10);
-                        }
+                        totalCount += parseInt(value.description, 10);
                     });
                     element.total = totalCount;
                     totalCount = 0;
