@@ -5,7 +5,6 @@
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird"),
-    async = require('async'),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
@@ -496,31 +495,47 @@ function wrapCallback(params, callback, callbackParam, func) {
 * @param {function} callback - callback method
 **/
 function dbLoadEventsData(params, apps, callback) {
+    const appIds = [];
+    const appNamesById = {};
+
+    apps.forEach((app) => {
+        appIds.push(common.db.ObjectID(app._id + ''));
+        appNamesById[app._id + ''] = app.name;
+    });
 
     /**
     * Get events collections with replaced app names
     * A helper function for db access check
-    * @param {object} app - application object
+    * @param {object} appColl - application ids and names
     * @param {function} cb - callback method
     **/
-    function getEvents(app, cb) {
+    function getEvents(appColl, cb) {
         var result = {};
-        common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
-            if (!err && events && events.list) {
-                for (let i = 0; i < events.list.length; i++) {
-                    result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
+        common.db.collection('events').find({'_id': { $in: appColl.appIds }}).toArray(function(err, events) {
+            if (!err && events) {
+                for (let h = 0; h < events.length; h++) {
+                    if (events[h].list) {
+                        for (let i = 0; i < events[h].list.length; i++) {
+                            result[crypto.createHash('sha1').update(events[h].list[i] + events[h]._id + "").digest('hex')] = "(" + appColl.appNamesById[events[h]._id + ''] + ": " + events[h].list[i] + ")";
+                        }
+                    }
                 }
             }
-            if (plugins.internalDrillEvents) {
-                for (let i = 0; i < plugins.internalDrillEvents.length; i++) {
-                    result[crypto.createHash('sha1').update(plugins.internalDrillEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalDrillEvents[i] + ")";
+
+            appColl.appIds.forEach((appId) => {
+                if (plugins.internalDrillEvents) {
+                    for (let i = 0; i < plugins.internalDrillEvents.length; i++) {
+                        result[crypto.createHash('sha1').update(plugins.internalDrillEvents[i] + appId + "").digest('hex')] = "(" + appColl.appNamesById[appId + ''] + ": " + plugins.internalDrillEvents[i] + ")";
+                    }
                 }
-            }
-            if (plugins.internalEvents) {
-                for (let i = 0; i < plugins.internalEvents.length; i++) {
-                    result[crypto.createHash('sha1').update(plugins.internalEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalEvents[i] + ")";
+
+                if (plugins.internalEvents) {
+                    for (let i = 0; i < plugins.internalEvents.length; i++) {
+                        result[crypto.createHash('sha1').update(plugins.internalEvents[i] + appId + "").digest('hex')] = "(" + appColl.appNamesById[appId + ''] + ": " + plugins.internalEvents[i] + ")";
+                    }
                 }
-            }
+            });
+
             cb(null, result);
         });
     }
@@ -528,18 +543,26 @@ function dbLoadEventsData(params, apps, callback) {
     /**
     * Get views collections with replaced app names
     * A helper function for db access check
-    * @param {object} app - application object
+    * @param {object} appColl - application ids and names
     * @param {function} cb - callback method
     **/
-    function getViews(app, cb) {
+    function getViews(appColl, cb) {
         var result = {};
-        common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
-            if (!err && viewDoc && viewDoc.segments) {
-                for (var segkey in viewDoc.segments) {
-                    result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+        common.db.collection('views').find({'_id': { $in: appColl.appIds }}).toArray(function(err, viewDocs) {
+            if (!err && viewDocs) {
+                for (let idx = 0; idx < viewDocs.length; idx++) {
+                    if (viewDocs[idx].segments) {
+                        for (var segkey in viewDocs[idx].segments) {
+                            result["app_viewdata" + crypto.createHash('sha1').update(segkey + viewDocs[idx]._id + '').digest('hex')] = "(" + appColl.appNamesById[viewDocs[idx]._id + ''] + ": " + segkey + ")";
+                        }
+                    }
                 }
             }
-            result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+
+            appColl.appIds.forEach((appId) => {
+                result["app_viewdata" + crypto.createHash('sha1').update("" + appId).digest('hex')] = "(" + appColl.appNamesById[appId + ''] + ": no-segment)";
+            });
+
             cb(null, result);
         });
     }
@@ -548,23 +571,11 @@ function dbLoadEventsData(params, apps, callback) {
         callback(null, params.member.eventList, params.member.viewList);
     }
     else {
-        async.map(apps, getEvents, function(err, events) {
-            var eventList = {};
-            for (let i = 0; i < events.length; i++) {
-                for (var j in events[i]) {
-                    eventList[j] = events[i][j];
-                }
-            }
-            params.member.eventList = eventList;
-            async.map(apps, getViews, function(err1, views) {
-                var viewList = {};
-                for (let i = 0; i < views.length; i++) {
-                    for (let z in views[i]) {
-                        viewList[z] = views[i][z];
-                    }
-                }
-                params.member.viewList = viewList;
-                callback(err, eventList, viewList);
+        getEvents({ appIds, appNamesById }, function(err, events) {
+            params.member.eventList = events;
+            getViews({ appIds, appNamesById }, function(err1, views) {
+                params.member.viewList = views;
+                callback(err, events, views);
             });
         });
     }
