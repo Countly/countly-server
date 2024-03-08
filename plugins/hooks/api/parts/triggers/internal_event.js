@@ -202,6 +202,15 @@ class InternalEventTrigger {
                 }
                 break;
             }
+            case "/alerts/trigger": {
+                console.log("Alert trigger internal");
+                this.pipeline({
+                    params: ob,
+                    rule: rule,
+                    eventType,
+                });
+                break;
+            }
             }
         });
     }
@@ -236,4 +245,5 @@ const InternalEvents = [
     "/i/app_users/update",
     "/i/app_users/delete",
     "/hooks/trigger",
+    "/alerts/trigger",
 ];

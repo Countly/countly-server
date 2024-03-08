@@ -310,7 +310,8 @@
 
             <cly-form-field 
                 v-if="selectedRadioButton === 'dontSend'"
-                name="alertValues">
+                name="alertBy"
+                v-model = "drawerScope.editedObject.alertBy='hook'">
                 <div class="test">            
                     <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
                     {{i18n('alerts.email-icon')}}
