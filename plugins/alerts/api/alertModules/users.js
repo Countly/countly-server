@@ -66,10 +66,11 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     done();
 };
 
+module.exports.getUserMetricByDate = getUserMetricByDate;
 /**
  * Returns the session metric value by date and metric type.
- * @param   {object}                    app    - app document
- * @param   {string}                    metric - e, n, t, u, d, m, mt
+ * @param   {App}                       app    - app document
+ * @param   {string}                    metric - e, n, t, u, d, m, mt, p
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
  * @returns {Promise<number|undefined>}        - a promise resolves to metric value or undefined
