@@ -63,16 +63,10 @@ exports.renderView = function(options, cb) {
 
             var settings = {
                 headless: true,
-                defaultViewport: null,
                 // debuggingPort: 9229,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--enable-features=NetworkService'
-                ],
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 ignoreHTTPSErrors: true,
-                // userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
 
             if (chromePath) {
@@ -84,18 +78,7 @@ exports.renderView = function(options, cb) {
 
             try {
                 var page = await browser.newPage();
-                await page.setRequestInterception(true);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 5: New page created');
-
-                page.on('request', (request) => {
-                    if (request.url().includes('session_check')) {
-                        request.abort();
-                        console.log("------------------------- aborted the session_check call");
-                    }
-                    else {
-                        request.continue();
-                    }
-                });
 
                 page.on('console', (msg) => {
                     console.log('[' + new Date().toUTCString() + ']', `render.js Line 6: Headless chrome page log: ${msg.text()}`);
@@ -147,7 +130,7 @@ exports.renderView = function(options, cb) {
 
                 await timeout(1500);
 
-                await page.goto(host + view, { waitUntil: 'networkidle0' });
+                await page.goto(host + view);
                 console.log('[' + new Date().toUTCString() + ']', `render.js Line 12: Navigated to view: ${host + view}`);
 
                 if (waitForRegex) {
@@ -165,10 +148,7 @@ exports.renderView = function(options, cb) {
                             }
                             else if (response.status() === 304) {
                                 console.log("BLOCK 1:  miss me with this 304");
-                                return false;
-                            }
-                            else {
-                                return false;
+                                return true;
                             }
                         },
                         { timeout: updatedTimeout }
@@ -177,7 +157,7 @@ exports.renderView = function(options, cb) {
                     console.log('[' + new Date().toUTCString() + ']', 'render.js Line 13: Waited for response matching regex');
                 }
 
-                await timeout(1500);
+                await timeout(500);
 
                 await page.evaluate(cbFn, options);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 14: Executed cbFn');
@@ -203,10 +183,7 @@ exports.renderView = function(options, cb) {
                                     }
                                     else if (response.status() === 304) {
                                         console.log("BLOCK 2:  miss me with another 304");
-                                        return false;
-                                    }
-                                    else {
-                                        return false;
+                                        return true;
                                     }
                                 },
                                 { timeout: updatedTimeout }
@@ -220,7 +197,7 @@ exports.renderView = function(options, cb) {
                     }
                 }
 
-                await timeout(2500);
+                await timeout(1500);
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 15: Before setting viewport dimensions');
                 console.log('[' + new Date().toUTCString() + ']', `options.dimensions.width: ${options.dimensions.width}`);
                 console.log('[' + new Date().toUTCString() + ']', `options.dimensions.height: ${options.dimensions.height}`);
@@ -253,11 +230,6 @@ exports.renderView = function(options, cb) {
                 console.log('[' + new Date().toUTCString() + ']', 'render.js Line 18: Executed beforeScrnCbFn');
 
                 await timeout(1500);
-
-                await page.waitForNetworkIdle({
-                    idleTime: 5000, // Consider the network idle after 5 seconds of no activity
-                    timeout: 100000, // Timeout after 100 seconds
-                });
 
                 var image = "";
                 var screenshotOptions = {
