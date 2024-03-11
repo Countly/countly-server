@@ -153,6 +153,9 @@ exports.renderView = function(options, cb) {
                                 log.d("BLOCK 1:  miss me with this 304");
                                 return true; //TODO:TEST
                             }
+                            else {
+                                return false;
+                            }
 
                         },
                         { timeout: updatedTimeout }
@@ -176,6 +179,9 @@ exports.renderView = function(options, cb) {
                                 else if (response.status() === 304) {
                                     log.d("BLOCK 2:  miss me with this 304");
                                     return true; //TODO:TEST
+                                }
+                                else {
+                                    return false;
                                 }
 
                             },
