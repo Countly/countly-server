@@ -34,8 +34,8 @@
                             <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
                                 <div class="bu-mr-2">
                                 <div>
-                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-key')}}</span>
-                                    <cly-tooltip-icon :tooltip="i18n('populator-template.segment-key-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.segment-name')}}</span>
+                                    <cly-tooltip-icon :tooltip="i18n('populator-template.segment-name-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                 </div>
                                 <div class="bu-mt-2">
                                     <validation-provider name="name" rules="required" v-slot="v">
@@ -61,7 +61,7 @@
                                         <div class="bu-is-flex">
                                             <div class="bu-mt-2">
                                                 <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}" @input="getProbabilityRules(valueIndex, segment.values)">
+                                                    <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
                                                         <template slot="suffix">
                                                             <span class="text-medium color-cool-gray-50">%</span>
                                                         </template>
@@ -89,7 +89,7 @@
                             <div class="bu-is-flex bu-is-justify-content-flex-end">
                                 <div class="bu-mr-2">
                                     <span class="text-smallish bu-has-text-weight-medium">{{ i18n('populator-template.values') }}</span>
-                                    <cly-tooltip-icon :tooltip="i18n('populator-template.values-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                    <cly-tooltip-icon :tooltip="i18n('populator-template.condition-value-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                     <div class="bu-mt-2" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
                                         <el-input class="input" v-model="segmentValue.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
                                     </div>
@@ -103,7 +103,7 @@
                                         <div class="bu-is-flex" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
                                             <div class="bu-mt-2">
                                                 <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                                    <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}" @input="getProbabilityRules(segmentValueIndex, segment.condition.values)">
+                                                    <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}">
                                                         <template slot="suffix">
                                                             <span class="text-medium color-cool-gray-50">%</span>
                                                         </template>

@@ -1767,7 +1767,10 @@
         }
 
         templateUp.forEach(function(item) {
-            up[item.key] = randomSelectByProbability(tryToParseJSON(item.values));
+            let selectedValue = randomSelectByProbability(tryToParseJSON(item.values));
+            if (selectedValue !== "") {
+                up[item.key] = selectedValue;
+            }
         });
 
         let modifiedUpOnConditions = {};
@@ -1777,6 +1780,11 @@
             }
         });
         const mergedUp = Object.assign({}, up, modifiedUpOnConditions);
+        Object.keys(mergedUp).forEach(function(key) {
+            if (mergedUp[key] === "") { // remove empty values
+                delete mergedUp[key];
+            }
+        });
         return mergedUp;
     }
 
@@ -2300,12 +2308,15 @@
                 eventTemplate.segmentations.forEach(function(item) {
                     var values = item.values;
                     var key = item.key;
-                    eventSegmentations[key] = randomSelectByProbability(tryToParseJSON(values));
-                    if (id === "[CLY]_view") {
-                        eventSegmentations.name = eventTemplate.key;
-                        eventSegmentations.visit = 1;
-                        eventSegmentations.start = 1;
-                        eventSegmentations.bounce = 1;
+                    let selectedSegmentation = randomSelectByProbability(tryToParseJSON(values));
+                    if (selectedSegmentation !== "") {
+                        eventSegmentations[key] = selectedSegmentation;
+                        if (id === "[CLY]_view") {
+                            eventSegmentations.name = eventTemplate.key;
+                            eventSegmentations.visit = 1;
+                            eventSegmentations.start = 1;
+                            eventSegmentations.bounce = 1;
+                        }
                     }
                 });
                 eventTemplate.segmentations.forEach(function(item) {
@@ -2316,6 +2327,13 @@
                     }
                 });
                 event.segmentation = Object.assign({}, eventSegmentations, modifiedSegmentationsOnCondition);
+                if (event.segmentation && Object.keys(event.segmentation).length) {
+                    Object.keys(event.segmentation).forEach(function(key) {
+                        if (event.segmentation[key] === "") { // remove empty values
+                            delete event.segmentation[key];
+                        }
+                    });
+                }
             }
             else if (id === "[CLY]_view" && isRandom) {
                 event.segmentation = {};

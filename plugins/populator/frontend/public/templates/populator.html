@@ -60,7 +60,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-template')">
+                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')">
                                     <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
                                 </el-select>
                             </div>
@@ -125,9 +125,9 @@
                 :hasExport="false">
                     <template v-slot="scope">
                         <el-table-column prop="name" :label="i18n('populator.template')" sortable>
-                            <div slot-scope="rowScope" class="has-ellipsis" v-tooltip="rowScope.row.name">
-                                <a v-if="rowScope.row.hasEnvironment" class="color-dark-blue-100" @click="onRowClick(rowScope.row)">{{ unescapeHtml(rowScope.row.name) }}</a>
-                                <span v-else>{{ rowScope.row.name }}</span>
+                            <div slot-scope="rowScope" class="has-ellipsis" v-tooltip="decodeHtml(rowScope.row.name)">
+                                <a v-if="rowScope.row.hasEnvironment" class="color-dark-blue-100" @click="onRowClick(rowScope.row)">{{ decodeHtml(rowScope.row.name) }}</a>
+                                <span v-else>{{ decodeHtml(rowScope.row.name) }}</span>
                             </div>
                         </el-table-column>
                         <el-table-column prop="userCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-users')" sortable>

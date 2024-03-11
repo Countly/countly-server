@@ -45,7 +45,8 @@
             data: function() {
                 return {
                     isToggleable: true,
-                    sidecarContents: []
+                    sidecarContents: [],
+                    disableAutoClose: false,
                 };
             },
             computed: {
@@ -83,6 +84,9 @@
             },
             methods: {
                 doClose: function() {
+                    if (this.disableAutoClose) {
+                        return;
+                    }
                     this.$emit("close", this.name);
                     if (this.closeFn) {
                         this.closeFn();
