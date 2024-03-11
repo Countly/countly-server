@@ -62,7 +62,10 @@ exports.renderView = function(options, cb) {
 
             var settings = {
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                args: ['--no-sandbox', '--disable-setuid-sandbox',
+                    //'--disable-dev-shm-usage',    //TODO:TEST
+                    //'--enable-features=NetworkService'
+                ],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
@@ -75,6 +78,18 @@ exports.renderView = function(options, cb) {
 
             try {
                 var page = await browser.newPage();
+
+                //TODO:TEST
+                //await page.setRequestInterception(true);
+                // page.on('request', (request) => {
+                //     if (request.url().includes('session_check')) {
+                //         request.abort();
+                //         console.log("------------------------- aborted the session_check call");
+                //     }
+                //     else {
+                //         request.continue();
+                //     }
+                // });
 
                 page.on('console', (msg) => {
                     log.d("Headless chrome page log", msg.text());
@@ -130,14 +145,22 @@ exports.renderView = function(options, cb) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
+                            log.d("BLOCK 1 STATUS, URL", response.status(), url());
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 return true;
                             }
+                            else if (response.status() === 304) {
+                                log.d("BLOCK 1:  miss me with this 304");
+                                return true; //TODO:TEST
+                            }
+
                         },
                         { timeout: updatedTimeout }
                     );
                 }
 
+                //TODO:TEST
+                //await timeout(1500);
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
@@ -150,12 +173,18 @@ exports.renderView = function(options, cb) {
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     return true;
                                 }
+                                else if (response.status() === 304) {
+                                    log.d("BLOCK 2:  miss me with this 304");
+                                    return true; //TODO:TEST
+                                }
+
                             },
                             { timeout: updatedTimeout }
                         );
                     }
                 }
 
+                //await timeout(2500); //TODO:TEST
                 await timeout(1500);
 
                 await page.setViewport({
@@ -180,6 +209,12 @@ exports.renderView = function(options, cb) {
                 await page.evaluate(beforeScrnCbFn, options);
 
                 await timeout(1500);
+
+                //TODO:TEST
+                // await page.waitForNetworkIdle({
+                //     idleTime: 5000, // Consider the network idle after 5 seconds of no activity
+                //     timeout: 100000, // Timeout after 100 seconds
+                // });
 
                 var image = "";
                 var screenshotOptions = {

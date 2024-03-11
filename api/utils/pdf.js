@@ -16,6 +16,7 @@ catch (err) {
         );
     }
 }
+var log = require('./log.js')('core:pdf');
 /**
   * Function to generate pdf from html
   * @param {string} html - html text to be converted to html
@@ -31,30 +32,39 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         );
     }
     let browser;
-    if (puppeteerArgs) {
-        browser = await puppeteer.launch(puppeteerArgs);
-    }
-    else {
-        browser = await puppeteer.launch();
-    }
+    try {
+        if (puppeteerArgs) {
+            browser = await puppeteer.launch(puppeteerArgs);
+        }
+        else {
+            browser = await puppeteer.launch();
+        }
+        //TODO:TEST
+        const updatedTimeout = 240000;
+        const page = await browser.newPage();
+        page.setDefaultNavigationTimeout(updatedTimeout);
+        if (!options) {
+            options = { format: 'Letter' };
+        }
 
-    const page = await browser.newPage();
-    if (!options) {
-        options = { format: 'Letter' };
-    }
+        if (remoteContent === true) {
+            await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
+                waitUntil: 'networkidle0'
+            });
+        }
+        else {
+            //page.setContent will be faster than page.goto if html is a static
+            await page.setContent(html);
+        }
 
-    if (remoteContent === true) {
-        await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
-            waitUntil: 'networkidle0'
+        await page.pdf(options).then(callback, function(error) {
+            log.d('pdf generation error', error);
         });
     }
-    else {
-        //page.setContent will be faster than page.goto if html is a static
-        await page.setContent(html);
+    catch (error) {
+        log.d('pdf.js Error:', error);
     }
-
-    await page.pdf(options).then(callback, function(error) {
-        console.log(error);
-    });
-    await browser.close();
+    finally {
+        await browser.close();
+    }
 };
