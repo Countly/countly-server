@@ -149,9 +149,6 @@ const FEATURE_NAME = 'alerts';
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-                                if (alertConfig.alertBy === 'hook') {
-                                    plugins.dispatch("/alerts/trigger", { alert: result.value });
-                                }
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 
@@ -168,9 +165,6 @@ const FEATURE_NAME = 'alerts';
                     function(err, result) {
                         log.d("insert new alert:", err, result);
                         if (!err && result && result.insertedIds && result.insertedIds[0]) {
-                            if (alertConfig.alertBy === 'hook') {
-                                plugins.dispatch("/alerts/trigger", { alert: result.value });
-                            }
                             plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.ops[0] });
                             common.returnOutput(params, result.insertedIds[0]);
                         }
