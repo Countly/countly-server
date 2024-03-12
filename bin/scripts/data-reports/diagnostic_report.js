@@ -265,14 +265,14 @@ function validate_merges(db, callback) {
 Promise.all([pluginManager.dbConnection("countly")]).then(async function([countlyDb]) {
     fetchSystemInfo(countlyDb, function() {
         validate_merges(countlyDb, function() {
-            validate_user_profiles(countlyDb, function(){
-				validate_reports(countlyDb, function() {
-					validate_flows(countlyDb, function() {
-						validate_views(countlyDb, function() {
-							countlyDb.close();
-						});
-					});
-				});
+            validate_user_profiles(countlyDb, function() {
+                validate_reports(countlyDb, function() {
+                    validate_flows(countlyDb, function() {
+                        validate_views(countlyDb, function() {
+                            countlyDb.close();
+                        });
+                    });
+                });
             });
         });
     });
