@@ -1022,7 +1022,7 @@
                             if (indexToRemove !== -1) {
                                 this.behavior.sequences.splice(indexToRemove, 1);
                             }
-                            this.behavior.sequences.push({key: 'Sequence_' + (newValue.sequences.length + 1), probability: 0});
+                            this.behavior.sequences.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
                         }
                         if (newValue.sequences.length > 1 && !this.behavior.sequences.find(item => item.key === 'random')) {
                             this.behavior.sequences.push({key: 'random', probability: 0});

@@ -67,9 +67,9 @@
                     behavior: {}
                 });
             },
-            refresh: function(isRefresh) {
+            refresh: function(isRefresh, fromDrawer = false) {
                 if (isRefresh) {
-                    this.getTemplateList(false);
+                    this.getTemplateList(fromDrawer);
                 }
             },
             handleDrawerActions: function(command, template) {
@@ -584,48 +584,75 @@
             },
             checkInputProbabilities(editedObject) {
                 let warningMessage = "";
-                let sectionsToVerify = ["users", "views", "events"];
+                let sectionsToVerify = ["users", "views", "events", "behavior"];
 
                 sectionsToVerify.forEach(function(sectionName) {
-                    editedObject[sectionName].forEach(item => {
-                        let sectionTotal = null;
-                        let conditionTotal = null;
-                        if (item.segmentations) {
-                            item.segmentations.forEach(segmentation => {
-                                sectionTotal = 0;
-                                if (segmentation.values) {
-                                    segmentation.values.forEach(value => {
-                                        sectionTotal += parseInt(value.probability, 10) || 0;
-                                    });
-                                }
-                                if (segmentation.condition) {
-                                    segmentation.condition.values.forEach(conditionValue => {
+                    if (Array.isArray(editedObject[sectionName])) {
+                        editedObject[sectionName].forEach(item => {
+                            let sectionTotal = null;
+                            let conditionTotal = null;
+                            if (item.segmentations) {
+                                item.segmentations.forEach(segmentation => {
+                                    sectionTotal = 0;
+                                    if (segmentation.values) {
+                                        segmentation.values.forEach(value => {
+                                            sectionTotal += parseInt(value.probability, 10) || 0;
+                                        });
+                                    }
+                                    if (segmentation.condition) {
+                                        segmentation.condition.values.forEach(conditionValue => {
+                                            conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                        });
+                                    }
+                                    if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
+                                        warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, segmentation.key) + "<br/></br>";
+                                    }
+                                });
+                            }
+                            else if (item.values) {
+                                item.values.forEach(value => {
+                                    sectionTotal += parseInt(value.probability, 10) || 0;
+                                });
+                                if (item.condition) {
+                                    item.condition.values.forEach(conditionValue => {
                                         conditionTotal += parseInt(conditionValue.probability, 10) || 0;
                                     });
                                 }
                                 if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                    warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, segmentation.key) + "<br/></br>";
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, item.key) + "<br/></br>";
+                                }
+                            }
+                        });
+                    }
+                    else if (typeof editedObject[sectionName] === 'object') {
+                        let sectionTotal = null;
+                        if (editedObject[sectionName].sequences) {
+                            sectionTotal = 0;
+                            editedObject[sectionName].sequences.forEach(sequence => {
+                                sectionTotal += parseInt(sequence.probability, 10) || 0;
+                            });
+                            if (sectionTotal && sectionTotal !== 100) {
+                                warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior') + "<br/></br>";
+                            }
+                        }
+                        if (editedObject[sectionName].sequenceConditions && editedObject[sectionName].sequenceConditions.length) {
+                            let conditionTotal = null;
+                            editedObject[sectionName].sequenceConditions.forEach(condition => {
+                                conditionTotal = 0;
+                                condition.values.forEach(conditionValue => {
+                                    conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                });
+                                if (conditionTotal && conditionTotal !== 100) {
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior') + "<br/></br>";
                                 }
                             });
                         }
-                        else if (item.values) {
-                            item.values.forEach(value => {
-                                sectionTotal += parseInt(value.probability, 10) || 0;
-                            });
-                            if (item.condition) {
-                                item.condition.values.forEach(conditionValue => {
-                                    conditionTotal += parseInt(conditionValue.probability, 10) || 0;
-                                });
-                            }
-                            if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, item.key) + "<br/></br>";
-                            }
-                        }
-                    });
+                    }
                 });
                 return warningMessage;
             },
             onSubmit: function(editedObject) {
+                var self = this;
                 const isEdit = !!editedObject._id;
                 const isDuplicate = editedObject.is_duplicate;
                 const validationMessages = this.checkInputProbabilities(editedObject);
@@ -636,8 +663,12 @@
                 }
                 if (isEdit && !isDuplicate) {
                     countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
-                        if (res.result) {
+                        if (res && res.result) {
                             CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
+                            self.$emit('refresh-table', true, true);
+                        }
+                        else if (res && res.err) {
+                            CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.err, sticky: true, clearAll: true});
                         }
                     });
                 }
@@ -645,6 +676,10 @@
                     countlyPopulator.createTemplate(editedObject, function(res) {
                         if (res && res.result) {
                             CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-create-template"), sticky: false, clearAll: true});
+                            self.$emit('refresh-table', true, true);
+                        }
+                        else if (res && res.err) {
+                            CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.err, sticky: true, clearAll: true});
                         }
                     });
                 }
