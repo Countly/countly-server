@@ -19,7 +19,7 @@ module.exports.triggerByEvent = async function(event) {
     const alert = await common.db.collection("alerts").findOne({
         alertDataSubType2: feedbackWidgetId,
         alertDataType: "nps",
-        alertDataSubType: "New NPS response",
+        alertDataSubType: "new NPS response",
     });
     if (!alert) {
         return;

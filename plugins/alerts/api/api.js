@@ -11,6 +11,7 @@ const FEATURE_NAME = 'alerts';
 const ALERT_MODULES = {
     "survey": require("./alertModules/survey.js"),
     "nps": require("./alertModules/nps.js"),
+    "rating": require("./alertModules/rating.js"),
 };
 
 const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
@@ -36,6 +37,16 @@ function isSurveyCompletionEvent(event) {
 function isNPSCompletionEvent(event) {
     return event?.key === "[CLY]_nps"
         && !event?.segmentation?.closed
+        && event?.segmentation?.widget_id
+        && typeof event?.segmentation?.rating !== 'undefined';
+}
+/**
+ * Checks if given event is a proper Rating event
+ * @param   {object}  event single event object
+ * @returns {boolean}       true|false
+ */
+function isRatingEvent(event) {
+    return event?.key === "[CLY]_nps"
         && event?.segmentation?.widget_id
         && typeof event?.segmentation?.rating !== 'undefined';
 }
@@ -89,16 +100,12 @@ function isNPSCompletionEvent(event) {
     }
 
     plugins.register("/i", async function(ob) {
-        // const alarmTriggeringEventKeys = [
-        //     "[CLY]_survey",
-        //     "[CLY]_nps",
-        //     "[CLY]_star_rating"
-        // ];
         const events = ob?.params?.qstring?.events;
         if (!Array.isArray(events)) {
             return;
         }
 
+        // "[CLY]_survey"
         try {
             await Promise.all(events.filter(isSurveyCompletionEvent).map(ALERT_MODULES.survey.triggerByEvent));
         }
@@ -106,11 +113,20 @@ function isNPSCompletionEvent(event) {
             log.e("Survey alert couldn't be triggered by event", err);
         }
 
+        // "[CLY]_nps"
         try {
             await Promise.all(events.filter(isNPSCompletionEvent).map(ALERT_MODULES.nps.triggerByEvent));
         }
         catch (err) {
             log.e("NPS alert couldn't be triggered by event", err);
+        }
+
+        // "[CLY]_star_rating"
+        try {
+            await Promise.all(events.filter(isRatingEvent).map(ALERT_MODULES.rating.triggerByEvent));
+        }
+        catch (err) {
+            log.e("Rating alert couldn't be triggered by event", err);
         }
     });
 
