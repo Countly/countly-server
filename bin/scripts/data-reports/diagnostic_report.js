@@ -138,6 +138,51 @@ function validate_reports(db, callback) {
     }
 }
 
+function validate_user_profiles(db, callback) {
+    var data = {};
+
+    db.collection('apps').find({}).toArray(function(err, apps) {
+        if (err) {
+            console.log(err);
+        }
+        apps = apps || [];
+        Promise.each(apps, function(app) {
+            return new Promise(function(resolve) {
+                //get flow count
+                //get duplicate uids
+                db.collection('app_users' + app._id).aggregate([{"$group": {"_id": "$uid", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": 1}}}, {"$sort": {"cn": -1}}]).toArray(function(err, list) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    //list with duplicated uids
+                    list = list || [];
+                    if (list.length > 0) {
+                        data[app._id] = data[app._id] || {};
+                        data[app._id].duplicates = list;
+                    }
+                    //get top merges count
+                    db.collection('app_users' + app._id).aggregate([{"$match": {"merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"merges": 1, "_id": 1, "uid": 1}}]).toArray(function(err, list) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        if (list.length > 0) {
+                            data[app._id] = data[app._id] || {};
+                            data[app._id].top_merges = list;
+                        }
+                        resolve();
+                    });
+                });
+            });
+        }).then(function() {
+            console.log("--App users collection--");
+            console.log(JSON.stringify(data));
+            callback();
+        }).catch(function(err) {
+            console.log("Error: " + err);
+            callback();
+        });
+    });
+}
 function validate_flows(db, callback) {
     //Get flows that are errored with error messages
     //List flows that runs longer than settings.
@@ -162,8 +207,18 @@ function validate_flows(db, callback) {
                                 flows[app._id].long_queries = arr;
                             }
                             //get errored flows/not updated for more than 48 hours
+                            var now = Date.now().valueOf();
+                            now = now - 48 * 60 * 60 * 1000;
+                            db.collection('flowSchema' + app._id).find({"calculated": {"$lt": now}}).toArray(function(err, arr2) {
+                                if (arr2 && arr2.length > 0) {
+                                    flows[app._id] = flows[app._id] || {};
+                                    flows[app._id].count = count || 0;
+                                    flows[app._id].failing = arr2.length;
+                                    flows[app._id].failing = arr2;
+                                }
+                                resolve();
+                            });
 
-                            resolve();
                         });
                     });
                 });
@@ -192,7 +247,7 @@ function validate_merges(db, callback) {
 
                     //lined up merges count by app_id
                     db.collection('app_user_merges').aggregate([{"$project": {"_id": {"$substrCP": ["$_id", 0, 24]}}}, {"$group": {"_id": "$_id", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": settings.merges.minimal_count_per_app || 0}}}], function(err, apps) {
-                        console.log("Apps with count gt than" + settings.merges.minimal_count_per_app + ":");
+                        console.log("Apps with count gt than " + settings.merges.minimal_count_per_app + ":");
                         console.log(JSON.stringify(apps));
                         callback();
                     });
@@ -210,12 +265,14 @@ function validate_merges(db, callback) {
 Promise.all([pluginManager.dbConnection("countly")]).then(async function([countlyDb]) {
     fetchSystemInfo(countlyDb, function() {
         validate_merges(countlyDb, function() {
-            validate_reports(countlyDb, function() {
-                validate_flows(countlyDb, function() {
-                    validate_views(countlyDb, function() {
-                        countlyDb.close();
-                    });
-                });
+            validate_user_profiles(countlyDb, function(){
+				validate_reports(countlyDb, function() {
+					validate_flows(countlyDb, function() {
+						validate_views(countlyDb, function() {
+							countlyDb.close();
+						});
+					});
+				});
             });
         });
     });

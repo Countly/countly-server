@@ -14,6 +14,8 @@ var query = {"ts": {"$gt": 1709762400000}}; //Change this query to set date rang
 var eventKey = "[CLY]_session"; //Write in your event key
 var appID = "6075f94b7e5e0d392902520c"; //Write in YOUR app ID
 
+console.log("Running for:" + appID + " " + eventKey + " " + JSON.stringify(query));
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
 
     var pipeline = [];
@@ -42,27 +44,30 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     else {
                         users = users || [];
                         if (users.length === res.length) {
-                            console.log("MATCHED");
+                            console.log("MATCHED COUNT");
                         }
                         else {
-                            console.log("MISMATCHED");
+                            console.log("MISMATCHED COUNT");
                             console.log("Users in drill: " + res.length);
                             console.log("Users in countly: " + users.length);
-                            console.log("checking which users don't have document in app_users collection...");
+                        }
+                        console.log("checking which users don't have document in app_users collection...");
 
-                            var map1 = {};
-                            for (var h = 0; h < users.length; h++) {
-                                map1[users[h].uid] = true;
+                        var map1 = {};
+                        for (var h = 0; h < users.length; h++) {
+                            map1[users[h].uid] = true;
+                        }
+                        var missingOnes = [];
+                        for (var z = 0; z < res.length; z++) {
+                            if (!map1[res[z]]) {
+                                missingOnes.push(res[z]);
                             }
-                            var missingOnes = [];
-                            for (var z = 0; z < res.length; z++) {
-                                if (!map1[res[z]]) {
-                                    missingOnes.push(res[z]);
-                                }
-                            }
+                        }
+                        if (missingOnes.length > 0) {
                             console.log("Users missing in app_users collection: " + missingOnes.length);
                             console.log(JSON.stringify(missingOnes));
                         }
+
                         countlyDb.close();
                         drillDb.close();
                     }
