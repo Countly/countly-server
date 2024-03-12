@@ -227,7 +227,7 @@
                             v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'"
                             class="alert-drawer-trigger-select-and-input">
                             <option :value="null" hidden>time</option>
-                            <option v-for="(periodItem, index) in defaultAlertTime.time" :key="index" :value="periodItem.value">
+                            <option v-for="(periodItem, index) in alertTimeOptions" :key="index" :value="periodItem.value">
                                 {{ periodItem.label }}
                             </option>
                         </select>

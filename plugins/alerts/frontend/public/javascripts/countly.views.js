@@ -115,6 +115,16 @@
                 }
                 return true;
             },
+            alertTimeOptions() {
+                if (this.$refs.drawerData.editedObject.alertDataType === "rating") {
+                    // Filter out the "hour" option if the alert data type is "rating"
+                    return this.defaultAlertTime.time.filter(periodItem => periodItem.value !== "hourly");
+                }
+                else {
+                    // Return all options if condition doesn't match
+                    return this.defaultAlertTime.time;
+                }
+            },
             alertDataTypeOptions: function() {
                 var alertDataTypeOptions = [
                     {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
