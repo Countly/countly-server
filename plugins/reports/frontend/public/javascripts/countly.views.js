@@ -347,7 +347,7 @@
                 var defaultData = countlyReporting.defaultDrawerConfigValue();
                 var data = Object.assign({}, defaultData);
                 if (data.title) {
-                    countlyCommon.unescapeHtml(data.title);
+                    data.title = countlyCommon.unescapeHtml(data.title);
                 }
                 data.report_type = "dashboards";
                 data.dashboards = reportsView._createDashboard;
