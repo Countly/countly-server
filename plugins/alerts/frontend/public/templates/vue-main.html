@@ -145,7 +145,6 @@
                     <cly-app-select 
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                             class="bu-is-flex"
-                            @change="onAppChange"
                             v-model="drawerScope.editedObject.selectedApps"
                             :allowAll="allowAll"
                             >

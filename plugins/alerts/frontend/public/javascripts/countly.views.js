@@ -6,7 +6,6 @@
     countlyVue,
     app,
     countlyCommon,
-    countlyEvent,
     countlyAuth,
     CV,
  */
@@ -34,8 +33,6 @@
                 showCondition: true,
                 showConditionValue: true,
                 alertDataSubType2Options: [],
-                eventTargets: [],
-                metricTargets: [],
                 defaultAlertDefine: {
                     metric: {
                         target: [
@@ -140,20 +137,10 @@
             },
             alertDefine: function() {
                 var allOptions = JSON.parse(JSON.stringify(this.defaultAlertDefine));
-                var eventTargets = this.eventTargets;
-                var metricTargets = this.metricTargets;
 
                 this.externalAlertDefine.forEach(function(define) {
                     allOptions = Object.assign(allOptions, define);
                 });
-
-                if (eventTargets && eventTargets.length) {
-                    allOptions.event.target = eventTargets;
-                }
-
-                if (metricTargets && metricTargets.length) {
-                    allOptions.metric.target = allOptions.metric.target.concat(metricTargets);
-                }
 
                 return allOptions;
             }
@@ -167,45 +154,6 @@
         mounted: function() {
         },
         methods: {
-            onAppChange: function(val, notReset) {
-                var self = this;
-                this.apps = [val];
-                if (val) {
-                    countlyEvent.getEventsForApps([val], function(eventData) {
-                        var eventTargets = eventData.map(function(e) {
-                            return {value: e.value, label: e.name};
-                        });
-
-                        self.eventTargets = eventTargets;
-                    });
-
-                    countlyAlerts.getViewForApp(val, function(viewList) {
-                        if (viewList.length !== 0) {
-                            var viewTargets = [
-                                { value: 'Bounce rate', label: 'Bounce rate (%)' },
-                                { value: 'Number of page views', label: 'Number of page views' }
-                            ];
-
-                            self.metricTargets = viewTargets;
-                            self.alertDataSubType2Options = viewList.map(function(v) {
-                                return {value: v.value, label: v.name};
-                            });
-                        }
-                        else {
-                            self.metricTargets = [];
-                        }
-                    });
-                }
-                else {
-                    this.eventTargets = [];
-                    this.metricTargets = [];
-                    this.alertDataSubType2Options = [];
-                }
-
-                if (!notReset) {
-                    this.resetAlertCondition();
-                }
-            },
             dataTypeSelected: function(val, notRest) {
                 if (val === 'dataPoint' && countlyGlobal.member.global_admin === true) {
                     this.allowAll = true;
@@ -341,8 +289,6 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
-
-                this.onAppChange(newState.selectedApps, true);
 
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
