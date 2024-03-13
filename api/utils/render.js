@@ -277,7 +277,7 @@ exports.renderView = function(options, cb) {
                     image: image,
                     path: path
                 };
-
+                log.d('render.js Finished rendering images');
                 return cb(null, imageData);
             }
             catch (e) {

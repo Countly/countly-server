@@ -33,6 +33,7 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
     }
     let browser;
     try {
+        log.d('Starting pdf generation', 'puppeteerArgs: ', puppeteerArgs);
         if (puppeteerArgs) {
             browser = await puppeteer.launch(puppeteerArgs);
         }
@@ -42,6 +43,23 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         //TODO:TEST
         const updatedTimeout = 240000;
         const page = await browser.newPage();
+
+        page.on('console', (msg) => {
+            log.d("Headless chrome page log", msg.text());
+        });
+
+        page.on('pageerror', (error) => {
+            log.e("Headless chrome page error message", error.message);
+        });
+
+        page.on('response', (response) => {
+            log.d("Headless chrome page response", response.status(), response.url());
+        });
+
+        page.on('requestfailed', (request) => {
+            log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+        });
+
         page.setDefaultNavigationTimeout(updatedTimeout);
         if (!options) {
             options = { format: 'Letter' };
@@ -60,9 +78,10 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         await page.pdf(options).then(callback, function(error) {
             log.d('pdf generation error', error);
         });
+        log.d('pdf generated');
     }
     catch (error) {
-        log.d('pdf.js Error:', error);
+        log.d('Error:', error);
     }
     finally {
         await browser.close();
