@@ -5,9 +5,11 @@
  * @property {string}        alertName         - identifier
  * @property {string}        alertDataType     - module: view|crash|survey...
  * @property {string}        alertDataSubType  - metric: e.g. "Number of page views"
- * @property {string}        alertDataSubType2 - view id/feedback widget id/
+ * @property {string}        alertDataSubType2 - view id/feedback widget id/event name/...
  * @property {string}        compareType       - comparison operator e.g. "increased by at least"
  * @property {string}        compareValue      - value to compare to
+ * @property {string}        filterKey         - for filtering events
+ * @property {string}        filterValue       - for filtering events
  * @property {Array<string>} selectedApps      - apps to enable this alert for
  * @property {string}        period            - when to run alert check: hourly|daily|monthly
  * @property {string}        alertBy           - e.g. email

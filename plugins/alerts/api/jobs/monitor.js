@@ -10,6 +10,7 @@ const ALERT_MODULES = {
     "session": require("../alertModules/session.js"),
     "survey": require("../alertModules/survey.js"),
     "revenue": require("../alertModules/revenue.js"),
+    "event": require("../alertModules/event.js"),
 };
 /**
  * @class
