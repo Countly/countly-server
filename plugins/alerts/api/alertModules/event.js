@@ -128,7 +128,7 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
 
     let number;
     for (let record of records) {
-        const segmentKey = record.s === "no-segment" ? null : record.s;
+        const segmentKey = (!record || record.s === "no-segment") ? null : record.s;
         const segmentValue = segmentKey ? segments[segmentKey] : null;
         let value;
 
