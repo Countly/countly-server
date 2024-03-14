@@ -74,7 +74,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 async function getRevenueByDate(app, date, period) {
     const dateComponents = commonLib.getDateComponents(date, app.timezone);
     const monthFilter = String(dateComponents.years) + ":" + String(dateComponents.months);
-    const events = app?.plugins?.revenue?.iap_events;
+    const events = app.plugins?.revenue?.iap_events;
     if (!Array.isArray(events)) {
         return;
     }
