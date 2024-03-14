@@ -29,7 +29,7 @@
     <div class="cly-vue-daterp">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
             <div v-if="allowCustomRange && !moveRangeTabsToLeftSide" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
-            :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
+            :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection, 'cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom--override': enabledShortcuts.length === 1}"
             @click="handleCustomRangeClick">
             <span :data-test-id="testId + '-select-date-custom-label'">{{i18n('common.time-period-select.custom-range')}}</span><i class="el-icon-caret-right"></i>
             </div>
@@ -42,7 +42,7 @@
         </div>
         <div class="cly-vue-daterp__calendars-col" v-if="(isVisible && customRangeSelection)">
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
-                <el-tabs v-model="rangeMode" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
+                <el-tabs v-model="rangeMode" :class="{'cly-vue-daterp__tab-list' : allowOnSelection || allowBeforeSelection}" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
                     <el-tab-pane name="inBetween">
                         <template slot="label">
                             <span :data-test-id="testId+ '-select-date-tab-in-between'" class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
