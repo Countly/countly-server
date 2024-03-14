@@ -870,7 +870,6 @@
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
             var data = prepareParams(params);
-            var method = "POST";
 
             xhr.open('POST', Countly.passed_data.url + apiPath, true);
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -880,6 +879,7 @@
             xhr.onreadystatechange = function() {
                 if (this.readyState == this.HEADERS_RECEIVED) {
                     try {
+                        Countly._internals.removeValueFromStorage('cly_token');
                         Countly._internals.setValueInStorage('cly_token', xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
