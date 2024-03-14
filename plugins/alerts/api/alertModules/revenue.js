@@ -115,7 +115,7 @@ async function calculateRevenueMetric(app, metricName, date, period) {
  * @returns {Promise<number|undefined>}        - a promise resolves to metric value or undefined
  */
 async function getRevenueEventMetricByDate(app, metric, date, period) {
-    const events = app?.plugins?.revenue?.iap_events;
+    const events = app.plugins?.revenue?.iap_events;
     if (!Array.isArray(events)) {
         return;
     }
