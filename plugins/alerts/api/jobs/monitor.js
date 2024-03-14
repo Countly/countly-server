@@ -1,74 +1,51 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    pluginManager = require('../../../pluginManager.js'),
+const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
-    Promise = require("bluebird");
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
-const common = require('../../../../api/utils/common.js');
-let alertModules = {};
-
-
-/**
- * load alert modeules from 'alertModules/*' folder
- * @return {object} promise
- */
-const getAlertModules = function() {
-    const plugins = pluginManager.getPlugins();
-    const alertsDirList = [];
-    for (let i = 0, l = plugins.length; i < l; i++) {
-        alertsDirList.push(path.resolve(__dirname, "../../../" + plugins[i] + "/api/alertModules"));
-    }
-
-    let promises = alertsDirList.map(function(alertDir) {
-        return new Promise((resolve) => {
-            fs.readdir(alertDir, (err, files) => {
-                return err || !files ? resolve() : resolve(files.map(f => {
-                    return {
-                        name: f.substr(0, f.length - 3),
-                        filePath: alertDir + '/' + f
-                    };
-                }));
-            });
-        });
-    });
-
-    return Promise.all(promises).then(arrays => {
-        arrays = _.flatten(arrays);
-        alertModules = [];
-        arrays.forEach(alert => {
-            if (alert && alert.filePath) {
-                alertModules[alert.name] = alert.filePath;
-            }
-        });
-    });
-};
-
-// load modules
-getAlertModules();
+    common = require('../../../../api/utils/common.js');
 
 /**
  * @class
  * @classdesc Class MonitorJob is Alert Monitor Job extend from Countly Job
  * @extends Job
  */
-class MonitorJob extends job.Job {
+class MonitorJob extends Job {
     /**
     * run task
-    * @param {object} db - db object
+    * @param {object} _db - db object
     * @param {function} done - callback function
     */
-    run(db, done) {
+    run(_db, done) {
+        const ALERT_MODULES = {
+            "view": require("../alertModules/view.js"),
+            "users": require("../alertModules/users.js"),
+            "session": require("../alertModules/session.js"),
+            "survey": require("../alertModules/survey.js"),
+        };
         const alertID = this._json.data.alertID;
+        const scheduledTo = this._json.next;
         const self = this;
-        common.db.collection("alerts").findOne({ _id: common.db.ObjectID(alertID) }, function(err, alertConfigs) {
+        common.db.collection("alerts").findOne({
+            _id: common.db.ObjectID(alertID),
+            alertDataSubType: {
+                // these are being triggered by event listener in api.js
+                $nin: [
+                    "New survey response",
+                    "New NPS response",
+                    "New rating response"
+                ]
+            }
+        }, function(err, alertConfigs) {
+            if (err) {
+                log.e(err);
+                return;
+            }
+
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
-            if (alertModules[alertConfigs.alertDataType]) {
-                const module = require(alertModules[alertConfigs.alertDataType]);
-                module.check({ db: common.db, alertConfigs, done });
+            const module = ALERT_MODULES[alertConfigs.alertDataType];
+            if (module) {
+                module.check({ alertConfigs, done, scheduledTo });
             }
         });
     }
