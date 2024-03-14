@@ -11,6 +11,8 @@ const ALERT_MODULES = {
     "survey": require("../alertModules/survey.js"),
     "revenue": require("../alertModules/revenue.js"),
     "event": require("../alertModules/event.js"),
+    "rating": require("../alertModules/rating.js"),
+    "cohort": require("../alertModules/cohort.js"),
 };
 /**
  * @class

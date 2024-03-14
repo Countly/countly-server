@@ -19,7 +19,7 @@ module.exports.triggerByEvent = async function(event) {
     const alert = await common.db.collection("alerts").findOne({
         alertDataSubType2: feedbackWidgetId,
         alertDataType: "survey",
-        alertDataSubType: "New survey response",
+        alertDataSubType: "new survey response",
     });
     if (!alert) {
         return;
