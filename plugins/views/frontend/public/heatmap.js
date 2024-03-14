@@ -71,7 +71,7 @@
      * @param {string} message - any string message
      */
     function log(level, message) {
-        if (Countly && Countly.debug && typeof console !== 'undefined') {
+        if (typeof console !== 'undefined') {
             // parse the arguments into a string if it is an object
             if (arguments[2] && typeof arguments[2] === "object") {
                 arguments[2] = JSON.stringify(arguments[2]);
