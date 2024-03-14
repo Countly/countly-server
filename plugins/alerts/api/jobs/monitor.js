@@ -4,6 +4,13 @@ const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
     common = require('../../../../api/utils/common.js');
 
+const ALERT_MODULES = {
+    "view": require("../alertModules/view.js"),
+    "users": require("../alertModules/users.js"),
+    "session": require("../alertModules/session.js"),
+    "survey": require("../alertModules/survey.js"),
+    "revenue": require("../alertModules/revenue.js"),
+};
 /**
  * @class
  * @classdesc Class MonitorJob is Alert Monitor Job extend from Countly Job
@@ -16,12 +23,7 @@ class MonitorJob extends Job {
     * @param {function} done - callback function
     */
     run(_db, done) {
-        const ALERT_MODULES = {
-            "view": require("../alertModules/view.js"),
-            "users": require("../alertModules/users.js"),
-            "session": require("../alertModules/session.js"),
-            "survey": require("../alertModules/survey.js"),
-        };
+
         const alertID = this._json.data.alertID;
         const scheduledTo = this._json.next;
         const self = this;
