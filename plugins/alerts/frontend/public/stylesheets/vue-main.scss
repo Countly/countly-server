@@ -42,7 +42,6 @@
 }
 
 #alert-drawer {
-
     .alert-trigger{
         font-size: 14px;
     }
@@ -52,7 +51,6 @@
         -webkit-appearance: none; /* remove default appearance on Webkit-based browsers */
         -moz-appearance: none; /* remove default appearance on Mozilla-based browsers */
         appearance: none; /* remove default appearance on all other browsers */
-
         display: inline-block; 
         width: auto; 
         padding: 6px;
@@ -61,7 +59,7 @@
         background-color: #F8FAFD;
         border-radius: 4px;
         font-size: 13px;
-        font-family:Inter;
+        font-family:Inter, sans-serif;
         font-weight: 500;
         color: #0166D6;
     } 
