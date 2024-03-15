@@ -1,10 +1,8 @@
 /**
- * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
-const log = require('../../../../api/utils/log.js')('alert:survey');
+const log = require('../../../../api/utils/log.js')('alert:cohort');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
@@ -20,12 +18,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     let { period, alertDataSubType2, compareType, compareValue } = alert;
     compareValue = Number(compareValue);
 
-    const metricValue = await getCohortMetricByDate(app, alertDataSubType2, date, period);
-    if (!metricValue) {
-        return done();
-    }
+    const metricValue = await getCohortMetricByDate(app, alertDataSubType2, date, period) || 0;
 
-    if (compareType === "more than") {
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
             await commonLib.trigger({ alert, app, metricValue, date });
         }
@@ -38,9 +33,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
-        const shouldTrigger = compareType === "increased by at least"
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
             ? change >= compareValue
-            : change <= compareValue;
+            : change <= -compareValue;
 
         if (shouldTrigger) {
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });

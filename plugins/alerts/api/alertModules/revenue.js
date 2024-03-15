@@ -1,7 +1,6 @@
 /**
  * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
 const log = require('../../../../api/utils/log.js')('alert:revenue');
@@ -36,14 +35,11 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         }
 
         let { alertDataSubType, period, compareType, compareValue } = alert;
-        const metricValue = await calculateRevenueMetric(app, alertDataSubType, date, period);
         compareValue = Number(compareValue);
 
-        if (!metricValue) {
-            return done();
-        }
+        const metricValue = await calculateRevenueMetric(app, alertDataSubType, date, period) || 0;
 
-        if (compareType === "more than") {
+        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
             if (metricValue > compareValue) {
                 await commonLib.trigger({ alert, app, metricValue, date });
             }
@@ -56,9 +52,9 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             }
 
             const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === "increased by at least"
+            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
                 ? change >= compareValue
-                : change <= compareValue;
+                : change <= -compareValue;
 
             if (shouldTrigger) {
                 await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -134,6 +130,7 @@ async function getRevenueEventMetricByDate(app, metric, date, period) {
 
     return result;
 }
+
 /*
 (async function() {
     await new Promise(res => setTimeout(res, 2000));

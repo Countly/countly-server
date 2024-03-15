@@ -1,7 +1,5 @@
 /**
- * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
 const log = require('../../../../api/utils/log.js')('alert:survey');
@@ -9,6 +7,18 @@ const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
+
+module.exports.isValidEvent = isValidEvent;
+/**
+ * Checks if given event is a survey completion event.
+ * @param   {object}  event single event object sent to /i endpoint
+ * @returns {boolean}       true if the event contains proper survey completion data
+ */
+function isValidEvent(event) {
+    return event?.key === "[CLY]_survey"
+        && !event?.segmentation?.closed
+        && event?.segmentation?.widget_id;
+}
 
 module.exports.triggerByEvent = async function(event) {
     const feedbackWidgetId = event?.segmentation?.widget_id;
@@ -19,7 +29,7 @@ module.exports.triggerByEvent = async function(event) {
     const alert = await common.db.collection("alerts").findOne({
         alertDataSubType2: feedbackWidgetId,
         alertDataType: "survey",
-        alertDataSubType: "new survey response",
+        alertDataSubType: commonLib.TRIGGERED_BY_EVENT.survey,
     });
     if (!alert) {
         return;
@@ -46,12 +56,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     let { period, alertDataSubType2, compareType, compareValue } = alert;
     compareValue = Number(compareValue);
 
-    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period);
-    if (!metricValue) {
-        return done();
-    }
+    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period) || 0;
 
-    if (compareType === "more than") {
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
             await commonLib.trigger({ alert, app, metricValue, date });
         }
@@ -64,9 +71,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
-        const shouldTrigger = compareType === "increased by at least"
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
             ? change >= compareValue
-            : change <= compareValue;
+            : change <= -compareValue;
 
         if (shouldTrigger) {
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -78,7 +85,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
 /**
  * Returns the view metric value by view, date and metric type.
- * @param   {object}                    app    - app document
+ * @param   {App}                       app    - app document
  * @param   {string}                    survey - _id of the from feedback_widgets
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
@@ -150,32 +157,18 @@ function sumOfAllResponses(scope, survey) {
 }
 
 /*
-;(async function() {
-    let data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c38401b46a4d172d7c61a5",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "monthly"
-    );
-
+(async function() {
+    await new Promise(res => setTimeout(res, 2000));
+    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
+    const widgetId = "65c38401b46a4d172d7c61a5";
+    const date = new Date("2024-02-07T12:00:00.000Z");
+    let data = await getResponsesByDate(app, widgetId, date, "monthly");
     console.log("monthly:", data);
 
-    data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c38401b46a4d172d7c61a5",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "daily"
-    );
-
+    data = await getResponsesByDate(app, widgetId, date, "daily");
     console.log("daily:", data);
 
-    data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c38401b46a4d172d7c61a5",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "hourly"
-    );
-
+    data = await getResponsesByDate(app, widgetId, date, "hourly");
     console.log("hourly:", data);
 })();
 */

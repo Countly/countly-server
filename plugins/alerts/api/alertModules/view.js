@@ -1,7 +1,6 @@
 /**
  * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
 const crypto = require('crypto');
@@ -39,12 +38,9 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             return done();
         }
 
-        const metricValue = await getViewMetricByDate(app, metricProperty, alertDataSubType2, date, period);
-        if (!metricValue) {
-            return done();
-        }
+        const metricValue = await getViewMetricByDate(app, metricProperty, alertDataSubType2, date, period) || 0;
 
-        if (compareType === "more than") {
+        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
             if (metricValue > compareValue) {
                 await commonLib.trigger({ alert, app, metricValue, date });
             }
@@ -57,9 +53,9 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             }
 
             const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === "increased by at least"
+            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
                 ? change >= compareValue
-                : change <= compareValue;
+                : change <= -compareValue;
 
             if (shouldTrigger) {
                 await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -74,7 +70,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
 /**
  * Returns the view metric value by view, date and metric type.
- * @param   {object}                    app    - app document
+ * @param   {App}                       app    - app document
  * @param   {string}                    metric - "t" or "b" (from METRIC_TO_PROPERTY_MAP)
  * @param   {string}                    view   - _id of the view from app_viewsmeta...
  * @param   {Date}                      date   - date of the value you're looking for
@@ -110,29 +106,15 @@ async function getViewMetricByDate(app, metric, view, date, period) {
 
 /*
 (async function() {
-    const hourly = await getViewMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" },
-        "t",
-        "65c5e7f7c26cadacd1229f3a",
-        new Date("2024-02-13T13:47:19.247Z"),
-        "hourly"
-    );
-    console.assert(hourly === 120, `==================  hourly ${hourly} doesn't match with 120`);
-    const daily = await getViewMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" },
-        "t",
-        "65c5e7f7c26cadacd1229f3a",
-        new Date("2024-02-13T13:47:19.247Z"),
-        "daily"
-    );
-    console.assert(daily === 148, `================== daily ${daily} doesn't match with 148`);
-    const monthly = await getViewMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" },
-        "t",
-        "65c5e7f7c26cadacd1229f3a",
-        new Date("2024-02-13T13:47:19.247Z"),
-        "monthly"
-    );
-    console.assert(monthly === 836, `================== monthly ${monthly} doesn't match with 836`);
+    await new Promise(res => setTimeout(res, 2000));
+    const app = { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" };
+    const view = "65c5e7f7c26cadacd1229f3a";
+    const date = new Date("2024-02-13T13:47:19.247Z");
+    const hourly = await getViewMetricByDate(app, "t", view, date, "hourly");
+    console.log("hourly:", hourly);
+    const daily = await getViewMetricByDate(app, "t", view, date, "daily");
+    console.log("daily:", daily);
+    const monthly = await getViewMetricByDate(app, "t", view, date, "monthly");
+    console.log("monthly:", monthly);
 })();
 */

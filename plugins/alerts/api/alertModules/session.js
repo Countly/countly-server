@@ -1,14 +1,18 @@
 /**
  * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
-const log = require('../../../../api/utils/log.js')('alert:view');
+const log = require('../../../../api/utils/log.js')('alert:session');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
+
+const METRIC_ENUM = {
+    NUM_OF_SESSIONS: "Number of sessions",
+    AVG_SESSION_DURATION: "Average session duration",
+};
 
 /**
  * Alert triggering logic
@@ -27,22 +31,17 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     compareValue = Number(compareValue);
 
     let metricValue;
-    const numberOfSessions = await getSessionMetricByDate(app, "t", date, period);
-
-    // there's no data on the given date
-    if (!numberOfSessions) {
-        return done();
-    }
+    const numberOfSessions = await getSessionMetricByDate(app, "t", date, period) || 0;
 
     // Find the metric value:
-    if (alertDataSubType === "Number of sessions") {
+    if (alertDataSubType === METRIC_ENUM.NUM_OF_SESSIONS) {
         metricValue = numberOfSessions;
     }
-    else if (alertDataSubType === "Average session duration") {
-        const sessionDuration = await getSessionMetricByDate(app, "d", date, period);
-        if (typeof sessionDuration === "number" && sessionDuration > 0) {
+    else if (alertDataSubType === METRIC_ENUM.AVG_SESSION_DURATION) {
+        if (!numberOfSessions) {
             return done();
         }
+        const sessionDuration = await getSessionMetricByDate(app, "d", date, period) || 0;
         metricValue = sessionDuration / numberOfSessions / 60;
     }
     else {
@@ -50,40 +49,36 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         return done();
     }
 
-    if (!metricValue) {
-        return done();
-    }
-
-    if (compareType === "more than") {
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
             await commonLib.trigger({ alert, app, metricValue, date });
         }
     }
     else {
-        const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         let metricValueBefore;
+        const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const numberOfSessionsBefore = await getSessionMetricByDate(app, "t", before, period);
 
-        if (!numberOfSessions) {
+        // Find the metric value for the previous matched date:
+        if (alertDataSubType === METRIC_ENUM.NUM_OF_SESSIONS) {
+            metricValueBefore = numberOfSessionsBefore;
+        }
+        else if (alertDataSubType === METRIC_ENUM.AVG_SESSION_DURATION) {
+            if (!numberOfSessionsBefore) {
+                return done();
+            }
+            const sessionDuration = await getSessionMetricByDate(app, "d", before, period);
+            metricValueBefore = sessionDuration / numberOfSessionsBefore / 60;
+        }
+
+        if (!metricValueBefore) {
             return done();
         }
 
-        // Find the metric value for the previous matched date:
-        if (alertDataSubType === "Number of sessions") {
-            metricValueBefore = numberOfSessionsBefore;
-        }
-        else if (alertDataSubType === "Average session duration") {
-            const sessionDuration = await getSessionMetricByDate(app, "d", date, period);
-            if (typeof sessionDuration === "number" && sessionDuration > 0) {
-                return done();
-            }
-            metricValueBefore = sessionDuration / numberOfSessions / 60;
-        }
-
         const change = (metricValue / metricValueBefore - 1) * 100;
-        const shouldTrigger = compareType === "increased by at least"
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
             ? change >= compareValue
-            : change <= compareValue;
+            : change <= -compareValue;
 
         if (shouldTrigger) {
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -95,7 +90,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
 /**
  * Returns the session metric value by date and metric type.
- * @param   {object}                    app    - app document
+ * @param   {App}                       app    - app document
  * @param   {string}                    metric - e, n, t, u, d, m, mt
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
@@ -140,7 +135,12 @@ async function getSessionMetricByDate(app, metric, date, period) {
 }
 
 /*
-;(async function() {
+(async function() {
+    await new Promise(res => setTimeout(res, 2000));
+    const app = {
+        _id: "65c1f875a12e98a328d5eb9e",
+        timezone: "Europe/Istanbul"
+    };
     const dates = [
         new Date("2024-02-01"),
         new Date("2024-02-02"),
@@ -158,34 +158,26 @@ async function getSessionMetricByDate(app, metric, date, period) {
     ];
     let totalMonthlyValue = 0;
     for (let date of dates) {
-        const dailyValue = await getSessionMetricByDate({
-            _id: "65c1f875a12e98a328d5eb9e",
-            timezone: "Europe/Istanbul"
-        }, "t", date, "daily");
+        const dailyValue = await getSessionMetricByDate(app, "t", date, "daily");
         if (typeof dailyValue !== "undefined") {
             totalMonthlyValue += dailyValue;
         }
     }
-    const monthlyValue = await getSessionMetricByDate({
-        _id: "65c1f875a12e98a328d5eb9e",
-        timezone: "Europe/Istanbul"
-    }, "t", new Date("2024-02-01"), "monthly");
+    const monthlyValue = await getSessionMetricByDate(app, "t", new Date("2024-02-01"), "monthly");
 
-    console.assert(totalMonthlyValue === monthlyValue, `================== sum of daily values: ${totalMonthlyValue} doesn't match with month value`);
+    console.log("sum of daily values", totalMonthlyValue);
+    console.log("monthly value", monthlyValue);
 
     const hours = [
         new Date("2024-02-01T00:00:00.000Z"),
     ];
-
     let totalDailyValue = 0;
     for (const hour of hours) {
-        const hourlyValue = await getSessionMetricByDate({
-            _id: "65c1f875a12e98a328d5eb9e",
-            timezone: "Europe/Istanbul"
-        }, "t", hour, "hourly");
+        const hourlyValue = await getSessionMetricByDate(app, "t", hour, "hourly");
         if (typeof hourlyValue !== "undefined") {
             totalDailyValue += hourlyValue;
         }
     }
+    console.log(totalDailyValue);
 })();
 */

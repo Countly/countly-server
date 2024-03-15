@@ -1,5 +1,7 @@
 'use strict';
 
+const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
+
 const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
     common = require('../../../../api/utils/common.js');
@@ -13,6 +15,7 @@ const ALERT_MODULES = {
     "event": require("../alertModules/event.js"),
     "rating": require("../alertModules/rating.js"),
     "cohort": require("../alertModules/cohort.js"),
+    "dataPoint": require("../alertModules/dataPoint.js"),
 };
 /**
  * @class
@@ -32,14 +35,8 @@ class MonitorJob extends Job {
         const self = this;
         common.db.collection("alerts").findOne({
             _id: common.db.ObjectID(alertID),
-            alertDataSubType: {
-                // these are being triggered by event listener in api.js
-                $nin: [
-                    "New survey response",
-                    "New NPS response",
-                    "New rating response"
-                ]
-            }
+            // these are being triggered by the event listener in api.js
+            alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
         }, function(err, alertConfigs) {
             if (err) {
                 log.e(err);

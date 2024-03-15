@@ -57,13 +57,27 @@ const PERIOD_TO_DATE_COMPONENT_MAP = {
     "hourly": "hours",
 };
 
+const COMPARE_TYPE_ENUM = {
+    INCREASED_BY: "increased by at least",
+    DECREASED_BY: "decreased by at least",
+    MORE_THAN: "more than",
+};
+
+const TRIGGERED_BY_EVENT = {
+    survey: "New survey response",
+    nps: "New NPS response",
+    rating: "New rating response",
+};
+
 module.exports = {
     PERIOD_TO_DATE_COMPONENT_MAP,
+    COMPARE_TYPE_ENUM,
+    TRIGGERED_BY_EVENT,
 
     getDateComponents,
     determineAudience,
     compileEmail,
-    trigger
+    trigger,
 };
 
 /**

@@ -1,7 +1,5 @@
 /**
- * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
 const crypto = require('crypto');
@@ -39,13 +37,9 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
         let { alertDataSubType, alertDataSubType2, period, compareType, compareValue } = alert;
         const metricProp = METRIC_TO_PROPERTY_MAP[alertDataSubType];
-        let metricValue = await getEventMetricByDate(app, alertDataSubType2, metricProp, date, period);
+        let metricValue = await getEventMetricByDate(app, alertDataSubType2, metricProp, date, period) || 0;
 
         compareValue = Number(compareValue);
-
-        if (!metricValue) {
-            return done();
-        }
 
         // if this is average:
         if (AVERAGE_METRICS.includes(alertDataSubType)) {
@@ -56,7 +50,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             metricValue /= count;
         }
 
-        if (compareType === "more than") {
+        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
             if (metricValue > compareValue) {
                 await commonLib.trigger({ alert, app, metricValue, date });
             }
@@ -79,9 +73,9 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             }
 
             const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === "increased by at least"
+            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
                 ? change >= compareValue
-                : change <= compareValue;
+                : change <= -compareValue;
 
             if (shouldTrigger) {
                 await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -172,47 +166,25 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
     }
     return number;
 }
-
 /*
 (async function() {
     await new Promise(res => setTimeout(res, 2000));
+    const app = { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" };
+    const date = new Date("2024-01-02T12:47:19.247Z");
+    const date2 = new Date("2024-01-03T13:47:19.247Z");
+    const event = "Checkout";
+    const prop = "c";
 
-    const hourly = await getEventMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" },
-        "Checkout",
-        "c",
-        new Date("2024-01-02T12:47:19.247Z"),
-        "hourly"
-    );
+    const hourly = await getEventMetricByDate(app, event, prop, date, "hourly");
     console.assert(hourly === 5, "hourly event data doesn't match");
 
-    const daily = await getEventMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul", },
-        "Checkout",
-        "c",
-        new Date("2024-01-03T13:47:19.247Z"),
-        "daily",
-        { "Delivery Type": "Express" }
-    );
+    const daily = await getEventMetricByDate(app, event, prop, date2, "daily", { "Delivery Type": "Express" });
     console.assert(daily === 22, "daily segmented event data doesn't match");
 
-    const monthly = await getEventMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul", },
-        "Checkout",
-        "c",
-        new Date("2024-01-03T13:47:19.247Z"),
-        "monthly"
-    );
+    const monthly = await getEventMetricByDate(app, event, prop, date2, "monthly");
     console.assert(monthly === 5120, "monthly event data doesn't match");
 
-    const monthlySegmented = await getEventMetricByDate(
-        { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul", },
-        "Checkout",
-        "c",
-        new Date("2024-01-03T13:47:19.247Z"),
-        "monthly",
-        { "Delivery Type": "Express" }
-    );
+    const monthlySegmented = await getEventMetricByDate(app, event, prop, date2, "monthly", { "Delivery Type": "Express" });
     console.assert(monthlySegmented === 2535, "monthly segmented event data doesn't match");
 })();
 */
