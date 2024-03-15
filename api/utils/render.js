@@ -77,6 +77,7 @@ exports.renderView = function(options, cb) {
             var browser = await puppeteer.launch(settings);
 
             try {
+                log.d('Started rendering images');
                 var page = await browser.newPage();
 
                 //TODO:TEST
@@ -145,7 +146,7 @@ exports.renderView = function(options, cb) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
-                            log.d("BLOCK 1 STATUS, URL", response.status(), url());
+                            log.d("BLOCK 1 STATUS, URL", response.status(), url);
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 return true;
                             }
@@ -173,6 +174,7 @@ exports.renderView = function(options, cb) {
                         await page.waitForResponse(
                             function(response) {
                                 var url = response.url();
+                                log.d("BLOCK 2 STATUS, URL", response.status(), url);
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     return true;
                                 }
@@ -277,7 +279,7 @@ exports.renderView = function(options, cb) {
                     image: image,
                     path: path
                 };
-                log.d('render.js Finished rendering images');
+                log.d('Finished rendering images');
                 return cb(null, imageData);
             }
             catch (e) {
