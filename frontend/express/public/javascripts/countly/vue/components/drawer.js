@@ -85,6 +85,7 @@
             methods: {
                 doClose: function() {
                     if (this.disableAutoClose) {
+                        this.disableAutoClose = false;
                         return;
                     }
                     this.$emit("close", this.name);

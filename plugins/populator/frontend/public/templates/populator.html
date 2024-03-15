@@ -174,5 +174,5 @@
             <div v-html="dialog.text"></div>
         </template>
     </cly-confirm-dialog>
-    <cly-populator-template-drawer ref="populatorTemplateDrawer" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>
+    <cly-populator-template-drawer ref="populatorTemplateDrawer" @refresh-table="refresh" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>
 </div>

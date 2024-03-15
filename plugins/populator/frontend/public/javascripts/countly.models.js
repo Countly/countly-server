@@ -4031,8 +4031,8 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: callback || function() {},
-            error: function() {
-                CountlyHelpers.notify({message: CV.i18n("populator.failed-to-create-template"), type: "error"});
+            error: function(err) {
+                callback({err: err.responseJSON.result});
             }
         });
     };
@@ -4056,11 +4056,7 @@
                 dataType: "json",
                 success: callback || function() {},
                 error: function(err) {
-                    CountlyHelpers.notify({
-                        title: CV.i18n('common.error'),
-                        message: CV.i18n("populator.failed-to-edit-template", templateId) + " " + err.status + " " + err.statusText,
-                        type: "error"
-                    });
+                    callback({err: err.responseJSON.result});
                 }
             });
         }

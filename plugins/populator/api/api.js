@@ -81,16 +81,26 @@ const FEATURE_NAME = 'populator';
         template.isDefault = template.isDefault === 'true' ? true : false;
         template.generatedOn = new Date().getTime();
         validateCreate(obParams, FEATURE_NAME, function(params) {
-            common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
-                if (!insertTemplateErr) {
-                    common.returnMessage(ob.params, 201, 'Successfully created ' + result.insertedIds[0]);
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_created", data: template});
-                    return true;
-                }
-                else {
-                    common.returnMessage(ob.params, 500, insertTemplateErr.message);
+            common.db.collection('populator_templates').find({name: template.name}).toArray(function(err, docs) {
+                if (err) {
+                    common.returnMessage(obParams, 500, err.message);
                     return false;
                 }
+                if (docs.length) {
+                    common.returnMessage(obParams, 400, "Template with name " + template.name + " already exists");
+                    return false;
+                }
+                common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
+                    if (!insertTemplateErr) {
+                        common.returnMessage(ob.params, 201, 'Successfully created ' + result.insertedIds[0]);
+                        plugins.dispatch("/systemlogs", {params: params, action: "populator_template_created", data: template});
+                        return true;
+                    }
+                    else {
+                        common.returnMessage(ob.params, 500, insertTemplateErr.message);
+                        return false;
+                    }
+                });
             });
         });
         return true;
@@ -167,20 +177,36 @@ const FEATURE_NAME = 'populator';
             }
             newTemplate.isDefault = newTemplate.isDefault === 'true' ? true : false;
 
-            common.db.collection('populator_templates').replaceOne({_id: templateId}, newTemplate, {}, function(updateTemplateErr, template) {
-                if (!updateTemplateErr && template) {
-                    common.returnMessage(params, 200, 'Success');
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_edited", data: {before: template, update: newTemplate}});
-                    return true;
-                }
-                else if (updateTemplateErr) {
-                    common.returnMessage(params, 500, updateTemplateErr.message);
+            common.db.collection('populator_templates').find({name: ob.params.qstring.name}).toArray(function(err, docs) {
+                if (err) {
+                    common.returnMessage(obParams, 500, err.message);
                     return false;
                 }
-                else {
-                    common.returnMessage(params, 404, "Template not found");
-                    return false;
+                if (docs.length > 0) {
+                    const isSameDocument = docs.some(function(doc) {
+                        return doc._id.toString() === ob.params.qstring._id;
+                    });
+
+                    if (!isSameDocument) {
+                        common.returnMessage(obParams, 400, "Template with name " + ob.params.qstring.name + " already exists");
+                        return false;
+                    }
                 }
+                common.db.collection('populator_templates').replaceOne({_id: templateId}, newTemplate, {}, function(updateTemplateErr, template) {
+                    if (!updateTemplateErr && template) {
+                        common.returnMessage(params, 200, 'Success');
+                        plugins.dispatch("/systemlogs", {params: params, action: "populator_template_edited", data: {before: template, update: newTemplate}});
+                        return true;
+                    }
+                    else if (updateTemplateErr) {
+                        common.returnMessage(params, 500, updateTemplateErr.message);
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 404, "Template not found");
+                        return false;
+                    }
+                });
             });
         });
         return true;
