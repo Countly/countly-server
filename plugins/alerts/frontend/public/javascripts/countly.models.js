@@ -56,7 +56,7 @@
                 if (res && Array.isArray(res)) {
                     return callback(res);
                 }
-                return;
+                return callback([]);
             }
         });
     }
@@ -79,7 +79,7 @@
                 if (res && Array.isArray(res.aaData)) {
                     return callback(res.aaData);
                 }
-                return;
+                return callback([]);
             }
         });
 
@@ -103,7 +103,7 @@
                 if (res && Array.isArray(res.aaData)) {
                     return callback(res.aaData);
                 }
-                return;
+                return callback([]);
             }
         });
     }
@@ -130,7 +130,7 @@
                 if (res.crashes.app_version) {
                     return callback(res.crashes.app_version);
                 }
-                return;
+                return callback([]);
             }
         });
     }
@@ -153,7 +153,7 @@
                 if (res && Array.isArray(res)) {
                     return callback(res);
                 }
-                return;
+                return callback([]);
             }
         });
     }
