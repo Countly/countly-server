@@ -164,7 +164,10 @@ function validate_user_profiles(db, callback) {
                         data[app._id].duplicates = list;
                     }
                     //get top merges count
-                    db.collection('app_users' + app._id).aggregate([{"$match": {"merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"merges": 1, "_id": 1, "uid": 1}}]).toArray(function(err, list) {
+                    var now = Math.floor(Date.now().valueOf() / 1000);
+                    now = now - 30 * 24 * 60 * 60;
+                    //get top merges count for users that have been there in last 30 days
+                    db.collection('app_users' + app._id).aggregate([{"$match": {"lac": {"$gt": now}, "merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"lac": 1, "merges": 1, "_id": 1, "uid": 1}}]).toArray(function(err, list) {
                         if (err) {
                             console.log(err);
                         }
@@ -211,7 +214,7 @@ function validate_flows(db, callback) {
                             }
                             //get errored flows/not updated for more than 48 hours
                             var now = Date.now().valueOf();
-                            now = now - 48 * 60 * 60 * 1000;
+                            now = now - 24 * 60 * 60 * 1000;
                             db.collection('flowSchema' + app._id).find({"calculated": {"$lt": now}}).toArray(function(err, arr2) {
                                 if (arr2 && arr2.length > 0) {
                                     flows[app._id] = flows[app._id] || {};
@@ -263,7 +266,6 @@ function validate_merges(db, callback) {
         });
     }
 }
-
 
 Promise.all([pluginManager.dbConnection("countly")]).then(async function([countlyDb]) {
     fetchSystemInfo(countlyDb, function() {
