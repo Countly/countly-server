@@ -7,56 +7,6 @@
         clickMap,
         scrollMap;
 
-    /**
-     *  Load external files
-     *  @param {String} js - path to JS file
-     *  @param {Function} callback - callback when done
-     */
-    function loadFile(tag, attr, type, src, data, callback) {
-        var fileRef = document.createElement(tag);
-        var loaded;
-        fileRef.setAttribute(attr, type);
-        fileRef.setAttribute(src, data);
-        var callbackFunction = function callbackFunction() {
-            if (!loaded) {
-                callback();
-            }
-            loaded = true;
-        };
-        if (callback) {
-            fileRef.onreadystatechange = callbackFunction;
-            fileRef.onload = callbackFunction;
-        }
-        document.getElementsByTagName("head")[0].appendChild(fileRef);
-    }
-
-    /**
-     *  Get height of whole document
-     *  @returns {Number} height in pixels
-     */
-    function getDocHeight() {
-        var D = document;
-        return Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
-    }
-
-    /**
-     *  Get width of whole document
-     *  @returns {Number} width in pixels
-     */
-    function getDocWidth() {
-        var D = document;
-        return Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
-    }
-
-    /**
-     *  Get height of viewable area
-     *  @returns {Number} height in pixels
-     */
-    function getViewportHeight() {
-        var D = document;
-        return Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
-    }
-        
     var logLevelEnums = {
         ERROR: "[ERROR] ",
         WARNING: "[WARNING] ",
@@ -66,7 +16,7 @@
     };
 
     /**
-     *  Logging stuff, works only when sdk debug mode is true
+     *  Logging stuff
      * @param {string} level - log level (error, warning, info, debug, verbose)
      * @param {string} message - any string message
      */
@@ -110,12 +60,73 @@
     }
 
     /**
+     *  Load external files
+     *  @param {String} js - path to JS file
+     *  @param {Function} callback - callback when done
+     */
+    function loadFile(tag, attr, type, src, data, callback) {
+        log(logLevelEnums.INFO, '[loadFile] ' + [].slice.call(arguments));
+        var fileRef = document.createElement(tag);
+        var loaded;
+        fileRef.setAttribute(attr, type);
+        fileRef.setAttribute(src, data);
+        var callbackFunction = function callbackFunction() {
+            if (!loaded) {
+                callback();
+            }
+            loaded = true;
+        };
+        if (callback) {
+            fileRef.onreadystatechange = callbackFunction;
+            fileRef.onload = callbackFunction;
+        }
+        document.getElementsByTagName("head")[0].appendChild(fileRef);
+    }
+
+    /**
+     *  Get height of whole document
+     *  @returns {Number} height in pixels
+     */
+    function getDocHeight() {
+        var D = document;
+        var result = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
+
+        log(logLevelEnums.DEBUG, '[getDocHeight] ' + result);
+        return result;
+    }
+
+    /**
+     *  Get width of whole document
+     *  @returns {Number} width in pixels
+     */
+    function getDocWidth() {
+        var D = document;
+        var result = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
+
+        log(logLevelEnums.DEBUG, '[getDocWidth] ' + result);
+        return result;
+    }
+
+    /**
+     *  Get height of viewable area
+     *  @returns {Number} height in pixels
+     */
+    function getViewportHeight() {
+        var D = document;
+        var result = Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
+
+        log(logLevelEnums.DEBUG, '[getViewportHeight] ' + result);
+        return result;
+    }
+        
+    /**
      *  Listen to specific browser event
      *  @param {HTMLElement} element - HTML element that should listen to event
      *  @param {String} type - event name or action
      *  @param {Function} listener - callback when event is fired
      */
     function add_event_listener(element, type, listener) {
+        log(logLevelEnums.INFO, '[add_event_listener] ' + [].slice.call(arguments));
         // element can be null so lets check it first
         if (element === null || typeof element === "undefined") {
             log(logLevelEnums.WARNING, "[add_event_listener] Can't bind [" + type + "] event to nonexisting element");
@@ -136,6 +147,7 @@
      *  @returns {String} URL encode query string
      */
     function prepareParams(params) {
+        log(logLevelEnums.INFO, '[prepareParams] ' + [].slice.call(arguments));
         var str = [];
         for (var i in params) {
             str.push(i + "=" + encodeURIComponent(params[i]));
@@ -594,6 +606,7 @@
             });
 
             function listenDropdownEvent(event, element) {
+                log(logLevelEnums.INFO, '[listenDropdownEvent] ' + [].slice.call(arguments));
                 element.addEventListener(event, function(e) {
                     var wasActive = element.classList.contains("cly-heatmap-clicked");
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
@@ -618,6 +631,7 @@
     });
 
     function addDataToWindow(dataArray) {
+        log(logLevelEnums.INFO, '[addDataToWindow] ' + [].slice.call(arguments));
         var dataCLY = {};
         var prefix = "";
         if (window.name && window.name.indexOf("cly:") === 0) {
@@ -637,6 +651,7 @@
     }
 
     function loadClickMap(cb) {
+        log(logLevelEnums.INFO, '[loadClickMap] ' + [].slice.call(arguments));
         var map,
             curRadius = 1,
             curBlur = 1,
@@ -661,7 +676,12 @@
                 function checkCache() {
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadClickmap] [checkCache] ' + err);
+                            }
                         }
                         else {
                             loadData();
@@ -673,7 +693,12 @@
                     sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadClickmap] [loadData] ' + err);
+                            }
                         }
                     });
                 }
@@ -690,6 +715,9 @@
                             heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c]);
                         }
                     }
+
+                    log(logLevelEnums.INFO, "[loadClickMap] [drawData] Heat data ", { heat: heat });
+
                     map.clear();
                     map.data(heat);
                     baseRadius = Math.max((48500 - 35 * data.length) / 900, 5);
@@ -705,6 +733,7 @@
     }
 
     function loadScrollMap(cb) {
+        log(logLevelEnums.INFO, '[loadScrollMap] ' + [].slice.call(arguments));
         var map,
             actionType = "scroll",
             apiPath = "/o/actions",
@@ -726,7 +755,12 @@
                 function checkCache() {
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadScrollmap] [checkCache] ' + err);
+                            }
                         }
                         else {
                             loadData();
@@ -738,7 +772,12 @@
                     sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadScrollmap] [loadData] ' + err);
+                            }
                         }
                     });
                 }
@@ -784,6 +823,8 @@
                             count[i] = parseInt((count[i] / highestViews) * 100);
                         }
                     }
+
+                    log(logLevelEnums.INFO, "[loadScrollMap] [drawData] Heat data ", { totalViews: totalViews, highestViews: highestViews });
 
                     map.clear();
                     map.max(totalViews);
@@ -847,10 +888,12 @@
     }
 
     function capitalize(str) {
+        log(logLevelEnums.INFO, '[capitalize] ' + [].slice.call(arguments));
         return str[0].toUpperCase() + str.slice(1);
     }
 
     function readBody(xhr) {
+        log(logLevelEnums.INFO, '[readBody] ' + [].slice.call(arguments));
         var data;
         if (!xhr.responseType || xhr.responseType === "text") {
             data = xhr.responseText;
@@ -866,7 +909,7 @@
 
     function sendXmlHttpRequest(params, apiPath, callback) {
         try {
-            log(logLevelEnums.INFO, "[sendXmlHttpRequest] Sending XML HTTP request");
+            log(logLevelEnums.INFO, '[sendXmlHttpRequest] Sending XML HTTP request ' + JSON.stringify(params) + ' ' + apiPath);
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
             var data = prepareParams(params);
@@ -883,7 +926,7 @@
                         Countly._internals.setValueInStorage('cly_token', xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
-                        log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed, trying fallback header");
+                        log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed setting token to storage, storing token to sdk instance");
                         Countly.token = xhr.getResponseHeader("content-language");
                     }
                 }
@@ -893,7 +936,7 @@
                     }
                 }
                 else if (this.readyState === 4) {
-                    log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed Server XML HTTP request", this.status);
+                    log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed Server XML HTTP request", this.status, JSON.parse(readBody(xhr)));
                     if (typeof callback === 'function') {
                         callback(true, params);
                     }
