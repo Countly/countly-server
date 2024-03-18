@@ -605,6 +605,13 @@
             width: 341px;
         }
         
+        &__tab-list {
+            div[role="tablist"] {
+                left: 24px;
+                padding-right: 24px;
+            }
+        }
+
         &__shortcuts-col {
             + .cly-vue-daterp__calendars-col {
                 border-left: 1px #EBEBEF solid;
@@ -676,6 +683,11 @@
             &--custom {
                 margin-bottom: 24px;
             }
+            
+            &--custom--override {
+                margin-bottom: unset !important;
+            }
+
             i {
                 color: #808081;
                 float: right;
@@ -691,6 +703,10 @@
             margin: 0;
             padding: 16px;
             align-items: center;
+
+            .in-the-last-start-date {
+                width: 147px;
+            }
         }
 
         &__input-wrapper-content {

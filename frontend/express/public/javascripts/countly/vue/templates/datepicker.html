@@ -29,7 +29,7 @@
     <div class="cly-vue-daterp">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
             <div v-if="allowCustomRange && !moveRangeTabsToLeftSide" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
-            :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection}"
+            :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection, 'cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom--override': enabledShortcuts.length === 1}"
             @click="handleCustomRangeClick">
             <span :data-test-id="testId + '-select-date-custom-label'">{{i18n('common.time-period-select.custom-range')}}</span><i class="el-icon-caret-right"></i>
             </div>
@@ -42,7 +42,7 @@
         </div>
         <div class="cly-vue-daterp__calendars-col" v-if="(isVisible && customRangeSelection)">
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
-                <el-tabs v-model="rangeMode" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
+                <el-tabs v-model="rangeMode" :class="{'cly-vue-daterp__tab-list' : allowOnSelection || allowBeforeSelection}" @tab-click="handleTabChange" v-if="!moveRangeTabsToLeftSide">
                     <el-tab-pane name="inBetween">
                         <template slot="label">
                             <span :data-test-id="testId+ '-select-date-tab-in-between'" class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
@@ -85,9 +85,11 @@
                         <template slot="label">
                             <span :data-test-id="testId + '-select-date-tab-in-the-last'" class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
                         </template>
-                        <div v-if="!retentionConfiguration" class="cly-vue-daterp__input-wrapper">
-                            <el-input :test-id="testId + '-in-the-last-start-date-input'" size="small" v-model.number="inTheLastInput.raw.text"></el-input>
-                            <el-select :test-id="testId + '-in-the-last-start-date'" size="small" v-model="inTheLastInput.raw.level">
+                        <div v-if="!retentionConfiguration" class="cly-vue-daterp__input-wrapper bu-is-justify-content-center">
+                            <validation-provider name="startDate" v-slot="v" rules="required|integer|min_value:0|max_value:99999">
+                                <el-input class="in-the-last-start-date bu-mr-2" :class="{'is-error': v.errors.length > 0}" :test-id="testId + '-in-the-last-start-date-input'" size="small" v-model.number="inTheLastInput.raw.text"></el-input>
+                            </validation-provider>
+                            <el-select class="in-the-last-start-date" :test-id="testId + '-in-the-last-start-date'" size="small" v-model="inTheLastInput.raw.level">
                                 <el-option v-if="inTheLastMinutes" :label="i18n('common.buckets.minutes')" value="minutes"></el-option>
                                 <el-option v-if="inTheLastHours" :label="i18n('common.buckets.hours')" value="hours"></el-option>
                                 <el-option :label="i18n('common.buckets.days')" value="days"></el-option>
@@ -136,8 +138,8 @@
                     </table>
                 </div>
             </div>
-            <div class="cly-vue-daterp__calendars-wrapper">
-                <div class="cly-vue-daterp__table-wrap" :class="{'is-point': !isRange, 'is-start-focused': isStartFocused, 'is-end-focused': isEndFocused}" style="height: 238px" ref="calendarsViewport">
+            <div :class="[!(tableType === 'minute' || tableType === 'hour') && 'cly-vue-daterp__calendars-wrapper']" :style="tableType === 'hour' || tableType === 'minute' ? {'border-bottom': '1px solid #ececec'} : {}">
+                <div class="cly-vue-daterp__table-wrap" :class="{'is-point': !isRange, 'is-start-focused': isStartFocused, 'is-end-focused': isEndFocused}" style="height: 238px" :style="setMinuteAndHourStyle" ref="calendarsViewport">
                     <vue-scroll ref="vs" :ops="scrollOps">
                         <div class="cly-vue-daterp__table-view" v-if="tableType === 'year'">
                             <year-table
@@ -171,7 +173,7 @@
                                 @changerange="handleChangeRange">
                             </month-table>
                         </div>
-                        <div class="cly-vue-daterp__table-view" v-else>
+                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'day' || tableType === 'week'">
                             <date-table
                                 v-for="item in globalRange"
                                 :key="item.key"
@@ -189,40 +191,6 @@
                                 @changerange="handleChangeRange">
                             </date-table>
                         </div>
-                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'hour'">
-                            <hour-table
-                                v-for="item in globalRange"
-                                :key="item.key"
-                                :date-meta="item"
-                                :in-viewport-requires-root="true"
-                                :in-viewport-root="$refs.calendarsViewport"
-                                selection-mode="range"
-                                :date="item.date"
-                                :min-date="minDate"
-                                :max-date="maxDate"
-                                :disabled-date="disabledDateFn"
-                                :rangeState="rangeState"
-                                @pick="handleRangePick"
-                                @changerange="handleChangeRange">
-                            </hour-table>
-                        </div>
-                        <div class="cly-vue-daterp__table-view" v-else-if="tableType === 'minute'">
-                            <minute-table
-                                v-for="item in globalRange"
-                                :key="item.key"
-                                :date-meta="item"
-                                :in-viewport-requires-root="true"
-                                :in-viewport-root="$refs.calendarsViewport"
-                                selection-mode="range"
-                                :date="item.date"
-                                :min-date="minDate"
-                                :max-date="maxDate"
-                                :disabled-date="disabledDateFn"
-                                :rangeState="rangeState"
-                                @pick="handleRangePick"
-                                @changerange="handleChangeRange">
-                            </minute-table>
-                        </div>
                     </vue-scroll>
                 </div>
             </div>
@@ -236,7 +204,7 @@
                     </div>
                 </div>
             </div>
-            <div v-if="warnings" class="bu-mt-4 bu-mx-4" style="text-align: right;">
+            <div v-if="warnings" class="bu-mt-4 bu-mx-4" style="text-align: right;" :style="setMinuteAndHourStyle">
                 <span class="text-medium" v-for="warning in warnings">{{warning}}</span>
             </div>
             <div class="cly-vue-daterp__commit-section">

@@ -517,6 +517,24 @@ function getPeriodObject(prmPeriod, bucket) {
             previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
         });
     }
+    else if (/([1-9][0-9]*)minutes/.test(period)) {
+        let nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("minute").subtract(nMinutes, "minutes");
+        cycleDuration = moment.duration(nMinutes, "minutes");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([1-9][0-9]*)hours/.test(period)) {
+        let nHours = parseInt(/([1-9][0-9]*)hours/.exec(period)[1]);
+        startTimestamp = _currMoment.clone().startOf("hour").subtract(nHours, "hours");
+        cycleDuration = moment.duration(nHours, "hours");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            isSpecialPeriod: true
+        });
+    }
     else if (/([1-9][0-9]*)days/.test(period)) {
         let nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
         startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
