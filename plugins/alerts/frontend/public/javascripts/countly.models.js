@@ -231,8 +231,7 @@
 
     countlyAlerts.getViewForApp = function(appId, callback) {
         if (!appId) {
-            callback([]);
-            return;
+            return callback([]);
         }
         $.ajax({
             type: "GET",
@@ -498,7 +497,7 @@
                                     condtionText: list[j].condition_title,
                                     enabled: list[j].enabled,
                                     selectedApps: [list[j].app],
-                                    alertDataType: "online-users",
+                                    alertDataType: "onlineUsers",
                                     alertDataSubType: list[j].type,
                                     compareType: list[j].def,
                                     compareValue: list[j].users,
@@ -541,7 +540,7 @@
             compareType: null,
             compareValue: null,
             selectedApps: [""],
-            filterKey: "Rating",
+            filterKey: null,
             filterValue: null,
             period: "every 1 hour on the 59th min",
             alertBy: "email",

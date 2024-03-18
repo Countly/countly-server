@@ -38,8 +38,9 @@
                 alertDataFilterKeyOptions: [],
                 alertDataFilterValueOptions: [],
                 alertDataFilterObject: null,
-                selectedOptions: [],
-                filterKeyForFilter: "",
+                alertDataFilterKey: null,
+                alertDataFilterValue: null,
+
 
                 eventTargets: [],
                 metricTargets: [],
@@ -292,7 +293,7 @@
                 if (val === 'dataPoint' && countlyGlobal.member.global_admin === true) {
                     this.allowAll = true;
                 }
-                if (val === 'online-users') {
+                if (val === 'onlineUsers') {
                     this.showSubType2 = false;
                     this.showCondition = false;
                     this.showConditionValue = false;
@@ -321,8 +322,8 @@
                     return;
                 }
                 if (formData.alertDataType === 'crashes') {
-                    this.alertDataFilterKeyOptions = [{label: "App Version", value: "App Version"}];
-                    this.filterKeyForFilter = "App Version";
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "App Version";
                     countlyAlerts.getCrashesForFilter(formData.selectedApps, (data) => {
                         const app_version = Object.keys(data);
                         if (Array.isArray(app_version)) {
@@ -331,13 +332,13 @@
                     });
                 }
                 if (formData.alertDataType === 'rating') {
-                    this.alertDataFilterKeyOptions = [{label: "Rating", value: "rating"}];
-                    this.filterKeyForFilter = "Rating";
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "Rating";
                     this.alertDataFilterValueOptions = [{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}, {label: '4', value: '4'}, {label: '5', value: '5'}];
                 }
                 if (formData.alertDataType === 'nps') {
-                    this.alertDataFilterKeyOptions = [{label: "NPS", value: "nps"}];
-                    this.filterKeyForFilter = "NPS scale";
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "NPS scale";
                     this.alertDataFilterValueOptions = [{label: 'detractor', value: 'detractor'}, {label: 'passive', value: 'passive'}, {label: 'promoter', value: 'promoter'}];
 
                 }
@@ -349,7 +350,6 @@
                 this.$refs.drawerData.editedObject.compareValue = null;
                 this.$refs.drawerData.editedObject.filterKey = null;
                 this.$refs.drawerData.editedObject.filterValue = null;
-                this.$refs.drawerData.editedObject.alertDataFilterObject = null;
             },
             resetAlertConditionShow: function() {
                 this.showSubType1 = true;
@@ -360,8 +360,10 @@
                 this.filterButton = false;
             },
             resetFilterCondition: function() {
-                this.filterKeyForFilter = "";
                 this.alertDataFilterKeyOptions = [];
+                this.alertDataFilterValueOptions = [];
+                this.alertDataFilterKey = null;
+                this.alertDataFilterValue = null;
             },
             // alertDataSubTypeSelected: function(alertDataSubType, notReset) {
             //     this.resetAlertConditionShow();
@@ -414,9 +416,9 @@
                     var rows = this.$store.getters["countlyAlerts/table/all"];
                     for (var i = 0; i < rows.length; i++) {
                         if ((rows[i]._id === settings._id) &&
-                                (rows[i].alertDataType === 'online-users' || settings.alertDataType === 'online-users') &&
+                                (rows[i].alertDataType === 'onlineUsers' || settings.alertDataType === 'onlineUsers') &&
                                 (rows[i].alertDataType !== settings.alertDataType)) {
-                            if (rows[i].alertDataType !== 'online-users') {
+                            if (rows[i].alertDataType !== 'onlineUsers') {
                                 this.$store.dispatch("countlyAlerts/deleteAlert", rows[i]._id);
                             }
                             else {
@@ -426,6 +428,8 @@
                         }
                     }
                 }
+                settings.filterKey = this.alertDataFilterKey;
+                settings.filterValue = this.alertDataFilterValue;
 
                 var target = settings.alertDataSubType;
                 var subTarget = settings.alertDataSubType2;
@@ -434,14 +438,14 @@
                     target = target.split("***")[1];
                     break;
                 case "rating":
-                    subTarget = countlyAlerts.RatingOptions[subTarget].label;
-                    if (target === 'Bounce rate' || target === 'Number of page views') {
-                        this.alertDataSubType2Options.forEach(function(item) {
-                            if (item.value === settings.alertDataSubType2) {
-                                subTarget = item.label;
-                            }
-                        });
-                    }
+                    // subTarget = countlyAlerts.RatingOptions[subTarget].label;
+                    // if (target === 'Bounce rate' || target === 'Number of page views') {
+                    //     this.alertDataSubType2Options.forEach(function(item) {
+                    //         if (item.value === settings.alertDataSubType2) {
+                    //             subTarget = item.label;
+                    //         }
+                    //     });
+                    // }
                     break;
                 case 'metric':
                     if (target === 'Bounce rate' || target === 'Number of page views') {
@@ -467,9 +471,7 @@
                 }
                 delete settings.createdBy;
 
-
-
-                if (settings.alertDataType === 'online-users') {
+                if (settings.alertDataType === 'onlineUsers') {
                     var config = {
                         app: settings.selectedApps[0],
                         app_name: countlyGlobal.apps[settings.selectedApps[0]].name,
@@ -593,7 +595,7 @@
                         if (!result) {
                             return true;
                         }
-                        if (self.deleteElement.alertDataType === 'online-users') {
+                        if (self.deleteElement.alertDataType === 'onlineUsers') {
                             self.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", {alertID: self.deleteElement._id, appid: self.deleteElement.selectedApps[0]});
                         }
                         else {
@@ -613,7 +615,7 @@
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 for (var i = 0; i < rows.length; i++) {
                     if (status[rows[i]._id] !== undefined) {
-                        if (rows[i].alertDataType === 'online-users') {
+                        if (rows[i].alertDataType === 'onlineUsers') {
                             onlineUsersAlertStatus[rows[i]._id] = status[rows[i]._id];
                         }
                         else {
@@ -702,7 +704,7 @@
     var conUpdateConcurrentUser = countlyAuth.validateUpdate("concurrent_users");
     var canCreateConcurrentUser = countlyAuth.validateCreate("concurrent_users");
     if (countlyGlobal.plugins.indexOf("concurrent_users") > -1 && (canCreateConcurrentUser || conUpdateConcurrentUser)) {
-        countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
+        countlyVue.container.registerData("/alerts/data-type");
         countlyVue.container.registerData("/alerts/data-define", {
             "online-users": {
                 target: [

@@ -127,7 +127,7 @@
             <cly-form-step id="alert-drawer-main">
             
             
-            <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true" rules="required">
+            <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
                 <el-input
                     v-model="drawerScope.editedObject.alertName"
                     class="bu-is-flex" 
@@ -148,15 +148,15 @@
             </cly-form-field> 
 
             <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
-                    <cly-select-x 
-                        :searchable="false"
-                        class="bu-is-flex"
-                        @change="dataTypeSelected"
-                        :options="alertDataTypeOptions"
-                        :placeholder="i18n('alerts.select-data-type')"
-                        v-model="drawerScope.editedObject.alertDataType" 
-                        >
-                    </cly-select-x>
+                <cly-select-x 
+                    :searchable="false"
+                    class="bu-is-flex"
+                    @change="dataTypeSelected"
+                    :options="alertDataTypeOptions"
+                    :placeholder="i18n('alerts.select-data-type')"
+                    v-model="drawerScope.editedObject.alertDataType" 
+                    >
+                </cly-select-x>
             </cly-form-field>
 
             <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)">
@@ -179,16 +179,16 @@
             <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'">
                 <div class="bu-is-flex-grow-1">
                     <cly-select-x
+                        v-model="alertDataFilterKey"
                         class="bu-is-flex"
-                        v-model="drawerScope.editedObject.filterKey"
                         :options="alertDataFilterKeyOptions"
                     />
                 </div>
                 <span class="bu-mx-3" style="line-height: 30px">is</span>
                 <div class="bu-is-flex-grow-1">
                     <el-input
+                        v-model="alertDataFilterValue"
                         class="bu-is-flex"
-                        v-model="drawerScope.editedObject.filterValue"
                         :placeholder="i18n('alerts.segment-value')"
                     />
                 </div>
@@ -200,18 +200,18 @@
             <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'">
                 <div class="bu-is-flex-grow-1">
                     <el-input
+                        v-model="alertDataFilterKey"
                         class="bu-is-flex filter-key-input"
-                        v-model="filterKeyForFilter"
                         :disabled="true"
                     />
                 </div>
                 <span class="bu-mx-3" style="line-height: 30px">is</span>
                 <div class="bu-is-flex-grow-1">
                     <cly-select-x
+                        v-if="Array.isArray(alertDataFilterValue)"
+                        v-model="alertDataFilterValue"
                         class="bu-is-flex"
-                        v-model="selectedOptions"
                         :options="alertDataFilterValueOptions"
-                        @change="setFilterValueOptions"
                         mode="multi-check"
                     />
                 </div>
@@ -220,22 +220,21 @@
                 </div>
             </div>
 
-            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton">
+            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'">
                 <div class="bu-is-flex-grow-1">
                 <el-input
+                    v-model="alertDataFilterKey"
                     :disabled="true"
                     class="bu-is-flex filter-key-input"
                     :options="alertDataFilterKeyOptions"
-                    v-model="filterKeyForFilter"
                 />
                 </div>
                 <span class="bu-mx-3" style="line-height: 30px">is</span>
                 <div class="bu-is-flex-grow-1">
                     <cly-select-x
+                        v-model="alertDataFilterValue"
                         class="bu-is-flex"
-                        v-model="drawerScope.editedObject.filterValue"
                         :options="alertDataFilterValueOptions"
-                        @change="setFilterValueOptions"
                         mode="single-list"
                     />
                 </div>
@@ -243,6 +242,31 @@
                     <i class="el-icon-close"></i>
                 </div>
             </div>
+
+            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'">
+                <div class="bu-is-flex-grow-1">
+                    <el-input
+                        v-model="alertDataFilterKey"
+                        :disabled="true"
+                        class="bu-is-flex filter-key-input"
+                        :options="alertDataFilterKeyOptions"
+                    />
+                </div>
+                <span class="bu-mx-3" style="line-height: 30px">is</span>
+                <div class="bu-is-flex-grow-1">
+                    <cly-select-x
+                        v-if="Array.isArray(alertDataFilterValue)"
+                        v-model="alertDataFilterValue"
+                        class="bu-is-flex"
+                        :options="alertDataFilterValueOptions"
+                        mode="multi-check"
+                    />
+                </div>
+                <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                    <i class="el-icon-close"></i>
+                </div>
+            </div>
+
 
             <!-- <div class="bu-my-4 bu-py-4 cly-vue-alert-drawer__card">
                 <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-px-4">
