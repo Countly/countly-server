@@ -157,8 +157,8 @@ jobs:
         shell: bash
         working-directory: /opt/countly
         run: |
-          /sbin/my_init &
           npm install
+          /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   test-api-plugins:

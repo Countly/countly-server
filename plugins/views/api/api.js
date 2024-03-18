@@ -10,6 +10,7 @@ var pluginOb = {},
     log = common.log('views:api'),
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
+const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
@@ -30,6 +31,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/worker", function() {
         common.dbUniqueMap.users.push("vc");
+    });
+
+    plugins.register("/master", function() {
+        // Allow configs to load & scanner to find all jobs classes
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('views:cleanupMeta').replace().schedule("every 1 day");
+        }, 3000);
     });
 
     plugins.register("/i/user_merge", function(ob) {
@@ -193,45 +201,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
-                        var unset = {};
-                        for (var zz = 0; zz < omit.length; zz++) {
-                            unset["segments." + omit[zz]] = "";
-                        }
-                        common.db.collection('views').updateOne({"_id": common.db.ObjectID(appId)}, {$set: {omit: omit}, "$unset": unset}, function(err5) {
-                            if (err5) {
-                                log.e(err5);
+
+                        viewsUtils.ommit_segments({params: params, db: common.db, omit: omit, appId: params.qstring.app_id}, function(err) {
+                            if (err) {
                                 common.returnMessage(params, 400, "Updating database failed");
-                                resolve();
                             }
                             else {
-                                plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit", data: { update: omit}});
-
-                                var promises = [];
-                                var errCn = 0;
-                                for (var z = 0; z < omit.length; z++) {
-                                    var colName = "app_viewdata" + crypto.createHash('sha1').update(omit[z] + appId).digest('hex');
-                                    promises.push(new Promise(function(resolve2) {
-                                        common.db.collection(colName).drop(function(err) {
-                                            if (err && err.code !== 26) { //if error is not collection not found.(Because it is possible for it to not exist)
-                                                log.e(JSON.stringify(err));
-                                                errCn++;
-                                            }
-                                            resolve2();
-                                        });
-                                    }));
-                                }
-                                Promise.all(promises).then(function() {
-                                    log.d("Segments omittion compleated  for:" + JSON.stringify(omit));
-                                    if (errCn > 0) {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit_complete", data: { update: omit, error: "Failed to delete some(" + errCn + ") collections. Please call omiting again."}});
-                                    }
-                                    else {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "view_segments_ommit_complete", data: { update: omit}});
-                                    }
-                                });
                                 common.returnMessage(params, 200, 'Success');
-                                resolve();
                             }
+                            resolve();
+                            return;
                         });
                     }
                     else {
@@ -244,6 +223,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 resolve();
             }
         });
+    });
+
+    plugins.register("/batcher/fail", function(ob) {
+        if (ob.db === "countly" && (ob.collection.indexOf("app_viewdata") === 0)) {
+            //omit segment using app_id and segment name
+            if (ob.data && ob.data.updateOne && ob.data.updateOne.update && ob.data.updateOne.update.$set) {
+                var appId = ob.data.updateOne.update.$set.a;
+                var segment = ob.data.updateOne.update.$set.s;
+                if (appId && segment) {
+                    log.d("calling segment omiting for " + appId + " - " + segment);
+                    viewsUtils.ommit_segments({extend: true, db: common.db, omit: [segment], appId: appId, params: {"qstring": {}, "user": {"_id": "SYSTEM", "username": "SYSTEM"}}}, function(err) {
+                        if (err) {
+                            log.e(err);
+                        }
+                    });
+                }
+
+            }
+        }
     });
 
     plugins.register("/i/device_id", function(ob) {
