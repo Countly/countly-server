@@ -34,11 +34,20 @@ utils.getDatesValue = function(alertConfig, data, keyPath, appTimezone) {
     const tDate = today.date();
     let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate][keyName] || 0;
 
-    let lastDayGap = 1;
-    // if (alertConfig.comparePeriod && alertConfig.comparePeriod === 'same_day_last_week') {
-    // 	lastDayGap = 7;
-    // }
-    const lastDay = today.subtract(lastDayGap, 'days');
+    //let lastDayGap = 1;
+    let lastHoursGap = 24;
+    switch (alertConfig.compareRange) {
+    case 'hour':
+        lastHoursGap = 1;
+        break;
+    case 'month':
+        lastHoursGap = 24 * 30;
+        break;
+    default:
+        break;
+    }
+    const lastDay = today.subtract(lastHoursGap, 'hours');
+    //const lastDay = today.subtract(lastDayGap, 'days');
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
@@ -64,7 +73,6 @@ utils.compareValues = function(alertConfig, data, keyName, appIndex) {
     const percentNum = (todayValue / lastDateValue - 1) * 100;
     matched = alertConfig.compareType && alertConfig.compareType.indexOf('increased') >= 0
         ? percentNum >= compareValue : percentNum <= -compareValue;
-
     return { currentApp, todayValue, lastDateValue, matched };
 };
 
@@ -193,6 +201,51 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
             }
         });
     });
+};
+
+/**
+ * Retrieves user emails based on group IDs.
+ * @param {Array} groupIds - The array of group IDs.
+ * @returns {Promise<Array>} - A promise that resolves to an array of user emails.
+ */
+utils.getUserEmailsBasedOnGroups = function(groupIds) {
+    const memberEmails = [];
+    // eslint-disable-next-line require-jsdoc
+    const fetchMembers = (groupId) => {
+        const model = { "_id": groupId };
+        const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };
+        return new Promise((resolve, reject) => {
+            common.db.collection('members').find(query, { password: 0 }).toArray((err, members) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    for (let idx = 0; idx < members.length; idx++) {
+                        members[idx].last_login = members[idx].last_login || 0;
+                    }
+                    members.forEach((member) => {
+                        memberEmails.push(member.email);
+                    });
+                    resolve();
+                }
+            });
+        });
+    };
+    const promises = groupIds.map(fetchMembers);
+    return Promise.all(promises).then(() => {
+        return memberEmails;
+    }).catch((error) => {
+        return Promise.reject(error);
+    });
+};
+
+utils.fillEmailList = function(alertConfigs) {
+    if (alertConfigs.alertValues && alertConfigs.alertValues.length > 0) {
+        return utils.getDashboardUserEmail(alertConfigs.alertValues);
+    }
+    else {
+        return utils.getUserEmailsBasedOnGroups(alertConfigs.allGroups);
+    }
 };
 
 

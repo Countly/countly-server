@@ -1,6 +1,5 @@
 /*global
    _,
-   eventMaps,
    CV,
    countlyCommon,
    CountlyHelpers,
@@ -11,6 +10,7 @@
 */
 
 (function(countlyAlerts, $) {
+    const eventMaps = {};
     var FEATURE_NAME = "alerts";
     countlyAlerts.RatingOptions = [
         {value: 1, label: jQuery.i18n.map["star.one-star"]},
@@ -19,11 +19,12 @@
         {value: 4, label: jQuery.i18n.map["star.four-star"]},
         {value: 5, label: jQuery.i18n.map["star.five-star"]},
     ];
+
     /**
-	* extract event name & value
+    * extract event name & value
     * @param {array} data - original event list
     * @param {array} returnArray - target format
-	*/
+    */
     function extractEvents(data, returnArray) {
         var eventData = (_.isArray(data)) ? data[0] : data;
         if (eventData && eventData.list) {
@@ -38,11 +39,132 @@
     }
 
     /**
-	* extract getEventLongName
+     * Get cohorts for the specified app.
+     * @param {string} appId - The ID of the app.
+     * @param {function} callback - The callback function.
+     */
+    function getCohortsForApp(appId, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": appId,
+                "method": "get_cohorts"
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res && Array.isArray(res)) {
+                    return callback(res);
+                }
+                return callback([]);
+            }
+        });
+    }
+    countlyAlerts.getCohortsForApp = getCohortsForApp;
+
+    /**
+     * Get surveys for the specified app.
+     * @param {string} appId - The ID of the app.
+     * @param {function} callback - The callback function.
+     */
+    function getSurveysForApp(appId, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/surveys/survey/widgets",
+            data: {
+                "app_id": appId,
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res && Array.isArray(res.aaData)) {
+                    return callback(res.aaData);
+                }
+                return callback([]);
+            }
+        });
+
+    }
+    countlyAlerts.getSurveysForApp = getSurveysForApp;
+
+    /**
+     * Get NPS for the specified app.
+     * @param {*} appId - The ID of the app.
+     * @param {*} callback - The callback function.
+     */
+    function getNPSForApp(appId, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/surveys/nps/widgets",
+            data: {
+                "app_id": appId,
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res && Array.isArray(res.aaData)) {
+                    return callback(res.aaData);
+                }
+                return callback([]);
+            }
+        });
+    }
+    countlyAlerts.getNPSForApp = getNPSForApp;
+
+    /**
+     * Get crashes for the specified app for filtering.
+     * @param {*} appId - The ID of the app.
+     * @param {*} callback - The callback function.
+     */
+    function getCrashesForFilter(appId, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": appId,
+                "period": "60days",
+                "method": "crashes",
+                "graph": "1",
+                "display_loader": true,
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res.crashes.app_version) {
+                    return callback(res.crashes.app_version);
+                }
+                return callback([]);
+            }
+        });
+    }
+    countlyAlerts.getCrashesForFilter = getCrashesForFilter;
+
+    /**
+     * get rating for the specified app
+     * @param {*} appId - The ID of the app.
+     * @param {*} callback - The callback function.
+     */
+    function getRatingForApp(appId, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/feedback/widgets",
+            data: {
+                "app_id": appId,
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res && Array.isArray(res)) {
+                    return callback(res);
+                }
+                return callback([]);
+            }
+        });
+    }
+    countlyAlerts.getRatingForApp = getRatingForApp;
+
+    /**
+    * extract getEventLongName
     * @param {string} eventKey - event key in db
     * @param {object} eventMap - for caching
     * @return {string} eventKey - return event parsed key name
-	*/
+    */
     function getEventLongName(eventKey, eventMap) {
         var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
         if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
@@ -52,12 +174,13 @@
             return eventKey;
         }
     }
+
     /**
-	* get event definition
+    * get event definition
     * @param {string} appId - which app to fetch
     * @param {array} results - for store fetch result
     * @return {object} promise - return request promise object
-	*/
+    */
     function getEventsDfd(appId, results) {
         var dfd = jQuery.Deferred();
 
@@ -87,23 +210,28 @@
         return dfd.promise();
     }
 
-    countlyAlerts.getEventsForApps = function(appId, callback) {
+    countlyAlerts.getEventsForApp = function(appId, callback) {
         if (!appId) {
             callback([]);
             return;
         }
         var results = [];
-        var ret = [];
+        var ret = { events: [], segments: null };
         getEventsDfd(appId, results).then(function() {
-            extractEvents(results, ret);
+            extractEvents(results, ret.events);
+            if (results.length > 0) {
+                var eventData = Array.isArray(results) ? results[0] : null;
+                if (eventData && eventData.segments) {
+                    ret.segments = eventData.segments;
+                }
+            }
             callback(ret);
         });
     };
 
     countlyAlerts.getViewForApp = function(appId, callback) {
         if (!appId) {
-            callback([]);
-            return;
+            return callback([]);
         }
         $.ajax({
             type: "GET",
@@ -369,7 +497,7 @@
                                     condtionText: list[j].condition_title,
                                     enabled: list[j].enabled,
                                     selectedApps: [list[j].app],
-                                    alertDataType: "online-users",
+                                    alertDataType: "onlineUsers",
                                     alertDataSubType: list[j].type,
                                     compareType: list[j].def,
                                     compareValue: list[j].users,
@@ -406,17 +534,20 @@
         return {
             _id: null,
             alertName: null,
-            alertDataType: "metric",
+            alertDataType: null,
             alertDataSubType: null,
             alertDataSubType2: null,
             compareType: null,
             period: null,
             compareValue: null,
             selectedApps: [""],
+            filterKey: null,
+            filterValue: null,
+            period: "every 1 hour on the 59th min",
             alertBy: "email",
             enabled: true,
             compareDescribe: '',
-            alertValues: [],
+            alertValues: []
         };
     };
 }(window.countlyAlerts = window.countlyAlerts || {}, jQuery));

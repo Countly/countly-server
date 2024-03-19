@@ -8,6 +8,8 @@
     countlyCommon,
     countlyAuth,
     CV,
+    groupsModel,
+    _,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -24,35 +26,75 @@
         },
         data: function() {
             return {
+                selectedRadioButton: 'specificAddress',
+                allGroups: [],
+                allUserGroups: [],
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
                 allowAll: false,
+                showFilter: false,
+                filterButton: false,
                 showSubType1: true,
                 showSubType2: false,
                 showCondition: true,
                 showConditionValue: true,
                 alertDataSubType2Options: [],
+                alertDataFilterKeyOptions: [],
+                alertDataFilterValueOptions: [],
+                alertDataFilterObject: null,
+                alertDataFilterKey: null,
+                alertDataFilterValue: null,
+
+
+                eventTargets: [],
+                metricTargets: [],
                 defaultAlertDefine: {
-                    metric: {
+                    events: {
                         target: [
-                            { value: 'count', label: 'count' },
-                            { value: 'sum', label: 'sum' },
-                            { value: 'duration', label: 'duration' },
-                            { value: 'average sum', label: 'average sum' },
-                            { value: 'average duration', label: 'average duration' },
+                            { value: 'count', label: 'count'},
+                            { value: 'sum', label: 'sum'},
+                            { value: 'duration', label: 'duration'},
+                            { value: 'average sum', label: 'average sum'},
+                            { value: 'average duration', label: 'average duration'},
                         ]
                     },
-                    event: {
+                    views: {
                         target: [
                             { value: 'bounce rate', label: 'bounce rate' },
                             { value: '# of page views', label: '# of page views' }
                         ]
                     },
-                    crash: {
+                    sessions: {
                         target: [
                             { value: 'average session duration', label: 'average session duration' },
                             { value: '# of sessions', label: '# of sessions' },
+                        ]
+                    },
+                    users: {
+                        target: [
+                            { value: '# of users', label: '# of users' },
+                            { value: '# of new users', label: '# of new users' }
+                        ]
+                    },
+                    crashes: {
+                        target: [
+                            { value: '# of crashes/errors', label: '# of crashes/errors' },
+                            { value: 'none-fatal crashes/errors per session', label: 'non-fatal crashes/errors per session' },
+                            { value: 'fatal crashes/errors per session', label: 'fatal crashes/errors per session' },
+                            { value: 'new crash/error', label: 'new crash/error' }
+                        ],
+                    },
+                    survey: {
+                        target: [
+                            { value: '# of survey responses', label: '# of survey responses' },
+                            { value: 'new survey response', label: 'new survey response' }
+                        ]
+                    },
+                    NPS: {
+                        target: [
+                            { value: '# of responses', label: '# of responses' },
+                            { value: 'new NPS response', label: 'new NPS response' }
                         ]
                     },
                     rating: {
@@ -61,14 +103,37 @@
                             { value: 'new rating response', label: 'new rating response' },
                         ]
                     },
-                    dataPoint: {
+                    dataPoints: {
                         target: [
-                            { value: 'number of daily DP', label: 'daily data points' },
-                            { value: 'hourly data points', label: 'hourly data points' },
-                            { value: 'monthly data points', label: 'monthly data points' }
-                        ],
+                            { value: 'total data points', label: 'total data points' },
+                        ]
                     },
+                    onlineUsers: {
+                        target: [
+                            { value: '# of online users', label: '# of online users' },
+                            { value: 'overall record', label: 'overall record' },
+                            { value: '30-day record', label: '30-day record' }
+                        ]
+                    },
+                    cohorts: {
+                        target: [
+                            { value: '# of users in the cohort', label: '# of users in the cohort' }
+                        ]
+                    },
+                    revenue: {
+                        target: [
+                            { value: 'total revenue', label: 'total revenue' },
+                            { value: 'average revenue per user', label: 'average revenue per user' },
+                            { value: 'average revenue per paying user', label: 'average revenue per paying user' },
+                            { value: '# of paying users', label: '# of paying users' },
+                        ]
+                    }
                 },
+                emailOptions: [
+                    {label: jQuery.i18n.map["alert.email-to-specific-address"], value: "specificAddress"},
+                    {label: jQuery.i18n.map["alert.email-to-group"], value: "toGroup"},
+                    {label: jQuery.i18n.map["alert.email-to-dont-send"], value: "dontSend"},
+                ],
                 defaultAlertVariable: {
                     condition: [
                         { label: "decreased", value: "decreased" },
@@ -84,6 +149,9 @@
                     ]
                 }
             };
+        },
+        watch: {
+
         },
         computed: {
             isCompareTypeSelectAvailable: function() {
@@ -124,11 +192,18 @@
             },
             alertDataTypeOptions: function() {
                 var alertDataTypeOptions = [
-                    {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
-                    {label: jQuery.i18n.map["alert.Event"], value: 'event'},
-                    {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
-                    {label: jQuery.i18n.map["alert.rating"], value: 'rating'},
-                    {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
+                    {label: jQuery.i18n.map["alert.Crash"], value: 'crashes'},
+                    {label: jQuery.i18n.map["alert.Cohorts"], value: 'cohorts'},
+                    {label: jQuery.i18n.map["alert.Data-points"], value: 'dataPoints'},
+                    {label: jQuery.i18n.map["alert.Event"], value: 'events'},
+                    {label: jQuery.i18n.map["alert.NPS"], value: 'nps'},
+                    {label: jQuery.i18n.map["alert.Online-users"], value: 'onlineUsers'},
+                    {label: jQuery.i18n.map["alert.Rating"], value: 'rating'},
+                    {label: jQuery.i18n.map["alert.Revenue"], value: 'revenue'},
+                    {label: jQuery.i18n.map["alert.Session"], value: 'sessions'},
+                    {label: jQuery.i18n.map["alert.Survey"], value: 'survey'},
+                    {label: jQuery.i18n.map["alert.User"], value: 'users'},
+                    {label: jQuery.i18n.map["alert.View"], value: 'views'},
                 ];
                 if (this.externalDataTypeOptions) {
                     alertDataTypeOptions = alertDataTypeOptions.concat(this.externalDataTypeOptions);
@@ -143,7 +218,23 @@
                 });
 
                 return allOptions;
+            },
+
+            alertDataSubTypeOptions: function() {
+                var alertDataSubTypeOptions;
+                if (this.$refs.drawerData.editedObject.alertDataType) {
+                    alertDataSubTypeOptions = this.alertDefine[this.$refs.drawerData.editedObject.alertDataType].target;
+                }
+                return alertDataSubTypeOptions;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g.name;
+                }).join(",");
+
+                return key;
             }
+
         },
         props: {
             placeholder: {type: String, default: 'Select'},
@@ -152,20 +243,176 @@
             }
         },
         mounted: function() {
+            var self = this;
+            groupsModel.initialize().then(function() {
+                var groups = _.sortBy(groupsModel.data(), 'name');
+                var userGroups = groups.map(function(g) {
+                    return {
+                        name: g.name,
+                        value: g._id,
+                        users: g.users
+                    };
+                });
+                self.allGroups = userGroups;
+            });
         },
         methods: {
+            subType2Label: function(obj) {
+                switch (obj.alertDataType) {
+                case 'events':
+                    return "Event";
+                case 'views':
+                    return "View";
+                case 'cohorts':
+                    return "Cohort";
+                case 'survey':
+                    return "Widget Name";
+                case 'nps':
+                    return "Widget Name";
+                case 'rating':
+                    return "Widget Name";
+                }
+            },
+            showFilterButton: function(obj) {
+                switch (obj.alertDataType) {
+                case 'events':
+                    return true;
+                case 'crashes':
+                    return true;
+                case 'nps':
+                    return true;
+                case 'rating':
+                    return true;
+                }
+            },
+            getMetrics: function(notReset) {
+                const formData = this.$refs.drawerData.editedObject;
+                this.alertDataSubType2Options = [];
+                if (!formData.selectedApps) {
+                    return;
+                }
+                if (formData.alertDataType === 'views') {
+                    countlyAlerts.getViewForApp(formData.selectedApps, (viewList) => {
+                        this.alertDataSubType2Options = viewList.map((v) => {
+                            return {value: v.value, label: v.name};
+                        });
+                    });
+
+                }
+                if (formData.alertDataType === 'events') {
+                    countlyAlerts.getEventsForApp(formData.selectedApps, ({ events, segments }) => {
+                        this.alertDataSubType2Options = events.map((e) => {
+                            return {value: e.value, label: e.name};
+                        });
+                        this.alertDataFilterObject = segments;
+                    });
+                }
+                if (formData.alertDataType === 'cohorts') {
+                    countlyAlerts.getCohortsForApp(formData.selectedApps, (data) => {
+                        this.alertDataSubType2Options = data.map((c) => {
+                            return {value: c._id, label: c.name};
+                        });
+                    });
+                }
+                if (formData.alertDataType === 'survey') {
+                    countlyAlerts.getSurveysForApp(formData.selectedApps, (data) => {
+                        this.alertDataSubType2Options = data.map((s) => {
+                            return {value: s._id, label: s.name};
+                        });
+                    });
+                }
+                if (formData.alertDataType === 'nps') {
+                    countlyAlerts.getNPSForApp(formData.selectedApps, (data) => {
+                        this.alertDataSubType2Options = data.map((n) => {
+                            return {value: n._id, label: n.name};
+                        });
+                    });
+                }
+                if (formData.alertDataType === 'rating') {
+                    countlyAlerts.getRatingForApp(formData.selectedApps, (data) => {
+                        this.alertDataSubType2Options = data.map((r) => {
+                            return {value: r._id, label: r.popup_header_text};
+                        });
+                    });
+                }
+                if (!notReset) {
+                    this.resetAlertCondition();
+                }
+            },
             dataTypeSelected: function(val, notRest) {
+                this.resetAlertConditionShow();
+                this.resetFilterCondition();
+                this.getMetrics();
+                if (val === 'crashes' || val === 'rating' || val === 'nps') {
+                    this.setFilterValueOptions();
+                }
+                var validDataTypesForFilter = ['events', 'crashes', 'nps', 'rating'];
+                if (validDataTypesForFilter.includes(val)) {
+                    this.showFilter = true;
+                }
+                else {
+                    this.showFilter = false;
+                }
+
+                var validDataTypesForSubType2 = ['events', 'views', 'cohorts', 'survey', 'nps', 'rating'];
+                if (validDataTypesForSubType2.includes(val)) {
+                    this.showSubType2 = true;
+                }
+                else {
+                    this.showSubType2 = false;
+                }
+
                 if (val === 'dataPoint' && countlyGlobal.member.global_admin === true) {
                     this.allowAll = true;
                 }
-                if (val === 'online-users') {
+                if (val === 'onlineUsers') {
                     this.showSubType2 = false;
                     this.showCondition = false;
                     this.showConditionValue = false;
                 }
                 if (!notRest) {
-                    this.$refs.drawerData.editedObject.selectedApps = [""];
                     this.resetAlertCondition();
+                }
+            },
+            setFilterKeyOptions: function() {
+                const formData = this.$refs.drawerData.editedObject;
+                if (!formData.selectedApps) {
+                    return;
+                }
+                if (formData.alertDataType === 'events') {
+                    if (formData.alertDataSubType2 && this.alertDataFilterObject) {
+                        const options = this.alertDataFilterObject[formData.alertDataSubType2];
+                        if (Array.isArray(options)) {
+                            this.alertDataFilterKeyOptions = options.filter(a => a).map(a => ({ label: a, value: a }));
+                        }
+                    }
+                }
+            },
+            setFilterValueOptions: function() {
+                const formData = this.$refs.drawerData.editedObject;
+                if (!formData.selectedApps) {
+                    return;
+                }
+                if (formData.alertDataType === 'crashes') {
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "App Version";
+                    countlyAlerts.getCrashesForFilter(formData.selectedApps, (data) => {
+                        const app_version = Object.keys(data);
+                        if (Array.isArray(app_version)) {
+                            this.alertDataFilterValueOptions = app_version.filter(a => a).map(a => ({ label: a.replace(/:/g, '.'), value: a }));
+                        }
+                    });
+                }
+                if (formData.alertDataType === 'rating') {
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "Rating";
+                    this.alertDataFilterValueOptions = [{label: '1', value: '1'}, {label: '2', value: '2'}, {label: '3', value: '3'}, {label: '4', value: '4'}, {label: '5', value: '5'}];
+                }
+                if (formData.alertDataType === 'nps') {
+                    this.alertDataFilterValue = [];
+                    this.alertDataFilterKey = "NPS scale";
+                    this.alertDataFilterValueOptions = [{label: 'detractor', value: 'detractor'}, {label: 'passive', value: 'passive'}, {label: 'promoter', value: 'promoter'}];
+
                 }
             },
             resetAlertCondition: function() {
@@ -185,16 +432,77 @@
                 selects.forEach(select => {
                     this.resetColor(select);
                 });
+                this.$refs.drawerData.editedObject.filterKey = null;
+                this.$refs.drawerData.editedObject.filterValue = null;
             },
+            resetAlertConditionShow: function() {
+                this.showSubType1 = true;
+                this.showSubType2 = false;
+                this.showCondition = true;
+                this.showConditionValue = true;
+                this.showFilter = false;
+                this.filterButton = false;
+            },
+            resetFilterCondition: function() {
+                this.alertDataFilterKeyOptions = [];
+                this.alertDataFilterValueOptions = [];
+                this.alertDataFilterKey = null;
+                this.alertDataFilterValue = null;
+            },
+            // alertDataSubTypeSelected: function(alertDataSubType, notReset) {
+            //     this.resetAlertConditionShow();
+            //     switch (alertDataSubType) {
+            //     case 'New crash occurence':
+            //         this.showSubType2 = false;
+            //         this.showCondition = false;
+            //         this.showConditionValue = false;
+            //         break;
+            //     case 'Number of ratings':
+            //         if (!notReset) {
+            //             this.resetAlertConditionShow();
+            //         }
+            //         this.showSubType2 = true;
+            //         this.alertDataSubType2Options = countlyAlerts.RatingOptions;
+            //         break;
+            //     case 'Number of page views':
+            //     case 'Bounce rate':
+            //         this.resetAlertConditionShow();
+            //         this.showSubType2 = true;
+            //         var self = this;
+            //         countlyAlerts.getViewForApp(this.apps[0], function(viewList) {
+            //             self.alertDataSubType2Options = viewList.map(function(v) {
+            //                 return {value: v.value, label: v.name};
+            //             });
+            //         });
+            //         break;
+            //     case 't':
+            //         this.showUserCount = true;
+            //         this.showSubType2 = false;
+            //         this.showCondition = false;
+            //         this.showConditionValue = false;
+            //         break;
+            //     case 'o':
+            //     case 'm':
+            //         this.showSubType2 = false;
+            //         this.showCondition = false;
+            //         this.showConditionValue = false;
+            //         break;
+            //     default:
+            //         if (!notReset) {
+            //             this.resetAlertConditionShow();
+            //         }
+            //         return;
+            //     }
+            // },
             onSubmit: function(settings) {
                 settings.selectedApps = [settings.selectedApps];
                 if (settings._id) {
                     var rows = this.$store.getters["countlyAlerts/table/all"];
                     for (var i = 0; i < rows.length; i++) {
                         if ((rows[i]._id === settings._id) &&
-                            (rows[i].alertDataType === 'online-users' || settings.alertDataType === 'online-users') &&
-                            (rows[i].alertDataType !== settings.alertDataType)) {
-                            if (rows[i].alertDataType !== 'online-users') {
+                                (rows[i].alertDataType === 'onlineUsers' || settings.alertDataType === 'onlineUsers') &&
+                                (rows[i].alertDataType !== settings.alertDataType)) {
+                            if (rows[i].alertDataType !== 'onlineUsers') {
                                 this.$store.dispatch("countlyAlerts/deleteAlert", rows[i]._id);
                             }
                             else {
@@ -204,6 +512,8 @@
                         }
                     }
                 }
+                settings.filterKey = this.alertDataFilterKey;
+                settings.filterValue = this.alertDataFilterValue;
 
                 var target = settings.alertDataSubType;
                 var subTarget = settings.alertDataSubType2;
@@ -212,14 +522,14 @@
                     target = target.split("***")[1];
                     break;
                 case "rating":
-                    subTarget = countlyAlerts.RatingOptions[subTarget].label;
-                    if (target === 'Bounce rate' || target === 'Number of page views') {
-                        this.alertDataSubType2Options.forEach(function(item) {
-                            if (item.value === settings.alertDataSubType2) {
-                                subTarget = item.label;
-                            }
-                        });
-                    }
+                    // subTarget = countlyAlerts.RatingOptions[subTarget].label;
+                    // if (target === 'Bounce rate' || target === 'Number of page views') {
+                    //     this.alertDataSubType2Options.forEach(function(item) {
+                    //         if (item.value === settings.alertDataSubType2) {
+                    //             subTarget = item.label;
+                    //         }
+                    //     });
+                    // }
                     break;
                 case 'metric':
                     if (target === 'Bounce rate' || target === 'Number of page views') {
@@ -232,9 +542,6 @@
                     break;
                 }
 
-
-
-
                 var target2 = settings.alertDataSubType2 ? ' (' + subTarget + ')' : '';
                 settings.compareDescribe = target + target2 ;
 
@@ -243,14 +550,12 @@
                     break;
                 default:
                     settings.compareDescribe += ' ' + settings.compareType +
-                        ' ' + settings.compareValue + "%";
+                            ' ' + settings.compareValue + "%";
                     break;
                 }
                 delete settings.createdBy;
 
-
-
-                if (settings.alertDataType === 'online-users') {
+                if (settings.alertDataType === 'onlineUsers') {
                     var config = {
                         app: settings.selectedApps[0],
                         app_name: countlyGlobal.apps[settings.selectedApps[0]].name,
@@ -276,9 +581,11 @@
                     }
 
                     this.$store.dispatch("countlyAlerts/saveOnlineUsersAlert", config);
+                    this.resetAlertConditionShow();
                     return;
                 }
                 this.$store.dispatch("countlyAlerts/saveAlert", settings);
+                this.resetAlertConditionShow();
             },
             onClose: function($event) {
                 this.$emit("close", $event);
@@ -289,6 +596,9 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
+                // this.onAppChange(newState.selectedApps, true);
+                // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
+                this.getMetrics();
 
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
@@ -296,7 +606,7 @@
                     return;
                 }
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
-                this.saveButtonLabel = jQuery.i18n.map["alert.add-alert"];
+                this.saveButtonLabel = jQuery.i18n.map["alert.save"];
             },
             // Handle the change event of the element
             handleChange(element) {
@@ -372,8 +682,8 @@
             handleAlertEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
                     /* eslint-disable */
-                    var data = Object.assign({}, scope.row);
-                    /* eslint-enable */
+                        var data = Object.assign({}, scope.row);
+                        /* eslint-enable */
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -384,7 +694,7 @@
                         if (!result) {
                             return true;
                         }
-                        if (self.deleteElement.alertDataType === 'online-users') {
+                        if (self.deleteElement.alertDataType === 'onlineUsers') {
                             self.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", {alertID: self.deleteElement._id, appid: self.deleteElement.selectedApps[0]});
                         }
                         else {
@@ -404,7 +714,7 @@
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 for (var i = 0; i < rows.length; i++) {
                     if (status[rows[i]._id] !== undefined) {
-                        if (rows[i].alertDataType === 'online-users') {
+                        if (rows[i].alertDataType === 'onlineUsers') {
                             onlineUsersAlertStatus[rows[i]._id] = status[rows[i]._id];
                         }
                         else {
@@ -423,7 +733,7 @@
                 });
             },
             refresh: function() {
-            // this.$store.dispatch("countlyHooks/table/fetchAll");
+                // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
         }
     });
@@ -493,7 +803,7 @@
     var conUpdateConcurrentUser = countlyAuth.validateUpdate("concurrent_users");
     var canCreateConcurrentUser = countlyAuth.validateCreate("concurrent_users");
     if (countlyGlobal.plugins.indexOf("concurrent_users") > -1 && (canCreateConcurrentUser || conUpdateConcurrentUser)) {
-        countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
+        countlyVue.container.registerData("/alerts/data-type");
         countlyVue.container.registerData("/alerts/data-define", {
             "online-users": {
                 target: [

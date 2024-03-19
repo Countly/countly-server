@@ -41,7 +41,7 @@
     
 }
 
-#alert-drawer {
+#alert-drawer-container {
     .alert-trigger{
         font-size: 14px;
     }
@@ -74,5 +74,11 @@
         font-weight: 500;
         opacity: 1;
         color:#0166D6;
+    }
+}
+.filter-key-input.el-input.is-disabled {
+    .el-input__inner {
+        background-color: white;
+        color: black;
     }
 }

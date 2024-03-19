@@ -567,6 +567,7 @@
                 return {
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
+                    countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
                     showMainMenu: true,
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,

@@ -8,6 +8,49 @@ const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 
+const ALERT_MODULES = {
+    "survey": require("./alertModules/survey.js"),
+    "nps": require("./alertModules/nps.js"),
+    "rating": require("./alertModules/rating.js"),
+};
+
+const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
+    "hourly": "every 1 hour on the 59th min",
+    "daily": "at 23:59",
+    "monthly": "on the last day of the month at 23:59"
+};
+/**
+ * Checks if given event is a survey completion event.
+ * @param   {object}  event single event object sent to /i endpoint
+ * @returns {boolean}       true if the event contains proper survey completion data
+ */
+function isSurveyCompletionEvent(event) {
+    return event?.key === "[CLY]_survey"
+        && !event?.segmentation?.closed
+        && event?.segmentation?.widget_id;
+}
+/**
+ * Checks if given event is a NPS completion event.
+ * @param   {object}  event single event object sent to /i endpoint
+ * @returns {boolean}       true if the event contains proper NPS completion data
+ */
+function isNPSCompletionEvent(event) {
+    return event?.key === "[CLY]_nps"
+        && !event?.segmentation?.closed
+        && event?.segmentation?.widget_id
+        && typeof event?.segmentation?.rating !== 'undefined';
+}
+/**
+ * Checks if given event is a proper Rating event
+ * @param   {object}  event single event object
+ * @returns {boolean}       true|false
+ */
+function isRatingEvent(event) {
+    return event?.key === "[CLY]_nps"
+        && event?.segmentation?.widget_id
+        && typeof event?.segmentation?.rating !== 'undefined';
+}
+
 (function() {
     /**
 	 * delete alert job
@@ -31,7 +74,11 @@ const FEATURE_NAME = 'alerts';
 	 */
     function updateJobForAlert(alert) {
         if (alert.enabled) {
-            JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(alert.period);
+            const textExpression = PERIOD_TO_TEXT_EXPRESSION_MAPPER[alert.period];
+            if (textExpression) {
+                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
+                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
+            }
         }
         else {
             deleteJob(alert._id);
@@ -51,6 +98,37 @@ const FEATURE_NAME = 'alerts';
             });
         });
     }
+
+    plugins.register("/i", async function(ob) {
+        const events = ob?.params?.qstring?.events;
+        if (!Array.isArray(events)) {
+            return;
+        }
+
+        // "[CLY]_survey"
+        try {
+            await Promise.all(events.filter(isSurveyCompletionEvent).map(ALERT_MODULES.survey.triggerByEvent));
+        }
+        catch (err) {
+            log.e("Survey alert couldn't be triggered by event", err);
+        }
+
+        // "[CLY]_nps"
+        try {
+            await Promise.all(events.filter(isNPSCompletionEvent).map(ALERT_MODULES.nps.triggerByEvent));
+        }
+        catch (err) {
+            log.e("NPS alert couldn't be triggered by event", err);
+        }
+
+        // "[CLY]_star_rating"
+        try {
+            await Promise.all(events.filter(isRatingEvent).map(ALERT_MODULES.rating.triggerByEvent));
+        }
+        catch (err) {
+            log.e("Rating alert couldn't be triggered by event", err);
+        }
+    });
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -132,7 +210,7 @@ const FEATURE_NAME = 'alerts';
                     'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataSubType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    // 'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'selectedApps': { 'required': alertConfig._id ? false : true, 'type': 'Array', 'min-length': 1 }
 
                 };
@@ -149,7 +227,6 @@ const FEATURE_NAME = 'alerts';
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 
