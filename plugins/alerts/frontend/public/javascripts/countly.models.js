@@ -538,6 +538,7 @@
             alertDataSubType: null,
             alertDataSubType2: null,
             compareType: null,
+            period: null,
             compareValue: null,
             selectedApps: [""],
             filterKey: null,

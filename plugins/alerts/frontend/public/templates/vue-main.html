@@ -23,7 +23,7 @@
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
     </div>
-    </script>
+</script>
 
 <script  type="text/x-template" id="alerts-table">
 <div>
@@ -115,326 +115,329 @@
     
     
 <script  type="text/x-template" id="alert-drawer">
-    <cly-drawer
-        @submit="onSubmit"
-        @close="onClose"
-        @copy="onCopy"
-        :size=6
-        :title="title"
-        :saveButtonLabel="saveButtonLabel"
-        v-bind="$props.controls"  ref="drawerData">>
-        <template v-slot:default="drawerScope">
-            <cly-form-step id="alert-drawer-main">
-            
-            
-            <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
-                <el-input
-                    v-model="drawerScope.editedObject.alertName"
-                    class="bu-is-flex" 
-                    :placeholder="i18n('alert.enter-alert-name')">
-                </el-input>
-            </cly-form-field>
+    <div id="alert-drawer-container">
+        <cly-drawer
+            @submit="onSubmit"
+            @close="onClose"
+            @copy="onCopy"
+            :size=6
+            :title="title"
+            :saveButtonLabel="saveButtonLabel"
+            v-bind="$props.controls"  ref="drawerData">>
+            <template v-slot:default="drawerScope">
+                <cly-form-step id="alert-drawer-main">
+                    <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
+                        <el-input
+                            v-model="drawerScope.editedObject.alertName"
+                            class="bu-is-flex" 
+                            :placeholder="i18n('alert.enter-alert-name')">
+                        </el-input>
+                    </cly-form-field>
 
-            <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
-                <cly-app-select 
-                        :placeholder="i18n('alerts.select-an-application')"
-                        :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                        class="bu-is-flex"
-                        @change="getMetrics"
-                        v-model="drawerScope.editedObject.selectedApps"
-                        :allowAll="allowAll"
-                        >
-                </cly-app-select>
-            </cly-form-field> 
-
-            <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
-                <cly-select-x 
-                    :searchable="false"
-                    class="bu-is-flex"
-                    @change="dataTypeSelected"
-                    :options="alertDataTypeOptions"
-                    :placeholder="i18n('alerts.select-data-type')"
-                    v-model="drawerScope.editedObject.alertDataType" 
-                    >
-                </cly-select-x>
-            </cly-form-field>
-
-            <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)">
-                <cly-select-x
-                    :searchable="false"
-                    v-model="drawerScope.editedObject.alertDataSubType2"
-                    class="bu-is-flex"
-                    :options="alertDataSubType2Options"
-                    @change="setFilterKeyOptions"
-                    >
-                </cly-select-x>
-            </cly-form-field>
-
-            <el-button type="text" class="color-blue-100" @click="filterButton = true" v-if="!filterButton && showFilterButton(drawerScope.editedObject) ">{{i18n('alerts.add-filter')}}</el-button>
-
-            <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-1" v-if="filterButton">
-                {{i18n('alerts.filter')}}  
-            </div>
-            
-            <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'">
-                <div class="bu-is-flex-grow-1">
-                    <cly-select-x
-                        v-model="alertDataFilterKey"
-                        class="bu-is-flex"
-                        :options="alertDataFilterKeyOptions"
-                    />
-                </div>
-                <span class="bu-mx-3" style="line-height: 30px">is</span>
-                <div class="bu-is-flex-grow-1">
-                    <el-input
-                        v-model="alertDataFilterValue"
-                        class="bu-is-flex"
-                        :placeholder="i18n('alerts.segment-value')"
-                    />
-                </div>
-                <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
-                    <i class="el-icon-close"></i>
-                </div>
-            </div>
-            
-            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'">
-                <div class="bu-is-flex-grow-1">
-                    <el-input
-                        v-model="alertDataFilterKey"
-                        class="bu-is-flex filter-key-input"
-                        :disabled="true"
-                    />
-                </div>
-                <span class="bu-mx-3" style="line-height: 30px">is</span>
-                <div class="bu-is-flex-grow-1">
-                    <cly-select-x
-                        v-if="Array.isArray(alertDataFilterValue)"
-                        v-model="alertDataFilterValue"
-                        class="bu-is-flex"
-                        :options="alertDataFilterValueOptions"
-                        mode="multi-check"
-                    />
-                </div>
-                <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
-                    <i class="el-icon-close"></i>
-                </div>
-            </div>
-
-            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'">
-                <div class="bu-is-flex-grow-1">
-                <el-input
-                    v-model="alertDataFilterKey"
-                    :disabled="true"
-                    class="bu-is-flex filter-key-input"
-                    :options="alertDataFilterKeyOptions"
-                />
-                </div>
-                <span class="bu-mx-3" style="line-height: 30px">is</span>
-                <div class="bu-is-flex-grow-1">
-                    <cly-select-x
-                        v-model="alertDataFilterValue"
-                        class="bu-is-flex"
-                        :options="alertDataFilterValueOptions"
-                        mode="single-list"
-                    />
-                </div>
-                <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
-                    <i class="el-icon-close"></i>
-                </div>
-            </div>
-
-            <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'">
-                <div class="bu-is-flex-grow-1">
-                    <el-input
-                        v-model="alertDataFilterKey"
-                        :disabled="true"
-                        class="bu-is-flex filter-key-input"
-                        :options="alertDataFilterKeyOptions"
-                    />
-                </div>
-                <span class="bu-mx-3" style="line-height: 30px">is</span>
-                <div class="bu-is-flex-grow-1">
-                    <cly-select-x
-                        v-if="Array.isArray(alertDataFilterValue)"
-                        v-model="alertDataFilterValue"
-                        class="bu-is-flex"
-                        :options="alertDataFilterValueOptions"
-                        mode="multi-check"
-                    />
-                </div>
-                <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
-                    <i class="el-icon-close"></i>
-                </div>
-            </div>
-
-
-            <!-- <div class="bu-my-4 bu-py-4 cly-vue-alert-drawer__card">
-                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-px-4">
-                    <div class="text-small text-heading">
-                        {{i18n('alert.Alert_definition')}} 
-                    </div>
-                    <div class="color-cool-gray-50 text-small bu-mb-1" style="line-height: 18px;">
-                        {{i18n('alert.compare-remind')}}
-                    </div>
-                </div>
-                <div class="cly-vue-alert-drawer__line">
-                </div>
-       
-                <div class="bu-is-flex bu-mx-2 bu-mt-4 bu-mb-2 bu-px-1" v-if="showSubType1">
-                    <div class="bu-is-flex-grow-1 bu-mx-1">
-                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
-                            <cly-select-x
-                                :searchable="false"
-                               :placeholder="i18n('alert.select-metric')"
-                               mode="single-list"
-                               v-on:change="alertDataSubTypeSelected"
-                               v-model="drawerScope.editedObject.alertDataSubType"
-                               :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
-                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].target || []">
-                            </cly-select-x>
-                        </validation-provider>
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="showSubType2">
-                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
-                            <cly-select-x
-                            :placeholder="i18n('alert.select-metric')"
-                               mode="single-list"
-                               v-model="drawerScope.editedObject.alertDataSubType2"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
-                               :options="alertDataSubType2Options|| []">
-                            </cly-select-x>
-                        </validation-provider>
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="showCondition">
-                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
-                            <cly-select-x
-                            :placeholder="i18n('alert.define-variable')"
-                               mode="single-list"
-                               v-model="drawerScope.editedObject.compareType"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
-                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].condition || []">
-                            </cly-select-x>
-                        </validation-provider>
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="showConditionValue">
-                        <validation-provider name="name" rules="required" v-slot="v">
-                            <el-input
-                                :placeholder="i18n('alert.add-number')"
-                                v-model="drawerScope.editedObject.compareValue"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
-                            >
-                            <i slot="suffix"> % </i>
-                            </el-input>
-                        </validation-provider>
-                    </div>-->
-
-                    <!-- online users threshold-->
-                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="drawerScope.editedObject.alertDataSubType === 't'">
-                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
-                            <cly-select-x
-                            :placeholder="i18n('alert.define-variable')"
-                               mode="single-list"
-                               v-model="drawerScope.editedObject.compareType"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
-                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].condition || []">
-                            </cly-select-x>
-                        </validation-provider>
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
-                        <validation-provider name="name" rules="required" v-slot="v">
-                            <el-input
-                                :placeholder="i18n('alert.add-number')"
-                                v-model="drawerScope.editedObject.compareValue"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
-                            >
-                            <i slot="suffix"> Users </i>
-                            </el-input>
-                        </validation-provider>
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1 text-medium" v-if="drawerScope.editedObject.alertDataSubType === 't'" style="line-height:30px; white-space: nowrap;">
-                        persists for
-                    </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
-                        <validation-provider name="name" rules="required" v-slot="v">
-                            <el-input
-                                :disabled="drawerScope.editedObject._id"
-                                :placeholder="i18n('alert.add-number')"
-                                v-model="drawerScope.editedObject.compareValue2"
+                    <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
+                        <cly-app-select 
+                                :placeholder="i18n('alerts.select-an-application')"
+                                :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                                 class="bu-is-flex"
+                                @change="getMetrics"
+                                v-model="drawerScope.editedObject.selectedApps"
+                                :allowAll="allowAll"
+                                >
+                        </cly-app-select>
+                    </cly-form-field> 
+
+                    <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
+                        <cly-select-x 
+                            :searchable="false"
+                            class="bu-is-flex"
+                            @change="dataTypeSelected"
+                            :options="alertDataTypeOptions"
+                            :placeholder="i18n('alerts.select-data-type')"
+                            v-model="drawerScope.editedObject.alertDataType" 
                             >
-                            <i slot="suffix"> Minutes </i>
-                            </el-input>
-                        </validation-provider>
+                        </cly-select-x>
+                    </cly-form-field>
+
+                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)">
+                        <cly-select-x
+                            :searchable="false"
+                            v-model="drawerScope.editedObject.alertDataSubType2"
+                            class="bu-is-flex"
+                            :options="alertDataSubType2Options"
+                            @change="setFilterKeyOptions"
+                            >
+                        </cly-select-x>
+                    </cly-form-field>
+
+                    <el-button type="text" class="color-blue-100" @click="filterButton = true" v-if="!filterButton && showFilterButton(drawerScope.editedObject) ">{{i18n('alerts.add-filter')}}</el-button>
+
+                    <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-1" v-if="filterButton">
+                        {{i18n('alerts.filter')}}  
                     </div>
-                </div>
-            </div>
-            
-            <div class="cly-vue-alert-drawer__line"></div>
+                    
+                    <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'">
+                        <div class="bu-is-flex-grow-1">
+                            <cly-select-x
+                                v-model="alertDataFilterKey"
+                                class="bu-is-flex"
+                                :options="alertDataFilterKeyOptions"
+                            />
+                        </div>
+                        <span class="bu-mx-3" style="line-height: 30px">is</span>
+                        <div class="bu-is-flex-grow-1">
+                            <el-input
+                                v-model="alertDataFilterValue"
+                                class="bu-is-flex"
+                                :placeholder="i18n('alerts.segment-value')"
+                            />
+                        </div>
+                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                            <i class="el-icon-close"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'">
+                        <div class="bu-is-flex-grow-1">
+                            <el-input
+                                v-model="alertDataFilterKey"
+                                class="bu-is-flex filter-key-input"
+                                :disabled="true"
+                            />
+                        </div>
+                        <span class="bu-mx-3" style="line-height: 30px">is</span>
+                        <div class="bu-is-flex-grow-1">
+                            <cly-select-x
+                                v-if="Array.isArray(alertDataFilterValue)"
+                                v-model="alertDataFilterValue"
+                                class="bu-is-flex"
+                                :options="alertDataFilterValueOptions"
+                                mode="multi-check"
+                            />
+                        </div>
+                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                            <i class="el-icon-close"></i>
+                        </div>
+                    </div>
 
-            <cly-form-field>
-                <div class="text-big text-heading bu-mb-3">
-                    {{i18n('alert.email-header')}}
-                </div>
+                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'">
+                        <div class="bu-is-flex-grow-1">
+                        <el-input
+                            v-model="alertDataFilterKey"
+                            :disabled="true"
+                            class="bu-is-flex filter-key-input"
+                            :options="alertDataFilterKeyOptions"
+                        />
+                        </div>
+                        <span class="bu-mx-3" style="line-height: 30px">is</span>
+                        <div class="bu-is-flex-grow-1">
+                            <cly-select-x
+                                v-model="alertDataFilterValue"
+                                class="bu-is-flex"
+                                :options="alertDataFilterValueOptions"
+                                mode="single-list"
+                            />
+                        </div>
+                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                            <i class="el-icon-close"></i>
+                        </div>
+                    </div>
 
-                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
-                    <el-radio 
-                        v-model="selectedRadioButton"
-                        :label="item.value" 
-                        :key="idx"
-                        v-for="(item, idx) in emailOptions"
-                        class="is-autosized"
-                        border>
-                            {{item.label}}
-                    </el-radio>            
-                </div>
-            </cly-form-field>
-  
-            <cly-form-field 
-                v-if="selectedRadioButton === 'specificAddress'"
-                name="alertValues" 
-                :label="i18n('alert.email-to-receive')"        
-                rules= "required">
-                <cly-select-email 
-                    placeholder="Enter email address"
-                    v-model="drawerScope.editedObject.alertValues" 
-                    :collapse-tags="false">
-                </cly-select-email>
-            </cly-form-field>
+                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'">
+                        <div class="bu-is-flex-grow-1">
+                            <el-input
+                                v-model="alertDataFilterKey"
+                                :disabled="true"
+                                class="bu-is-flex filter-key-input"
+                                :options="alertDataFilterKeyOptions"
+                            />
+                        </div>
+                        <span class="bu-mx-3" style="line-height: 30px">is</span>
+                        <div class="bu-is-flex-grow-1">
+                            <cly-select-x
+                                v-if="Array.isArray(alertDataFilterValue)"
+                                v-model="alertDataFilterValue"
+                                class="bu-is-flex"
+                                :options="alertDataFilterValueOptions"
+                                mode="multi-check"
+                            />
+                        </div>
+                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                            <i class="el-icon-close"></i>
+                        </div>
+                    </div>
 
-            <cly-form-field
-                v-if="selectedRadioButton === 'toGroup'"
-                name="allGroups"
-                :label="i18n('alert.email-to-receive3')"
-                rules= "required">   
-                <el-select
-                    :key="elSelectKey"
-                    multiple
-                    v-model="drawerScope.editedObject.allGroups"                        
-                    style="width: 100%;">
-                    <el-option
-                        v-for="(item) in allGroups"
-                        :value="item.value"
-                        :label="item.name"
-                        :key="item.value">
-                    </el-option>
-                </el-select>
-            </cly-form-field>
+                    <div class="cly-vue-alert-drawer__line"></div>
 
-            <cly-form-field 
-                v-if="selectedRadioButton === 'dontSend'"
-                name="alertBy"
-                v-model = "drawerScope.editedObject.alertBy='hook'">
-                <div class="test">            
-                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
-                    {{i18n('alerts.email-icon')}}
-                </div>
-            </cly-form-field>
+                    <div class="text-medium text-heading bu-mt-5 bu-has-background-white" style="font-size:13px">
+                        {{i18n('alert.Alert_Trigger')}} 
+                    </div>
 
- 
-            <pre v-if="0">
-                {{drawerScope.editedObject}}
-            </pre>
-            </cly-form-step>
-        </template>
-    </cly-drawer>
+                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">  
+                        <div class="bu-px-4" v-if="showSubType1">
+                            <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable">
+                                Send alert if
+                            </span>
+                            <span class="groupcard-text mediumtextNormal-14px" v-else>
+                                Send alert if there is a 
+                            </span>
+                            <select
+                                @change="handleChange($event.target)"
+                                class="alert-drawer-trigger-select-and-input" 
+                                v-model="drawerScope.editedObject.alertDataSubType">
+                                <option :value="null" hidden>metric</option>
+                                <option v-for="(metricItem, index) in alertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
+                                    {{ metricItem.label }}
+                                </option>
+                            </select>
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                                is
+                            </span>
+
+                            <select 
+                                @change="handleChange($event.target)"
+                                v-model="drawerScope.editedObject.compareType" 
+                                v-if="isCompareTypeSelectAvailable"
+                                class="alert-drawer-trigger-select-and-input">
+                                <!--Placeholder for variable selection -->
+                                <option :value="null" hidden>variable</option>
+                                <!-- Variable selection without online-users data type-->
+                                <option
+                                    v-if="drawerScope.editedObject.alertDataSubType !== 't'"
+                                    v-for="(variableItem, index) in defaultAlertVariable.condition" 
+                                    :key="index" 
+                                    :value="variableItem.value">
+                                    {{ variableItem.label }}
+                                </option>
+                                <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
+                                <option 
+                                    v-if="drawerScope.editedObject.alertDataSubType === 't'"
+                                    v-for="(variableItem, index) in externalAlertDefine[0]['online-users']['condition']"
+                                    :key="index"
+                                    :value="variableItem.label">
+                                    {{ variableItem.label }}
+                                </option>
+                            </select>
+
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                                {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
+                            </span>
+                            <input
+                                @input="handleChange($event.target)"
+                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input" 
+                                placeholder="value"
+                                type="text" 
+                                v-model="drawerScope.editedObject.compareValue" 
+                                v-if="isCompareTypeSelectAvailable"
+                                />
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                                {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
+                            </span>
+                            <span class="groupcard-text mediumtextNormal-14px" 
+                                v-if="isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't' ">
+                                in the last
+                            </span>
+                            <select 
+                                @change="handleChange($event.target)"
+                                v-model="drawerScope.editedObject.period" 
+                                v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'"
+                                class="alert-drawer-trigger-select-and-input">
+                                <option :value="null" hidden>time</option>
+                                <option v-for="(periodItem, index) in alertTimeOptions" :key="index" :value="periodItem.value">
+                                    {{ periodItem.label }}
+                                </option>
+                            </select>
+                            <input
+                                @input="handleChange($event.target)"
+                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input" 
+                                placeholder="value"
+                                type="text" 
+                                v-model="drawerScope.editedObject.compareValue2"
+                                v-if="drawerScope.editedObject.alertDataSubType === 't'"
+                                />
+                            <span class="groupcard-text mediumtextNormal-14px"
+                                    v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                                    minutes
+                            </span>
+                            <span class="groupcard-text mediumtextNormal-14px">.</span>
+                        </div>    
+                    </div>
+
+                    <div class="cly-vue-alert-drawer__line"></div>
+
+                    <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
+                        <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
+                    </cly-form-field>
+
+                    <pre v-if="0">
+                        {{drawerScope.editedObject}}
+                    </pre>
+                    
+                    <div class="cly-vue-alert-drawer__line"></div>
+
+                    <cly-form-field>
+                        <div class="text-big text-heading bu-mb-3">
+                            {{i18n('alert.email-header')}}
+                        </div>
+
+                        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                            <el-radio 
+                                v-model="selectedRadioButton"
+                                :label="item.value" 
+                                :key="idx"
+                                v-for="(item, idx) in emailOptions"
+                                class="is-autosized"
+                                border>
+                                    {{item.label}}
+                            </el-radio>            
+                        </div>
+                    </cly-form-field>
+        
+                    <cly-form-field 
+                        v-if="selectedRadioButton === 'specificAddress'"
+                        name="alertValues" 
+                        :label="i18n('alert.email-to-receive')"        
+                        rules= "required">
+                        <cly-select-email 
+                            placeholder="Enter email address"
+                            v-model="drawerScope.editedObject.alertValues" 
+                            :collapse-tags="false">
+                        </cly-select-email>
+                    </cly-form-field>
+
+                    <cly-form-field
+                        v-if="selectedRadioButton === 'toGroup'"
+                        name="allGroups"
+                        :label="i18n('alert.email-to-receive3')"
+                        rules= "required">   
+                        <el-select
+                            :key="elSelectKey"
+                            multiple
+                            v-model="drawerScope.editedObject.allGroups"                        
+                            style="width: 100%;">
+                            <el-option
+                                v-for="(item) in allGroups"
+                                :value="item.value"
+                                :label="item.name"
+                                :key="item.value">
+                            </el-option>
+                        </el-select>
+                    </cly-form-field>
+
+                    <cly-form-field 
+                        v-if="selectedRadioButton === 'dontSend'"
+                        name="alertBy"
+                        v-model = "drawerScope.editedObject.alertBy='hook'">
+                        <div class="test">            
+                            <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                            {{i18n('alerts.email-icon')}}
+                        </div>
+                    </cly-form-field>
+        
+                    <pre v-if="0">
+                        {{drawerScope.editedObject}}
+                    </pre>
+                </cly-form-step>
+            </template>
+        </cly-drawer>
+    </div>
 </script>

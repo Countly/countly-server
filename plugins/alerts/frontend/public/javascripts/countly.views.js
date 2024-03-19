@@ -68,7 +68,7 @@
                     sessions: {
                         target: [
                             { value: 'average session duration', label: 'average session duration' },
-                            { value: '# of sessions', label: '# of sessions' }
+                            { value: '# of sessions', label: '# of sessions' },
                         ]
                     },
                     users: {
@@ -100,7 +100,7 @@
                     rating: {
                         target: [
                             { value: '# of responses', label: '# of responses' },
-                            { value: 'new rating response', label: 'new rating response' }
+                            { value: 'new rating response', label: 'new rating response' },
                         ]
                     },
                     dataPoints: {
@@ -108,7 +108,6 @@
                             { value: 'total data points', label: 'total data points' },
                         ]
                     },
-
                     onlineUsers: {
                         target: [
                             { value: '# of online users', label: '# of online users' },
@@ -134,13 +133,63 @@
                     {label: jQuery.i18n.map["alert.email-to-specific-address"], value: "specificAddress"},
                     {label: jQuery.i18n.map["alert.email-to-group"], value: "toGroup"},
                     {label: jQuery.i18n.map["alert.email-to-dont-send"], value: "dontSend"},
-                ]
+                ],
+                defaultAlertVariable: {
+                    condition: [
+                        { label: "decreased", value: "decreased" },
+                        { label: "increased", value: "increased" },
+                        { label: "more", value: "more" }
+                    ]
+                },
+                defaultAlertTime: {
+                    time: [
+                        { label: "month", value: "monthly" },
+                        { label: "day", value: "daily" },
+                        { label: "hour", value: "hourly" }
+                    ]
+                }
             };
         },
         watch: {
 
         },
         computed: {
+            isCompareTypeSelectAvailable: function() {
+                const disabledMetrics = [
+                    "new survey response",
+                    "new NPS response",
+                    "new rating response",
+                    "o",
+                    "m",
+                ];
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
+                    return false;
+                }
+                return true;
+            },
+            isPeriodSelectAvailable: function() {
+                const disabledMetrics = [
+                    "new survey response",
+                    "new NPS response",
+                    "new rating response",
+                    "o",
+                    "m",
+                ];
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
+                    return false;
+                }
+                return true;
+            },
+            alertTimeOptions() {
+                if (this.$refs.drawerData.editedObject.alertDataType === "rating") {
+                    // Filter out the "hour" option if the alert data type is "rating"
+                    return this.defaultAlertTime.time.filter(periodItem => periodItem.value !== "hourly");
+                }
+                else {
+                    // Return all options if condition doesn't match
+                    return this.defaultAlertTime.time;
+                }
+            },
             alertDataTypeOptions: function() {
                 var alertDataTypeOptions = [
                     {label: jQuery.i18n.map["alert.Crash"], value: 'crashes'},
@@ -163,20 +212,10 @@
             },
             alertDefine: function() {
                 var allOptions = JSON.parse(JSON.stringify(this.defaultAlertDefine));
-                var eventTargets = this.eventTargets;
-                var metricTargets = this.metricTargets;
 
                 this.externalAlertDefine.forEach(function(define) {
                     allOptions = Object.assign(allOptions, define);
                 });
-
-                if (eventTargets && eventTargets.length) {
-                    allOptions.event.target = eventTargets;
-                }
-
-                if (metricTargets && metricTargets.length) {
-                    allOptions.metric.target = allOptions.metric.target.concat(metricTargets);
-                }
 
                 return allOptions;
             },
@@ -198,6 +237,7 @@
 
         },
         props: {
+            placeholder: {type: String, default: 'Select'},
             controls: {
                 type: Object
             }
@@ -380,6 +420,18 @@
                 this.$refs.drawerData.editedObject.alertDataSubType2 = null;
                 this.$refs.drawerData.editedObject.compareType = null;
                 this.$refs.drawerData.editedObject.compareValue = null;
+                this.$refs.drawerData.editedObject.period = null;
+                // Reset the background color for all input elements
+                const inputs = this.$refs.drawerData.$el.querySelectorAll('input');
+                inputs.forEach(input => {
+                    this.resetColor(input);
+                });
+
+                // Reset the background color for all select elements
+                const selects = this.$refs.drawerData.$el.querySelectorAll('select');
+                selects.forEach(select => {
+                    this.resetColor(select);
+                });
                 this.$refs.drawerData.editedObject.filterKey = null;
                 this.$refs.drawerData.editedObject.filterValue = null;
             },
@@ -556,6 +608,21 @@
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
             },
+            // Handle the change event of the element
+            handleChange(element) {
+                this.changeColor(element);
+            },
+            changeColor(element) {
+                // Set the background color of the element to green when a selection is made
+                element.style.backgroundColor = "#E1EFFF";
+                element.style.color = "#333C48";
+                element.style.fontWeight = "500";
+            },
+            resetColor(element) {
+                // Remove the inline background color style to reset to default
+                element.style.backgroundColor = '';
+                element.style.color = '';
+            }
         }
     });
 
