@@ -475,7 +475,6 @@
                         .then(function() {
                             context.commit('setData', _graphDataObj || {});
                             context.commit('setSegments', _segments);
-                            // EMRE: setOmittedSegments
                             context.commit('setOmittedSegments', _omit);
                             context.commit('setDomains', _domains);
                             context.dispatch('onFetchSuccess');
@@ -827,7 +826,6 @@
 
             //if refresh
             for (var i = 0; i < _selectedViews.length; i++) {
-                // EMRE: changes to _graphDataObj[_selectedViews[i]]['_no-segment']) !== {} always being true
                 if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']) !== 0) ||
                     (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]) !== 0))
                 ) {
