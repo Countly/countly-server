@@ -546,7 +546,7 @@
             alertBy: "email",
             enabled: true,
             compareDescribe: '',
-            alertValues: [],
+            alertValues: []
         };
     };
 }(window.countlyAlerts = window.countlyAlerts || {}, jQuery));

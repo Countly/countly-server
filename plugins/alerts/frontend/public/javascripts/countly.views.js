@@ -8,6 +8,8 @@
     countlyCommon,
     countlyAuth,
     CV,
+    groupsModel,
+    _,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -24,6 +26,9 @@
         },
         data: function() {
             return {
+                selectedRadioButton: 'specificAddress',
+                allGroups: [],
+                allUserGroups: [],
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
@@ -103,6 +108,7 @@
                             { value: 'total data points', label: 'total data points' },
                         ]
                     },
+
                     onlineUsers: {
                         target: [
                             { value: '# of online users', label: '# of online users' },
@@ -123,7 +129,12 @@
                             { value: '# of paying users', label: '# of paying users' },
                         ]
                     }
-                }
+                },
+                emailOptions: [
+                    {label: jQuery.i18n.map["alert.email-to-specific-address"], value: "specificAddress"},
+                    {label: jQuery.i18n.map["alert.email-to-group"], value: "toGroup"},
+                    {label: jQuery.i18n.map["alert.email-to-dont-send"], value: "dontSend"},
+                ]
             };
         },
         watch: {
@@ -169,6 +180,7 @@
 
                 return allOptions;
             },
+
             alertDataSubTypeOptions: function() {
                 var alertDataSubTypeOptions;
                 if (this.$refs.drawerData.editedObject.alertDataType) {
@@ -176,6 +188,14 @@
                 }
                 return alertDataSubTypeOptions;
             },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g.name;
+                }).join(",");
+
+                return key;
+            }
+
         },
         props: {
             controls: {
@@ -183,6 +203,18 @@
             }
         },
         mounted: function() {
+            var self = this;
+            groupsModel.initialize().then(function() {
+                var groups = _.sortBy(groupsModel.data(), 'name');
+                var userGroups = groups.map(function(g) {
+                    return {
+                        name: g.name,
+                        value: g._id,
+                        users: g.users
+                    };
+                });
+                self.allGroups = userGroups;
+            });
         },
         methods: {
             subType2Label: function(obj) {
