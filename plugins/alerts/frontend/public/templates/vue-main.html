@@ -251,15 +251,72 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="cly-vue-alert-drawer__line"></div>
 
-            <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
-                <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
+            <cly-form-field>
+                <div class="text-big text-heading bu-mb-3">
+                    {{i18n('alert.email-header')}}
+                </div>
+
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                    <el-radio 
+                        v-model="selectedRadioButton"
+                        :label="item.value" 
+                        :key="idx"
+                        v-for="(item, idx) in emailOptions"
+                        class="is-autosized"
+                        border>
+                            {{item.label}}
+                    </el-radio>            
+                </div>
+            </cly-form-field>
+  
+            <cly-form-field 
+                v-if="selectedRadioButton === 'specificAddress'"
+                name="alertValues" 
+                :label="i18n('alert.email-to-receive')"        
+                rules= "required">
+                <cly-select-email 
+                    placeholder="Enter email address"
+                    v-model="drawerScope.editedObject.alertValues" 
+                    :collapse-tags="false">
+                </cly-select-email>
+            </cly-form-field>
+
+            <cly-form-field
+                v-if="selectedRadioButton === 'toGroup'"
+                name="allGroups"
+                :label="i18n('alert.email-to-receive3')"
+                rules= "required">   
+                <el-select
+                    :key="elSelectKey"
+                    multiple
+                    v-model="drawerScope.editedObject.allGroups"                        
+                    style="width: 100%;">
+                    <el-option
+                        v-for="(item) in allGroups"
+                        :value="item.value"
+                        :label="item.name"
+                        :key="item.value">
+                    </el-option>
+                </el-select>
+            </cly-form-field>
+
+            <cly-form-field 
+                v-if="selectedRadioButton === 'dontSend'"
+                name="alertBy"
+                v-model = "drawerScope.editedObject.alertBy='hook'">
+                <div class="test">            
+                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                    {{i18n('alerts.email-icon')}}
+                </div>
             </cly-form-field>
  
             <pre v-if="0">
                 {{drawerScope.editedObject}}
             </pre>
-        </cly-form-step>
+            </cly-form-step>
         </template>
     </cly-drawer>
 </script>

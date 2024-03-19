@@ -227,7 +227,6 @@ function isRatingEvent(event) {
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 

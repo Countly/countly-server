@@ -412,12 +412,11 @@
             compareType: null,
             compareValue: null,
             selectedApps: [""],
-
             period: "every 1 hour on the 59th min",
             alertBy: "email",
             enabled: true,
             compareDescribe: '',
-            alertValues: [],
+            alertValues: []
         };
     };
 }(window.countlyAlerts = window.countlyAlerts || {}, jQuery));

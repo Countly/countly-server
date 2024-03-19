@@ -9,6 +9,8 @@
     countlyEvent,
     countlyAuth,
     CV,
+    groupsModel,
+    _,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -25,6 +27,9 @@
         },
         data: function() {
             return {
+                selectedRadioButton: 'specificAddress',
+                allGroups: [],
+                allUserGroups: [],
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
@@ -89,7 +94,12 @@
                             { value: 'decreased by at least', label: 'decreased by at least' },
                         ]
                     },
-                }
+                },
+                emailOptions: [
+                    {label: jQuery.i18n.map["alert.email-to-specific-address"], value: "specificAddress"},
+                    {label: jQuery.i18n.map["alert.email-to-group"], value: "toGroup"},
+                    {label: jQuery.i18n.map["alert.email-to-dont-send"], value: "dontSend"},
+                ],
             };
         },
         computed: {
@@ -124,6 +134,13 @@
                 }
 
                 return allOptions;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g.name;
+                }).join(",");
+
+                return key;
             }
         },
         props: {
@@ -132,6 +149,18 @@
             }
         },
         mounted: function() {
+            var self = this;
+            groupsModel.initialize().then(function() {
+                var groups = _.sortBy(groupsModel.data(), 'name');
+                var userGroups = groups.map(function(g) {
+                    return {
+                        name: g.name,
+                        value: g._id,
+                        users: g.users
+                    };
+                });
+                self.allGroups = userGroups;
+            });
         },
         methods: {
             onAppChange: function(val, notReset) {

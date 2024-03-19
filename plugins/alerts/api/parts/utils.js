@@ -203,5 +203,50 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
     });
 };
 
+/**
+ * Retrieves user emails based on group IDs.
+ * @param {Array} groupIds - The array of group IDs.
+ * @returns {Promise<Array>} - A promise that resolves to an array of user emails.
+ */
+utils.getUserEmailsBasedOnGroups = function(groupIds) {
+    const memberEmails = [];
+    // eslint-disable-next-line require-jsdoc
+    const fetchMembers = (groupId) => {
+        const model = { "_id": groupId };
+        const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };
+        return new Promise((resolve, reject) => {
+            common.db.collection('members').find(query, { password: 0 }).toArray((err, members) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    for (let idx = 0; idx < members.length; idx++) {
+                        members[idx].last_login = members[idx].last_login || 0;
+                    }
+                    members.forEach((member) => {
+                        memberEmails.push(member.email);
+                    });
+                    resolve();
+                }
+            });
+        });
+    };
+    const promises = groupIds.map(fetchMembers);
+    return Promise.all(promises).then(() => {
+        return memberEmails;
+    }).catch((error) => {
+        return Promise.reject(error);
+    });
+};
+
+utils.fillEmailList = function(alertConfigs) {
+    if (alertConfigs.alertValues && alertConfigs.alertValues.length > 0) {
+        return utils.getDashboardUserEmail(alertConfigs.alertValues);
+    }
+    else {
+        return utils.getUserEmailsBasedOnGroups(alertConfigs.allGroups);
+    }
+};
+
 
 module.exports = utils;
