@@ -2311,4 +2311,6 @@
             });
         }
     };
+
+    countlyPopulator.defaultTemplates = defaultTemplates;
 }(window.countlyPopulator = window.countlyPopulator || {}, jQuery));

@@ -597,7 +597,8 @@
         };
 
         var devicesAndTypesActions = {
-            fetchResolution: function(context) {
+            fetchResolution: function(context, force) {
+                context.commit('setResolutionLoading', force);
                 context.dispatch('onFetchInit', "resolution");
                 countlyDevicesAndTypes.service.fetchResolution().then(function() {
                     var resolutions = countlyDevicesAndTypes.service.calculateData("resolutions", {"pie": true});
@@ -605,9 +606,12 @@
                     context.dispatch('onFetchSuccess', "resolution");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setResolutionLoading', false);
                 });
             },
-            fetchAppVersion: function(context) {
+            fetchAppVersion: function(context, force) {
+                context.commit('setVersionLoading', force);
                 context.dispatch('onFetchInit', "version");
                 countlyDevicesAndTypes.service.fetchAppVersion().then(function() {
                     var versions = countlyDevicesAndTypes.service.getStackedSeriesData("app_versions", context.state.selectedProperty, context.state.selectedDisplay);
@@ -627,9 +631,14 @@
                     context.dispatch('onFetchSuccess', "version");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setVersionLoading', false);
                 });
             },
-            fetchPlatform: function(context) {
+            fetchPlatform: function(context, useLoader) {
+                if (useLoader) {
+                    context.state.isLoading = true;
+                }
                 if (countlyDevicesAndTypes.service.validateStates([countlyDevicesAndTypes.getCurrentLoadState()])) {
                     context.dispatch('onFetchInit', "platform");
                 }
@@ -637,31 +646,44 @@
                     var platforms = countlyDevicesAndTypes.service.calculatePlatform();
                     context.commit('setAppPlatform', platforms);
                     context.dispatch('onFetchSuccess', "platform");
+                    context.state.isLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.isLoading = false;
                 });
             },
-            fetchBrowser: function(context) {
+            fetchBrowser: function(context, useLoader) {
                 context.dispatch('onFetchInit', "browser");
+                if (useLoader) {
+                    context.state.browserLoading = true;
+                }
                 countlyDevicesAndTypes.service.fetchBrowser().then(function() {
                     var browsers = countlyDevicesAndTypes.service.calculateBrowser();
                     context.commit('setAppBrowser', browsers);
                     context.dispatch('onFetchSuccess', "browser");
+                    context.state.browserLoading = false;
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                    context.state.browserLoading = false;
                 });
             },
-            fetchDensity: function(context) {
+            fetchDensity: function(context, force) {
                 context.dispatch('onFetchInit', "density");
+                context.commit('setDensityLoading', force);
                 countlyDevicesAndTypes.service.fetchDensity().then(function() {
                     var densities = countlyDevicesAndTypes.service.calculateDensity();
                     context.commit('setAppDensity', densities);
                     context.dispatch('onFetchSuccess', "density");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setDensityLoading', false);
                 });
             },
-            fetchDeviceTypes: function(context) {
+            fetchDeviceTypes: function(context, useLoader) {
+                if (useLoader) {
+                    context.commit('setTypeLoading', true);
+                }
                 context.dispatch('onFetchInit', "deviceType");
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
                     var deviceTypes = countlyDevicesAndTypes.service.calculateData("device_type", {"pie": true});
@@ -669,9 +691,12 @@
                     context.dispatch('onFetchSuccess', "deviceType");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setTypeLoading', false);
                 });
             },
-            fetchDevices: function(context) {
+            fetchDevices: function(context, force) {
+                context.commit('setDeviceTypesLoading', force);
                 context.dispatch('onFetchInit', "device");
                 countlyDevicesAndTypes.service.fetchDevices().then(function() {
                     var devices = countlyDevicesAndTypes.service.calculateDevices();
@@ -679,6 +704,8 @@
                     context.dispatch('onFetchSuccess', "device");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                }).finally(function() {
+                    context.commit('setDeviceTypesLoading', false);
                 });
             },
             fetchHomeDashboard: function(context) {
@@ -837,6 +864,21 @@
                         state.densityLoading = false;
                     }
                 }
+            },
+            setDensityLoading: function(state, value) {
+                state.densityLoading = value;
+            },
+            setResolutionLoading: function(state, value) {
+                state.resolutionLoading = value;
+            },
+            setVersionLoading: function(state, value) {
+                state.versionLoading = value;
+            },
+            setDeviceTypesLoading: function(state, value) {
+                state.deviceTypesLoading = value;
+            },
+            setTypeLoading: function(state, value) {
+                state.typeLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {

@@ -1,10 +1,8 @@
 <div class="technology-density-wrapper" v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('density.title')}} 
-            </h2>
-			<cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
+    <cly-header
+		:title="i18n('density.title')"
+		:tooltip="{description}"
+	>
 		<template v-slot:header-right>
 			<cly-more-options v-if="topDropdown" size="small">
 				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
@@ -49,6 +47,9 @@
 		<h5 class="bu-pb-4"> {{i18n('density.distribution')}} </h5>
 		<div v-if="densityVersions.length < 4 && !isLoading" class="technology-density-wrapper__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+		</div>
+		<div v-else-if="densityVersions.length === 0 && isLoading">
+			<div style="height: 200px;" v-loading="isLoading"></div>
 		</div>
         <div v-else v-loading="isLoading" class="technology-density-wrapper__versions">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">

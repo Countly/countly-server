@@ -11,14 +11,18 @@
         data: function() {
             return {
                 list: [],
-                importsTablePersistKey: 'imports_table_' + countlyCommon.ACTIVE_APP_ID
+                importsTablePersistKey: 'imports_table_' + countlyCommon.ACTIVE_APP_ID,
+                isLoading: false
             };
         },
         methods: {
-            refresh: function() {
-                this.loadImports();
+            refresh: function(force) {
+                this.loadImports(force);
             },
-            loadImports: function() {
+            loadImports: function(forceLoading) {
+                if (forceLoading) {
+                    this.isLoading = true;
+                }
                 var self = this;
                 countlyDataMigration.loadImportList()
                     .then(function(res) {
@@ -33,6 +37,7 @@
                         else if (typeof res.result === "string") {
                             self.list = [];
                         }
+                        self.isLoading = false;
                     });
             },
             handleCommand: function(command, scope, row) {
@@ -67,7 +72,7 @@
             }
         },
         created: function() {
-            this.loadImports();
+            this.loadImports(true);
         }
     });
 
@@ -80,15 +85,19 @@
         data: function() {
             return {
                 list: [],
-                exportsTablePersistKey: 'exports_table_' + countlyCommon.ACTIVE_APP_ID
+                exportsTablePersistKey: 'exports_table_' + countlyCommon.ACTIVE_APP_ID,
+                isLoading: false
             };
         },
         methods: {
-            refresh: function() {
-                this.loadExports();
+            refresh: function(force) {
+                this.loadExports(force);
             },
-            loadExports: function() {
+            loadExports: function(forceLoading) {
                 var self = this;
+                if (forceLoading) {
+                    this.isLoading = true;
+                }
                 countlyDataMigration.loadExportList()
                     .then(function(res) {
                         if (typeof res.result === "object") {
@@ -97,6 +106,7 @@
                         else if (typeof res.result === "string") {
                             self.list = [];
                         }
+                        self.isLoading = false;
                     });
             },
             handleCommand: function(command, scope, row) {
@@ -167,7 +177,7 @@
             }
         },
         created: function() {
-            this.loadExports();
+            this.loadExports(true);
         }
     });
 

@@ -1,0 +1,11 @@
+<cly-dynamic-tabs 
+    v-model="currentTab" 
+    :tabs="tabs"
+    :hideSingleTab="false"
+    customStyle="background: unset; padding: 0px 30px;"
+    skin="primary"
+>
+    <template v-slot:tables="scope">
+        <span>{{ scope.tab.title }}</span>
+    </template>
+</cly-dynamic-tabs>

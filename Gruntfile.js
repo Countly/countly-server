@@ -130,6 +130,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.total.users.js',
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
                     'frontend/express/public/javascripts/countly/countly.view.js',
+                    'frontend/express/public/javascripts/countly/countly.cms.js',
                     'frontend/express/public/javascripts/countly/vue/core.js',
                     'frontend/express/public/javascripts/countly/vue/container.js',
                     'frontend/express/public/javascripts/countly/countly.template.js',
@@ -195,7 +196,9 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/home/javascripts/countly.models.js',
                     'frontend/express/public/core/home/javascripts/countly.views.js',
                     'frontend/express/public/core/notes/javascripts/countly.views.js',
-                    'frontend/express/public/core/version-history/javascripts/countly.views.js'
+                    'frontend/express/public/core/version-history/javascripts/countly.views.js',
+                    'frontend/express/public/core/onboarding/javascripts/countly.models.js',
+                    'frontend/express/public/core/onboarding/javascripts/countly.views.js',
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }

@@ -2,7 +2,9 @@
 <div>
     <cly-datatable-n 
         class="cly-vue-hook-table is-clickable hook-error-table"
-        :rows="tableRows" :resizable="false" >
+        :rows="tableRows" 
+        :resizable="false"
+        :force-loading="!detailLogsInitialized">
         <template v-slot="scope">
             <!-- <el-table-column fixed label="Tracked data" sortable="true"  min-width="100" :class="is-clickable">
                 <template slot-scope="scope">

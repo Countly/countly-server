@@ -1,5 +1,5 @@
 <div>
-  <cly-datatable-n class="bu-mx-5" :rows="list" :persist-key="exportsTablePersistKey">
+  <cly-datatable-n :force-loading="isLoading" class="bu-mx-5" :rows="list" :persist-key="exportsTablePersistKey">
       <template v-slot="scope">
           <el-table-column sortable="true" prop="app_names" :label="i18n('data-migration.applications')">
               <template v-slot="rowScope">

@@ -1,8 +1,45 @@
-/* global Vue, $ */
+/* global Vue CountlyHelpers countlyCMS $ */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent;
+
+    Vue.component("cly-guide", countlyBaseComponent.extend({
+        props: {
+            tooltip: {
+                type: Object,
+                default: function() {
+                    return {
+                        description: "",
+                        placement: "bottom-end"
+                    };
+                }
+            }
+        },
+        data: function() {
+            return {
+                enableGuides: CountlyHelpers.isPluginEnabled('guides')
+            };
+        },
+        created: function() {
+            var self = this;
+            if (this.enableGuides) {
+                countlyCMS.fetchEntry("server-guide-config", {refresh: true}).then(function(config) {
+                    self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
+                });
+            }
+        },
+        template: `
+            <div>\
+                <template v-if="enableGuides">\
+                    <view-guide :tooltip="tooltip"></view-guide>\
+                </template>\
+                <template v-else-if="tooltip && tooltip.description">\
+                    <cly-tooltip-icon :tooltip="tooltip.description" icon="ion ion-help-circled" style="margin-left:8px" :placement="tooltip.placement"></cly-tooltip-icon>\
+                </template>\
+            </div>\
+        `
+    }));
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {
@@ -18,7 +55,8 @@
                 default: function() {
                     return {};
                 }
-            }
+            },
+            tooltip: Object
         },
         computed: {
             slotHeaderTop: function() {
@@ -69,7 +107,8 @@
                                 <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
-                                            <h2>{{title}}</h2>\
+                                            <h2 class="bu-mr-2">{{title}}</h2>\
+                                            <cly-guide v-if="title" :tooltip="tooltip"></cly-guide>\
                                         </div>\
                                     </slot>\
                                 </template> \

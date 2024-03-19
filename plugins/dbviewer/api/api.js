@@ -158,7 +158,8 @@ var spawn = require('child_process').spawn,
                 filter = EJSON.parse(filter);
             }
             catch (SyntaxError) {
-                filter = {};
+                common.returnMessage(params, 400, "Failed to parse query. " + SyntaxError.message);
+                return false;
             }
             if (filter._id && isObjectId(filter._id)) {
                 filter._id = common.db.ObjectID(filter._id);

@@ -1,0 +1,33 @@
+<div class="walkthrough-wrapper bu-column">
+    <div :class="['walkthrough', gradientClass]" :id="'walkthrough__'+value.id" @click="openDialog()">
+        <div class="walkthrough__title">
+            {{ value.title }}
+        </div>
+        <div class="walkthrough__button">
+            <img src="images/icons/arrow_drop_right.svg" alt="Icon" class="walkthrough__button__icon"/>
+            <div class="walkthrough__button__text">{{ i18n('guides.take-the-tour') }}</div>
+        </div>
+    </div>
+    <el-dialog
+        :visible.sync="isDialogIframeVisible"        
+        :show-close="false"
+        custom-class="iframe-dialog"
+        lock-scroll
+        append-to-body
+    >
+        <div @click="closeDialog" class="close-icon">
+            <img src="images/icons/close-icon-white.svg" alt="Icon"/>
+        </div>
+        <iframe 
+            :src="value.url" 
+            :title="value.title" 
+            class="iframe"
+            frameborder="0" 
+            loading="lazy" 
+            webkitallowfullscreen 
+            mozallowfullscreen 
+            allowfullscreen
+        >
+        </iframe>
+    </el-dialog>
+</div>

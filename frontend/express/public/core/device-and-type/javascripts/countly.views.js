@@ -2,11 +2,11 @@
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
-        this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
+        this.$store.dispatch('countlyDevicesAndTypes/fetchDevices', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDevices', force);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);
@@ -99,11 +99,11 @@ var DevicesTabView = countlyVue.views.create({
 var TypesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/types-tab.html"),
     mounted: function() {
-        this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+        this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes', true);
     },
     methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes', force);
         },
         numberFormatter: function(row, col, value) {
             return countlyCommon.formatNumber(value, 0);
