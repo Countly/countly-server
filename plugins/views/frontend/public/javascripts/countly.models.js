@@ -9,6 +9,7 @@
         _segment = "",
         _segmentVal = "",
         _segments = [],
+        _omit = [],
         _domains = [],
         _name = "views",
         _period = null,
@@ -434,14 +435,6 @@
             }
             return {"data": data};
         },
-        // EMRE: getOmittedSegments placed in helpers
-        getOmittedSegments: function(selectedEventName, res) {
-            var omittedSegments = [];
-            if (res && res.omitted_segments) {
-                omittedSegments = res.omitted_segments[selectedEventName] || [];
-            }
-            return omittedSegments.sort();
-        }
     };
 
     countlyViews.getVuexModule = function() {
@@ -458,9 +451,9 @@
                 selectedSegmentValue: "",
                 selectedViews: [],
                 segments: {},
+                omittedSegments: [],
                 domains: [],
                 totalViewsCount: 0,
-                omittedSegments: [],
             };
         };
 
@@ -482,6 +475,8 @@
                         .then(function() {
                             context.commit('setData', _graphDataObj || {});
                             context.commit('setSegments', _segments);
+                            // EMRE: setOmittedSegments
+                            context.commit('setOmittedSegments', _omit);
                             context.commit('setDomains', _domains);
                             context.dispatch('onFetchSuccess');
                             resolve();
@@ -563,6 +558,9 @@
             setSegments: function(state, value) {
                 state.segments = value;
             },
+            setOmittedSegments: function(state, value) {
+                state.omittedSegments = value;
+            },
             setDomains: function(state, value) {
                 state.domains = value;
             },
@@ -602,10 +600,6 @@
                 state.selectedViews = value;
                 _selectedViews = value;
             },
-            // EMRE: setOmittedSegments
-            setOmittedSegments: function(state, value) {
-                state.omittedSegments = value;
-            },
         };
         return countlyVue.vuex.Module("countlyViews", {
             state: getInitialState,
@@ -642,7 +636,10 @@
                 },
                 updateError: function(context) {
                     return context.updateError;
-                }
+                },
+                getOmittedSegments: function(context) {
+                    return context.omittedSegments;
+                },
             },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
@@ -690,6 +687,13 @@
                                 _segments[segment].sort(Intl.Collator().compare);
                             }
                             _domains = json.domains;
+                        }
+                        if (json && json.omit) {
+                            for (let index = 0; index < json.omit.length; index++) {
+                                json.omit[index] = countlyCommon.decode(json.omit[index]);
+                            }
+                            _omit = json.omit;
+                            _omit.sort(Intl.Collator().compare);
                         }
                     }
                 })
@@ -855,6 +859,13 @@
                             }
                             _domains = json.domains;
                         }
+                        if (json && json.omit) {
+                            for (let index = 0; index < json.omit.length; index++) {
+                                json.omit[index] = countlyCommon.decode(json.omit[index]);
+                            }
+                            _omit = json.omit;
+                            _omit.sort(Intl.Collator().compare);
+                        }
                     }
                 }),
                 $.ajax({
@@ -911,6 +922,7 @@
         _initialized = false;
         _segments = [];
         _domains = [];
+        _omit = [];
         countlyViews._reset();
         _graphDataObj = {};
     };

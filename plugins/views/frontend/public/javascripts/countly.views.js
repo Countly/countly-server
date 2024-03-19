@@ -576,7 +576,23 @@
             },
             isLoading: function() {
                 return this.$store.state.countlyViews.isLoading;
-            }
+            },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters['countlyViews/getOmittedSegments'];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
+            },
         },
         mixins: [
             countlyVue.container.dataMixin({

@@ -33,7 +33,7 @@
 			</div>
 			<h4 class="bu-pt-1">{{i18n('views.for')}}</h4>
 			<div class ="bu-pl-1">
-				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
+				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields" :omittedSegments="omittedSegments"></cly-multi-select>
 			</div>
         </div>
 		<cly-section class="pageViews_chart">

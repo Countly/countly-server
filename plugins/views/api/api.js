@@ -1304,13 +1304,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else if (params.qstring.method === "get_view_segments") {
             validateRead(params, FEATURE_NAME, function() {
-                var res = {segments: [], domains: []};
+                var res = {segments: [], domains: [], omit: []};
                 common.db.collection("views").findOne({'_id': common.db.ObjectID(params.app_id)}, function(err1, res1) {
                     if (res1 && res1.segments) {
                         res.segments = res1.segments;
                         for (var k in res1.segments) {
                             res1.segments[k] = Object.keys(res1.segments[k]) || [];
                         }
+                    }
+                    if (res1 && res1.omit) {
+                        res.omit = res1.omit;
                     }
                     if (common.drillDb) {
                         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');

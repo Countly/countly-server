@@ -358,6 +358,16 @@
                                         <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
                                             <cly-select-x :test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                                <template v-slot:selectList="listScope" v-if="omittedSegments.options.length">\
+                                                    <div class="cly-vue-events-omitted-segments bu-ml-1" v-if="listScope.searchQuery == \'\'">\
+                                                        <div class="cly-vue-events-omitted-segments__title">\
+                                                            {{omittedSegments.label}}\
+                                                        </div>\
+                                                        <div class="cly-vue-events-omitted-segments__item" v-for="item in omittedSegments.options">\
+                                                            {{item.label}}\
+                                                        </div>\
+                                                    </div>\
+                                                </template>\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -371,10 +381,6 @@
                                                 <template v-slot:action v-if="field.action">\
                                                     <slot name="action"></slot>\
                                                 </template>\
-                                                <!-- EMRE: added selectList slot --> \
-                                                <template v-slot:selectList="selectListScope" v-if="field.selectList">\
-                                                <slot name="selectList" v-bind="selectListScope"></slot>\
-                                            </template>\
                                             </cly-select-x>\
                                         </tr>\
                                     </table>\
@@ -396,6 +402,12 @@
                 type: String,
                 default: function() {
                     return "all";
+                }
+            },
+            omittedSegments: {
+                type: Object,
+                default: function() {
+                    return [];
                 }
             },
             dependantFields: {
