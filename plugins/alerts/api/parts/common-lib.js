@@ -121,11 +121,47 @@ function increaseAlertCounter(app, triggerDate, email) {
  */
 async function determineAudience(alert) {
     if (alert.alertBy === "email") {
-        return alert.alertValues;
+        if (Array.isArray(alert.alertValues) && alert.alertValues.length > 0) {
+            return alert.alertValues;
+        }
+        else {
+            return getUserEmailsBasedOnGroups(alert.allGroups);
+        }
     }
-    // TODO: User Group stuff
 }
-
+/**
+ * Retrieves user emails based on group IDs.
+ * @param {Array}            groupIds - The array of group IDs.
+ * @returns {Promise<Array>}          - A promise that resolves to an array of user emails.
+ */
+function getUserEmailsBasedOnGroups(groupIds) {
+    const memberEmails = [];
+    // eslint-disable-next-line require-jsdoc
+    const fetchMembers = (groupId) => {
+        const model = { "_id": groupId };
+        const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };
+        return new Promise((resolve, reject) => {
+            common.db.collection('members').find(query, { password: 0 }).toArray((err, members) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    for (let idx = 0; idx < members.length; idx++) {
+                        members[idx].last_login = members[idx].last_login || 0;
+                    }
+                    members.forEach((member) => {
+                        memberEmails.push(member.email);
+                    });
+                    resolve();
+                }
+            });
+        });
+    };
+    const promises = groupIds.map(fetchMembers);
+    return Promise.all(promises).then(() => {
+        return memberEmails;
+    });
+}
 /**
  * Creates an e-mail body for the given alert.
  * @param   {MatchedResult}   result - alert&app pair to compile mail with
@@ -163,6 +199,9 @@ async function trigger(result, log) {
     const {alert, app, date} = result;
     // increase counter just by date
     await increaseAlertCounter(app, date);
+    if (alert.alertBy === "hook") {
+        return common.plugins.dispatch("/alerts/trigger");
+    }
 
     const audienceEmails = await determineAudience(alert);
     const emailBody = await compileEmail(result);

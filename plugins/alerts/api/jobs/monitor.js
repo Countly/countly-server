@@ -42,7 +42,9 @@ class MonitorJob extends Job {
                 log.e(err);
                 return;
             }
-
+            if (!alertConfigs) {
+                return;
+            }
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
             const module = ALERT_MODULES[alertConfigs.alertDataType];
