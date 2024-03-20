@@ -61,6 +61,7 @@
         pluginName: "times-of-day",
         title: CV.i18n('times-of-day.title'),
         route: "#/analytics/loyalty/times-of-day",
+        dataTestId: "tab-times-of-day",
         component: TimesOfDayView,
         vuex: [{
             clyModel: countlyTimesOfDay

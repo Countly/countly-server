@@ -103,6 +103,7 @@
         pluginName: "slipping-away-users",
         title: CV.i18n('slipping-away-users.title'),
         route: "#/analytics/loyalty/slipping-away-users",
+        dataTestId: "tab-slipping-away",
         component: SlippingAwayUsersView,
         vuex: [{
             clyModel: countlySlippingAwayUsers
