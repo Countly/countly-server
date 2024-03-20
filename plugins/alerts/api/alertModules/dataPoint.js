@@ -26,10 +26,10 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             continue;
         }
 
-        let { period, alertDataSubType2, compareType, compareValue } = alert;
+        let { period, compareType, compareValue } = alert;
         compareValue = Number(compareValue);
 
-        const metricValue = await getDataPointByDate(app, alertDataSubType2, date, period) || 0;
+        const metricValue = await getDataPointByDate(app, date, period) || 0;
 
         if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
             if (metricValue > compareValue) {
@@ -38,7 +38,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         }
         else {
             const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-            const metricValueBefore = await getDataPointByDate(app, alertDataSubType2, before, period);
+            const metricValueBefore = await getDataPointByDate(app, before, period);
             if (!metricValueBefore) {
                 continue;
             }
