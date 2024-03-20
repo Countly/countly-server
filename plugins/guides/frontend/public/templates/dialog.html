@@ -8,6 +8,7 @@
     
     <cly-tooltip-icon 
         v-else-if="tooltip && tooltip.description" 
+        :data-test-id="`${testId}-tooltip`"
         :tooltip="tooltip.description" 
         icon="ion ion-help-circled"
         :placement="tooltip.placement">

@@ -1,6 +1,6 @@
 /* global Vue CountlyHelpers countlyCMS $ */
 
-(function(countlyVue) {
+(function (countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
@@ -8,23 +8,27 @@
         props: {
             tooltip: {
                 type: Object,
-                default: function() {
+                default: function () {
                     return {
                         description: "",
                         placement: "bottom-end"
                     };
                 }
+            },
+            testId: {
+                type: String,
+                default: "cly-guide-test-id"
             }
         },
-        data: function() {
+        data: function () {
             return {
                 enableGuides: CountlyHelpers.isPluginEnabled('guides')
             };
         },
-        created: function() {
+        created: function () {
             var self = this;
             if (this.enableGuides) {
-                countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                countlyCMS.fetchEntry("server-guide-config").then(function (config) {
                     self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                 });
             }
@@ -32,7 +36,7 @@
         template: `
             <div>\
                 <template v-if="enableGuides">\
-                    <view-guide :tooltip="tooltip"></view-guide>\
+                    <view-guide :test-id="testId" :tooltip="tooltip"></view-guide>\
                 </template>\
                 <template v-else-if="tooltip && tooltip.description">\
                     <cly-tooltip-icon :tooltip="tooltip.description" icon="ion ion-help-circled" style="margin-left:8px" :placement="tooltip.placement"></cly-tooltip-icon>\
@@ -46,29 +50,29 @@
             title: String,
             backlink: {
                 type: Object,
-                default: function() {
+                default: function () {
                     return null;
                 },
             },
             headerClass: {
                 type: Object,
-                default: function() {
+                default: function () {
                     return {};
                 }
             },
             tooltip: Object
         },
         computed: {
-            slotHeaderTop: function() {
+            slotHeaderTop: function () {
                 return !!(this.$scopedSlots["header-top"] || this.$slots["header-top"]);
             },
-            slotHeaderBottom: function() {
+            slotHeaderBottom: function () {
                 return !!(this.$scopedSlots["header-bottom"] || this.$slots["header-bottom"]);
             },
-            slotHeaderTabs: function() {
+            slotHeaderTabs: function () {
                 return !!(this.$scopedSlots["header-tabs"] || this.$slots["header-tabs"]);
             },
-            headerClasses: function() {
+            headerClasses: function () {
                 var cls = {
                     "cly-vue-header": true,
                     "white-bg": true,
@@ -78,7 +82,7 @@
 
                 return Object.assign(cls, this.headerClass);
             },
-            midLevelClasses: function() {
+            midLevelClasses: function () {
                 return {
                     "bu-level": true,
                     "bu-is-mobile": true,
@@ -108,7 +112,7 @@
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
                                             <h2 class="bu-mr-2">{{title}}</h2>\
-                                            <cly-guide v-if="title" :tooltip="tooltip"></cly-guide>\
+                                            <cly-guide v-if="title" test-id="header-title" :tooltip="tooltip"></cly-guide>\
                                         </div>\
                                     </slot>\
                                 </template> \
@@ -132,10 +136,10 @@
             <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :color="notification.color"></cly-notification>\
         </div>',
         computed: {
-            persistentNotifications: function() {
+            persistentNotifications: function () {
                 return this.$store.state.countlyCommon.persistentNotifications;
             },
-            additionalClasses: function() {
+            additionalClasses: function () {
                 var classes = {};
                 if (this.persistentNotifications.length > 0) {
                     classes["bu-mb-5"] = true;
@@ -178,27 +182,27 @@
                 type: String,
                 default: "default",
                 required: false,
-                validator: function(val) {
+                validator: function (val) {
                     return val === "default" || val === "configurator";
                 }
             },
         },
-        data: function() {
+        data: function () {
             return {
                 isMounted: false
             };
         },
-        mounted: function() {
+        mounted: function () {
             this.isMounted = true;
         },
         computed: {
-            levelClass: function() {
+            levelClass: function () {
                 return {
                     "bu-mb-4": this.$scopedSlots.header || this.$slots.header || (this.title && this.title.length),
                     "bu-level": true
                 };
             },
-            topClasses: function() {
+            topClasses: function () {
                 var classes = {};
                 classes["cly-vue-section--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -230,18 +234,18 @@
     var _ModalManager = new Vue({
         el: "#vue-modal-manager",
         template: '<div><div :class="{\'is-active\': nClients>0}" id="vue-common-overlay"></div></div>',
-        data: function() {
+        data: function () {
             return {
                 clients: {}
             };
         },
         computed: {
-            nClients: function() {
+            nClients: function () {
                 return Object.keys(this.clients).length;
             }
         },
         watch: {
-            nClients: function(newVal) {
+            nClients: function (newVal) {
                 if (newVal > 0) {
                     $("body").addClass("has-active-modal");
                 }
@@ -251,7 +255,7 @@
             }
         },
         methods: {
-            setState: function(clientId, state) {
+            setState: function (clientId, state) {
                 if (state) {
                     Vue.set(this.clients, clientId, true);
                 }
@@ -264,11 +268,11 @@
 
     countlyVue.mixins.Modal = {
         methods: {
-            setModalState: function(state) {
+            setModalState: function (state) {
                 _ModalManager.setState(this.componentId, state);
             }
         },
-        beforeDestroy: function() {
+        beforeDestroy: function () {
             _ModalManager.setState(this.componentId, false);
         }
     };

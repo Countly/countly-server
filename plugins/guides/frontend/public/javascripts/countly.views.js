@@ -1,6 +1,6 @@
 /* global app countlyVue CV countlyCommon Vue countlyGuides countlyCMS countlyGlobal Countly */
 
-(function() {
+(function () {
 
     // REUSABLE COMPONENTS 
 
@@ -16,37 +16,37 @@
                 required: true
             }
         },
-        data: function() {
+        data: function () {
             return {
                 isDialogIframeVisible: false
             };
         },
         computed: {
-            gradientClass: function() {
+            gradientClass: function () {
                 var index = this.index % 4;
                 var color = 'blue';
                 switch (index) {
-                case 0:
-                    color = 'blue';
-                    break;
-                case 1:
-                    color = 'green';
-                    break;
-                case 2:
-                    color = 'orange';
-                    break;
-                case 3:
-                    color = 'purple';
-                    break;
+                    case 0:
+                        color = 'blue';
+                        break;
+                    case 1:
+                        color = 'green';
+                        break;
+                    case 2:
+                        color = 'orange';
+                        break;
+                    case 3:
+                        color = 'purple';
+                        break;
                 }
                 return 'walkthrough--' + color;
             }
         },
         methods: {
-            openDialog: function() {
+            openDialog: function () {
                 this.isDialogIframeVisible = true;
             },
-            closeDialog: function() {
+            closeDialog: function () {
                 this.isDialogIframeVisible = false;
             }
         }
@@ -69,39 +69,39 @@
     var OverviewComponent = countlyVue.views.create({
         template: CV.T('/guides/templates/overview-component.html'),
         props: {
-            title: {type: String, required: false},
-            description: {type: String, required: false},
-            link: {type: String, required: false},
-            items: {type: Array, required: false},
-            type: {type: String, required: true, default: 'walkthroughs'},
-            max: {type: Number, required: false, default: 2}
+            title: { type: String, required: false },
+            description: { type: String, required: false },
+            link: { type: String, required: false },
+            items: { type: Array, required: false },
+            type: { type: String, required: true, default: 'walkthroughs' },
+            max: { type: Number, required: false, default: 2 }
         },
         components: {
             'walkthrough-component': WalkthroughComponent,
             'article-component': ArticleComponent
         },
-        data: function() {
+        data: function () {
             return {
                 guideConfig: {}
             };
         },
         computed: {
-            titleContent: function() {
+            titleContent: function () {
                 return this.title || (this.type === 'walkthroughs' ? this.guideConfig.walkthroughTitle : this.guideConfig.articleTitle);
             },
-            descriptionContent: function() {
+            descriptionContent: function () {
                 return this.description || (this.type === 'walkthroughs' ? this.guideConfig.walkthroughDescription : this.guideConfig.articleDescription);
             },
-            customClass: function() {
+            customClass: function () {
                 return this.max <= 2 ? 'bu-is-half' : 'bu-is-full';
             },
-            wrapperStyle: function() {
+            wrapperStyle: function () {
                 return this.max > 0 ? `max-width:${100 / this.max}%;` : `max-width:50%;`;
             }
         },
-        created: function() {
+        created: function () {
             var self = this;
-            countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+            countlyCMS.fetchEntry("server-guide-config").then(function (config) {
                 self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
             });
         },
@@ -119,15 +119,19 @@
         props: {
             tooltip: {
                 type: Object,
-                default: function() {
+                default: function () {
                     return {
                         description: "",
                         placement: "bottom-end"
                     };
                 }
+            },
+            testId: {
+                type: String,
+                default: "view-guide-test-id"
             }
         },
-        data: function() {
+        data: function () {
             return {
                 isButtonVisible: false,
                 isDialogVisible: false,
@@ -174,17 +178,17 @@
                 },
             };
         },
-        created: function() {
+        created: function () {
             var self = this;
             let sections = this.filterSections(window.location.hash.split('/'));
             while (sections.length > 0 && !self.isButtonVisible) {
                 let sectionID = '/' + sections.join('/');
-                countlyGuides.fetchEntries({ sectionID }).then(function() {
+                countlyGuides.fetchEntries({ sectionID }).then(function () {
                     let entry = countlyGuides.getEntry(sectionID);
                     if (entry && (entry.walkthroughs.length > 0 || entry.articles.length > 0)) {
                         self.isButtonVisible = true;
                         self.guideData = entry;
-                        countlyCMS.fetchEntry("server-guide-config").then(function(config) {
+                        countlyCMS.fetchEntry("server-guide-config").then(function (config) {
                             self.guideConfig = (config && config.data && config.data[0] && config.data[0]) || {};
                         });
                     }
@@ -192,22 +196,22 @@
                 sections.pop();
             }
         },
-        mounted: function() {
+        mounted: function () {
             const link = this.$el.querySelector('.feedback__link');
             link.addEventListener('click', this.fetchAndDisplayWidget);
         },
         methods: {
-            onClick: function() {
+            onClick: function () {
                 this.isDialogVisible = true;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'hidden', 'important');
             },
-            onClose: function() {
+            onClose: function () {
                 this.isDialogVisible = false;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'auto', 'important');
             },
-            filterSections: function(sections) {
+            filterSections: function (sections) {
                 for (let i = 0; i < sections.length; i++) {
                     if (sections[i] === countlyCommon.ACTIVE_APP_ID) {
                         sections.splice(i, 1);
@@ -220,7 +224,7 @@
                 }
                 return sections;
             },
-            fetchAndDisplayWidget: function() {
+            fetchAndDisplayWidget: function () {
                 var domain = countlyGlobal.countly_domain;
                 var self = this;
                 try {
@@ -235,13 +239,13 @@
                     url: "https://stats.count.ly",
                     device_id: domain
                 });
-                COUNTLY_STATS.get_available_feedback_widgets(function(countlyPresentableFeedback, err) {
+                COUNTLY_STATS.get_available_feedback_widgets(function (countlyPresentableFeedback, err) {
                     if (err) {
                         //console.log(err);
                         return;
                     }
                     const widgetType = "survey";
-                    const countlyFeedbackWidget = countlyPresentableFeedback.find(function(widget) {
+                    const countlyFeedbackWidget = countlyPresentableFeedback.find(function (widget) {
                         return widget.type === widgetType;
                     });
                     if (!countlyFeedbackWidget) {
@@ -249,7 +253,7 @@
                         return;
                     }
                     const selectorId = "feedback-survey";
-                    const segmentation = {guide: self.guideData.sectionID || ""};
+                    const segmentation = { guide: self.guideData.sectionID || "" };
                     COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId, null, segmentation);
                 });
             },
@@ -264,7 +268,7 @@
             'walkthrough-component': WalkthroughComponent
         },
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -274,7 +278,7 @@
             'article-component': ArticleComponent
         },
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -285,26 +289,26 @@
         components: {
             'overview-component': OverviewComponent
         },
-        data: function() {
+        data: function () {
             return {
                 currentTab: (this.$route.params && this.$route.params.secondaryTab) || "all",
                 walkthroughs: [],
                 tabs: []
             };
         },
-        created: function() {
+        created: function () {
             var self = this;
             countlyGuides.fetchEntries()
-                .then(function() {
+                .then(function () {
                     self.walkthroughs = countlyGuides.getWalkthroughs();
                     self.createTabs();
                 })
-                .catch(function() {
+                .catch(function () {
                     // console.log(error);
                 });
         },
         methods: {
-            createTabs: function() {
+            createTabs: function () {
                 var self = this;
                 var tabs = [
                     {
@@ -318,7 +322,7 @@
                     },
                 ];
                 var sections = [];
-                self.walkthroughs.forEach(function(walkthrough) {
+                self.walkthroughs.forEach(function (walkthrough) {
                     if (!sections.includes(walkthrough.sectionID)) {
                         sections.push(walkthrough.sectionID);
                         tabs.push({
@@ -327,7 +331,7 @@
                             component: WalkthroughsComponent,
                             route: "#/" + countlyCommon.ACTIVE_APP_ID + "/guides/walkthroughs" + walkthrough.sectionID,
                             props: {
-                                items: self.walkthroughs.filter(function(item) {
+                                items: self.walkthroughs.filter(function (item) {
                                     return item.sectionID === walkthrough.sectionID;
                                 })
                             }
@@ -344,26 +348,26 @@
         components: {
             'overview-component': OverviewComponent
         },
-        data: function() {
+        data: function () {
             return {
                 currentTab: (this.$route.params && this.$route.params.secondaryTab) || "all",
                 articles: [],
                 tabs: []
             };
         },
-        created: function() {
+        created: function () {
             var self = this;
             countlyGuides.fetchEntries()
-                .then(function() {
+                .then(function () {
                     self.articles = countlyGuides.getArticles();
                     self.createTabs();
                 })
-                .catch(function() {
+                .catch(function () {
                     // console.log(error);
                 });
         },
         methods: {
-            createTabs: function() {
+            createTabs: function () {
                 var self = this;
                 var tabs = [
                     {
@@ -377,7 +381,7 @@
                     },
                 ];
                 var sections = [];
-                self.articles.forEach(function(article) {
+                self.articles.forEach(function (article) {
                     if (!sections.includes(article.sectionID)) {
                         sections.push(article.sectionID);
                         tabs.push({
@@ -386,7 +390,7 @@
                             component: ArticlesComponent,
                             route: "#/" + countlyCommon.ACTIVE_APP_ID + "/guides/articles" + article.sectionID,
                             props: {
-                                items: self.articles.filter(function(item) {
+                                items: self.articles.filter(function (item) {
                                     return item.sectionID === article.sectionID;
                                 })
                             }
@@ -403,7 +407,7 @@
         components: {
             'overview-component': OverviewComponent
         },
-        data: function() {
+        data: function () {
             return {
                 onboardingEntry: {},
                 newEntry: {},
@@ -411,16 +415,16 @@
                 promotedEntry: {},
             };
         },
-        created: function() {
+        created: function () {
             var self = this;
             countlyGuides.fetchEntries({ sectionID: { $in: ["/overview/getting-started", "/overview/whats-new", "/overview/suggestions", "/overview/promoted"] } })
-                .then(function() {
+                .then(function () {
                     self.onboardingEntry = countlyGuides.getEntry('/overview/getting-started');
                     self.newEntry = countlyGuides.getEntry('/overview/whats-new');
                     self.suggestionsEntry = countlyGuides.getEntry('/overview/suggestions');
                     self.promotedEntry = countlyGuides.getEntry('/overview/promoted');
                 })
-                .catch(function() {
+                .catch(function () {
                     // console.log(error);
                 });
         }
@@ -430,7 +434,7 @@
 
     var GuidesView = countlyVue.views.create({
         template: CV.T('/guides/templates/guides.html'),
-        data: function() {
+        data: function () {
             return {
                 currentTab: (this.$route.params && this.$route.params.primaryTab) || 'overview',
                 searchQuery: '',
@@ -457,12 +461,12 @@
             };
         },
         methods: {
-            onFocus: function() {
+            onFocus: function () {
                 if (this.searchQuery === "") {
                     app.navigate("#/guides/search", true);
                 }
             },
-            clearSearch: function() {
+            clearSearch: function () {
                 this.searchQuery = '';
             },
         }
@@ -473,13 +477,13 @@
     var SearchResultTab = countlyVue.views.create({
         template: CV.T('/guides/templates/search-result-tab.html'),
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
     var GuidesSearchView = countlyVue.views.create({
         template: CV.T('/guides/templates/search.html'),
-        data: function() {
+        data: function () {
             return {
                 searchQuery: (this.$route.params && this.$route.params.query) || '',
                 currentSearchQuery: '',
@@ -488,7 +492,7 @@
             };
         },
         computed: {
-            tabs: function() {
+            tabs: function () {
                 return [
                     {
                         title: CV.i18n('guides.all'),
@@ -503,7 +507,7 @@
                         name: "walkthroughs",
                         component: SearchResultTab,
                         props: {
-                            items: this.results && this.results.filter(function(item) {
+                            items: this.results && this.results.filter(function (item) {
                                 return item.type === "walkthrough";
                             })
                         }
@@ -513,29 +517,29 @@
                         name: "articles",
                         component: SearchResultTab,
                         props: {
-                            items: this.results && this.results.filter(function(item) {
+                            items: this.results && this.results.filter(function (item) {
                                 return item.type === "article";
                             })
                         }
                     }
                 ];
             },
-            resultCount: function() {
+            resultCount: function () {
                 return this.results ? this.results.length : 0;
             }
         },
         methods: {
-            OnEnterSearch: function() {
+            OnEnterSearch: function () {
                 var self = this;
                 if (this.currentSearchQuery !== '') {
                     this.searchQuery = this.currentSearchQuery;
-                    countlyGuides.searchEntries(this.searchQuery).then(function(results) {
+                    countlyGuides.searchEntries(this.searchQuery).then(function (results) {
                         self.results = results;
                         app.navigate("#/guides/search/" + self.searchQuery);
                     });
                 }
             },
-            clearSearch: function() {
+            clearSearch: function () {
                 this.currentSearchQuery = '';
             }
         }
@@ -543,63 +547,63 @@
 
     //ROUTING 
 
-    var getGuidesView = function() {
+    var getGuidesView = function () {
         return new countlyVue.views.BackboneWrapper({
             component: GuidesView,
             vuex: []
         });
     };
 
-    var getGuidesSearchView = function() {
+    var getGuidesSearchView = function () {
         return new countlyVue.views.BackboneWrapper({
             component: GuidesSearchView,
             vuex: []
         });
     };
 
-    app.route("/guides", "guides-overview", function() {
+    app.route("/guides", "guides-overview", function () {
         app.navigate("/guides/overview", true);
     });
 
-    app.route("/guides/overview", "guides-overview", function() {
+    app.route("/guides/overview", "guides-overview", function () {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "overview"};
+        guidesView.params = { primaryTab: "overview" };
         this.renderWhenReady(guidesView);
     });
 
-    app.route("/guides/walkthroughs", "guides-walkthroughs", function() {
+    app.route("/guides/walkthroughs", "guides-walkthroughs", function () {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "walkthroughs"};
+        guidesView.params = { primaryTab: "walkthroughs" };
         this.renderWhenReady(guidesView);
     });
 
-    app.route("/guides/walkthroughs/*secondaryTab", "guides-walkthroughs", function(secondaryTab) {
+    app.route("/guides/walkthroughs/*secondaryTab", "guides-walkthroughs", function (secondaryTab) {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "walkthroughs", secondaryTab};
+        guidesView.params = { primaryTab: "walkthroughs", secondaryTab };
         this.renderWhenReady(guidesView);
     });
 
-    app.route("/guides/articles", "guides-articles", function() {
+    app.route("/guides/articles", "guides-articles", function () {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "articles"};
+        guidesView.params = { primaryTab: "articles" };
         this.renderWhenReady(guidesView);
     });
 
-    app.route("/guides/articles/*secondaryTab", "guides-articles", function(secondaryTab) {
+    app.route("/guides/articles/*secondaryTab", "guides-articles", function (secondaryTab) {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "articles", secondaryTab};
+        guidesView.params = { primaryTab: "articles", secondaryTab };
         this.renderWhenReady(guidesView);
     });
 
-    app.route("/guides/search", "guides-search", function() {
+    app.route("/guides/search", "guides-search", function () {
         var searchView = getGuidesSearchView();
         searchView.params = {};
         this.renderWhenReady(searchView);
     });
 
-    app.route("/guides/search/:query", "guides-search-query", function(query) {
+    app.route("/guides/search/:query", "guides-search-query", function (query) {
         var searchView = getGuidesSearchView();
-        searchView.params = {query: query};
+        searchView.params = { query: query };
         this.renderWhenReady(searchView);
     });
 
