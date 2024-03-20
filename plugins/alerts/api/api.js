@@ -77,13 +77,14 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     }
 
     plugins.register("/i", async function(ob) {
-        const events = ob?.params?.qstring?.events;
-        if (!Array.isArray(events)) {
+        const payload = ob?.params?.qstring;
+        if (!payload) {
             return;
         }
+
         for (let { module, name } of TRIGGER_BY_EVENT) {
             try {
-                await Promise.all(events.filter(module.isValidEvent).map(module.triggerByEvent));
+                await module.triggerByEvent(payload);
             }
             catch (err) {
                 log.e("Alert module '" + name + "' couldn't be triggered by event", err);

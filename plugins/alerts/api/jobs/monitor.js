@@ -16,6 +16,7 @@ const ALERT_MODULES = {
     "rating": require("../alertModules/rating.js"),
     "cohort": require("../alertModules/cohort.js"),
     "dataPoint": require("../alertModules/dataPoint.js"),
+    "crash": require("../alertModules/crash.js"),
 };
 /**
  * @class
@@ -24,12 +25,11 @@ const ALERT_MODULES = {
  */
 class MonitorJob extends Job {
     /**
-    * run task
-    * @param {object} _db - db object
-    * @param {function} done - callback function
-    */
+     * run task
+     * @param {object} _db - db object
+     * @param {function} done - callback function
+     */
     run(_db, done) {
-
         const alertID = this._json.data.alertID;
         const scheduledTo = this._json.next;
         const self = this;

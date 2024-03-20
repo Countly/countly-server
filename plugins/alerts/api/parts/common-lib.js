@@ -67,6 +67,7 @@ const TRIGGERED_BY_EVENT = {
     survey: "New survey response",
     nps: "New NPS response",
     rating: "New rating response",
+    crash: "New crash",
 };
 
 module.exports = {

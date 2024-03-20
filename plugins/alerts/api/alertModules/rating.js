@@ -10,43 +10,44 @@ const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 const { getEventMetricByDate } = require("./event.js");
 
-module.exports.isValidEvent = isValidEvent;
+module.exports.triggerByEvent = triggerByEvent;
 /**
- * Checks if given event is a proper Rating event
- * @param   {object}  event single event object
- * @returns {boolean}       true|false
+ * Checks if given payload contains any proper rating event and
+ * triggers the alerts.
+ * @param {object} payload querystring from the request
  */
-function isValidEvent(event) {
-    return event?.key === "[CLY]_star_rating"
-        && event?.segmentation?.widget_id
-        && typeof event?.segmentation?.rating !== 'undefined';
-}
-
-module.exports.triggerByEvent = async function(event) {
-    const feedbackWidgetId = event?.segmentation?.widget_id;
-    if (!feedbackWidgetId) {
+async function triggerByEvent(payload) {
+    const allEvents = payload?.events;
+    const appKey = payload?.app_key;
+    if (!Array.isArray(allEvents) || !appKey) {
         return;
     }
 
-    const alert = await common.db.collection("alerts").findOne({
-        alertDataSubType2: feedbackWidgetId,
-        alertDataType: "rating",
-        alertDataSubType: commonLib.TRIGGERED_BY_EVENT.rating,
-    });
-    if (!alert) {
-        return;
-    }
-
-    const app = await common.db.collection("apps").findOne({
-        _id: ObjectId(alert.selectedApps[0])
-    });
+    const app = await common.db.collection("apps").findOne({ key: appKey });
     if (!app) {
         return;
     }
 
-    return commonLib.trigger({ alert, app, date: new Date }, log);
-};
+    const validRatingEvents = allEvents.filter(
+        event => event?.key === "[CLY]_star_rating"
+            && event?.segmentation?.widget_id
+            && typeof event?.segmentation?.rating !== 'undefined'
+    );
 
+    for (let event of validRatingEvents) {
+        const alert = await common.db.collection("alerts").findOne({
+            selectedApps: app._id.toString(),
+            alertDataSubType2: event.segmentation.widget_id,
+            alertDataType: "rating",
+            alertDataSubType: commonLib.TRIGGERED_BY_EVENT.rating,
+        });
+        if (!alert) {
+            continue;
+        }
+
+        await commonLib.trigger({ alert, app, date: new Date }, log);
+    }
+}
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
     const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
