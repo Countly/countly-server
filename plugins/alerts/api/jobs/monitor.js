@@ -1,5 +1,7 @@
 'use strict';
 
+const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
+
 const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
     common = require('../../../../api/utils/common.js');
@@ -13,6 +15,8 @@ const ALERT_MODULES = {
     "event": require("../alertModules/event.js"),
     "rating": require("../alertModules/rating.js"),
     "cohort": require("../alertModules/cohort.js"),
+    "dataPoint": require("../alertModules/dataPoint.js"),
+    "crash": require("../alertModules/crash.js"),
 };
 /**
  * @class
@@ -21,31 +25,26 @@ const ALERT_MODULES = {
  */
 class MonitorJob extends Job {
     /**
-    * run task
-    * @param {object} _db - db object
-    * @param {function} done - callback function
-    */
+     * run task
+     * @param {object} _db - db object
+     * @param {function} done - callback function
+     */
     run(_db, done) {
-
         const alertID = this._json.data.alertID;
         const scheduledTo = this._json.next;
         const self = this;
         common.db.collection("alerts").findOne({
             _id: common.db.ObjectID(alertID),
-            alertDataSubType: {
-                // these are being triggered by event listener in api.js
-                $nin: [
-                    "New survey response",
-                    "New NPS response",
-                    "New rating response"
-                ]
-            }
+            // these are being triggered by the event listener in api.js
+            alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
         }, function(err, alertConfigs) {
             if (err) {
                 log.e(err);
                 return;
             }
-
+            if (!alertConfigs) {
+                return;
+            }
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
             const module = ALERT_MODULES[alertConfigs.alertDataType];

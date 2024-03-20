@@ -1,7 +1,5 @@
 /**
- * @typedef {import('../parts/common-lib.js').Alert} Alert
  * @typedef {import('../parts/common-lib.js').App} App
- * @typedef {import('../parts/common-lib.js').MatchedResult} MatchedResult
  */
 
 const log = require('../../../../api/utils/log.js')('alert:nps');
@@ -10,31 +8,45 @@ const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
-module.exports.triggerByEvent = async function(event) {
-    const feedbackWidgetId = event?.segmentation?.widget_id;
-    if (!feedbackWidgetId) {
+module.exports.triggerByEvent = triggerByEvent;
+/**
+ * Checks if given payload contains any NPS completion event and
+ * triggers the alerts.
+ * @param {object} payload querystring from the request
+ */
+async function triggerByEvent(payload) {
+    const allEvents = payload?.events;
+    const appKey = payload?.app_key;
+    if (!Array.isArray(allEvents) || !appKey) {
         return;
     }
 
-    const alert = await common.db.collection("alerts").findOne({
-        alertDataSubType2: feedbackWidgetId,
-        alertDataType: "nps",
-        alertDataSubType: "new NPS response",
-    });
-    if (!alert) {
-        return;
-    }
-
-    const app = await common.db.collection("apps").findOne({
-        _id: ObjectId(alert.selectedApps[0])
-    });
+    const app = await common.db.collection("apps").findOne({ key: appKey });
     if (!app) {
         return;
     }
 
-    return commonLib.trigger({ alert, app, date: new Date }, log);
-};
+    const validNPSEvents = allEvents.filter(
+        event => event?.key === "[CLY]_nps"
+            && !event?.segmentation?.closed
+            && event?.segmentation?.widget_id
+            && typeof event?.segmentation?.rating !== 'undefined'
+    );
 
+    for (let event of validNPSEvents) {
+        const alert = await common.db.collection("alerts").findOne({
+            selectedApps: app._id.toString(),
+            alertDataSubType2: event.segmentation.widget_id,
+            alertDataType: "nps",
+            alertDataSubType: commonLib.TRIGGERED_BY_EVENT.nps,
+        });
+        if (!alert) {
+            continue;
+        }
+
+        await commonLib.trigger({ alert, app, date: new Date }, log);
+    }
+}
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
     const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
@@ -46,12 +58,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     let { period, alertDataSubType2, compareType, compareValue } = alert;
     compareValue = Number(compareValue);
 
-    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period);
-    if (!metricValue) {
-        return done();
-    }
+    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period) || 0;
 
-    if (compareType === "more than") {
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
             await commonLib.trigger({ alert, app, metricValue, date });
         }
@@ -64,9 +73,9 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
-        const shouldTrigger = compareType === "increased by at least"
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
             ? change >= compareValue
-            : change <= compareValue;
+            : change <= -compareValue;
 
         if (shouldTrigger) {
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
@@ -78,7 +87,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
 /**
  * Returns the view metric value by view, date and metric type.
- * @param   {object}                    app    - app document
+ * @param   {App}                       app    - app document
  * @param   {string}                    nps    - _id of the from feedback_widgets
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
@@ -150,31 +159,17 @@ function sumOfAllResponses(scope, nps) {
 
 /*
 (async function() {
-    let data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c383fcb46a4d172d7c5911",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "monthly"
-    );
+    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
+    const nps = "65c383fcb46a4d172d7c5911";
+    const date = new Date("2024-02-07T12:00:00.000Z");
 
+    let data = await getResponsesByDate(app, nps, date, "monthly");
     console.log("monthly:", data);
 
-    data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c383fcb46a4d172d7c5911",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "daily"
-    );
-
+    data = await getResponsesByDate(app, nps, date, "daily");
     console.log("daily:", data);
 
-    data = await getResponsesByDate(
-        { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" },
-        "65c383fcb46a4d172d7c5911",
-        new Date("2024-02-07T12:00:00.000Z"),
-        "hourly"
-    );
-
+    data = await getResponsesByDate(app, nps, date, "hourly");
     console.log("hourly:", data);
 })();
 */
