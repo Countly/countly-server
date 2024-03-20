@@ -42,13 +42,21 @@
               </div>
               <div class="ratings-drawer__rp-optional-area">
                 <el-checkbox test-id="ratings-drawer-ratingspopup-comment-checkbox" v-model="drawerScope.editedObject.comment_enable">
-                  <span data-test-id="ratings-drawer-ratingspopup-comment-label">{{ drawerScope.editedObject.popup_comment_callout }}</span>
+                  <span data-test-id="ratings-drawer-ratingspopup-comment-label">{{ drawerScope.editedObject.popup_comment_callout }}dd</span>
                 </el-checkbox>
               </div>
               <div class="ratings-drawer__rp-optional-area">
                 <el-checkbox test-id="ratings-drawer-ratingspopup-contact-checkbox" v-model="drawerScope.editedObject.contact_enable">
                   <span data-test-id="ratings-drawer-ratingspopup-contact-label">{{ drawerScope.editedObject.popup_email_callout }}</span>
                 </el-checkbox>
+              </div>
+              <div v-if="drawerScope.editedObject.consent" class="ratings-drawer__consent">
+                <label>
+                  <input type="checkbox"
+                  value="consent" checked
+                  >
+                  <span v-html="finalTxt(drawerScope.editedObject.links)"></span>
+                </label>
               </div>
               <div class="ratings-drawer__rp-action-area">
                 <el-button data-test-id="ratings-drawer-ratingspopup-submit-button" :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
@@ -170,6 +178,22 @@
             <el-input test-id="ratings-drawer-settings-contact-input" v-model="drawerScope.editedObject.popup_email_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
           </validation-provider>
         </div>
+         <div class="cly-vue-drawer-step__section bu-pb-2 cly-vue-surveys-drawer__consent">
+          <el-checkbox
+            class="text-smallish"
+            size="small"
+            v-bind:label="i18n('surveys.drawer.consent')"
+            v-model="drawerScope.editedObject.consent"
+            v-if="drawerScope.currentStepId === 'step1'">
+          </el-checkbox>
+         </div>
+         <star-consent-link
+    v-if="drawerScope.editedObject.consent"
+    ref="links"
+    :max-links="3"
+    :read-only="!!drawerScope.editedObject._id"
+    v-model="drawerScope.editedObject.links">
+  </star-consent-link>
         <div class="cly-vue-drawer-step__section">
           <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-button-callout-label">
             {{i18n('feedback.button-callout')}}

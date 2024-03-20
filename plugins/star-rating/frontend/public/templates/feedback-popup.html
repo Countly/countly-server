@@ -76,8 +76,9 @@
             </input>
         </div>
     </div>
+    <div id="consent"  class="consent hidden"><label><input type="checkbox" /><span class="text">I agree to the terms and conditions and privacy policy<span></label></div>
     <div class="buttons-area">
-        <button class="disabled-send-button" disabled="" id="cf-submit-button">
+        <button class="disabled-send-button disabled" disabled="" id="cf-submit-button">
             Submit Feedback
         </button>
     </div>
@@ -212,6 +213,10 @@
                 "nfd": 1
             },
             "success": function(response) {
+                var consent = false;
+                var links = response.links;
+                var finalText = "";
+                var contentEl = $('#consent');
                 $('.rating-loader-wrapper').fadeOut();
                 $('.modal-content').show();
                 // replace widget specific strings
@@ -220,9 +225,37 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
-                removeClass(sendButton, 'disabled-send-button');
-                addClass(sendButton, 'send-button');
                 sendButton.removeAttribute('disabled');
+                if(response.consent || response.consent === 'true'){
+                    consent = true;
+                }
+                if(response.links && response.links === 'string'){
+                    links = JSON.parse(response.links);
+                }
+                if(consent && links && links.finalText){
+                    finalText = links.finalText;
+
+links.link.forEach(function(link) {
+    var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+    finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+});
+
+                }
+                if(consent){
+                                contentEl.removeClass("hidden");
+                            }
+                            $(contentEl).find(".text").html(finalText);
+                            var consentChecked = contentEl.find("input").is(":checked");
+                            if(consentChecked){
+                            $("#cf-submit-button").removeClass("disabled");
+                            removeClass(sendButton, 'disabled-send-button');
+                            addClass(sendButton, 'send-button');
+                            }
+                            else{
+                                removeClass(sendButton, 'send-button');
+                            addClass(sendButton, 'disabled-send-button');
+                                $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
+                            }
                 response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
                 if (response.rating_symbol) {
                   symbol = response.rating_symbol;
@@ -372,9 +405,9 @@
                 }
               }
             }
-            removeClass(sendButton, 'disabled-send-button');
-            addClass(sendButton, 'send-button');
-            sendButton.removeAttribute('disabled');
+            // removeClass(sendButton, 'disabled-send-button');
+            // addClass(sendButton, 'send-button');
+            // sendButton.removeAttribute('disabled');
         }
 
         function showHideCommentArea() {
@@ -399,8 +432,22 @@
             }
         }
 
+        function consent() {
+            var consentClickChecked = $("#consent").find("input").is(":checked");
+                            if(consentClickChecked){
+                                $("#cf-submit-button").removeClass("disabled");
+                            removeClass(sendButton, 'disabled-send-button');
+                            addClass(sendButton, 'send-button');                            }
+                            else{
+                                removeClass(sendButton, 'send-button');
+                            addClass(sendButton, 'disabled-send-button');
+                                $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
+                                                }
+        }
         function sendFeedback() {
-            // replace with value from dom
+            if ($(this).hasClass("disabled-send-button")) {
+                    return;
+                }            // replace with value from dom
             eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
             // make required validations and replace email value from dom
             if (showEmailCheckbox.getAttribute('data-state') == 1) {
@@ -425,8 +472,8 @@
                         // set popup to default state
                         document.getElementsByClassName("success-modal-content")[0].style.display = "none";
                         document.getElementsByClassName("modal-content")[0].style.display = "flex";
-                        addClass(sendButton, 'disabled-send-button');
-                        removeClass(sendButton, 'send-button');
+                        // addClass(sendButton, 'disabled-send-button');
+                        // removeClass(sendButton, 'send-button');
                         document.getElementById('countly-feedback-comment-textarea').value = "";
                         document.getElementById('countly-feedback-contact-me-email').value = "";
                         for (var i = 0; i < 5; i++) {
@@ -474,6 +521,8 @@
         // event handler for countly feedback sender
         // send feedback
         $('body').on('click', '#cf-submit-button', sendFeedback);
+        $('body').on('click', '#consent', consent);
+
         // event handler for countly feedback emotion img
         // rate for feedback
         $('body').on('click', '.rating-emotion', rate);

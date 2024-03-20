@@ -43,6 +43,20 @@
   font-size: 14px;
 }
 
+.ratings-popup .consent {
+  a {
+    color: #0166d6;
+    text-decoration: underline;
+}
+input[type=checkbox] {
+    margin-right: 5px;
+}
+font-size: 14px;
+color: #424243;
+font-weight: 400;
+}
+
+
 .ratings-popup #comment-section, .ratings-popup #contact-section {
   margin: 10px 0px;
   border: 1px solid #0166D6;
