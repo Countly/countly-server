@@ -340,6 +340,8 @@
             <div class="bu-column bu-is-12">
               <cly-cohort-segmentation
                 test-id="ratings-drawer"
+                :show-in-the-last-minutes="false"
+                :show-in-the-last-hours="false"
                 ref="ratingsSegmentation"
                 :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
                 :behavior-segmentation="drawerScope.editedObject.targeting.steps">
