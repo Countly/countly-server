@@ -367,14 +367,6 @@
                 });
             },
             onAddAnotherValue: function(index) {
-                if (this.users[index].values.filter(value => value.key.trim() === "").length) {
-                    CountlyHelpers.notify({
-                        title: CV.i18n("common.error"),
-                        message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                        type: "warning"
-                    });
-                    return;
-                }
                 this.users[index].values.push({key: "", probability: 0});
             },
             checkRemoveValue: function(key, value) {
@@ -462,14 +454,6 @@
             },
             onAddAnotherConditionValue: function(index) {
                 try {
-                    if (this.users[index].condition.values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
                     this.users[index].condition.values.push({key: "", probability: 0});
                 }
                 catch (error) {
@@ -610,14 +594,6 @@
             },
             onAddAnotherValue: function(index, segmentIndex) {
                 try {
-                    if (this.events[index].segmentations[segmentIndex].values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
                     this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
@@ -786,15 +762,6 @@
             },
             onAddAnotherValue: function(index, valueIndex) {
                 try {
-                    if (this.views[index].segmentations[valueIndex].values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
-
                     this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
