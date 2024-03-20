@@ -1,5 +1,6 @@
 var exported = {},
-    request = require("countly-request"),
+    plugins = require("../../pluginManager"),
+    request = require("countly-request")(null, null, null, plugins.getConfig("security")),
     countlyConfig = require("../../../frontend/express/config");
 
 (function(plugin) {

@@ -4,10 +4,9 @@
 
 const got = require('got');
 const FormData = require('form-data');
-const plugins = require('../../../plugins/pluginManager.js');
 const {HttpsProxyAgent, HttpProxyAgent} = require('hpagent');
 
-var initParams = function(uri, options, callback) {
+var initParams = function(uri, options, callback, countlyConfig) {
 
     if (typeof options === 'function') {
         callback = options;
@@ -32,7 +31,7 @@ var initParams = function(uri, options, callback) {
 
     params.callback = callback || params.callback;
 
-    var config = plugins.getConfig("security");
+    var config = countlyConfig;
 
     if (config && config.proxy_hostname) {
         if (!params.options) {
@@ -150,14 +149,14 @@ var convertOptionsToGot = function(options) {
 };
 
 
-module.exports = function(uri, options, callback) {
+module.exports = function(uri, options, callback, countlyConfig) {
 
     if (typeof uri === 'undefined') {
         throw new Error('undefined is not a valid uri or options object.');
     }
 
 
-    const params = initParams(uri, options, callback);
+    const params = initParams(uri, options, callback, countlyConfig);
 
     if (params.options && (params.options.url || params.options.uri)) {
         // Make the request using got
@@ -212,8 +211,8 @@ async function uploadFormFile(url, fileData, callback) {
 }
 
 // Add a post method to the request object
-module.exports.post = function(uri, options, callback) {
-    var params = initParams(uri, options, callback);
+module.exports.post = function(uri, options, callback, countlyConfig) {
+    var params = initParams(uri, options, callback, countlyConfig);
     if (params.options && (params.options.url || params.options.uri)) {
         if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
             // If options include a form, use uploadFormFile
@@ -247,8 +246,8 @@ module.exports.post = function(uri, options, callback) {
 };
 
 //Add a get method to the request object
-module.exports.get = function(uri, options, callback) {
-    module.exports(uri, options, callback);
+module.exports.get = function(uri, options, callback, countlyConfig) {
+    module.exports(uri, options, callback, countlyConfig);
 };
 
 module.exports.convertOptionsToGot = convertOptionsToGot;

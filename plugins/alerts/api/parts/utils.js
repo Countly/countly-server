@@ -1,5 +1,6 @@
 const mail = require("../../../../api/parts/mgmt/mail");
-const request = require('countly-request');
+const plugins = require('../../../../plugins/pluginManager.js');
+const request = require('countly-request')(null, null, null, plugins.getConfig("security"));
 const moment = require('moment-timezone');
 
 const common = require('../../../../api/utils/common.js');

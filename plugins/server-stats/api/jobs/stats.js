@@ -6,7 +6,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
     config = require("../../../../frontend/express/config.js"),
     pluginManager = require('../../../pluginManager.js'),
     moment = require('moment-timezone'),
-    request = require('countly-request');
+    request = require('countly-request')(null, null, null, pluginManager.getConfig("security"));
 
 const promisedLoadConfigs = function(db) {
     return new Promise((resolve) => {

@@ -1,5 +1,5 @@
-
-const request = require("countly-request");
+const plugins = require("../../plugins/pluginManager");
+const request = require("countly-request")(null, null, null, plugins.getConfig("security"));
 const host = '128.199.239.207' ; //'localhost:3001';
 const appKey = 'b895ef5cca254395a1cc1f03b41bbc0ca7b6b52a';//'d4a4e3e1a4d241c2ea9d0c350bb86584c87a91cb';
 let times = 2000;
