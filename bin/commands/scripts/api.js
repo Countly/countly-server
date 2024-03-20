@@ -1,5 +1,5 @@
 var pluginManager = require('../../../plugins/pluginManager.js');
-var request = require('countly-request')(null, null, null, pluginManager.getConfig("security"));
+var request = require('countly-request')(pluginManager.getConfig("security"));
 var countlyConfig = require("../../../frontend/express/config.js");
 var myArgs = process.argv.slice(2);
 

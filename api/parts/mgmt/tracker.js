@@ -22,7 +22,7 @@ var tracker = {},
     server = "e0693b48a5513cb60c112c21aede3cab809d52d0",
     url = "https://stats.count.ly",
     plugins = require('../../../plugins/pluginManager.js'),
-    request = require('countly-request')(null, null, null, plugins.getConfig("security")),
+    request = require('countly-request')(plugins.getConfig("security")),
     offlineMode = plugins.getConfig("api").offline_mode,
     domain = plugins.getConfig("api").domain;
 

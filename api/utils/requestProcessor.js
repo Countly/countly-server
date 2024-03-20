@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('countly-request')(null, null, null, plugins.getConfig("security"));
+const request = require('countly-request')(plugins.getConfig("security"));
 const Handle = require('../../api/parts/jobs/index.js');
 
 var loaded_configs_time = 0;

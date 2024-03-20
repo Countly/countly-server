@@ -2,7 +2,7 @@ var pluginExported = {};
 var versionInfo = require('../../../frontend/express/version.info');
 var moment = require('moment');
 const plugins = require('../../pluginManager.js');
-const request = require('countly-request')(null, null, null, plugins.getConfig("security"));
+const request = require('countly-request')(plugins.getConfig("security"));
 const { getUserApps } = require('../../../api/utils/rights');
 
 (function(plugin) {

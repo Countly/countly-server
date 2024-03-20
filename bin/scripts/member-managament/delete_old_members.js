@@ -5,7 +5,7 @@ Script calls Countly API endpoint to trigger member deletion for members, which 
 Query is editable to delete based on different criteria.
 */
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var request = require('countly-request')(null, null, null, pluginManager.getConfig("security"));
+var request = require('countly-request')(pluginManager.getConfig("security"));
 var Promise = require("bluebird");
 
 

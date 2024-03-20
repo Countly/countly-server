@@ -20,7 +20,7 @@ var Promise = require("bluebird");
 
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
-const request = require('countly-request')(null, null, null, plugins.getConfig("security"));
+const request = require('countly-request')(plugins.getConfig("security"));
 const FEATURE_NAME = 'data_migration';
 /**
 *Function to delete all exported files in export folder
