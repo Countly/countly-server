@@ -32,13 +32,16 @@
         "logo",
         "logoType",
         "globalLogo",
-        "internalName"
+        "internalName",
+        "consent",
+        "links"
     ];
 
     var widgetJSONProperties = [
         "targeting",
         "ratings_texts",
-        "target_pages"
+        "target_pages",
+        "links"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {

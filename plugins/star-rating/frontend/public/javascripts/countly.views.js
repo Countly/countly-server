@@ -14,12 +14,59 @@
         return str;
     }
 
+    var consentLink = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/star-consent-link.html"),
+        props: {
+            value: {
+                type: Object,
+                default: false
+            },
+            maxLinks: {
+                type: Number,
+                default: 3
+            },
+            readOnly: {
+                type: Boolean,
+                default: false
+            }
+        },
+        methods: {
+            setFocusedChild: function(childId) {
+                this.$emit("update:focusedItemIdentifier", childId);
+            },
+            removeLinkAtIndex: function(index) {
+                this.$delete(this.links, index);
+            },
+            onDelete: function(id) {
+                if (this.value.link.length > 1 && this.value.link.length <= this.maxLinks) {
+                    this.value.link.splice(id, 1);
+                }
+            },
+            add: function() {
+                this.value.link.push({
+                    "text": "Another Link",
+                    "link": "https://otherlink.com",
+                    "textValue": "Another Link",
+                    "linkValue": "https://otherlink.com"
+                });
+            }
+        },
+        computed: {
+            newLinkAllowed: function() {
+                return !this.readOnly && this.value.link.length < this.maxLinks;
+            }
+        }
+    });
+
     var Drawer = countlyVue.views.create({
         mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/drawer.html"),
         props: {
             settings: Object,
             controls: Object
+        },
+        components: {
+            "star-consent-link": consentLink
         },
         data: function() {
             return {
@@ -28,6 +75,7 @@
                 imageSrc: '',
                 logoType: 'default',
                 globalLogo: false,
+                consent: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -67,6 +115,16 @@
         },
         methods: {
         // drawer event handlers
+            finalTxt: function(links) {
+                let finalText = links.finalText;
+
+                links.link.forEach(link => {
+                    const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
+                    finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
+                });
+
+                return finalText;
+            },
             onClose: function() {},
             setRatingItemActive: function(index) {
                 var self = this;
@@ -136,6 +194,13 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
+                if(this.controls.initialEditedObject.consent === true || this.controls.initialEditedObject.consent === "true"){
+                    this.controls.initialEditedObject.consent = true;
+                    this.consent = true;
+                }
+                else{
+                    this.controls.initialEditedObject.consent = false;
+                }
                 if (this.controls.initialEditedObject.logo) {
 
                     if (this.controls.initialEditedObject.logo.indexOf("feedback_logo") > -1
@@ -695,6 +760,25 @@
                     }
                 }
                 this.openDrawer("widget", {
+                    links: {
+                        "link": [
+                            {
+                                "text": "Terms and Conditions",
+                                "link": "https://termsandconditions.com",
+                                "textValue": "Terms and Conditions",
+                                "linkValue": "https://termsandconditions.com"
+                            },
+                            {
+                                "text": "Privacy Policy",
+                                "link": "https://privacyPolicy.com",
+                                "textValue": "Privacy Policy",
+                                "linkValue": "https://privacyPolicy.com"
+                            }
+                        ],
+                        "finalText": "I agree to the Terms and Conditions and Privacy Policy."
+    
+                    },
+                    consent: false,
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
                     popup_button_callout: 'Submit Feedback',
