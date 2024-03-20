@@ -7,49 +7,26 @@ const utils = require('./parts/utils');
 const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
+const commonLib = require("./parts/common-lib.js");
 
-const ALERT_MODULES = {
-    "survey": require("./alertModules/survey.js"),
-    "nps": require("./alertModules/nps.js"),
-    "rating": require("./alertModules/rating.js"),
-};
+/**
+ * Alerts that can be triggered when an event is received.
+ * see module file for details.
+ *   Module   Event
+ * - nps      [CLY]_nps
+ * - rating   [CLY]_star_rating
+ * - survey   [CLY]_survey
+ */
+const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => ({
+    module: require("./alertModules/" + name + ".js"),
+    name
+}));
 
 const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     "hourly": "every 1 hour on the 59th min",
     "daily": "at 23:59",
     "monthly": "on the last day of the month at 23:59"
 };
-/**
- * Checks if given event is a survey completion event.
- * @param   {object}  event single event object sent to /i endpoint
- * @returns {boolean}       true if the event contains proper survey completion data
- */
-function isSurveyCompletionEvent(event) {
-    return event?.key === "[CLY]_survey"
-        && !event?.segmentation?.closed
-        && event?.segmentation?.widget_id;
-}
-/**
- * Checks if given event is a NPS completion event.
- * @param   {object}  event single event object sent to /i endpoint
- * @returns {boolean}       true if the event contains proper NPS completion data
- */
-function isNPSCompletionEvent(event) {
-    return event?.key === "[CLY]_nps"
-        && !event?.segmentation?.closed
-        && event?.segmentation?.widget_id
-        && typeof event?.segmentation?.rating !== 'undefined';
-}
-/**
- * Checks if given event is a proper Rating event
- * @param   {object}  event single event object
- * @returns {boolean}       true|false
- */
-function isRatingEvent(event) {
-    return event?.key === "[CLY]_nps"
-        && event?.segmentation?.widget_id
-        && typeof event?.segmentation?.rating !== 'undefined';
-}
 
 (function() {
     /**
@@ -100,33 +77,18 @@ function isRatingEvent(event) {
     }
 
     plugins.register("/i", async function(ob) {
-        const events = ob?.params?.qstring?.events;
-        if (!Array.isArray(events)) {
+        const payload = ob?.params?.qstring;
+        if (!payload) {
             return;
         }
 
-        // "[CLY]_survey"
-        try {
-            await Promise.all(events.filter(isSurveyCompletionEvent).map(ALERT_MODULES.survey.triggerByEvent));
-        }
-        catch (err) {
-            log.e("Survey alert couldn't be triggered by event", err);
-        }
-
-        // "[CLY]_nps"
-        try {
-            await Promise.all(events.filter(isNPSCompletionEvent).map(ALERT_MODULES.nps.triggerByEvent));
-        }
-        catch (err) {
-            log.e("NPS alert couldn't be triggered by event", err);
-        }
-
-        // "[CLY]_star_rating"
-        try {
-            await Promise.all(events.filter(isRatingEvent).map(ALERT_MODULES.rating.triggerByEvent));
-        }
-        catch (err) {
-            log.e("Rating alert couldn't be triggered by event", err);
+        for (let { module, name } of TRIGGER_BY_EVENT) {
+            try {
+                await module.triggerByEvent(payload);
+            }
+            catch (err) {
+                log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+            }
         }
     });
 

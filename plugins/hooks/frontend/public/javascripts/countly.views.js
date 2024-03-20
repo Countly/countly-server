@@ -484,13 +484,10 @@
                     data: {app_id: this.$props.app},
                     dataType: "json",
                     success: function(data) {
-                        var alertList = [];
-                        data.alertsList.forEach(function(alert) {
-                            if (alert.selectedApps.indexOf(selectedApps[0]) > -1) {
-                                alertList.push({value: alert._id, label: alert.alertName});
-                            }
-                        });
-                        self.alertOptions = alertList;
+                        self.alertOptions = data.alertsList
+                            .filter(alert => alert.alertBy === "hook")
+                            .filter(alert => alert.selectedApps.includes(selectedApps[0]))
+                            .map(({ _id, alertName }) => ({ value: _id, label: alertName }));
                     }
                 });
             },
