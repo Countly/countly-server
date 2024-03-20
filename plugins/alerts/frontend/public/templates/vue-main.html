@@ -14,8 +14,8 @@
                     <cly-metric-card  :columnWidth=4 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in countData">
                             {{i18n(item.label)}}
                         <template v-slot:number>{{item.value || 0}}</template>
-                    </cly-metric-card>  
-                </cly-metric-cards> 
+                    </cly-metric-card>
+                </cly-metric-cards>
             </div>
             <div class="bu-mt-6">
                 <table-view  v-on:open-drawer="openDrawer" :callCreateAlertDrawer="createAlert"></table-view>
@@ -25,96 +25,94 @@
     </div>
 </script>
 
-<script  type="text/x-template" id="alerts-table">
-<div>
-    <cly-empty-view 
-        v-if="(rowTableRows.length === 0 && initialized)"
-        :title="i18n('alerts.empty-title')"
-        :subTitle="i18n('alerts.empty-subtitle')"
-        :actionTitle="i18n('alerts.empty-action-button-title')"
-        :hasAction="canUserCreate"
-        :actionFunc="createAlert"
-    />
-    <cly-section v-else>
-        <cly-datatable-n
-            :force-loading="!initialized"
-            class="cly-vue-alerts-table"
-            :tracked-fields="localTableTrackedFields"
-            :rows="tableRows"
-            :resizable="false">
-            <template v-slot:header-left="scope">
-                <div class="alerts-table-app-selector">
-                    <cly-select-x
-                       :placeholder="i18n('alert.all-applications')"
-                       mode="multi-check"
-                       v-model="filteredApps"
-                       :options="appsSelectorOption">
-                    </cly-select-x>
-                </div>
-            </template> 
-            <template v-slot="scope">
-                <el-table-column type="switch" fixed="left" width="88"  prop="enabled">
-                    <template v-slot="rowScope">
-                        <el-switch v-tooltip="{ content: rowScope.row.enabled  ? i18n('alerts.alert-is-enabled') : i18n('alerts.alert-is-disabled') }" :value="rowScope.row.enabled" :disabled="!rowScope.row._canUpdate"
-                            class="bu-ml-4  bu-mr-2"
-                            @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
-                        </el-switch>
-                    </template>
-                </el-table-column>
-               
-                <el-table-column fixed min-width="240"  prop="alertName" :label="i18n('alert.Alert_Name')" sortable="true">
-                    <template slot-scope="scope">
-                        <div style="text-overflow: ellipsis; overflow: hidden;" v-html="scope.row.alertName"></div>
-                    </template>
-                </el-table-column> 
-    
-                <el-table-column  min-width="175"  sortable="true"  prop="appNameList" :label="i18n('alert.Application')">
-                </el-table-column>
-    
-                <el-table-column  min-width="415" prop="condtionText"  sortable="true"  :label="i18n('alert.Condition')">
-                    <template slot-scope="scope" sortable="true">
-                        <span>{{scope.row.condtionText}}</span>
-                    </template>
-                </el-table-column>
-                
-                <el-table-column  min-width="130" sortable="true"  prop="createdByUser" :label="i18n('alert.CreateBy')">
-                    <template slot-scope="scope">
-                        <div class="bu-level">
-                            <div class="bu-level-left">
-                                <div class="is-created-by-col">
-                                    {{scope.row.createdByUser}}
-                                 </div>
-                            </div> 
-                        </div>
-                    </template>
-                </el-table-column>
-              
-                
-                <el-table-column type="options">
-                    <template v-slot="rowScope">
-                        <cly-more-options v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
-                            <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
-                                {{i18n('alert.Edit')}}
-                            </el-dropdown-item>
-                            <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
-                                {{i18n('alert.Delete')}}
-                            </el-dropdown-item>
-                        </cly-more-options>
-                    </template>
-                </el-table-column>
-            </template>
-            <template v-slot:bottomline="scope">
-                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
-                </cly-diff-helper>
-            </template>
-        </cly-datatable-n>
-    </cly-section>
-</div>
+<script type="text/x-template" id="alerts-table">
+    <div>
+        <cly-empty-view
+            v-if="(rowTableRows.length === 0 && initialized)"
+            :title="i18n('alerts.empty-title')"
+            :subTitle="i18n('alerts.empty-subtitle')"
+            :actionTitle="i18n('alerts.empty-action-button-title')"
+            :hasAction="canUserCreate"
+            :actionFunc="createAlert"
+        />
+        <cly-section v-else>
+            <cly-datatable-n
+                :force-loading="!initialized"
+                class="cly-vue-alerts-table"
+                :tracked-fields="localTableTrackedFields"
+                :rows="tableRows"
+                :resizable="false">
+                <template v-slot:header-left="scope">
+                    <div class="alerts-table-app-selector">
+                        <cly-select-x
+                           :placeholder="i18n('alert.all-applications')"
+                           mode="multi-check"
+                           v-model="filteredApps"
+                           :options="appsSelectorOption">
+                        </cly-select-x>
+                    </div>
+                </template>
+                <template v-slot="scope">
+                    <el-table-column type="switch" fixed="left" width="88"  prop="enabled">
+                        <template v-slot="rowScope">
+                            <el-switch v-tooltip="{ content: rowScope.row.enabled  ? i18n('alerts.alert-is-enabled') : i18n('alerts.alert-is-disabled') }" :value="rowScope.row.enabled" :disabled="!rowScope.row._canUpdate"
+                                class="bu-ml-4  bu-mr-2"
+                                @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                            </el-switch>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column fixed min-width="240"  prop="alertName" :label="i18n('alert.Alert_Name')" sortable="true">
+                        <template slot-scope="scope">
+                            <div style="text-overflow: ellipsis; overflow: hidden;" v-html="scope.row.alertName"></div>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column  min-width="175"  sortable="true"  prop="appNameList" :label="i18n('alert.Application')">
+                    </el-table-column>
+
+                    <el-table-column  min-width="415" prop="condtionText"  sortable="true"  :label="i18n('alert.Condition')">
+                        <template slot-scope="scope" sortable="true">
+                            <span>{{scope.row.condtionText}}</span>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column  min-width="130" sortable="true"  prop="createdByUser" :label="i18n('alert.CreateBy')">
+                        <template slot-scope="scope">
+                            <div class="bu-level">
+                                <div class="bu-level-left">
+                                    <div class="is-created-by-col">
+                                        {{scope.row.createdByUser}}
+                                     </div>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
+
+
+                    <el-table-column type="options">
+                        <template v-slot="rowScope">
+                            <cly-more-options v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
+                                <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                                    {{i18n('alert.Edit')}}
+                                </el-dropdown-item>
+                                <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
+                                    {{i18n('alert.Delete')}}
+                                </el-dropdown-item>
+                            </cly-more-options>
+                        </template>
+                    </el-table-column>
+                </template>
+                <template v-slot:bottomline="scope">
+                    <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
+                    </cly-diff-helper>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </div>
 </script>
-    
-    
-    
-<script  type="text/x-template" id="alert-drawer">
+
+<script type="text/x-template" id="alert-drawer">
     <div id="alert-drawer-container">
         <cly-drawer
             @submit="onSubmit"
@@ -129,13 +127,13 @@
                     <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
                         <el-input
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex" 
+                            class="bu-is-flex"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
 
                     <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
-                        <cly-app-select 
+                        <cly-app-select
                                 :placeholder="i18n('alerts.select-an-application')"
                                 :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                                 class="bu-is-flex"
@@ -144,16 +142,16 @@
                                 :allowAll="allowAll"
                                 >
                         </cly-app-select>
-                    </cly-form-field> 
+                    </cly-form-field>
 
                     <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
-                        <cly-select-x 
+                        <cly-select-x
                             :searchable="false"
                             class="bu-is-flex"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"
-                            v-model="drawerScope.editedObject.alertDataType" 
+                            v-model="drawerScope.editedObject.alertDataType"
                             >
                         </cly-select-x>
                     </cly-form-field>
@@ -172,9 +170,9 @@
                     <el-button type="text" class="color-blue-100" @click="filterButton = true" v-if="!filterButton && showFilterButton(drawerScope.editedObject) ">{{i18n('alerts.add-filter')}}</el-button>
 
                     <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-1" v-if="filterButton">
-                        {{i18n('alerts.filter')}}  
+                        {{i18n('alerts.filter')}}
                     </div>
-                    
+
                     <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'">
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
@@ -195,7 +193,7 @@
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
-                    
+
                     <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'">
                         <div class="bu-is-flex-grow-1">
                             <el-input
@@ -269,23 +267,23 @@
                     <div class="cly-vue-alert-drawer__line"></div>
 
                     <div class="text-medium text-heading bu-mt-5 bu-has-background-white" style="font-size:13px">
-                        {{i18n('alert.Alert_Trigger')}} 
+                        {{i18n('alert.Alert_Trigger')}}
                     </div>
 
-                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">  
+                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">
                         <div class="bu-px-4" v-if="showSubType1">
                             <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable">
                                 Send alert if
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px" v-else>
-                                Send alert if there is a 
+                                Send alert if there is a
                             </span>
                             <select
                                 @change="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input" 
+                                class="alert-drawer-trigger-select-and-input"
                                 v-model="drawerScope.editedObject.alertDataSubType">
                                 <option :value="null" hidden>metric</option>
-                                <option v-for="(metricItem, index) in alertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
+                                <option v-for="(metricItem, index) in defaultAlertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
                                     {{ metricItem.label }}
                                 </option>
                             </select>
@@ -293,27 +291,29 @@
                                 is
                             </span>
 
-                            <select 
+                            <!--Select operation for variable part in the trigger component.
+                                Selected data binding into compareType property which is defifen in model.js file-->
+                            <select
                                 @change="handleChange($event.target)"
-                                v-model="drawerScope.editedObject.compareType" 
+                                v-model="drawerScope.editedObject.compareType"
                                 v-if="isCompareTypeSelectAvailable"
                                 class="alert-drawer-trigger-select-and-input">
                                 <!--Placeholder for variable selection -->
                                 <option :value="null" hidden>variable</option>
                                 <!-- Variable selection without online-users data type-->
                                 <option
-                                    v-if="drawerScope.editedObject.alertDataSubType !== 't'"
-                                    v-for="(variableItem, index) in defaultAlertVariable.condition" 
-                                    :key="index" 
+                                    v-if="drawerScope.editedObject.alertDataSubType !== '# of online users'"
+                                    v-for="(variableItem, index) in defaultAlertVariable.condition"
+                                    :key="index"
                                     :value="variableItem.value">
                                     {{ variableItem.label }}
                                 </option>
                                 <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
-                                <option 
-                                    v-if="drawerScope.editedObject.alertDataSubType === 't'"
-                                    v-for="(variableItem, index) in externalAlertDefine[0]['online-users']['condition']"
+                                <option
+                                    v-if="drawerScope.editedObject.alertDataSubType === '# of online users'"
+                                    v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
                                     :key="index"
-                                    :value="variableItem.label">
+                                    :value="variableItem.value">
                                     {{ variableItem.label }}
                                 </option>
                             </select>
@@ -323,22 +323,22 @@
                             </span>
                             <input
                                 @input="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input" 
+                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                                 placeholder="value"
-                                type="text" 
-                                v-model="drawerScope.editedObject.compareValue" 
+                                type="text"
+                                v-model="drawerScope.editedObject.compareValue"
                                 v-if="isCompareTypeSelectAvailable"
                                 />
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
                             </span>
-                            <span class="groupcard-text mediumtextNormal-14px" 
+                            <span class="groupcard-text mediumtextNormal-14px"
                                 v-if="isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't' ">
                                 in the last
                             </span>
-                            <select 
+                            <select
                                 @change="handleChange($event.target)"
-                                v-model="drawerScope.editedObject.period" 
+                                v-model="drawerScope.editedObject.period"
                                 v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'"
                                 class="alert-drawer-trigger-select-and-input">
                                 <option :value="null" hidden>time</option>
@@ -348,9 +348,9 @@
                             </select>
                             <input
                                 @input="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input" 
+                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                                 placeholder="value"
-                                type="text" 
+                                type="text"
                                 v-model="drawerScope.editedObject.compareValue2"
                                 v-if="drawerScope.editedObject.alertDataSubType === 't'"
                                 />
@@ -359,19 +359,57 @@
                                     minutes
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px">.</span>
-                        </div>    
+                        </div>
+                    </div>
+
+                    <div v-else class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">
+                        <span class="groupcard-text mediumtextNormal-20px">
+                            Send alert if
+                        </span>
+                        <select
+                            @change="handleChange($event.target)"
+                            class="alert-drawer-trigger-select-and-input">
+                            <option :value="null" hidden>metric</option>
+                            <option :value="null"></option>
+                        </select>
+                        <span class="groupcard-text mediumtextNormal-14px">
+                            is
+                        </span>
+
+                        <select
+                            @change="handleChange($event.target)"
+                            class="alert-drawer-trigger-select-and-input">
+                            <option :value="null" hidden>variable</option>
+                            <option :value="null"></option>
+                        </select>
+
+                        <span class="groupcard-text mediumtextNormal-14px">
+                            by
+                        </span>
+                        <input
+                            @input="handleChange($event.target)"
+                            class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
+                            placeholder="value"
+                            type="text"
+                            />
+                        <span class="groupcard-text mediumtextNormal-14px">
+                            in the last
+                        </span>
+                        <select
+                            @change="handleChange($event.target)"
+                            class="alert-drawer-trigger-select-and-input">
+                            <option :value="null" hidden>time</option>
+                            <option :value="null"></option>
+                        </select>
+                        <span class="groupcard-text mediumtextNormal-14px">.</span>
                     </div>
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
-                        <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
-                    </cly-form-field>
-
                     <pre v-if="0">
                         {{drawerScope.editedObject}}
                     </pre>
-                    
+
                     <div class="cly-vue-alert-drawer__line"></div>
 
                     <cly-form-field>
@@ -380,26 +418,26 @@
                         </div>
 
                         <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
-                            <el-radio 
+                            <el-radio
                                 v-model="selectedRadioButton"
-                                :label="item.value" 
+                                :label="item.value"
                                 :key="idx"
                                 v-for="(item, idx) in emailOptions"
                                 class="is-autosized"
                                 border>
                                     {{item.label}}
-                            </el-radio>            
+                            </el-radio>
                         </div>
                     </cly-form-field>
-        
-                    <cly-form-field 
+
+                    <cly-form-field
                         v-if="selectedRadioButton === 'specificAddress'"
-                        name="alertValues" 
-                        :label="i18n('alert.email-to-receive')"        
+                        name="alertValues"
+                        :label="i18n('alert.email-to-receive')"
                         rules= "required">
-                        <cly-select-email 
+                        <cly-select-email
                             placeholder="Enter email address"
-                            v-model="drawerScope.editedObject.alertValues" 
+                            v-model="drawerScope.editedObject.alertValues"
                             :collapse-tags="false">
                         </cly-select-email>
                     </cly-form-field>
@@ -408,11 +446,11 @@
                         v-if="selectedRadioButton === 'toGroup'"
                         name="allGroups"
                         :label="i18n('alert.email-to-receive3')"
-                        rules= "required">   
+                        rules= "required">
                         <el-select
                             :key="elSelectKey"
                             multiple
-                            v-model="drawerScope.editedObject.allGroups"                        
+                            v-model="drawerScope.editedObject.allGroups"
                             style="width: 100%;">
                             <el-option
                                 v-for="(item) in allGroups"
@@ -423,16 +461,16 @@
                         </el-select>
                     </cly-form-field>
 
-                    <cly-form-field 
+                    <cly-form-field
                         v-if="selectedRadioButton === 'dontSend'"
                         name="alertBy"
                         v-model = "drawerScope.editedObject.alertBy='hook'">
-                        <div class="test">            
+                        <div class="test">
                             <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
                             {{i18n('alerts.email-icon')}}
                         </div>
                     </cly-form-field>
-        
+
                     <pre v-if="0">
                         {{drawerScope.editedObject}}
                     </pre>
