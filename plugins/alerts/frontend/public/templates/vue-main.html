@@ -134,13 +134,13 @@
 
                     <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
                         <cly-app-select
-                                :placeholder="i18n('alerts.select-an-application')"
-                                :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                                class="bu-is-flex"
-                                @change="getMetrics"
-                                v-model="drawerScope.editedObject.selectedApps"
-                                :allowAll="allowAll"
-                                >
+                            :placeholder="i18n('alerts.select-an-application')"
+                            :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
+                            class="bu-is-flex"
+                            @change="appSelected"
+                            v-model="drawerScope.editedObject.selectedApps"
+                            :allowAll="allowAll"
+                            >
                         </cly-app-select>
                     </cly-form-field>
 
@@ -167,7 +167,7 @@
                         </cly-select-x>
                     </cly-form-field>
 
-                    <el-button type="text" class="color-blue-100" @click="filterButton = true" v-if="!filterButton && showFilterButton(drawerScope.editedObject) ">{{i18n('alerts.add-filter')}}</el-button>
+                    <el-button type="text" class="color-blue-100" @click="handleAddFilterButton" v-if="!filterButton && showFilterButton(drawerScope.editedObject) ">{{i18n('alerts.add-filter')}}</el-button>
 
                     <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-1" v-if="filterButton">
                         {{i18n('alerts.filter')}}
@@ -189,7 +189,7 @@
                                 :placeholder="i18n('alerts.segment-value')"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -212,7 +212,7 @@
                                 mode="multi-check"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -235,7 +235,7 @@
                                 mode="single-list"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -259,7 +259,7 @@
                                 mode="multi-check"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="filterButton = false">
+                        <div class="cly-icon-button cly-icon-button--gray" @click=handleFilterClosing>
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -333,7 +333,7 @@
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px"
-                                v-if="isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't' ">
+                                v-if="(isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't')">
                                 in the last
                             </span>
                             <select
