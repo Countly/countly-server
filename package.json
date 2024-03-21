@@ -49,7 +49,7 @@
     "csvtojson": "2.0.10",
     "ejs": "3.1.9",
     "errorhandler": "1.5.1",
-    "express": "4.18.3",
+    "express": "4.19.1",
     "express-rate-limit": "7.2.0",
     "express-session": "1.18.0",
     "form-data": "^4.0.0",
