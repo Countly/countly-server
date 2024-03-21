@@ -64,6 +64,7 @@ countlyVue.container.registerTab("/analytics/sessions", {
     permission: "core",
     title: CV.i18n('session-durations.title'),
     route: "#/analytics/sessions/durations",
+    dataTestId: "tab-session-durations",
     component: SessionDurationsView,
     vuex: [{
         clyModel: countlySessionDurations

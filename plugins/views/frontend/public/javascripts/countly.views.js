@@ -734,6 +734,7 @@
         permission: FEATURE_NAME,
         title: CV.i18n('views-per-session.title'),
         route: "#/analytics/sessions/views-per-session",
+        dataTestId: "tab-session-views-per-session",
         component: ViewsPerSessionView,
         vuex: [{
             clyModel: countlyViewsPerSession
