@@ -279,6 +279,7 @@
                                 Send alert if there is a
                             </span>
                             <select
+                                style="width: 70px;"
                                 @change="handleChange($event.target)"
                                 class="alert-drawer-trigger-select-and-input"
                                 v-model="drawerScope.editedObject.alertDataSubType">
@@ -448,6 +449,7 @@
                         :label="i18n('alert.email-to-receive3')"
                         rules= "required">
                         <el-select
+
                             :key="elSelectKey"
                             multiple
                             v-model="drawerScope.editedObject.allGroups"
