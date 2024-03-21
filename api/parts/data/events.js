@@ -54,9 +54,11 @@ countlyEvents.processEvents = function(params) {
             }
 
             for (let i = 0; i < params.qstring.events.length; i++) {
-                if (params.qstring.events[i]) {
-                    params.qstring.events[i] += "";
+
+                if (typeof params.qstring.events[i].key !== 'string') {
+                    params.qstring.events[i].key = stringifyEventKey(params.qstring.events[i].key);
                 }
+
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
@@ -181,6 +183,20 @@ countlyEvents.processEvents = function(params) {
 
                     callback(null, retObj);
                 });
+            }
+
+            /**
+             * Stringify an event key
+             * @param {object} obj - Object to be stringified
+             * @returns {object} returns obj stringified
+             **/
+            function stringifyEventKey(obj) {
+                try {
+                    return JSON.stringify(obj);
+                }
+                catch (error) {
+                    return obj + "";
+                }
             }
         });
     });
