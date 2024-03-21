@@ -54,9 +54,13 @@ countlyEvents.processEvents = function(params) {
             }
 
             for (let i = 0; i < params.qstring.events.length; i++) {
+                if (params.qstring.events[i]) {
+                    params.qstring.events[i] += "";
+                }
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
+
                 if (!currEvent.segmentation) {
                     continue;
                 }
