@@ -13,7 +13,7 @@
         </template>
     </cly-header>
     <cly-main>
-		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
+		<cly-date-picker-g in-the-last-hours class="views-date-picker-container"></cly-date-picker-g>
 		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
 			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;" class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
 		</cly-notification>

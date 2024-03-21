@@ -5,7 +5,7 @@
     >
     </cly-header>
     <cly-main>
-        <cly-qb-bar feature="core" v-if="showDrillFilter" class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
+        <cly-qb-bar feature="core" v-if="showDrillFilter" class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}" :show-in-the-last-hours="true"></cly-qb-bar>
         <cly-section>
             <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
