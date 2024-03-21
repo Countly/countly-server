@@ -26,6 +26,7 @@
         data: function() {
             return {
                 selectedRadioButton: "specificAddress",
+                newVariable: null,
                 allGroups: [],
                 allUserGroups: [],
                 title: "",
@@ -228,7 +229,20 @@
                 },
             };
         },
-        watch: {},
+        watch: {
+            selectedRadioButton(newValue, oldValue) {
+                if (newValue === "specificAddress") {
+                    this.$refs.drawerData.editedObject.allGroups = [];
+                }
+                if (newValue === "toGroup") {
+                    this.$refs.drawerData.editedObject.alertValues = [];
+                }
+                if (newValue === "dontSend") {
+                    this.$refs.drawerData.editedObject.alertValues = [];
+                    this.$refs.drawerData.editedObject.allGroups = [];
+                }
+            },
+        },
         computed: {
             isCompareTypeSelectAvailable: function() {
                 const disabledMetrics = [
@@ -878,6 +892,21 @@
             // Handle the change event of the element
             handleChange(element) {
                 this.changeColor(element);
+                if (element.nodeName !== "SELECT") {
+                    return;
+                }
+                let tempSelect = document.createElement("element"),
+                    tempOption = document.createElement("option");
+                tempOption.textContent =
+                    element.options[element.selectedIndex].text;
+                tempSelect.style.cssText +=
+                    "visibility:hidden;position:fixed;font-weight:500;padding:6px;font-size:13px";
+                tempSelect.appendChild(tempOption);
+                element.after(tempSelect);
+                const tempSelectWidth =
+                    tempSelect.getBoundingClientRect().width;
+                element.style.width = `${tempSelectWidth}px`;
+                tempSelect.remove();
             },
             changeColor(element) {
                 // Set the background color of the element to green when a selection is made
