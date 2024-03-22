@@ -1,16 +1,22 @@
+/**
+ * Script to reset merge count for app_users.
+ * Server: countly server
+ * Path: countly/bin/scripts/modify-data
+ * Command: node resetAppUserMergeCount.js
+ */
 const pluginManager = require('../../../plugins/pluginManager.js');
 const Promise = require('bluebird');
 
 
 const APPS = []; //leave array empty to process all apps;
-var limit = 1; //increase number if you want to keep some merge count. Only numbers bigger than this will be set to 0.
+var limit = 0; //increase number if you want to keep some merge count. Only numbers bigger than this will be set to 0.
 
 Promise.all([pluginManager.dbConnection("countly")]).then(async function([countlyDb]) {
     console.log("Connected to databases...");
     var query = {};
     if (APPS.length > 0) {
         APPS.forEach(function(id, index) {
-            APPS[index] = countlyDb.ObjectId(id);
+            APPS[index] = countlyDb.ObjectID(id);
         });
         query = {_id: {$in: APPS}};
     }
