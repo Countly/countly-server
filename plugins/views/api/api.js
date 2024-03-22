@@ -1820,7 +1820,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     for (var seg in currE.segmentation) {
                                         if (seg !== 'dur' && seg !== "_idv") {
                                             params.qstring.events[index].segmentation = params.qstring.events[index].segmentation || {};
-                                            log.e(currE.segmentation[seg]);
                                             params.qstring.events[index].segmentation[seg] = currE.segmentation[seg];
                                         }
                                     }
