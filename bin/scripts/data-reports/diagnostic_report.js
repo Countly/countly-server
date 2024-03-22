@@ -153,7 +153,7 @@ function validate_user_profiles(db, callback) {
             return new Promise(function(resolve) {
                 //get flow count
                 //get duplicate uids
-                db.collection('app_users' + app._id).aggregate([{"$group": {"_id": "$uid", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": 1}}}, {"$sort": {"cn": -1}}]).toArray(function(err, list) {
+                db.collection('app_users' + app._id).aggregate([{"$group": {"_id": "$uid", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": 1}}}, {"$sort": {"cn": -1}}], {"allowDiskUse": true}).toArray(function(err, list) {
                     if (err) {
                         console.log(err);
                     }
@@ -167,7 +167,7 @@ function validate_user_profiles(db, callback) {
                     var now = Math.floor(Date.now().valueOf() / 1000);
                     now = now - 30 * 24 * 60 * 60;
                     //get top merges count for users that have been there in last 30 days
-                    db.collection('app_users' + app._id).aggregate([{"$match": {"lac": {"$gt": now}, "merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"lac": 1, "merges": 1, "_id": 1, "uid": 1}}]).toArray(function(err, list) {
+                    db.collection('app_users' + app._id).aggregate([{"$match": {"lac": {"$gt": now}, "merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"lac": 1, "merges": 1, "_id": 1, "uid": 1}}], {"allowDiskUse": true}).toArray(function(err, list) {
                         if (err) {
                             console.log(err);
                         }
