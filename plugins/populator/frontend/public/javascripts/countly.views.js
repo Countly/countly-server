@@ -579,10 +579,10 @@
             };
         },
         methods: {
-            onSequenceDeleted(index) {
+            onSequenceDeleted: function(index) {
                 this.deletedIndex = index + "_" + Date.now(); // to force trigger watcher for same index
             },
-            checkInputProbabilities(editedObject) {
+            checkInputProbabilities: function(editedObject) {
                 let warningMessage = "";
                 let sectionsToVerify = ["users", "views", "events", "behavior"];
 
@@ -651,6 +651,55 @@
                 });
                 return warningMessage;
             },
+            checkDuplicatedValues: function(editedObject) {
+                let warningMessage = "";
+                let sectionsToVerify = ["users", "views", "events"];
+
+                /**
+                * @param {Array} values - array of values to check for duplicates
+                * @param {String} sectionName - name of the section
+                * @param {Boolean} isKeyChecking - if true, check for duplicate keys, else check for duplicate values
+                * */
+                const checkIfDuplicated = (values, sectionName, isKeyChecking) => {
+                    let keys = [];
+                    if (values && values.length) {
+                        values.forEach(val => {
+                            const key = val.key;
+                            if (keys.includes(key)) {
+                                warningMessage += CV.i18n('populator-template.warning-duplicate-' + (isKeyChecking === true ? "name" : "value"), key.length ? key : "Empty/Unset", sectionName) + "<br/></br>";
+                            }
+                            else {
+                                keys.push(key);
+                            }
+                        });
+                    }
+                };
+
+                sectionsToVerify.forEach(sectionName => {
+                    checkIfDuplicated(editedObject[sectionName], sectionName, true);
+                    editedObject[sectionName].forEach(item => {
+                        if (item.segmentations) {
+                            checkIfDuplicated(item.segmentations, sectionName, true);
+                            item.segmentations.forEach(segmentation => {
+                                checkIfDuplicated(item.segmentation, true);
+                                if (segmentation.values) {
+                                    checkIfDuplicated(segmentation.values, sectionName);
+                                }
+                                if (segmentation.condition) {
+                                    checkIfDuplicated(segmentation.condition.values, sectionName);
+                                }
+                            });
+                        }
+                        else if (item.values) {
+                            checkIfDuplicated(item.values, sectionName);
+                            if (item.condition) {
+                                checkIfDuplicated(item.condition.values, sectionName);
+                            }
+                        }
+                    });
+                });
+                return warningMessage;
+            },
             onSubmit: function(editedObject) {
                 var self = this;
                 const isEdit = !!editedObject._id;
@@ -658,6 +707,12 @@
                 const validationMessages = this.checkInputProbabilities(editedObject);
                 if (validationMessages && validationMessages.length) {
                     CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: validationMessages, sticky: true, clearAll: true});
+                    this.$refs.populatorDrawer.disableAutoClose = true;
+                    return;
+                }
+                const duplicatedValues = this.checkDuplicatedValues(editedObject);
+                if (duplicatedValues && duplicatedValues.length) {
+                    CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: duplicatedValues, sticky: true, clearAll: true});
                     this.$refs.populatorDrawer.disableAutoClose = true;
                     return;
                 }
