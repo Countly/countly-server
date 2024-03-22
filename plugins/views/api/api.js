@@ -1799,7 +1799,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 current_views[currE.segmentation.name] = current_views[currE.segmentation.name] || [];
                                 var doc = {"index": p};
                                 if (currE.segmentation._idv) {
-                                    current_views[currE.segmentation.name]._idv = currE._idv;
+                                    doc._idv = currE.segmentation._idv;
                                 }
                                 current_views[currE.segmentation.name].push(doc);
                             }
@@ -1849,7 +1849,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         haveViews = true;
                     }
                 }
-
                 //filter events and call functions to get view names
                 var promises = [];
                 params.qstring.events = params.qstring.events.filter(function(currEvent) {
