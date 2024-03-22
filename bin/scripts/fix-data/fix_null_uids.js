@@ -3,8 +3,8 @@
  *  In dry mode it just outputs information
  *  If dry_run is set to false, then app_users documents are fixed right away. Fixing includes deleting documents that were not matched. It is suggested to run in dry_run=true first to make sure nothing unexpected gets deleted.
  *  Server: countly
- *  Path: $(countly dir)/bin/scripts/data-reports
- *  Command: node diagnostic_report.js
+ *  Path: $(countly dir)/bin/scripts/fix-data
+ *  Command: node fix_null_uids.js
  */
 const pluginManager = require('../../../plugins/pluginManager.js'),
     crypto = require('crypto');
