@@ -119,6 +119,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     permission: "core",
     title: CV.i18n('carriers.title'),
     route: "#/analytics/technology/carriers",
+    dataTestId: "tab-technology-carriers",
     component: AppCarrierView,
     vuex: [{
         clyModel: countlyAppCarrier

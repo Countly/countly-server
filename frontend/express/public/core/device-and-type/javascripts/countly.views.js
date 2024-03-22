@@ -266,6 +266,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     name: "devices-and-types",
     permission: "core",
     title: CV.i18n('devices.devices-and-types.title'),
+    dataTestId: "tab-devices-and-types",
     component: AllTabs,
     vuex: [{
         clyModel: countlyDevicesAndTypes

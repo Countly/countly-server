@@ -263,6 +263,7 @@
         permission: FEATURE_NAME,
         route: "#/analytics/technology/densities",
         title: CV.i18n('density.title'),
+        dataTestId: "tab-technology-densities",
         component: AppDensityView
     });
 })();
