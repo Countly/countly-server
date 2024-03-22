@@ -499,7 +499,11 @@
                         key: "segment",
                         items: this.chooseSegment,
                         default: "all",
-                        searchable: true
+                        searchable: true,
+                        disabled: {
+                            label: CV.i18n("events.all.omitted.segments"),
+                            items: this.omittedSegments,
+                        }
                     },
                     {
                         label: CV.i18n('views.segment-value'),
@@ -578,13 +582,10 @@
                 return this.$store.state.countlyViews.isLoading;
             },
             omittedSegments: function() {
-                var omittedSegmentsObj = {
-                    label: CV.i18n("events.all.omitted.segments"),
-                    options: []
-                };
+                var omittedSegmentsObj = {};
                 var omittedSegments = this.$store.getters['countlyViews/getOmittedSegments'];
                 if (omittedSegments) {
-                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                    omittedSegmentsObj = omittedSegments.map(function(item) {
                         return {
                             "label": item,
                             "value": item
