@@ -1796,12 +1796,35 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
 
                             if (currE.segmentation.visit) {
-                                current_views[currE.segmentation.name] = p;
+                                current_views[currE.segmentation.name] = current_views[currE.segmentation.name] || [];
+                                var doc = {"index": p};
+                                if (currE.segmentation._idv) {
+                                    doc._idv = currE.segmentation._idv;
+                                }
+                                current_views[currE.segmentation.name].push(doc);
                             }
                             else {
-                                if (currE.dur > 0 && current_views[currE.segmentation.name] > -1) {
-                                    params.qstring.events[current_views[currE.segmentation.name]].dur += currE.dur; //add duration to this request
+                                if (current_views[currE.segmentation.name]) {
+                                    var index = current_views[currE.segmentation.name][current_views[currE.segmentation.name].length - 1].index;
+                                    if (currE.segmentation._idv) {
+                                        for (var z = current_views[currE.segmentation.name].length - 2; z >= 0; z--) {
+                                            if (current_views[currE.segmentation.name][z]._idv === currE.segmentation._idv) {
+                                                index = current_views[currE.segmentation.name][z].index;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (currE.dur) {
+                                        params.qstring.events[index].dur += currE.dur; //add duration to this request
+                                    }
+                                    for (var seg in currE.segmentation) {
+                                        if (seg !== 'dur' && seg !== "_idv") {
+                                            params.qstring.events[index].segmentation = params.qstring.events[index].segmentation || {};
+                                            params.qstring.events[index].segmentation[seg] = currE.segmentation[seg];
+                                        }
+                                    }
                                     params.qstring.events[p].dur = 0; //not use duration from this one anymore;
+                                    params.qstring.events[p].skip = true;//as we have 
                                 }
                             }
                             //App Users update
@@ -1816,24 +1839,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (!update.$inc) {
                                     update.$inc = {};
                                 }
-
                                 update.$inc["data.views"] = inc;
                             }
                             ob.updates.push(update);
-
                         }
                     }
                     else if (currE.key === "[CLY]_action") {
                         haveViews = true;
                     }
                 }
-
                 //filter events and call functions to get view names
                 var promises = [];
                 params.qstring.events = params.qstring.events.filter(function(currEvent) {
                     if (currEvent.timestamp) {
                         params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
                     }
+                    if ((currEvent.key === "[CLY]_view" || currEvent.key === "[CLY]_action") && currEvent.skip) {
+                        return false;
+                    }
+
                     if (currEvent.key === "[CLY]_view") {
                         if (currEvent.segmentation && currEvent.segmentation.name) {
                             currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
@@ -1859,7 +1883,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     return true;
                 });
-
                 if (haveViews) {
                     common.readBatcher.getOne("views", {'_id': common.db.ObjectID(params.app_id)}, (err3, viewInfo) => {
                         //Matches correct view naming
