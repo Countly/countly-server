@@ -15,16 +15,16 @@
   <cly-main>
   <cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
   <div class="bu-columns bu-is-gapless bu-mt-2">
-    <h4>App versions for </h4>
+    <h4 data-test-id="app-versions-for-label">App versions for </h4>
     <div class ="selector_wrapper">
-      <el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
-        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+      <el-select test-id="app-versions-for" v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+        <el-option test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
       </el-select>
     </div>
-    <h4>&nbsp;&nbsp;as </h4>
+    <h4 data-test-id="as-label">&nbsp;&nbsp;as </h4>
     <div class ="selector_wrapper">
-      <el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
-        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      <el-select test-id="as-value" v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        <el-option test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
       </el-select>
     </div>
   </div>
