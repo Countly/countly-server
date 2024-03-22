@@ -2716,6 +2716,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            testId: {
+                type: String,
+                default: "cly-chart-pie-test-id",
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -2753,7 +2760,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
-                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2786,7 +2793,7 @@
 									</div>\
 								</div>\
                                 <div class="bu-column bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\

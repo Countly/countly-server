@@ -21,10 +21,10 @@
   <cly-section>
     <div class="bu-columns bu-is-gapless">
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+        <cly-chart-pie test-id="pie-source-total-sessions" :option="pieSourcesTotalSessions" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
       </div>
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+        <cly-chart-pie test-id="pie-sources-new-users" :option="pieSourcesNewUsers" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
       </div>
     </div>
   </cly-section>
