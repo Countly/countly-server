@@ -11,7 +11,7 @@
     groupsModel,
     _,
  */
-(function() {
+(function () {
     var ALERTS_FEATURE_NAME = "alerts";
 
     var AlertDrawer = countlyVue.views.BaseView.extend({
@@ -23,7 +23,7 @@
             }),
         ],
         components: {},
-        data: function() {
+        data: function () {
             return {
                 selectedRadioButton: "specificAddress",
                 newVariable: null,
@@ -233,9 +233,11 @@
             selectedRadioButton(newValue, oldValue) {
                 if (newValue === "specificAddress") {
                     this.$refs.drawerData.editedObject.allGroups = [];
+                    this.$refs.drawerData.editedObject.alertBy = "email";
                 }
                 if (newValue === "toGroup") {
                     this.$refs.drawerData.editedObject.alertValues = [];
+                    this.$refs.drawerData.editedObject.alertBy = "email";
                 }
                 if (newValue === "dontSend") {
                     this.$refs.drawerData.editedObject.alertValues = [];
@@ -244,7 +246,7 @@
             },
         },
         computed: {
-            isCompareTypeSelectAvailable: function() {
+            isCompareTypeSelectAvailable: function () {
                 const disabledMetrics = [
                     "new survey response",
                     "new NPS response",
@@ -261,7 +263,7 @@
                 }
                 return true;
             },
-            isPeriodSelectAvailable: function() {
+            isPeriodSelectAvailable: function () {
                 const disabledMetrics = [
                     "new survey response",
                     "new NPS response",
@@ -287,13 +289,12 @@
                     return this.defaultAlertTime.time.filter(
                         (periodItem) => periodItem.value !== "hourly"
                     );
-                }
-                else {
+                } else {
                     // Return all options if condition doesn't match
                     return this.defaultAlertTime.time;
                 }
             },
-            alertDataTypeOptions: function() {
+            alertDataTypeOptions: function () {
                 var alertDataTypeOptions = [
                     { label: jQuery.i18n.map["alert.Crash"], value: "crashes" },
                     {
@@ -330,18 +331,18 @@
                 }
                 return alertDataTypeOptions;
             },
-            alertDefine: function() {
+            alertDefine: function () {
                 var allOptions = JSON.parse(
                     JSON.stringify(this.defaultAlertDefine)
                 );
 
-                this.externalAlertDefine.forEach(function(define) {
+                this.externalAlertDefine.forEach(function (define) {
                     allOptions = Object.assign(allOptions, define);
                 });
                 return allOptions;
             },
 
-            alertDataSubTypeOptions: function() {
+            alertDataSubTypeOptions: function () {
                 var alertDataSubTypeOptions;
                 if (this.$refs.drawerData.editedObject.alertDataType) {
                     alertDataSubTypeOptions =
@@ -351,9 +352,9 @@
                 }
                 return alertDataSubTypeOptions;
             },
-            elSelectKey: function() {
+            elSelectKey: function () {
                 var key = this.allGroups
-                    .map(function(g) {
+                    .map(function (g) {
                         return g.name;
                     })
                     .join(",");
@@ -367,11 +368,11 @@
                 type: Object,
             },
         },
-        mounted: function() {
+        mounted: function () {
             var self = this;
-            groupsModel.initialize().then(function() {
+            groupsModel.initialize().then(function () {
                 var groups = _.sortBy(groupsModel.data(), "name");
-                var userGroups = groups.map(function(g) {
+                var userGroups = groups.map(function (g) {
                     return {
                         name: g.name,
                         value: g._id,
@@ -382,35 +383,35 @@
             });
         },
         methods: {
-            subType2Label: function(obj) {
+            subType2Label: function (obj) {
                 switch (obj.alertDataType) {
-                case "events":
-                    return "Event";
-                case "views":
-                    return "View";
-                case "cohorts":
-                    return "Cohort";
-                case "survey":
-                    return "Widget Name";
-                case "nps":
-                    return "Widget Name";
-                case "rating":
-                    return "Widget Name";
+                    case "events":
+                        return "Event";
+                    case "views":
+                        return "View";
+                    case "cohorts":
+                        return "Cohort";
+                    case "survey":
+                        return "Widget Name";
+                    case "nps":
+                        return "Widget Name";
+                    case "rating":
+                        return "Widget Name";
                 }
             },
-            showFilterButton: function(obj) {
+            showFilterButton: function (obj) {
                 switch (obj.alertDataType) {
-                case "events":
-                    return true;
-                case "crashes":
-                    return true;
-                case "nps":
-                    return true;
-                case "rating":
-                    return true;
+                    case "events":
+                        return true;
+                    case "crashes":
+                        return true;
+                    case "nps":
+                        return true;
+                    case "rating":
+                        return true;
                 }
             },
-            getMetrics: function() {
+            getMetrics: function () {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
                 if (!formData.selectedApps) {
@@ -483,11 +484,11 @@
                     );
                 }
             },
-            appSelected: function() {
+            appSelected: function () {
                 this.resetAlertCondition();
                 this.getMetrics();
             },
-            dataTypeSelected: function(val) {
+            dataTypeSelected: function (val) {
                 this.resetAlertCondition(1);
                 this.resetAlertConditionShow();
                 this.resetFilterCondition();
@@ -503,8 +504,7 @@
                 ];
                 if (validDataTypesForFilter.includes(val)) {
                     this.showFilter = true;
-                }
-                else {
+                } else {
                     this.showFilter = false;
                 }
 
@@ -518,8 +518,7 @@
                 ];
                 if (validDataTypesForSubType2.includes(val)) {
                     this.showSubType2 = true;
-                }
-                else {
+                } else {
                     this.showSubType2 = false;
                 }
 
@@ -535,7 +534,7 @@
                     this.showConditionValue = false;
                 }
             },
-            setFilterKeyOptions: function() {
+            setFilterKeyOptions: function () {
                 const formData = this.$refs.drawerData.editedObject;
                 if (!formData.selectedApps) {
                     return;
@@ -557,7 +556,7 @@
                     }
                 }
             },
-            setFilterValueOptions: function() {
+            setFilterValueOptions: function () {
                 const formData = this.$refs.drawerData.editedObject;
                 if (!formData.selectedApps) {
                     return;
@@ -602,19 +601,31 @@
                     ];
                 }
             },
-            handleFilterClosing: function() {
+            handleFilterClosing: function () {
                 this.filterButton = false;
                 this.resetFilterCondition();
             },
-            handleAddFilterButton: function() {
+            handleAddFilterButton: function () {
                 this.filterButton = true;
                 this.setFilterKeyOptions();
                 this.setFilterValueOptions();
             },
-            resetAlertCondition: function(startFrom = 0) {
-                const allFields = ["alertDataType", "alertDataSubType", "alertDataSubType2", "compareType", "compareValue", "period", "filterKey", "filterValue"];
+            resetAlertCondition: function (startFrom = 0) {
+                const allFields = [
+                    "alertDataType",
+                    "alertDataSubType",
+                    "alertDataSubType2",
+                    "compareType",
+                    "compareValue",
+                    "period",
+                    "filterKey",
+                    "filterValue",
+                ];
                 const fieldsToReset = allFields.slice(startFrom);
-                fieldsToReset.forEach(field => this.$refs.drawerData.editedObject[field] = null);
+                fieldsToReset.forEach(
+                    (field) =>
+                        (this.$refs.drawerData.editedObject[field] = null)
+                );
 
                 // Reset the background color for all input elements
                 const inputs =
@@ -630,7 +641,7 @@
                     this.resetColor(select);
                 });
             },
-            resetAlertConditionShow: function() {
+            resetAlertConditionShow: function () {
                 this.showSubType1 = true;
                 this.showSubType2 = false;
                 this.showCondition = true;
@@ -638,7 +649,7 @@
                 this.showFilter = false;
                 this.filterButton = false;
             },
-            resetFilterCondition: function() {
+            resetFilterCondition: function () {
                 this.alertDataFilterKeyOptions = [];
                 this.alertDataFilterValueOptions = [];
                 this.alertDataFilterKey = null;
@@ -689,7 +700,7 @@
             //         return;
             //     }
             // },
-            onSubmit: function(settings) {
+            onSubmit: function (settings) {
                 settings.selectedApps = [settings.selectedApps];
                 if (settings._id) {
                     var rows = this.$store.getters["countlyAlerts/table/all"];
@@ -705,8 +716,7 @@
                                     "countlyAlerts/deleteAlert",
                                     rows[i]._id
                                 );
-                            }
-                            else {
+                            } else {
                                 this.$store.dispatch(
                                     "countlyAlerts/deleteOnlineUsersAlert",
                                     rows[i]
@@ -726,49 +736,89 @@
 
                 let describePeriod;
                 switch (settings.period) {
-                case "hourly":
-                    describePeriod = "hour";
-                    break;
-                case "daily":
-                    describePeriod = "day";
-                    break;
-                case "monthly":
-                    describePeriod = "month";
-                    break;
+                    case "hourly":
+                        describePeriod = "hour";
+                        break;
+                    case "daily":
+                        describePeriod = "day";
+                        break;
+                    case "monthly":
+                        describePeriod = "month";
+                        break;
                 }
 
                 if (settings.period) {
                     if (subTarget) {
-                        if (settings.compareType === 'more') {
-                            settings.compareDescribe = subTarget + ' ' + target + ' is increased more than ' + settings.compareValue + ' in the last ' + describePeriod;
+                        if (settings.compareType === "more") {
+                            settings.compareDescribe =
+                                subTarget +
+                                " " +
+                                target +
+                                " is increased more than " +
+                                settings.compareValue +
+                                " in the last " +
+                                describePeriod;
+                        } else {
+                            settings.compareDescribe =
+                                subTarget +
+                                " " +
+                                target +
+                                " " +
+                                settings.compareType +
+                                " by " +
+                                settings.compareValue +
+                                " % in the last " +
+                                describePeriod;
                         }
-                        else {
-                            settings.compareDescribe = subTarget + ' ' + target + ' ' + settings.compareType + ' by ' + settings.compareValue + ' % in the last ' + describePeriod;
-                        }
-                    }
-                    else if (settings.alertDataType === 'onlineUsers') {
-                        if (target === '# of online users') {
-                            settings.compareDescribe = target + ' is ' + settings.compareType + ' than ' + settings.compareValue + ' in the last' + describePeriod;
-                        }
-                        else {
-                            if (settings.compareType === 'more') {
-                                settings.compareDescribe = target + ' is increased more than ' + settings.compareValue + ' in the last ' + describePeriod;
+                    } else if (settings.alertDataType === "onlineUsers") {
+                        if (target === "# of online users") {
+                            settings.compareDescribe =
+                                target +
+                                " is " +
+                                settings.compareType +
+                                " than " +
+                                settings.compareValue +
+                                " in the last" +
+                                describePeriod;
+                        } else {
+                            if (settings.compareType === "more") {
+                                settings.compareDescribe =
+                                    target +
+                                    " is increased more than " +
+                                    settings.compareValue +
+                                    " in the last " +
+                                    describePeriod;
+                            } else {
+                                settings.compareDescribe =
+                                    target +
+                                    " " +
+                                    settings.compareType +
+                                    " by " +
+                                    settings.compareValue +
+                                    " % in the last " +
+                                    describePeriod;
                             }
-                            else {
-                                settings.compareDescribe = target + ' ' + settings.compareType + ' by ' + settings.compareValue + ' % in the last ' + describePeriod;
-                            }
+                        }
+                    } else {
+                        if (settings.compareType === "more") {
+                            settings.compareDescribe =
+                                target +
+                                " is increased more than " +
+                                settings.compareValue +
+                                " in the last " +
+                                describePeriod;
+                        } else {
+                            settings.compareDescribe =
+                                target +
+                                " " +
+                                settings.compareType +
+                                " by " +
+                                settings.compareValue +
+                                " % in the last " +
+                                describePeriod;
                         }
                     }
-                    else {
-                        if (settings.compareType === 'more') {
-                            settings.compareDescribe = target + ' is increased more than ' + settings.compareValue + ' in the last ' + describePeriod;
-                        }
-                        else {
-                            settings.compareDescribe = target + ' ' + settings.compareType + ' by ' + settings.compareValue + ' % in the last ' + describePeriod;
-                        }
-                    }
-                }
-                else {
+                } else {
                     settings.compareDescribe = target;
                 }
                 // switch (settings.alertDataType) {
@@ -843,14 +893,12 @@
                             countlyCommon.formatNumber(config.users),
                             config.minutes
                         );
-                    }
-                    else if (config.type === "o") {
+                    } else if (config.type === "o") {
                         config.condition_title =
                             jQuery.i18n.map[
                                 "concurrent-users.alert-type.overall-title"
                             ];
-                    }
-                    else if (config.type === "m") {
+                    } else if (config.type === "m") {
                         config.condition_title =
                             jQuery.i18n.map[
                                 "concurrent-users.alert-type.monthly-title"
@@ -867,10 +915,10 @@
                 this.$store.dispatch("countlyAlerts/saveAlert", settings);
                 this.resetAlertConditionShow();
             },
-            onClose: function($event) {
+            onClose: function ($event) {
                 this.$emit("close", $event);
             },
-            onCopy: function(newState) {
+            onCopy: function (newState) {
                 this.showSubType1 = true;
                 this.showSubType2 = false;
                 this.showCondition = false;
@@ -878,7 +926,7 @@
                 newState.selectedApps = newState.selectedApps[0];
                 // this.onAppChange(newState.selectedApps, true);
                 // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
-                this.resetAlertCondition();
+                //this.resetAlertCondition();
                 this.getMetrics();
 
                 if (newState._id !== null) {
@@ -926,13 +974,13 @@
         template: "#alerts-table",
         mixins: [countlyVue.mixins.auth(ALERTS_FEATURE_NAME)],
         computed: {
-            tableRows: function() {
+            tableRows: function () {
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 if (this.filteredApps.length > 0) {
                     var self = this;
-                    rows = rows.filter(function(r) {
+                    rows = rows.filter(function (r) {
                         var matched = false;
-                        self.filteredApps.forEach(function(a) {
+                        self.filteredApps.forEach(function (a) {
                             if (r.selectedApps.indexOf(a) >= 0) {
                                 matched = true;
                             }
@@ -942,17 +990,17 @@
                 }
                 return rows;
             },
-            initialized: function() {
+            initialized: function () {
                 var result =
                     this.$store.getters["countlyAlerts/table/getInitialized"];
                 return result;
             },
-            rowTableRows: function() {
+            rowTableRows: function () {
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 return rows;
             },
         },
-        data: function() {
+        data: function () {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({
@@ -971,20 +1019,19 @@
             };
         },
         props: {
-            callCreateAlertDrawer: { type: Function, default: function() {} },
+            callCreateAlertDrawer: { type: Function, default: function () {} },
         },
         methods: {
-            createAlert: function() {
+            createAlert: function () {
                 this.callCreateAlertDrawer();
             },
-            handleAlertEditCommand: function(command, scope) {
+            handleAlertEditCommand: function (command, scope) {
                 if (command === "edit-comment") {
                     /* eslint-disable */
                     var data = Object.assign({}, scope.row);
                     /* eslint-enable */
                     this.$parent.$parent.openDrawer("home", data);
-                }
-                else if (command === "delete-comment") {
+                } else if (command === "delete-comment") {
                     var self = this;
                     this.deleteElement = scope.row;
                     var deleteMessage = CV.i18n(
@@ -994,7 +1041,7 @@
                     CountlyHelpers.confirm(
                         deleteMessage,
                         "red",
-                        function(result) {
+                        function (result) {
                             if (!result) {
                                 return true;
                             }
@@ -1010,8 +1057,7 @@
                                             .selectedApps[0],
                                     }
                                 );
-                            }
-                            else {
+                            } else {
                                 self.$store.dispatch(
                                     "countlyAlerts/deleteAlert",
                                     {
@@ -1025,10 +1071,10 @@
                     );
                 }
             },
-            updateStatus: function(scope) {
+            updateStatus: function (scope) {
                 var diff = scope.diff;
                 var status = {};
-                diff.forEach(function(item) {
+                diff.forEach(function (item) {
                     status[item.key] = item.newValue;
                 });
                 var alertStatus = {};
@@ -1039,8 +1085,7 @@
                         if (rows[i].alertDataType === "onlineUsers") {
                             onlineUsersAlertStatus[rows[i]._id] =
                                 status[rows[i]._id];
-                        }
-                        else {
+                        } else {
                             alertStatus[rows[i]._id] = status[rows[i]._id];
                         }
                     }
@@ -1050,20 +1095,20 @@
                 self.onlineUsersAlertStatus = onlineUsersAlertStatus;
                 this.$store
                     .dispatch("countlyAlerts/table/updateStatus", alertStatus)
-                    .then(function() {
+                    .then(function () {
                         return self.$store
                             .dispatch(
                                 "countlyAlerts/table/updateOnlineusersAlertStatus",
                                 self.onlineUsersAlertStatus
                             )
-                            .then(function() {
+                            .then(function () {
                                 return self.$store.dispatch(
                                     "countlyAlerts/table/fetchAll"
                                 );
                             });
                     });
             },
-            refresh: function() {
+            refresh: function () {
                 // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
         },
@@ -1080,7 +1125,7 @@
             drawer: AlertDrawer,
         },
         computed: {
-            countData: function() {
+            countData: function () {
                 var count = this.$store.getters["countlyAlerts/table/count"];
                 return [
                     { label: "alert.RUNNING_ALERTS", value: count.r },
@@ -1088,28 +1133,28 @@
                     { label: "alert.ALERTS_SENT_TODAY", value: count.today },
                 ];
             },
-            shouldHideCount: function() {
+            shouldHideCount: function () {
                 var result =
                     this.$store.getters["countlyAlerts/table/getInitialized"];
                 var rows = this.$store.getters["countlyAlerts/table/all"];
                 return result && rows.length === 0;
             },
-            initialized: function() {
+            initialized: function () {
                 var result =
                     this.$store.getters["countlyAlerts/table/getInitialized"];
                 return result;
             },
         },
-        data: function() {
+        data: function () {
             return {
                 canCreate: countlyAuth.validateCreate(ALERTS_FEATURE_NAME),
             };
         },
-        beforeCreate: function() {
+        beforeCreate: function () {
             this.$store.dispatch("countlyAlerts/initialize");
         },
         methods: {
-            createAlert: function() {
+            createAlert: function () {
                 var config = countlyAlerts.defaultDrawerConfigValue();
                 this.openDrawer("home", config);
             },
@@ -1127,7 +1172,7 @@
 
     alertsView.featureName = ALERTS_FEATURE_NAME;
 
-    app.route("/manage/alerts", "alerts", function() {
+    app.route("/manage/alerts", "alerts", function () {
         this.renderWhenReady(alertsView);
     });
     app.addMenu("management", {
