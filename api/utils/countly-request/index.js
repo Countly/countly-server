@@ -223,11 +223,10 @@ module.exports = function(countlyConfig) {
         module.exports(uri, options, callback, config);
     }
 
-    return {
-        request: requestFunction,
-        post: post,
-        get: get
-    };
+    requestFunction.post = post;
+    requestFunction.get = get;
+
+    return requestFunction;
 
 };
 
