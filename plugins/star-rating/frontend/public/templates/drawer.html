@@ -162,23 +162,23 @@
             </validation-provider>
           </div>
         </div>
-        <div class="cly-vue-drawer-step__section">
-          <el-checkbox test-id="ratings-drawer-settings-comment-checkbox" class="bu-mb-4 text-medium text-heading" v-model="drawerScope.editedObject.comment_enable">
+        <div class="cly-vue-drawer-step__section bu-pt-5 bu-pb-1">
+          <el-checkbox test-id="ratings-drawer-settings-comment-checkbox" class="text-medium text-heading" v-model="drawerScope.editedObject.comment_enable">
             <span data-test-id="ratings-drawer-settings-comment-label">{{ i18n('feedback.use-add-comment-option') }}</span>
           </el-checkbox>
           <validation-provider  v-if="drawerScope.editedObject.comment_enable" name="popup_comment_callout" v-slot="v">
             <el-input test-id="ratings-drawer-settings-comment-input" v-model="drawerScope.editedObject.popup_comment_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
           </validation-provider>
         </div>
-        <div class="cly-vue-drawer-step__section">
-          <el-checkbox test-id="ratings-drawer-settings-contact-checkbox" class="bu-mb-4 text-medium text-heading" v-model="drawerScope.editedObject.contact_enable">
+        <div class="cly-vue-drawer-step__section bu-py-1">
+          <el-checkbox test-id="ratings-drawer-settings-contact-checkbox" class="text-medium text-heading" v-model="drawerScope.editedObject.contact_enable">
             <span data-test-id="ratings-drawer-settings-contact-label">{{ i18n('feedback.use-contact-email-option') }}</span>
           </el-checkbox>
           <validation-provider v-if="drawerScope.editedObject.contact_enable" name="popup_email_callout" v-slot="v">
             <el-input test-id="ratings-drawer-settings-contact-input" v-model="drawerScope.editedObject.popup_email_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
           </validation-provider>
         </div>
-         <div class="cly-vue-drawer-step__section bu-pb-2 cly-vue-surveys-drawer__consent">
+         <div class="cly-vue-drawer-step__section bu-py-1 cly-vue-surveys-drawer__consent">
           <el-checkbox
             class="text-smallish"
             size="small"
@@ -195,6 +195,9 @@
     v-model="drawerScope.editedObject.links">
   </star-consent-link>
         <div class="cly-vue-drawer-step__section">
+          <div class="text-medium-big cly-vue-surveys-drawer--font-weight-medium bu-pb-2 bu-pt-4">
+            {{i18n('feedback.buttons.heading')}}
+          </div>
           <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-button-callout-label">
             {{i18n('feedback.button-callout')}}
           </div>
