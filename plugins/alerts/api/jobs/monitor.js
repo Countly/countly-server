@@ -51,10 +51,12 @@ class MonitorJob extends Job {
             if (module) {
                 try {
                     await module.check({ alertConfigs, done, scheduledTo });
-                } catch(err) {
-                    log.e("Error while running " + alertConfigs.alertDataType + " alert check", err);
                 }
-            } else {
+                catch(error) {
+                    log.e("Error while running " + alertConfigs.alertDataType + " alert check", error);
+                }
+            }
+            else {
                 log.e("Alert module " + alertConfigs.alertDataType + " not found");
             }
         });
