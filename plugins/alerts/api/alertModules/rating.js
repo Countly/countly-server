@@ -98,7 +98,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
 /**
  * Returns the total number of responses by the given date.
- * Can be filtered by ratings.
+ * Can be filtered by rating scores.
  * @param   {App}                       app      - app document
  * @param   {string}                    widgetId - _id of the from feedback_widgets
  * @param   {Date}                      date     - date of the value you're looking for

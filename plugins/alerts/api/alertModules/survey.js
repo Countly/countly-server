@@ -85,7 +85,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 };
 
 /**
- * Returns the view metric value by view, date and metric type.
+ * Returns the number of responses of a survey by date.
  * @param   {App}                       app    - app document
  * @param   {string}                    survey - _id of the from feedback_widgets
  * @param   {Date}                      date   - date of the value you're looking for

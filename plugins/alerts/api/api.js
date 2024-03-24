@@ -16,6 +16,7 @@ const commonLib = require("./parts/common-lib.js");
  * - nps      [CLY]_nps
  * - rating   [CLY]_star_rating
  * - survey   [CLY]_survey
+ * - crashes  HAS CUSTOM REQUEST BODY (no event key)
  */
 const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => ({
     module: require("./alertModules/" + name + ".js"),

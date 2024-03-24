@@ -95,7 +95,7 @@
                                 label: "# of crashes/errors",
                             },
                             {
-                                value: "none-fatal crashes/errors per session",
+                                value: "non-fatal crashes/errors per session",
                                 label: "non-fatal crashes/errors per session",
                             },
                             {

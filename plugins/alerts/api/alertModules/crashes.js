@@ -2,14 +2,14 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const log = require('../../../../api/utils/log.js')('alert:crash');
+const log = require('../../../../api/utils/log.js')('alert:crashes');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
-    "none-fatal crashes/errors per session": "crnfses",
+    "non-fatal crashes/errors per session": "crnfses",
     "fatal crashes/errors per session": "crfses",
 };
 
@@ -34,8 +34,8 @@ async function triggerByEvent(payload) {
 
     const alert = await common.db.collection("alerts").findOne({
         selectedApps: app._id.toString(),
-        alertDataType: "crash",
-        alertDataSubType: commonLib.TRIGGERED_BY_EVENT.crash,
+        alertDataType: "crashes",
+        alertDataSubType: commonLib.TRIGGERED_BY_EVENT.crashes,
     });
     if (!alert) {
         return;
@@ -85,7 +85,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 /**
  * Abstraction on top of getCrashDataByDate to calculate composite metrics. 
  * Possible metricStrings:
- *   - none-fatal crashes/errors per session
+ *   - non-fatal crashes/errors per session
  *   - fatal crashes/errors per session
  *   - # of crashes/errors
  * @param   {App}                       app          - app document

@@ -2,7 +2,7 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const log = require('../../../../api/utils/log.js')('alert:cohort');
+const log = require('../../../../api/utils/log.js')('alert:cohorts');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");

@@ -3,15 +3,15 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const log = require('../../../../api/utils/log.js')('alert:session');
+const log = require('../../../../api/utils/log.js')('alert:sessions');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
 const METRIC_ENUM = {
-    NUM_OF_SESSIONS: "Number of sessions",
-    AVG_SESSION_DURATION: "Average session duration",
+    NUM_OF_SESSIONS: "# of sessions",
+    AVG_SESSION_DURATION: "average session duration",
 };
 
 /**
