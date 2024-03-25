@@ -419,6 +419,7 @@ countlyVue.container.registerTab("/analytics/geo", {
     title: CV.i18n('sidebar.analytics.countries'),
     route: "#/analytics/geo/countries",
     component: CountryView,
+    dataTestId: "tab-countries",
     vuex: [{
         clyModel: countlyCountry
     }]
