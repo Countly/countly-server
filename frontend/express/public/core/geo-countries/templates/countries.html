@@ -19,7 +19,7 @@
 				<div style="width:256px;">
 					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty" v-loading="isLoading"></cly-radio-block>
 				</div>
-				<div class="bu-column leaflet-noclick-map" style="position:relative">
+				<div class="bu-column leaflet-noclick-map" data-test-id="cly-worldmap" style="position:relative">
 					<cly-worldmap
 						v-loading="isLoading"
                         style="height: 100%;"
