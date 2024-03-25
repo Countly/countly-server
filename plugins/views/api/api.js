@@ -1312,6 +1312,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             res1.segments[k] = Object.keys(res1.segments[k]) || [];
                         }
                     }
+                    if (res1 && res1.omit) {
+                        res.omit = res1.omit;
+                    }
                     if (common.drillDb) {
                         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
                         common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.domain": 1}, function(err3, meta1) {

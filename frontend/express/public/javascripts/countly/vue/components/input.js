@@ -517,7 +517,17 @@
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false},
             onlySelectedOptionsTab: {type: Boolean, default: false},
-            prefixLabelWithTabId: {type: Boolean, default: false}
+            prefixLabelWithTabId: {type: Boolean, default: false},
+            disabledOptions: {
+                type: Object,
+                default: function() {
+                    return {
+                        label: null,
+                        options: null
+                    };
+                },
+                required: false
+            },
         },
         data: function() {
             return {

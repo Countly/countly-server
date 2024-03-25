@@ -9,6 +9,7 @@
         _segment = "",
         _segmentVal = "",
         _segments = [],
+        _omit = [],
         _domains = [],
         _name = "views",
         _period = null,
@@ -433,8 +434,7 @@
                 }
             }
             return {"data": data};
-        }
-
+        },
     };
 
     countlyViews.getVuexModule = function() {
@@ -451,8 +451,9 @@
                 selectedSegmentValue: "",
                 selectedViews: [],
                 segments: {},
+                omittedSegments: [],
                 domains: [],
-                totalViewsCount: 0
+                totalViewsCount: 0,
             };
         };
 
@@ -474,6 +475,7 @@
                         .then(function() {
                             context.commit('setData', _graphDataObj || {});
                             context.commit('setSegments', _segments);
+                            context.commit('setOmittedSegments', _omit);
                             context.commit('setDomains', _domains);
                             context.dispatch('onFetchSuccess');
                             resolve();
@@ -555,6 +557,9 @@
             setSegments: function(state, value) {
                 state.segments = value;
             },
+            setOmittedSegments: function(state, value) {
+                state.omittedSegments = value;
+            },
             setDomains: function(state, value) {
                 state.domains = value;
             },
@@ -630,7 +635,10 @@
                 },
                 updateError: function(context) {
                     return context.updateError;
-                }
+                },
+                getOmittedSegments: function(context) {
+                    return context.omittedSegments;
+                },
             },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
@@ -678,6 +686,13 @@
                                 _segments[segment].sort(Intl.Collator().compare);
                             }
                             _domains = json.domains;
+                        }
+                        if (json && json.omit) {
+                            for (let index = 0; index < json.omit.length; index++) {
+                                json.omit[index] = countlyCommon.decode(json.omit[index]);
+                            }
+                            _omit = json.omit;
+                            _omit.sort(Intl.Collator().compare);
                         }
                     }
                 })
@@ -811,8 +826,8 @@
 
             //if refresh
             for (var i = 0; i < _selectedViews.length; i++) {
-                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && _graphDataObj[_selectedViews[i]]['_no-segment'] !== {}) ||
-                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && _graphDataObj[_selectedViews[i]][_segment] !== {}))
+                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']) !== 0) ||
+                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]) !== 0))
                 ) {
                     selected.push({'view': _selectedViews[i], "action": "refresh"});
                 }
@@ -841,6 +856,13 @@
                                 _segments[segment].sort(Intl.Collator().compare);
                             }
                             _domains = json.domains;
+                        }
+                        if (json && json.omit) {
+                            for (let index = 0; index < json.omit.length; index++) {
+                                json.omit[index] = countlyCommon.decode(json.omit[index]);
+                            }
+                            _omit = json.omit;
+                            _omit.sort(Intl.Collator().compare);
                         }
                     }
                 }),
@@ -898,6 +920,7 @@
         _initialized = false;
         _segments = [];
         _domains = [];
+        _omit = [];
         countlyViews._reset();
         _graphDataObj = {};
     };
