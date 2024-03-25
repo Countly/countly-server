@@ -52,7 +52,7 @@ class MonitorJob extends Job {
                 try {
                     await module.check({ alertConfigs, done, scheduledTo });
                 }
-                catch(error) {
+                catch (error) {
                     log.e("Error while running " + alertConfigs.alertDataType + " alert check", error);
                 }
             }
