@@ -34,15 +34,19 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         return done();
     }
 
-    let { alertDataSubType, alertDataSubType2, period, compareType, compareValue } = alert;
+    let { alertDataSubType, alertDataSubType2, period, compareType, compareValue, filterKey, filterValue } = alert;
     const metricProp = METRIC_TO_PROPERTY_MAP[alertDataSubType];
-    let metricValue = await getEventMetricByDate(app, alertDataSubType2, metricProp, date, period) || 0;
+    let segments;
+    if (filterKey && filterValue) {
+        segments = { [filterKey]: filterValue };
+    }
+    let metricValue = await getEventMetricByDate(app, alertDataSubType2, metricProp, date, period, segments) || 0;
 
     compareValue = Number(compareValue);
 
     // if this is average:
     if (AVERAGE_METRICS.includes(alertDataSubType)) {
-        const count = await getEventMetricByDate(app, alertDataSubType2, "c", date, period);
+        const count = await getEventMetricByDate(app, alertDataSubType2, "c", date, period, segments);
         if (!count) {
             return done();
         }
@@ -56,7 +60,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     }
     else {
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-        let metricValueBefore = await getEventMetricByDate(app, alertDataSubType2, metricProp, before, period);
+        let metricValueBefore = await getEventMetricByDate(app, alertDataSubType2, metricProp, before, period, segments);
 
         if (!metricValueBefore) {
             return done();
@@ -64,7 +68,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
         // if this is average:
         if (AVERAGE_METRICS.includes(alertDataSubType)) {
-            const count = await getEventMetricByDate(app, alertDataSubType2, "c", before, period);
+            const count = await getEventMetricByDate(app, alertDataSubType2, "c", before, period, segments);
             if (!count) {
                 return done();
             }
