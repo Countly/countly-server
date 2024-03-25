@@ -271,6 +271,7 @@
                         <form>\
                             <el-input\
                                 :disabled="disabled"\
+                                test-id="cly-listbox-search-input"\
                                 autocomplete="off"\
                                 v-model="searchQuery"\
                                 :placeholder="searchPlaceholder">\
@@ -313,7 +314,7 @@
                             </div>\
                         </div>\
                     </vue-scroll>\
-                    <div v-else class="cly-vue-listbox__no-data">\
+                    <div v-else class="cly-vue-listbox__no-data" data-test-id="cly-listbox-no-match-found-label">\
                         {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
