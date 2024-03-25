@@ -14,6 +14,10 @@
                         placement: "bottom-end"
                     };
                 }
+            },
+            testId: {
+                type: String,
+                default: "cly-guide-test-id"
             }
         },
         data: function() {
@@ -32,7 +36,7 @@
         template: `
             <div>\
                 <template v-if="enableGuides">\
-                    <view-guide :tooltip="tooltip"></view-guide>\
+                    <view-guide :test-id="testId" :tooltip="tooltip"></view-guide>\
                 </template>\
                 <template v-else-if="tooltip && tooltip.description">\
                     <cly-tooltip-icon :tooltip="tooltip.description" icon="ion ion-help-circled" style="margin-left:8px" :placement="tooltip.placement"></cly-tooltip-icon>\
@@ -108,7 +112,7 @@
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
                                             <h2 class="bu-mr-2">{{title}}</h2>\
-                                            <cly-guide v-if="title" :tooltip="tooltip"></cly-guide>\
+                                            <cly-guide v-if="title" test-id="header-title" :tooltip="tooltip"></cly-guide>\
                                         </div>\
                                     </slot>\
                                 </template> \

@@ -304,6 +304,7 @@ countlyVue.container.registerTab("/analytics/sessions", {
     permission: "core",
     title: CV.i18n('session-overview.title'),
     route: "#/analytics/sessions/overview",
+    dataTestId: "tab-session-overview",
     component: SessionOverviewView,
     vuex: [{
         clyModel: countlySessionOverview

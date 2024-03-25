@@ -15,10 +15,10 @@
     <cly-main>
 		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
 		<div class="bu-columns bu-is-gapless bu-mt-2">
-			<h4>{{i18n('density.densities-for')}}</h4>
+			<h4 data-test-id="densities-for-label">{{i18n('density.densities-for')}}</h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
-					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+				<el-select test-id="densities-for" v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+					<el-option :test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
 				</el-select>
 			</div>
 		</div>
@@ -39,14 +39,14 @@
                         </template>
                     </cly-metric-card>
 					<div v-if="densityItems.length === 0 && !isLoading" class="technology-density-wrapper__empty-card">
-						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+						<div class="text-medium" data-test-id="destiny-for-no-data-label">{{i18n('common.table.no-data')}}</div>
 					</div>
                 </cly-metric-cards>
             </vue-scroll>
         </div>
-		<h5 class="bu-pb-4"> {{i18n('density.distribution')}} </h5>
+		<h5 class="bu-pb-4" data-test-id="density-distribution-label"> {{i18n('density.distribution')}} </h5>
 		<div v-if="densityVersions.length < 4 && !isLoading" class="technology-density-wrapper__versions-empty-card">
-			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+			<div class="text-medium" data-test-id="destiny-distribution-no-data-label">{{i18n('common.table.no-data')}}</div>
 		</div>
 		<div v-else-if="densityVersions.length === 0 && isLoading">
 			<div style="height: 200px;" v-loading="isLoading"></div>

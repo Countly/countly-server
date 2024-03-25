@@ -3,10 +3,10 @@
 	<cly-section>
 		<div class="bu-columns bu-is-gapless technology-pie-graphs">
 			<div class="bu-column bu-is-6">
-				<cly-chart-pie :option="pieOptionsTotal" v-loading="isLoading" :force-loading="isLoading" :showToggle="false"></cly-chart-pie>
+				<cly-chart-pie test-id="pie-devices-total" :option="pieOptionsTotal" v-loading="isLoading" :force-loading="isLoading" :showToggle="false"></cly-chart-pie>
 			</div>
 			<div class="bu-column bu-is-6">
-				<cly-chart-pie :option="pieOptionsNew" v-loading="isLoading" :force-loading="isLoading" :showToggle="false"></cly-chart-pie>
+				<cly-chart-pie test-id="pie-devices-new" :option="pieOptionsNew" v-loading="isLoading" :force-loading="isLoading" :showToggle="false"></cly-chart-pie>
 			</div>
 		</div>
 	</cly-section>
