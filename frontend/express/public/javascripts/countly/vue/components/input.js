@@ -523,7 +523,7 @@
                 default: function() {
                     return {
                         label: null,
-                        items: null
+                        options: null
                     };
                 },
                 required: false

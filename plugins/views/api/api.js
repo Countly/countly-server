@@ -1304,7 +1304,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else if (params.qstring.method === "get_view_segments") {
             validateRead(params, FEATURE_NAME, function() {
-                var res = {segments: [], domains: [], omit: []};
+                var res = {segments: [], domains: []};
                 common.db.collection("views").findOne({'_id': common.db.ObjectID(params.app_id)}, function(err1, res1) {
                     if (res1 && res1.segments) {
                         res.segments = res1.segments;
