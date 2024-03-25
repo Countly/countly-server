@@ -27,42 +27,37 @@ const PAYING_USER_PROP_KEY = "p";
  * @param {Date}     date  - scheduled date for the alert (job.next)
  */
 module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    try {
-        const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
-        if (!app) {
-            log.e(`App ${alert.selectedApps[0]} couldn't be found`);
+    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    if (!app) {
+        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
+        return done();
+    }
+
+    let { alertDataSubType, period, compareType, compareValue } = alert;
+    compareValue = Number(compareValue);
+
+    const metricValue = await calculateRevenueMetric(app, alertDataSubType, date, period) || 0;
+
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
+        if (metricValue > compareValue) {
+            await commonLib.trigger({ alert, app, metricValue, date });
+        }
+    }
+    else {
+        const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
+        const metricValueBefore = await calculateRevenueMetric(app, alertDataSubType, before, period);
+        if (!metricValueBefore) {
             return done();
         }
 
-        let { alertDataSubType, period, compareType, compareValue } = alert;
-        compareValue = Number(compareValue);
+        const change = (metricValue / metricValueBefore - 1) * 100;
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
+            ? change >= compareValue
+            : change <= -compareValue;
 
-        const metricValue = await calculateRevenueMetric(app, alertDataSubType, date, period) || 0;
-
-        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
-            if (metricValue > compareValue) {
-                await commonLib.trigger({ alert, app, metricValue, date });
-            }
+        if (shouldTrigger) {
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
         }
-        else {
-            const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-            const metricValueBefore = await calculateRevenueMetric(app, alertDataSubType, before, period);
-            if (!metricValueBefore) {
-                return done();
-            }
-
-            const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
-                ? change >= compareValue
-                : change <= -compareValue;
-
-            if (shouldTrigger) {
-                await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
-            }
-        }
-    }
-    catch (err) {
-        log.e("Error while running check for view alert", err);
     }
     done();
 };
@@ -103,7 +98,7 @@ async function calculateRevenueMetric(app, metricName, date, period) {
 }
 
 /**
- * Returns the view metric value by view, date and metric type.
+ * Returns the revenue metric value by date and metric type.
  * @param   {App}                       app    - app document
  * @param   {string}                    metric - prop name in event collection: c, s, dur
  * @param   {Date}                      date   - date of the value you're looking for

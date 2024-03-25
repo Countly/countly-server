@@ -7,16 +7,16 @@ const { Job } = require('../../../../api/parts/jobs/job.js'),
     common = require('../../../../api/utils/common.js');
 
 const ALERT_MODULES = {
-    "view": require("../alertModules/view.js"),
+    "views": require("../alertModules/views.js"),
     "users": require("../alertModules/users.js"),
-    "session": require("../alertModules/session.js"),
+    "sessions": require("../alertModules/sessions.js"),
     "survey": require("../alertModules/survey.js"),
     "revenue": require("../alertModules/revenue.js"),
-    "event": require("../alertModules/event.js"),
+    "events": require("../alertModules/events.js"),
     "rating": require("../alertModules/rating.js"),
-    "cohort": require("../alertModules/cohort.js"),
-    "dataPoint": require("../alertModules/dataPoint.js"),
-    "crash": require("../alertModules/crash.js"),
+    "cohorts": require("../alertModules/cohorts.js"),
+    "dataPoints": require("../alertModules/dataPoints.js"),
+    "crashes": require("../alertModules/crashes.js"),
 };
 /**
  * @class
@@ -37,7 +37,7 @@ class MonitorJob extends Job {
             _id: common.db.ObjectID(alertID),
             // these are being triggered by the event listener in api.js
             alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
-        }, function(err, alertConfigs) {
+        }, async function(err, alertConfigs) {
             if (err) {
                 log.e(err);
                 return;
@@ -49,7 +49,15 @@ class MonitorJob extends Job {
             log.d("job info:", self._json, alertConfigs);
             const module = ALERT_MODULES[alertConfigs.alertDataType];
             if (module) {
-                module.check({ alertConfigs, done, scheduledTo });
+                try {
+                    await module.check({ alertConfigs, done, scheduledTo });
+                }
+                catch(error) {
+                    log.e("Error while running " + alertConfigs.alertDataType + " alert check", error);
+                }
+            }
+            else {
+                log.e("Alert module " + alertConfigs.alertDataType + " not found");
             }
         });
     }

@@ -4,15 +4,15 @@
  */
 
 const crypto = require('crypto');
-const log = require('../../../../api/utils/log.js')('alert:view');
+const log = require('../../../../api/utils/log.js')('alert:views');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
-    "Bounce rate": "b",
-    "Number of page views": "t",
+    "bounce rate": "b",
+    "# of page views": "t",
 };
 
 /**
@@ -22,54 +22,49 @@ const METRIC_TO_PROPERTY_MAP = {
  * @param {Date}     date  - scheduled date for the alert (job.next)
  */
 module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    try {
-        const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
-        if (!app) {
-            log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-            return done();
-        }
+    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    if (!app) {
+        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
+        return done();
+    }
 
-        let { alertDataSubType, alertDataSubType2, period, compareType, compareValue } = alert;
-        const metricProperty = METRIC_TO_PROPERTY_MAP[alertDataSubType];
-        compareValue = Number(compareValue);
+    let { alertDataSubType, alertDataSubType2, period, compareType, compareValue } = alert;
+    const metricProperty = METRIC_TO_PROPERTY_MAP[alertDataSubType];
+    compareValue = Number(compareValue);
 
-        if (!metricProperty) {
-            log.e(`Metric "${alert.alertDataSubType}" couldn't be mapped for alert ${alert._id.toString()}`);
-            return done();
-        }
+    if (!metricProperty) {
+        log.e(`Metric "${alert.alertDataSubType}" couldn't be mapped for alert ${alert._id.toString()}`);
+        return done();
+    }
 
-        const metricValue = await getViewMetricByDate(app, metricProperty, alertDataSubType2, date, period) || 0;
+    const metricValue = await getViewMetricByDate(app, metricProperty, alertDataSubType2, date, period) || 0;
 
-        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
-            if (metricValue > compareValue) {
-                await commonLib.trigger({ alert, app, metricValue, date });
-            }
-        }
-        else {
-            const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-            const metricValueBefore = await getViewMetricByDate(app, metricProperty, alertDataSubType2, before, period);
-            if (!metricValueBefore) {
-                return done();
-            }
-
-            const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
-                ? change >= compareValue
-                : change <= -compareValue;
-
-            if (shouldTrigger) {
-                await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
-            }
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
+        if (metricValue > compareValue) {
+            await commonLib.trigger({ alert, app, metricValue, date });
         }
     }
-    catch (err) {
-        log.e("Error while running check for view alert", err);
+    else {
+        const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
+        const metricValueBefore = await getViewMetricByDate(app, metricProperty, alertDataSubType2, before, period);
+        if (!metricValueBefore) {
+            return done();
+        }
+
+        const change = (metricValue / metricValueBefore - 1) * 100;
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
+            ? change >= compareValue
+            : change <= -compareValue;
+
+        if (shouldTrigger) {
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+        }
     }
     done();
 };
 
 /**
- * Returns the view metric value by view, date and metric type.
+ * Returns the view metric value by view id, date and metric type.
  * @param   {App}                       app    - app document
  * @param   {string}                    metric - "t" or "b" (from METRIC_TO_PROPERTY_MAP)
  * @param   {string}                    view   - _id of the view from app_viewsmeta...

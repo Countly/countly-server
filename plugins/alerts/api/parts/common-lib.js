@@ -3,8 +3,8 @@
  * @typedef  {Object}        Alert
  * @property {ObjectId}      _id               - document id
  * @property {string}        alertName         - identifier
- * @property {string}        alertDataType     - module: view|crash|survey...
- * @property {string}        alertDataSubType  - metric: e.g. "Number of page views"
+ * @property {string}        alertDataType     - module: views|crashes|survey...
+ * @property {string}        alertDataSubType  - metric: e.g. "# of page views"
  * @property {string}        alertDataSubType2 - view id/feedback widget id/event name/...
  * @property {string}        compareType       - comparison operator e.g. "increased by at least"
  * @property {string}        compareValue      - value to compare to
@@ -58,16 +58,16 @@ const PERIOD_TO_DATE_COMPONENT_MAP = {
 };
 
 const COMPARE_TYPE_ENUM = {
-    INCREASED_BY: "increased by at least",
-    DECREASED_BY: "decreased by at least",
-    MORE_THAN: "more than",
+    INCREASED_BY: "increased",
+    DECREASED_BY: "decreased",
+    MORE_THAN: "more",
 };
 
 const TRIGGERED_BY_EVENT = {
-    survey: "New survey response",
-    nps: "New NPS response",
-    rating: "New rating response",
-    crash: "New crash",
+    survey: "new survey response",
+    nps: "new NPS response",
+    rating: "new rating response",
+    crashes: "new crash/error",
 };
 
 module.exports = {
@@ -193,7 +193,7 @@ async function compileEmail(result) {
 /**
  * Starts triggering alerts matched with their conditions.
  * @param {MatchedResult} result      - alert and app pair
- * @param {object}        log         - log object for the module e.g.: "alerts:view"
+ * @param {object}        log         - log object for the module e.g.: "alerts:views"
  */
 async function trigger(result, log) {
     const {alert, app, date} = result;

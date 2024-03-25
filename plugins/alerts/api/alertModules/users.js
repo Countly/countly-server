@@ -10,8 +10,8 @@ const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
-    "Number of users": "u",
-    "Number of new users": "n",
+    "# of users": "u",
+    "# of new users": "n",
 };
 /**
  * Alert triggering logic
@@ -64,7 +64,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
 module.exports.getUserMetricByDate = getUserMetricByDate;
 /**
- * Returns the session metric value by date and metric type.
+ * Returns user metric by date and metric type.
  * @param   {App}                       app    - app document
  * @param   {string}                    metric - e, n, t, u, d, m, mt, p
  * @param   {Date}                      date   - date of the value you're looking for
