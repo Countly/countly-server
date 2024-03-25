@@ -54,8 +54,8 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         if (alert.enabled) {
             const textExpression = PERIOD_TO_TEXT_EXPRESSION_MAPPER[alert.period];
             if (textExpression) {
-                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
-                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
+                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
+                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
             }
         }
         else {

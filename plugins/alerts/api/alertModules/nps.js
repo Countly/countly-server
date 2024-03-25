@@ -55,10 +55,10 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         return done();
     }
 
-    let { period, alertDataSubType2, compareType, compareValue } = alert;
+    let { period, alertDataSubType2, compareType, compareValue, filterValue } = alert;
     compareValue = Number(compareValue);
 
-    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period) || 0;
+    const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period, filterValue) || 0;
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
@@ -67,7 +67,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     }
     else {
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-        const metricValueBefore = await getResponsesByDate(app, alertDataSubType2, before, period);
+        const metricValueBefore = await getResponsesByDate(app, alertDataSubType2, before, period, filterValue);
         if (!metricValueBefore) {
             return done();
         }
@@ -91,9 +91,10 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
  * @param   {string}                    nps    - _id of the from feedback_widgets
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
+ * @param   {string}                    score  - detractor|passive|promoter
  * @returns {Promise<number|undefined>}        - a promise resolves to metric value or undefined
  */
-async function getResponsesByDate(app, nps, date, period) {
+async function getResponsesByDate(app, nps, date, period, score) {
     const dateComponents = commonLib.getDateComponents(date, app.timezone);
     const monthFilter = String(dateComponents.years) + ":" + String(dateComponents.months);
     const collectionName = "nps" + app._id.toString();
@@ -108,7 +109,7 @@ async function getResponsesByDate(app, nps, date, period) {
     if (period === "monthly") {
         let numberOfResponses;
         for (let day in record.d) {
-            const responses = sumOfAllResponses(record.d[day], nps);
+            const responses = sumOfAllResponses(record.d[day], nps, score);
             if (typeof responses !== "number") {
                 continue;
             }
@@ -124,7 +125,7 @@ async function getResponsesByDate(app, nps, date, period) {
         if (period === "hourly") {
             scope = scope?.[dateComponents.hours];
         }
-        return sumOfAllResponses(scope, nps);
+        return sumOfAllResponses(scope, nps, score);
     }
 }
 
@@ -132,13 +133,15 @@ async function getResponsesByDate(app, nps, date, period) {
  * Calculates the sum of all valid responses inside a nps{app_id} date record.
  * @param   {object}           scope - object scope: Daily or hourly object from db
  * @param   {string}           nps   - feedback_widgets _id
+ * @param   {string}           score - detractor|passive|promoter
  * @returns {number|undefined}       - number of valid responses
  */
-function sumOfAllResponses(scope, nps) {
+function sumOfAllResponses(scope, nps, score) {
     if (!scope) {
         return;
     }
-    const recordKeyReg = new RegExp("\\*\\*\\d{1,2}\\*\\*" + nps + "\\*\\*(detractor|passive|promoter)$");
+
+    const recordKeyReg = new RegExp("\\*\\*\\d{1,2}\\*\\*" + nps + "\\*\\*(" + score + ")$");
     let numberOfResponses;
 
     for (let recordKey in scope) {
