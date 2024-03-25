@@ -8,7 +8,7 @@ const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
-const { getEventMetricByDate } = require("./event.js");
+const { getEventMetricByDate } = require("./events.js");
 
 module.exports.triggerByEvent = triggerByEvent;
 /**
