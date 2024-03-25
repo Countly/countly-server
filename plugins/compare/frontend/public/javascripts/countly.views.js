@@ -152,6 +152,7 @@
         permission: FEATURE_NAME,
         title: "Compare Events",
         component: CompareEvents,
+        dataTestId: "tab-compare-events",
         vuex: [{
             clyModel: countlyCompareEvents
         }]
