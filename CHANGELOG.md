@@ -1,3 +1,28 @@
+## Version 23.11.15
+Fixes:
+- [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
+- [core] Script to attempt issues with users having uid as null
+- [core] Fixed TypeError currEvent.key.indexOf is not a function
+- [core] Script to reset merge count in app_users documents
+- [views] job catch error
+- [jobs] log error instead of crashing
+- [core] Added code to ensure uid and did in app_users documents in case of deletion/merging inconsistencies
+- [core] Updates for event omitting script
+- [core] Updates for diagnostic script
+- [core] Additions to diagnostic scripts
+- [core] Script to check user mismatch between app users and drill collections
+
+Enterprise Fixes:
+- [license] Update metrics check timestamp after the metrics are fetched
+- [license] Fix for license metrics calculations
+- [cohorts] Fix return type in getNames to return all cohorts
+- [ab-testing] Skip calculation of ab-tests on listing page
+- [config-transfer] List drill reports in config transfer
+- [views] Added tests in drill module for cases with multiple events in same request for same view
+- [flows] add sytemlogs records for flows operations
+- [data-manager] Fix query run in data manager on setting configs
+- [block] Add check for valid rule in blocks
+
 ## Version 23.11.14
 Fixes:
 - [core] Fixes for proxy agent
