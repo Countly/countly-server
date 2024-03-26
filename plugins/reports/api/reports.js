@@ -649,7 +649,9 @@ var metricProps = {
                 if (!html && message.data && message.template) { // report from dashboard
                     const msg = reports.genUnsubscribeCode(report, report.emails[i]);
                     message.data.unsubscribe_link = message.data.host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
-                    html = ejs.render(message.template, message.data);
+                    let emailFiller = message.data;
+                    emailFiller.host = 'http://localhost';
+                    html = ejs.render(message.template, emailFiller);
                 }
                 const msg = {
                     to: report.emails[i],
