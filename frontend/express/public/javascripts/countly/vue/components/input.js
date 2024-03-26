@@ -523,7 +523,7 @@
                 default: function() {
                     return {
                         label: null,
-                        options: null
+                        options: {}
                     };
                 },
                 required: false
@@ -642,6 +642,9 @@
             },
             hasSelectedOptionsTab: function() {
                 return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
+            },
+            hasDisabledOptions: function() {
+                return Object.keys(this.disabledOptions.options).length !== 0;
             },
             showTabs: function() {
                 if (this.onlySelectedOptionsTab) {
