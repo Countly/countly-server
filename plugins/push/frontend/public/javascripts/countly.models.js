@@ -278,7 +278,8 @@
                         badgeNumber: "",
                         onClickURL: "",
                         json: null,
-                        userData: []
+                        userData: [],
+                        setContentAvailable: false,
                     },
                     android: {
                         mediaURL: "",
@@ -1257,9 +1258,19 @@
                 };
             },
             mapIOSSettings: function(iosSettingsDto) {
+                let subtitle, setContentAvailable;
+                if (iosSettingsDto && Array.isArray(iosSettingsDto.specific)) {
+                    let subtitleItem = iosSettingsDto.specific.find(i => i.subtitle !== undefined);
+                    if (subtitleItem) {
+                        subtitle = countlyPushNotification.helper.decodeMessage(subtitleItem.subtitle || "");
+                    }
+                    let contentAvailableItem = iosSettingsDto.specific.find(i => i.setContentAvailable !== undefined);
+                    setContentAvailable = contentAvailableItem.setContentAvailable;
+                }
                 return {
                     // NOte: subtitle will reside at index zero for now. There are no other platform specifics
-                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
+                    subtitle,
+                    setContentAvailable,
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1916,11 +1927,20 @@
                     result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
-                    result.specific = [{subtitle: iosSettings.subtitle}];
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ subtitle: iosSettings.subtitle });
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
+                }
+                if (options.settings[PlatformEnum.IOS].isContentAvailableSet) {
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ setContentAvailable: options.settings[PlatformEnum.IOS].isContentAvailableSet });
                 }
                 return result;
             },
