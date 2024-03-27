@@ -122,7 +122,7 @@
                     @change="handleValueChange"
                     v-model="innerValue">
                 </cly-checklistbox>
-                <div class="cly-vue-events-omitted-segments bu-ml-1" v-if="disabledOptions.options && searchQuery == ''">
+                <div class="cly-vue-events-omitted-segments bu-ml-1" v-if="hasDisabledOptions && searchQuery == ''">
                     <div class="cly-vue-events-omitted-segments__title">
                         {{disabledOptions.label}}
                     </div>
