@@ -333,7 +333,7 @@
                 }
             },
             isReadyForRerun: function(row) {
-                return (row.type && row.type!=="profile group") && row.status !== "running" && row.status !== "rerunning" && row.request;
+                return (row.type && row.type !== "profile group") && row.status !== "running" && row.status !== "rerunning" && row.request;
             },
             handleCommand: function(command, row) {
                 var id = row._id,

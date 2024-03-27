@@ -59,8 +59,8 @@
 
     //delete all data about specific users
     //callback(error, fileid(if exist), taskid(if exist))
-    countlyAppUsers.deleteUserdata = function(query,force, callback) {
-        if(typeof force === "function"){
+    countlyAppUsers.deleteUserdata = function(query, force, callback) {
+        if (typeof force === "function") {
             callback = force;
             force = false;
         }
@@ -68,7 +68,7 @@
             "app_id": countlyCommon.ACTIVE_APP_ID,
             "query": query
         };
-        if(force){
+        if (force) {
             data.force = true;
         }
         $.ajax({
