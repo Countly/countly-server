@@ -64,7 +64,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:6.0
+        image: mongo:7.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -120,7 +120,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:6.0
+        image: mongo:7.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -166,7 +166,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:6.0
+        image: mongo:7.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -218,7 +218,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:6.0
+        image: mongo:7.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s

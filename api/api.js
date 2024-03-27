@@ -156,9 +156,9 @@ plugins.connectToAllDatabases().then(function() {
             console.log("Successfully stored batch state");
         }
         catch (ex) {
-            console.log("Could not store batch state");
+            console.log("Could not store batch state", ex);
         }
-        process.exit(code);
+        process.exit(typeof code === "number" ? code : 1);
     }
 
     /**
