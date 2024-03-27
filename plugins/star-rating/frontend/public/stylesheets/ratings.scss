@@ -332,6 +332,21 @@
     border-radius: 4px;
   }
 
+  &__consent {
+    a {
+      color: #0166d6;
+      text-decoration: underline;
+  }
+  input[type=checkbox] {
+      margin-right: 8px;
+      height: 16px;
+      width: 16px;
+  }
+  font-size: 14px;
+  color: #424243;
+  font-weight: 400;
+  }
+
   &__tp-thanks-message {
     font-size: 18px;
     width: 75%;
