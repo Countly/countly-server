@@ -964,6 +964,14 @@
                                 :description="i18n('push-notification.subtitle-description')">
                             </message-setting-element>
                             <message-setting-element 
+                                :toggle="settings.ios.isContentAvailableSet"
+                                rules="required"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isContentAvailableSet',value)}"
+                                :label="i18n('push-notification.set-content-available')"
+                                :description="i18n('push-notification.set-content-available-description')">
+                                <span></span>
+                            </message-setting-element>
+                            <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
                                 :input="pushNotificationUnderEdit.settings.ios.onClickURL"
                                 :toggle="settings.ios.isOnClickURLEnabled"

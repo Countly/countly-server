@@ -51,6 +51,7 @@
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
             isUserDataEnabled: false,
+            isContentAvailableSet: false,
         },
         android: {
             isMediaURLEnabled: false,
@@ -1141,6 +1142,7 @@
                     this.settings[this.PlatformEnum.IOS].isJsonEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].json);
                     this.settings[this.PlatformEnum.IOS].isUserDataEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].userData.length);
                     this.settings[this.PlatformEnum.IOS].isSubtitleEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].subtitle);
+                    this.settings[this.PlatformEnum.IOS].isContentAvailableSet = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].setContentAvailable);
                 }
             },
             updateAndroidPlatformSettingsStateIfFound: function() {
