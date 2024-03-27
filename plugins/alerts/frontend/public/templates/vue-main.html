@@ -303,7 +303,7 @@
                                 <option :value="null" hidden>variable</option>
                                 <!-- Variable selection without online-users data type-->
                                 <option
-                                    v-if="drawerScope.editedObject.alertDataSubType !== '# of online users'"
+                                    v-if="drawerScope.editedObject.alertDataSubType !== 't'"
                                     v-for="(variableItem, index) in defaultAlertVariable.condition"
                                     :key="index"
                                     :value="variableItem.value">
@@ -311,7 +311,7 @@
                                 </option>
                                 <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
                                 <option
-                                    v-if="drawerScope.editedObject.alertDataSubType === '# of online users'"
+                                    v-if="drawerScope.editedObject.alertDataSubType === 't'"
                                     v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
                                     :key="index"
                                     :value="variableItem.value">

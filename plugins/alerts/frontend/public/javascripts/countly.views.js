@@ -155,14 +155,14 @@
                     onlineUsers: {
                         target: [
                             {
-                                value: "# of online users",
+                                value: "t",
                                 label: "# of online users",
                             },
                             {
-                                value: "overall record",
+                                value: "o",
                                 label: "overall record",
                             },
-                            { value: "30-day record", label: "30-day record" },
+                            { value: "m", label: "30-day record" },
                         ],
                     },
                     cohorts: {
@@ -324,13 +324,19 @@
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
                 ];
-                if (this.externalDataTypeOptions) {
-                    alertDataTypeOptions = alertDataTypeOptions.concat(
-                        this.externalDataTypeOptions
-                    );
+                // disable enterprise plugins if they're not available
+                if (!countlyGlobal.plugins.includes("concurrent_users")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "onlineUsers");
+                }
+                if (!countlyGlobal.plugins.includes("surveys")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "survey" && value !== "nps");
+                }
+                if (!countlyGlobal.plugins.includes("revenue")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "revenue");
                 }
                 return alertDataTypeOptions;
             },
+            
             alertDefine: function () {
                 var allOptions = JSON.parse(
                     JSON.stringify(this.defaultAlertDefine)
@@ -655,51 +661,7 @@
                 this.alertDataFilterKey = null;
                 this.alertDataFilterValue = null;
             },
-            // alertDataSubTypeSelected: function(alertDataSubType, notReset) {
-            //     this.resetAlertConditionShow();
-            //     switch (alertDataSubType) {
-            //     case 'New crash occurence':
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     case 'Number of ratings':
-            //         if (!notReset) {
-            //             this.resetAlertConditionShow();
-            //         }
-            //         this.showSubType2 = true;
-            //         this.alertDataSubType2Options = countlyAlerts.RatingOptions;
-            //         break;
-            //     case 'Number of page views':
-            //     case 'Bounce rate':
-            //         this.resetAlertConditionShow();
-            //         this.showSubType2 = true;
-            //         var self = this;
-            //         countlyAlerts.getViewForApp(this.apps[0], function(viewList) {
-            //             self.alertDataSubType2Options = viewList.map(function(v) {
-            //                 return {value: v.value, label: v.name};
-            //             });
-            //         });
-            //         break;
-            //     case 't':
-            //         this.showUserCount = true;
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     case 'o':
-            //     case 'm':
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     default:
-            //         if (!notReset) {
-            //             this.resetAlertConditionShow();
-            //         }
-            //         return;
-            //     }
-            // },
+
             onSubmit: function (settings) {
                 settings.selectedApps = [settings.selectedApps];
                 if (settings._id) {
@@ -821,54 +783,6 @@
                 } else {
                     settings.compareDescribe = target;
                 }
-                // switch (settings.alertDataType) {
-                // case "event":
-                //     target = target.split("***")[1];
-                //     break;
-                // case "rating":
-                //     subTarget = countlyAlerts.RatingOptions[subTarget].label;
-                //     if (target === 'Bounce rate' || target === 'Number of page views') {
-                //         this.alertDataSubType2Options.forEach(function(item) {
-                //             if (item.value === settings.alertDataSubType2) {
-                //                 subTarget = item.label;
-                //             }
-                //         });
-                //     }
-                //     break;
-                // case "metric":
-                //     if (
-                //         target === "Bounce rate" ||
-                //             target === "Number of page views"
-                //     ) {
-                //         this.alertDataSubType2Options.forEach(function(
-                //             item
-                //         ) {
-                //             if (item.value === settings.alertDataSubType2) {
-                //                 subTarget = item.label;
-                //             }
-                //         });
-                //     }
-                //     break;
-                // }
-
-                // var target2 = settings.alertDataSubType2
-                //     ? " (" + subTarget + ")"
-                //     : "";
-                // settings.compareDescribe = target + target2;
-
-                // switch (settings.alertDataSubType) {
-                // case "New crash occurence":
-                //     break;
-                // default:
-                //     settings.compareDescribe +=
-                //             " " +
-                //             settings.compareType +
-                //             " " +
-                //             settings.compareValue +
-                //             "%";
-                //     break;
-                // }
-                // delete settings.createdBy;
 
                 if (settings.alertDataType === "onlineUsers") {
                     var config = {
@@ -889,8 +803,8 @@
                     if (config.type === "t") {
                         config.condition_title = jQuery.i18n.prop(
                             "concurrent-users.condition-title",
-                            jQuery.i18n.map["concurrent-users." + config.def],
-                            countlyCommon.formatNumber(config.users),
+                            config.def,
+                            config.users,
                             config.minutes
                         );
                     } else if (config.type === "o") {
@@ -1182,43 +1096,4 @@
         text: "alert.plugin-title",
         priority: 100,
     });
-
-    var conUpdateConcurrentUser =
-        countlyAuth.validateUpdate("concurrent_users");
-    var canCreateConcurrentUser =
-        countlyAuth.validateCreate("concurrent_users");
-    if (
-        countlyGlobal.plugins.indexOf("concurrent_users") > -1 &&
-        (canCreateConcurrentUser || conUpdateConcurrentUser)
-    ) {
-        countlyVue.container.registerData("/alerts/data-type");
-        countlyVue.container.registerData("/alerts/data-define", {
-            onlineUsers: {
-                target: [
-                    {
-                        value: "t",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.t"],
-                    },
-                    {
-                        value: "o",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.o"],
-                    },
-                    {
-                        value: "m",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.m"],
-                    },
-                ],
-                condition: [
-                    {
-                        value: "gt",
-                        label: jQuery.i18n.map["concurrent-users.gt"],
-                    },
-                    {
-                        value: "lt",
-                        label: jQuery.i18n.map["concurrent-users.lt"],
-                    },
-                ],
-            },
-        });
-    }
 })();
