@@ -1,6 +1,4 @@
 #alerts-view {
-
-    
     .alerts-table-app-selector .el-input input::placeholder { 
         color: #333C48;
         opacity: 1;
@@ -38,7 +36,6 @@
             width: 100%;
         }
     }
-    
 }
 
 #alert-drawer-container {
@@ -76,6 +73,7 @@
         color:#0166D6;
     }
 }
+
 .filter-key-input.el-input.is-disabled {
     .el-input__inner {
         background-color: white;

@@ -7,6 +7,9 @@ plugins.register("/sdk/pre", function(ob) {
     if (ob.params.qstring && ob.params.qstring.events) {
         ob.params.preservedEvents = JSON.stringify(ob.params.qstring.events);
     }
+    if (ob.params.qstring && ob.params.qstring.metrics) {
+        ob.params.preservedMetrics = JSON.stringify(ob.params.qstring.metrics);
+    }
     if (ob.params.qstring && ob.params.qstring.old_device_id) {
         ob.params.preservedOldId = ob.params.qstring.old_device_id;
     }
@@ -47,6 +50,7 @@ plugins.register("/i", async function(ob) {
                 data.app_key = app.key;
                 data.ip_address = ob.params.ip_address;
                 data.events = ob.params.preservedEvents ? JSON.parse(ob.params.preservedEvents) : data.events;
+                data.metrics = ob.params.preservedMetrics ? JSON.parse(ob.params.preservedMetrics) : data.metrics;
                 if (ob.params.preservedOldId) {
                     data.old_device_id = ob.params.preservedOldId;
                 }

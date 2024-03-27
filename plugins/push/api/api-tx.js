@@ -72,7 +72,7 @@ async function check(params, push) {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/push Message / API / add users
- * @apiName message/push
+ * @apiName message push
  * @apiDescription Add notifications to previously created message with API trigger
  * @apiGroup Push Notifications
  *
@@ -115,7 +115,7 @@ module.exports.apiPush = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/pop Message / API / remove users
- * @apiName message/pop
+ * @apiName message pop
  * @apiDescription Remove notifications from previously created message with API trigger
  * @apiGroup Push Notifications
  *

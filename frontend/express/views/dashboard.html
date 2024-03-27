@@ -1740,11 +1740,6 @@
             </div>
         </div>
 	</script>
-<% if (!offline_mode) { %>
-    <% if (use_google) { %>
-        <script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <% } %>
-<% } %>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
@@ -2014,7 +2009,7 @@
     <% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
-        if (typeof Countly !== "undefined" && Countly.add_event) {
+        if (typeof Countly !== "undefined" && Countly.i && Countly.i[countlyGlobal.frontend_app] && Countly.add_event) {
             Countly.add_event(event);
         }
     };
@@ -2026,10 +2021,6 @@
     <% if (typeof inject_template.js != 'undefined') { %>
 	<script><%- inject_template.js %></script>
 	<% } %>
-    <% if (!offline_mode) { %>
-    <!-- Zest code Snippet -->
-    <script>(function(){window.addEventListener("load",function(){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src="https://app.hellozest.io/widget/embed/z05qxwmw",document.body.appendChild(t)});})();</script>
-    <% } %>
     <!-- The last countly script to load -->
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
 </body>

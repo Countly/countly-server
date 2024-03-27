@@ -120,13 +120,12 @@ async function getResponsesByDate(app, nps, date, period, score) {
         }
         return numberOfResponses;
     }
-    else {
-        let scope = record.d?.[dateComponents.days];
-        if (period === "hourly") {
-            scope = scope?.[dateComponents.hours];
-        }
-        return sumOfAllResponses(scope, nps, score);
+
+    let scope = record.d?.[dateComponents.days];
+    if (period === "hourly") {
+        scope = scope?.[dateComponents.hours];
     }
+    return sumOfAllResponses(scope, nps, score);
 }
 
 /**

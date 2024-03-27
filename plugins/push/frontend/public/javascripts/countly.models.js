@@ -2008,6 +2008,9 @@
                         result.sctz = new Date().getTimezoneOffset();
                     }
                 }
+                else if (model.delivery.type === SendEnum.NOW) {
+                    result.start = Date.now();
+                }
                 result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
             },

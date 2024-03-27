@@ -61,12 +61,14 @@ var countlyConfig = {
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
     * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
     * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
     */
     api: {
         port: 3001,
         host: "localhost",
         max_sockets: 1024,
-        timeout: 120000
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
     },
     /**
     * Path to use for countly directory, empty path if installed at root of website
@@ -110,35 +112,37 @@ var countlyConfig = {
     * @type {integer} [default=10000]
     **/
     reloadConfigAfter: 10000,
-
     /**
-     * Simple SMTP mail sender configuration. 
+	* Specifies if jobs are run on this countly instance
+	* Usable only in case when there are multiple countly instances connected to single database. Has to be set to true for at least one instance.
+	*/
+    preventJobs: false,
+    /**
+     * Simple SMTP mail sender configuration.
      * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
      * If omited, sendmail will be used. Sendmail is not installed in Docker images.
      * @type {Object}
      */
-    /*
     mail: {
-        // provide optional transported if needed
+        // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
         //transport: 'nodemailer-smtp-transport',
-        
+
         // config object passed to the transport
         config: {
-            host: 'smtp.example.com',
-            port: 25,
-            auth: {
-                user: 'USER',
-                pass: 'PASSWORD'
-            },
+            //host: 'smtp.example.com',
+            //port: 25,
+            //auth: {
+            //user: 'USER',
+            //pass: 'PASSWORD'
+            //},
         },
-        
+
         // standard strings used in email templates
         strings: {
-            from: 'countly@example.com',
-            hithere: 'there' // as in "Hi, there" when name is unknown
+            //from: 'countly@example.com',
+            //hithere: 'there' // as in "Hi, there" when name is unknown
         }
     }
-    */
 };
 
 module.exports = require('./configextender')('API', countlyConfig, process.env);

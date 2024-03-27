@@ -65,7 +65,7 @@ async function getCohortMetricByDate(app, cohortId, date, period) {
     if (period === "monthly") {
         // find the last day that we have data on
         let daysInMonth = Object.keys(record.d)
-            .map(day => parseInt(day))
+            .map(day => parseInt(day, 10))
             .filter(day => !!day);
         daysInMonth.sort((i, j) => j - i); // sort descending
         for (let day of daysInMonth) {

@@ -20,12 +20,15 @@ var VersionHistoryView = countlyVue.views.create({
                 dataObj = [];
             }
             if (dataObj.length === 0) {
-                dataObj.push({"version": countlyGlobal.countlyVersion, "updated": Date.now()});
-
-            }
-            else {
+                dataObj.push({"version": countlyGlobal.countlyVersion, "updated": new Date().toString()});
                 dataObj[dataObj.length - 1].version += " " + jQuery.i18n.map["version_history.current-version"];
                 dataObj[dataObj.length - 1].updated = new Date(dataObj[dataObj.length - 1].updated).toString();
+            }
+            else {
+                dataObj[dataObj.length - 1].version = this.tableData.pkg + " " + jQuery.i18n.map["version_history.current-version"];
+                for (var i = 0; i < dataObj.length; i++) {
+                    dataObj[dataObj.length - (i + 1)].updated = new Date(dataObj[dataObj.length - (i + 1)].updated).toString();
+                }
             }
 
             return dataObj;

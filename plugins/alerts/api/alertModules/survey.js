@@ -118,13 +118,12 @@ async function getResponsesByDate(app, survey, date, period) {
         }
         return numberOfResponses;
     }
-    else {
-        let scope = record.d?.[dateComponents.days];
-        if (period === "hourly") {
-            scope = scope?.[dateComponents.hours];
-        }
-        return sumOfAllResponses(scope, survey);
+
+    let scope = record.d?.[dateComponents.days];
+    if (period === "hourly") {
+        scope = scope?.[dateComponents.hours];
     }
+    return sumOfAllResponses(scope, survey);
 }
 
 /**

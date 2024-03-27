@@ -1,3 +1,239 @@
+## Version 23.11.13
+Fixes:
+- [star-rating] Changes to add view user button in ratings
+- [star-rating] Fixes to ratings logo in feedback popup
+- [core] Record in diagnostic collection each time server is restarted
+- [core] Added config to allow preventing running jobs on specific servers
+- [reports] unsubscribe decrypt gcm fix
+- [crashes] Update statistics calculation
+- [scripts] Changes in upgrade scripts do do not clear out old collections, but rather have dedicated scripts for it to be run when upgrade is verified.
+- [scripts] Script to remove apm events per app
+- [core] Check correct sdk instance for reporting data
+
+Enterprise Fixes:
+- [geo] UI for geolocations
+- [drill] Fixed drill events when applied new filter
+- [drill] Fix toggle for drill segmentation 
+- [formulas] Fix for formulas graph becomes unresponsive
+- [data-manager] CSV export breaks if there is big_list or array type
+
+## Version 23.11.12
+Fixes:
+  - [core] Added option to run merges in paralel in merging job.
+  - [core] Report countly track type
+  - [core] Script to reset specific dates from the event timeline to allow regeneration for those dates.
+  - [hooks] Proxy settings for hooks
+  - [hooks] hpagent added to package.json
+  - [ratings] Fixed ratings filter
+
+Enterprise Fixes:
+ - [data-manager] Added option to delete source event when merging events.
+ - [license] Minimal and relevant metrics per month for license
+ - [timeline] Updated timeline merge function to run rechecks only on failure.
+
+## Version 23.11.11
+Fixes:
+  - [install] Minor improvements for RHEL installer
+  - [scripts] remove_user command for informative output
+  - [cms] fixed permissions for /clear endpoint
+  - [push] fix apidoc comment
+  - [scripts] fixes for dry run mode in recheck_merges script
+  - [scripts] Script to process unfinished merges
+  - [push] fix for updating message state properly while populating push queue
+
+Enterprise Fixes:
+ - [drill] Fixes to show session table in users profile
+
+
+## Version 23.11.10
+Fixes:
+- [core] Record consent and push sent events
+- [core] Allow extending geojson map through themes
+- [core] Save last merged uid and did in users document
+- [core] Fix for Checksum not working for form data
+- [core] Add link to cly-notification
+- [consolidate] Preserve metrics from original request
+- [star-rating] Sanitize star rating content
+- [data-manager] Sanitize content Data manager ui
+- [account-settings] allow generating new api key
+- [reports] Increase timeouts for report generation
+- [flows] Fixed bug with incorrectly seletcing date range when calculating flows
+  
+Enterprise Fixes:
+- [heatmaps] Display a warning on heatmaps if domain is not setup
+- [license] Fix license metrics dp endpoint calculation
+- [surveys] Sanitize content for surveys
+- [users] include more fields in debug log
+- [drill] Changed metric name from "Average Session Duration" to "Average Duration"
+
+## Version 23.11.9
+Fixes:
+- [core] Add option to pass bucket (daily, monthly) for /o/analytics/session and /o/analytics/events endpoints
+- [dashboards] Dasboard name and tooltip sanitization
+- [notes] Notes content sanitization
+- [populator] Do not update last data on populator
+- [push] fix on timezone for recurring messages
+- [push] skippable audience estimation
+
+Enterprise Fixes:
+- [drill]  Modify export filename no do not include full query if query is too long
+- [retention] Classical & Unbound Retention query breakdown fix
+
+## Version 23.11.8
+Fixes:
+- [push] Fix for messages failure that show infinity in detail
+- [push] Fix for setting start date correctly when user selects "send now"
+- [token-manager]  Fixed issue with displaying created tokens
+- [core] Fixes for user merging job
+- [core] update default settings when tracker is present
+- [core] remove zest integration
+- [hooks] update to new isolated vm
+- [reports] allow any number of selection for reports
+
+Enterprise Fixes:
+- [tracker] Remove config check when enabled
+- [block] Add support for $or query
+- [cohorts] Pass correct period when fetching data for cohorts graphs in cohorts view
+- [flows] Set steps to closest available value, if initital value is not found
+- [users] Correctly fetching timeline data when this year is selected
+- [timeline] Improvements for timeline merging on user merge
+
+## Version 23.11.7
+Fixes:
+- [core] sort values by index in tooltip in charts
+- [core] ensure data consistency when user merging
+- [core] Null check for fetching masking properties
+- [tracker] Fixes for device id domain
+
+Enterprise Fixes:
+- [ab-testing] Limit days to 10 years
+- [data redaction] Fixed code in masking processing for drill_meta aggregation
+- [dashboards][drill] added "average session duration" metric to drill widget
+- [ab-testing] Use since period object for infinite ab tests
+- [nps] Fix for nps appearance color not getting updated
+- [users] Fixed filtering events in users profile if selected event type is start rating
+
+## Version 23.11.6
+Fixes:
+- [core] fix for optimizing loyalty calculation
+- [star-rating] changes for status change on detail page
+- [core][bugfix] Filter was not working on isset/ is not set in anayltics/loyality
+- [recaptcha] Fix for Recaptcha response is not passed along with login details when 2 fa is enabled
+
+Enterprise Fixes:
+- [flows] Recheck logic for  date regex for event timeline
+- [data-manager] Do not show 'all-time' in regeneration drawer in data manager
+- [drill] typo fixes in drill localization
+   
+## Version 23.11.5
+Fixes:
+- [core] add required excludes to scripts
+- [core] updated hostname placeholder values
+- [cms] Add more options check
+- [crashes] fix for Crash-free users and crash-free sessions cannot be negative
+- [dashboards] fix for notes widget
+- [dashboards] fix for special characters gets messed up in dashboards
+- [core] updated ingress to support latest api version
+- [core] Update Versions view to new UI
+- [bugfix] Correctly count datapoints
+- [populator]fixes for populator plugin
+- [push] Updated push settings to be able to parameterize message timeout
+- [hooks] Fixed hook settings texts
+- [core] udated ingress to support latest api version
+  
+Enterprise Fixes:
+- [formulas] text change in formulas
+- [core] Remove tests from packages
+  
+## Version 23.11.4
+Enterprise Fixes:
+- [drill] Fix for drill snapshot query
+  
+## Version 23.11.3
+Fixes:
+- [core] Script for fixing drill properties
+ 
+Enterprise Fixes:
+- [drill] Update custom properties only on session end/begin and duration. (Do not process on user_details )
+- [drill] Fixed query for generating snapshot to do not error on unexpected object values
+- [drill] Fixed custom property updating on incoming data for cases when property update is done with special operations like $push, $addToSet
+- [drill] Sanitize keys in bulk writing process
+
+
+## Version 23.11.2
+Fixes:
+- [push] Fixed bug to allow querying by push message name
+- [server-stats] Improved logic for date picker to show graph correctly in different timezones based on selected dates.
+- [core] Always Calculate city and country and store in user object based on passed coordinates, not only on session start
+- [cms] Moved data fetching for guides/startup/walkthroughs to frontend
+ -[core] Added script to export anonymized drill data
+ 
+Enterprise Fixes:
+- [drill] Rewriting drill query before running it on the database to look also for numeric values for a passed list of values (["1"] => ["1",1]) (Helps to better search for data if values are saved in both ways - as numbers and also as strings)
+- [drill] Make sure duration is parsed before sending it for database update.
+- [users] Fixes for breakdown filter.
+
+## Version 23.11.1
+Fixes:
+- [scripts] Fix for Check app images scripts
+- [onboarding] Fix onboarding loop for offline only installs
+- [cms] Stop cms calls after failure
+- [cms] Calculate timedifference against meta entry
+- [heatmaps] Update deprecated methods in heatmaps.js
+  
+Enterprise Fixes:
+- [drill] Fix the correct type prefix for widget names
+- [surveys] Fix the survey api to include previous month
+- [attribution] Fix encoding on campaign links
+
+## Version 23.11
+Features:
+- [apps] App initial as default app image
+- [compliance-hub] Use millisecond timestamp when recording consent
+- [consent] Ask for countly tracking and newsletter subscription
+- [core] Add config for setting maximum upload file size
+- [data_migration] Fixed problem with export
+- [guides] New plugin explaining Countly sections with videos and other content
+- [hooks] Add validation error messages when creating hooks
+- [jobs] Add the ability to pause jobs
+- [license] Check license at render instead of login
+- [onboarding] New onboarding flow when setting up a server
+- [quickstart] Menu to show some actions new users could take
+- [sdks] Add health checks with debug information
+- [sdks] Add queue size metrics
+- [sdks] Add request metrics
+- [server-stats] Record breakdown of internal events of data points
+- [settings] Trim incoming data based on API setting
+- [star-rating] Make comments table serverside 
+- [UI] Loading state fixes to distinguish from no data state
+- [views] Make table column widths adjustable
+
+Enterprise features:
+- [ab-testing] Add user selected minimum improvement rate for the automatic stop option
+- [ab-testing] Add experiment health-check logs for effective sample size and MCMC convergence
+- [auth-plugins] Allow hiding/showing login form
+- [block] Show the last time the filtering rule was triggered
+- [cohorts] Filtering by User Property segmentation in Cohorts using OR operator
+- [cohorts] Improved cohorts nightly job to reduce memory usage
+- [concurrent_users] Switched user sampling to the job so it will run only once per cluster
+- [crash_symbolication] Add instance id to symbolication requests
+- [data-manager] Allow exporting the event schema as a data populator template
+- [drill] Automatically disable estimation correction on slow servers
+- [drill] Delete dashboard widgets if a related Drill query is deleted
+- [drill] Make table column widths adjustable
+- [drill] Table widget for dashboards
+- [drill] Track how many duration updates did the session have in the document
+- [drill] Update user properties on session updates, so the session always gets the latest user properties that changed during the session
+- [drill] Use data snapshots to provide consistent data view between graph, table, and export
+- [ingestion] Fixed some concurrency issues when updating the duration for views or sessions
+- [surveys] Add ability for providing custom segment
+- [surveys] Added global/app/widget level settings
+- [surveys] Fixed export table
+- [users] Make table column widths adjustable
+- [users] New debug dialog for users merging both options
+- [views] Record UTM and Source as segments on drill
+- [white-labeling] Add emailing settings
+
 ## Version 23.06.16
 Fixes:
 - [cache] Removing noCursorTimeout from cache cursor

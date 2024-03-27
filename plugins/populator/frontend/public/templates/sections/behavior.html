@@ -1,0 +1,125 @@
+<div class="populator-template populator-template__behavior">
+    <div v-if="isOpen">
+        <cly-populator-section-detail :title="i18n('populator-template.general')" class="bu-mb-4" key="general-behavior">
+            <div class="populator-template__behavior--main-container">
+                <span class="text-smallish bu-has-text-weight-medium session-running-header">{{i18n('populator-template.time-between-runs')}}</span>
+                <div class="bu-is-flex bu-is-align-items-center bu-mt-2">
+                    <validation-provider name="probability" rules="required|integer|min_value:0" v-slot="v">
+                        <el-input class="bu-mr-2 populator-template__behavior--session-input-container" :class="{'is-error': v.errors.length > 0}" v-model="behavior.runningSession[0]">
+                            <template slot="suffix">
+                                <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
+                            </template>
+                        </el-input>
+                    </validation-provider>
+                    -
+                    <validation-provider name="probability" rules="required|integer|min_value:0" v-slot="v">
+                        <el-input class="bu-ml-2 populator-template__behavior--session-input-container" :class="{'is-error': v.errors.length > 0}" v-model="behavior.runningSession[1]">
+                            <template slot="suffix">
+                                <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
+                            </template>
+                        </el-input>
+                    </validation-provider>
+                </div>
+                <div v-if="behavior.generalConditions.length" v-for="(item, index) in behavior.generalConditions">
+                    <div class="populator-template__behavior--general-conditions bu-is-flex bu-is-align-items-baseline bu-is-justify-content-start bu-mt-4">
+                    <div class="condition-label text-smallish bu-has-text-weight-medium bu-ml-1 bu-mt-5">{{ item.conditionType === 1 ? i18n('populator-template.condition-is', item.selectedKey, item.selectedValue) : i18n('populator-template.condition-is-not', item.selectedKey, item.selectedValue) }}</div>
+                        <div class="bu-is-align-items-center bu-mt-2 bu-is-flex bu-ml-4">
+                            <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
+                                <el-input class="populator-template__behavior--session-input-container bu-mr-2" v-model="item.values[0]" :class="{'is-error': v.errors.length > 0}">
+                                    <template slot="suffix">
+                                        <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
+                                    </template>
+                                </el-input>
+                            </validation-provider>
+                            - 
+                            <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
+                                <el-input class="populator-template__behavior--session-input-container bu-ml-2" v-model="item.values[1]" :class="{'is-error': v.errors.length > 0}">
+                                    <template slot="suffix">
+                                        <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
+                                    </template>
+                                </el-input>
+                            </validation-provider>
+                            <div class="override-buttons">
+                                <i class="el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(behaviourSectionEnum.GENERAL, index)"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider bu-mt-5">
+                <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center">
+                <cly-populator-condition-selector
+                    :disabled="isConditionDisabled"
+                    :condition-properties="parentData.users.map(item => item.keys)"
+                    @selected-key-change="onConditionSelectedKeyChange"
+                    :condition-property-values="conditionPropertyValues"
+                    :type="behaviourSectionEnum.GENERAL"
+                    @save-condition="saveCondition"
+                    v-model="behavior.generalConditions">
+                </cly-populator-condition-selector>
+                </div>
+            </div>
+        </cly-populator-section-detail>
+        <cly-populator-section-detail v-if="isSequenceSectionActive" :title="i18n('populator-template.sequence-probabilities')" class="bu-mt-4" key="sequence-behavior">
+            <div v-if="behavior.sequences.length" class="populator-template__behavior--sequences-container">
+                <div class="bu-is-flex bu-mt-4">
+                    <div class="sequence-text">
+                        <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.sequences')}}</span>
+                    </div>
+                    <div>
+                        <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
+                        <cly-tooltip-icon :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                    </div>
+                </div>
+                <div class="bu-mt-2" v-for="(sequence, sequenceIndex) in behavior.sequences">
+                    <div class="bu-is-flex bu-is-align-items-center">
+                        <span class="text-smallish bu-is-capitalized sequence-text"> {{ sequence.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', sequenceIndex + 1) }} </span>
+                        <validation-provider name="probability_sequence_value" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                            <el-input v-model="sequence.probability" class="sequence-probability" :class="{'is-error': v.errors.length > 0}">
+                                <template slot="suffix">
+                                    <span class="text-medium color-cool-gray-50">%</span>
+                                </template>
+                            </el-input>
+                        </validation-provider>
+                    </div>
+                </div>
+            </div>
+            <div v-if="behavior.sequenceConditions.length" class="populator-template__behavior--sequence-conditions">
+                <hr class="divider bu-my-5">
+                <div v-for="(item, index) in behavior.sequenceConditions" :class="{'bu-mb-6' : index !== (behavior.sequenceConditions.length - 1)}">
+                    <div class="bu-is-flex bu-is-justify-content-end bu-is-align-items-center">
+                        <div class="text-smallish bu-has-text-weight-medium condition-label">{{ item.conditionType === 1 ? i18n('populator-template.condition-is', item.selectedKey, item.selectedValue) : i18n('populator-template.condition-is-not', item.selectedKey, item.selectedValue) }}</div>
+                        <div>
+                            <el-button type="text" @click="onDeleteCondition(index)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete delete-condition el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-end condition-values">
+                        <div class="bu-mt-2" v-for="(value, valueIndex) in item.values">
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <span class="text-smallish bu-is-capitalized sequence-condition-label"> {{ value.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', valueIndex + 1) }} </span>
+                                <validation-provider name="probability_sequence_condition" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                    <el-input v-model="value.probability" class="sequence-condition-probability" :class="{'is-error': v.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="text-medium color-cool-gray-50">%</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="divider bu-my-5">
+            <div class="bu-is-flex bu-is-justify-content-center">
+                <cly-populator-condition-selector
+                    :disabled="isConditionDisabled"
+                    :condition-properties="parentData.users.map(item => item.keys)"
+                    @selected-key-change="onConditionSelectedKeyChange"
+                    :type="behaviourSectionEnum.SEQUENCE"
+                    @save-condition="saveCondition"
+                    :condition-property-values="conditionPropertyValues"
+                    v-model="behavior.sequenceConditions">
+                </cly-populator-condition-selector>
+            </div>
+        </cly-populator-section-detail>
+    </div>
+</div>

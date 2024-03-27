@@ -1231,24 +1231,6 @@ const processRequest = (params) => {
                         var app_id = params.qstring.app_id;
                         var updateThese = {"$unset": {}};
                         if (idss.length > 0) {
-                            for (let i = 0; i < idss.length; i++) {
-                                idss[i] = idss[i] + ""; //make sure it is string to do not fail.
-                                if (idss[i].indexOf('.') !== -1) {
-                                    updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                    updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                }
-                                else {
-                                    updateThese.$unset["map." + idss[i]] = 1;
-                                    updateThese.$unset["omitted_segments." + idss[i]] = 1;
-                                }
-                                idss[i] = common.decode_html(idss[i]);//previously escaped, get unescaped id (because segments are using it)
-                                if (idss[i].indexOf('.') !== -1) {
-                                    updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                }
-                                else {
-                                    updateThese.$unset["segments." + idss[i]] = 1;
-                                }
-                            }
 
                             common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                                 if (err) {
@@ -1258,75 +1240,122 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, "Could not find event");
                                     return;
                                 }
-                                //fix overview
-                                if (event.overview && event.overview.length) {
-                                    for (let i = 0; i < idss.length; i++) {
-                                        for (let j = 0; j < event.overview.length; j++) {
-                                            if (event.overview[j].eventKey === idss[i]) {
-                                                event.overview.splice(j, 1);
-                                                j = j - 1;
+                                let successIds = [];
+                                let failedIds = [];
+                                let promises = [];
+                                for (let i = 0; i < idss.length; i++) {
+                                    let collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                    common.db.collection("events" + collectionNameWoPrefix).drop();
+                                    promises.push(new Promise((resolve, reject) => {
+                                        plugins.dispatch("/i/event/delete", {
+                                            event_key: idss[i],
+                                            appId: app_id
+                                        }, function(_, otherPluginResults) {
+                                            const rejectReasons = otherPluginResults?.reduce((acc, result) => {
+                                                if (result?.status === "rejected") {
+                                                    acc.push((result.reason && result.reason.message) || '');
+                                                }
+                                                return acc;
+                                            }, []);
+
+                                            if (rejectReasons?.length) {
+                                                failedIds.push(idss[i]);
+                                                log.e("Event deletion failed\n%j", rejectReasons.join("\n"));
+                                                reject("Event deletion failed. Failed to delete some data related to this Event.");
+                                                return;
+                                            }
+                                            else {
+                                                successIds.push(idss[i]);
+                                                resolve();
                                             }
                                         }
-                                    }
-                                    if (!updateThese.$set) {
-                                        updateThese.$set = {};
-                                    }
-                                    updateThese.$set.overview = event.overview;
+                                        );
+                                    }));
                                 }
 
-                                //remove from list
-                                if (typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length > 0) {
-                                    for (let i = 0; i < idss.length; i++) {
-                                        let index = event.list.indexOf(idss[i]);
-                                        if (index > -1) {
-                                            event.list.splice(index, 1);
-                                            i = i - 1;
+                                Promise.allSettled(promises).then(async() => {
+                                    //remove from map, segments, omitted_segments
+                                    for (let i = 0; i < successIds.length; i++) {
+                                        successIds[i] = successIds[i] + ""; //make sure it is string to do not fail.
+                                        if (successIds[i].indexOf('.') !== -1) {
+                                            updateThese.$unset["map." + successIds[i].replace(/\./g, '\\u002e')] = 1;
+                                            updateThese.$unset["omitted_segments." + successIds[i].replace(/\./g, '\\u002e')] = 1;
+                                        }
+                                        else {
+                                            updateThese.$unset["map." + successIds[i]] = 1;
+                                            updateThese.$unset["omitted_segments." + successIds[i]] = 1;
+                                        }
+                                        successIds[i] = common.decode_html(successIds[i]);//previously escaped, get unescaped id (because segments are using it)
+                                        if (successIds[i].indexOf('.') !== -1) {
+                                            updateThese.$unset["segments." + successIds[i].replace(/\./g, '\\u002e')] = 1;
+                                        }
+                                        else {
+                                            updateThese.$unset["segments." + successIds[i]] = 1;
                                         }
                                     }
-                                    if (!updateThese.$set) {
-                                        updateThese.$set = {};
-                                    }
-                                    updateThese.$set.list = event.list;
-                                }
-                                //remove from order
-                                if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
-                                    for (let i = 0; i < idss.length; i++) {
-                                        let index = event.order.indexOf(idss[i]);
-                                        if (index > -1) {
-                                            event.order.splice(index, 1);
-                                            i = i - 1;
-                                        }
-                                    }
-                                    if (!updateThese.$set) {
-                                        updateThese.$set = {};
-                                    }
-                                    updateThese.$set.order = event.order;
-                                }
-
-                                common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err2) {
-                                    if (err2) {
-                                        console.log(err2);
-                                        common.returnMessage(params, 400, err);
-                                    }
-                                    else {
-                                        for (let i = 0; i < idss.length; i++) {
-                                            var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
-                                            common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
-                                            plugins.dispatch("/i/event/delete", {
-                                                event_key: idss[i],
-                                                appId: app_id
-                                            });
-                                        }
-                                        plugins.dispatch("/systemlogs", {
-                                            params: params,
-                                            action: "event_deleted",
-                                            data: {
-                                                events: idss,
-                                                appID: app_id
+                                    //fix overview
+                                    if (event.overview && event.overview.length) {
+                                        for (let i = 0; i < successIds.length; i++) {
+                                            for (let j = 0; j < event.overview.length; j++) {
+                                                if (event.overview[j].eventKey === successIds[i]) {
+                                                    event.overview.splice(j, 1);
+                                                    j = j - 1;
+                                                }
                                             }
-                                        });
-                                        common.returnMessage(params, 200, 'Success');
+                                        }
+                                        if (!updateThese.$set) {
+                                            updateThese.$set = {};
+                                        }
+                                        updateThese.$set.overview = event.overview;
                                     }
+                                    //remove from list
+                                    if (typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length > 0) {
+                                        for (let i = 0; i < successIds.length; i++) {
+                                            let index = event.list.indexOf(successIds[i]);
+                                            if (index > -1) {
+                                                event.list.splice(index, 1);
+                                                i = i - 1;
+                                            }
+                                        }
+                                        if (!updateThese.$set) {
+                                            updateThese.$set = {};
+                                        }
+                                        updateThese.$set.list = event.list;
+                                    }
+                                    //remove from order
+                                    if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
+                                        for (let i = 0; i < successIds.length; i++) {
+                                            let index = event.order.indexOf(successIds[i]);
+                                            if (index > -1) {
+                                                event.order.splice(index, 1);
+                                                i = i - 1;
+                                            }
+                                        }
+                                        if (!updateThese.$set) {
+                                            updateThese.$set = {};
+                                        }
+                                        updateThese.$set.order = event.order;
+                                    }
+
+                                    await common.db.collection('events').update({ "_id": common.db.ObjectID(app_id) }, updateThese);
+
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "event_deleted",
+                                        data: {
+                                            events: successIds,
+                                            appID: app_id
+                                        }
+                                    });
+
+                                    common.returnMessage(params, 200, 'Success');
+
+                                }).catch((err2) => {
+                                    if (failedIds.length) {
+                                        log.e("Event deletion failed for following Event keys:\n%j", failedIds.join("\n"));
+                                    }
+                                    log.e("Event deletion failed\n%j", err2);
+                                    common.returnMessage(params, 500, { errorMessage: "Event deletion failed. Failed to delete some data related to this Event." });
                                 });
                             });
                         }
@@ -2717,6 +2746,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
@@ -2735,6 +2765,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
+                    //takes also bucket=daily || monthly. extends period to full months if monthly
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
@@ -2746,7 +2777,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard,  /countries, /sessions, /metric, /tops, /loyalty, /frequency, /durations, /events');
                     }
                     break;
                 }
@@ -2846,8 +2877,16 @@ const processRequest = (params) => {
                 case 'entries':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
                     break;
+                }
+                break;
+            }
+            case '/i/cms': {
+                switch (paths[3]) {
+                case 'save_entries':
+                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    break;
                 case 'clear':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.clearCache, params);
+                    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -2858,11 +2897,10 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /entries or /clear');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
                     }
                     break;
                 }
-
                 break;
             }
             default:
@@ -3088,7 +3126,13 @@ const checksumSaltVerification = (params) => {
         payloads.push(params.href.substr(params.fullPath.length + 1));
 
         if (params.req.method.toLowerCase() === 'post') {
-            payloads.push(params.req.body);
+            // Check if we have 'multipart/form-data'
+            if (params.formDataUrl) {
+                payloads.push(params.formDataUrl);
+            }
+            else {
+                payloads.push(params.req.body);
+            }
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
@@ -3250,7 +3294,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
-        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
+        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24) && !params.populator && !params.qstring.populator) { //update if more than day passed
             //set new value
             common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
                 if (err1) {

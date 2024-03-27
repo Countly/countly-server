@@ -124,9 +124,7 @@ async function determineAudience(alert) {
         if (Array.isArray(alert.alertValues) && alert.alertValues.length > 0) {
             return alert.alertValues;
         }
-        else {
-            return getUserEmailsBasedOnGroups(alert.allGroups);
-        }
+        return getUserEmailsBasedOnGroups(alert.allGroups);
     }
 }
 /**

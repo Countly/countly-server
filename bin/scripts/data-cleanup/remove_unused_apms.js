@@ -1,4 +1,4 @@
-const pluginManager = require('../../../../plugins/pluginManager.js');
+const pluginManager = require('../../../plugins/pluginManager.js');
 
 pluginManager.dbConnection('countly').then(async(db) => {
     try {

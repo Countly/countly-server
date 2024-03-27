@@ -31,7 +31,12 @@
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
                             <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable :sort-method="occurrenceSort">
+                                <template slot-scope="rowScope">
+                                    <span v-if="singleAppVersionFilter.length">{{rowScope.row.app_version[singleAppVersionFilter.replace(/\./g, ':')]}}</span>
+                                    <span v-else>{{rowScope.row.reports}}</span>
+                                </template>
+                            </el-table-column>
                             <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
                             <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
                             <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable :sort-method="appVersionSort"></el-table-column>

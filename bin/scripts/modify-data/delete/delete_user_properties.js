@@ -17,7 +17,7 @@ var plugins = require("./../../../../plugins/pluginManager.js");
 var asyncjs = require("async");
 var crypto = require("crypto");
 
-var internal_events = ["[CLY]_view", "[CLY]_session", "[CLY]_crash", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_action", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_action"];
+var internal_events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 var unset = {};
 unset[PROPERTY] = "";
 

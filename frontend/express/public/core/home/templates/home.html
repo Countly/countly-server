@@ -20,11 +20,11 @@
                 v-model="selectedDynamicComponents"
 				showSelectedCount >
                 <template v-slot:trigger>
-                    <el-button size="small" icon="cly-icon-btn cly-icon-menu"> {{i18n('common.customize')}} </el-button>
+                    <el-button size="small" icon="cly-icon-btn cly-icon-menu" :data-test-id="`button-${i18n('sidebar.home').toLowerCase().replace(/\s/g, '-')}-${i18n('common.customize').toLowerCase().replace(/\s/g, '-')}`"> {{i18n('common.customize')}} </el-button>
                 </template>
             </cly-select-x>
-			<cly-more-options size="small" class="bu-ml-2" @command="selected">
-				<el-dropdown-item command="download"  >
+			<cly-more-options size="small" class="bu-ml-2" :data-test-id="`button-three-dot-${i18n('sidebar.home').toLowerCase().replace(/\s/g, '-')}`" @command="selected">
+				<el-dropdown-item command="download" :data-test-id="`button-item-${i18n('common.download').toLowerCase().replace(/\s/g, '-')}`">
 				  {{i18n('common.download')}} 
 				</el-dropdown-item>
 			</cly-more-options>
