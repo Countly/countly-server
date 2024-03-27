@@ -58,40 +58,40 @@
 			</events-breakdown-horizontal-tile>
 		  </div>
 		  <div class="bu-is-flex bu-mt-2 bu-mb-4">
-			<h3 class="cly-vue-events-overview-subheadings">{{i18n('events.overview.metrics')}} </h3>
-			<cly-tooltip-icon :tooltip="i18n('events.overview.event.metrics')" class="cly-vue-events-overview-subheadings--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+			<h3 class="cly-vue-events-overview-subheadings" data-test-id="events-overview-subheading-event-metrics-label">{{i18n('events.overview.metrics')}} </h3>
+			<cly-tooltip-icon :tooltip="i18n('events.overview.event.metrics')" class="cly-vue-events-overview-subheadings--tooltip" icon="ion-help-circled" data-test-id="events-overview-subheading-event-metrics-tooltip"></cly-tooltip-icon>
 		  </div>
 		  <cly-section>
 			<detail-tables></detail-tables>
 		  </cly-section>
 		  <div class="bu-is-flex bu-mb-4">
-			<h3 class="cly-vue-events-overview-subheadings">{{i18n('events.overview.monitor')}} </h3>
-			<cly-tooltip-icon :tooltip="i18n('events.overview.event.monitor.events')" class="cly-vue-events-overview-subheadings--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+			<h3 data-test-id="events-overview-subheading-monitor-events-label" class="cly-vue-events-overview-subheadings" data-test-id="events-overview-subheading-monitor-events-label">{{i18n('events.overview.monitor')}} </h3>
+			<cly-tooltip-icon :tooltip="i18n('events.overview.event.monitor.events')" class="cly-vue-events-overview-subheadings--tooltip" icon="ion-help-circled" data-test-id="events-overview-subheading-monitor-events-tooltip"></cly-tooltip-icon>
 			<div class="cly-vue-events-overview-monitor-events__configure--position">
-				<el-button @click="configureOverview" size="small">{{i18n('events.overview.events.configure.events')}}
+				<el-button @click="configureOverview" size="small" data-test-id="events-overview-configure-events-button">{{i18n('events.overview.events.configure.events')}}
 				</el-button>  
 			</div>
 		  </div>
 		  <cly-section class="cly-vue-events-overview-monitor-events" v-loading="isMonitorEventsLoading">
 			<div>
 			  <div class="bu-pl-4">
-				<span class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.overview.time.period')}}</span>
-				<cly-date-picker-g class="bu-m-2"></cly-date-picker-g>
+				<span class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text" data-test-id="events-overview-time-period-label">{{i18n('events.overview.time.period')}}</span>
+				<cly-date-picker-g class="bu-m-2" test-id="events-overview-time-period" ></cly-date-picker-g>
 			  </div>
 			<div v-if="!isMonitorEventsLoading && monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
 				<div class="cly-vue-events-overview-monitor-events__empty__block" >
 								<cly-empty-view :hasAction="true" :actionFunc="configureOverview">
 									<div slot="icon">
-										<img width="60" height="60" src="images/icons/empty-view-icon.svg"/>
+										<img data-test-id="events-overview-monitor-events-empty-logo" width="60" height="60" src="images/icons/empty-view-icon.svg"/>
 									</div>
 									<div slot="title">
-										<div class="color-cool-gray-100 text-big font-weight-bold">{{i18n('events.all.empty-title')}}</div>
+										<div class="color-cool-gray-100 text-big font-weight-bold" data-test-id="events-overview-monitor-events-empty-title">{{i18n('events.all.empty-title')}}</div>
 									</div>
 									<div slot="subTitle">
-										<div class="bu-mt-2 bu-mb-4 text-small color-cool-gray-50 bu-has-text-centered ">{{i18n('events.all.empty-text')}}</div>
+										<div class="bu-mt-2 bu-mb-4 text-small color-cool-gray-50 bu-has-text-centered " data-test-id="events-overview-monitor-events-empty-subtitle">{{i18n('events.all.empty-text')}}</div>
 									</div>
 									<div slot="action">
-										<el-button @click="configureOverview" type="text">{{i18n('events.overview.events.configure.events')}}</el-button>
+										<el-button @click="configureOverview" type="text" data-test-id="events-overview-configure-events-link-button">{{i18n('events.overview.events.configure.events')}}</el-button>
 									</div>
 								</cly-empty-view>
 				</div>
