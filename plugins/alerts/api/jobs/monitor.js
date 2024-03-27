@@ -1,74 +1,63 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    pluginManager = require('../../../pluginManager.js'),
+const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
+
+const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
-    Promise = require("bluebird");
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
-const common = require('../../../../api/utils/common.js');
-let alertModules = {};
+    common = require('../../../../api/utils/common.js');
 
-
-/**
- * load alert modeules from 'alertModules/*' folder
- * @return {object} promise
- */
-const getAlertModules = function() {
-    const plugins = pluginManager.getPlugins();
-    const alertsDirList = [];
-    for (let i = 0, l = plugins.length; i < l; i++) {
-        alertsDirList.push(path.resolve(__dirname, "../../../" + plugins[i] + "/api/alertModules"));
-    }
-
-    let promises = alertsDirList.map(function(alertDir) {
-        return new Promise((resolve) => {
-            fs.readdir(alertDir, (err, files) => {
-                return err || !files ? resolve() : resolve(files.map(f => {
-                    return {
-                        name: f.substr(0, f.length - 3),
-                        filePath: alertDir + '/' + f
-                    };
-                }));
-            });
-        });
-    });
-
-    return Promise.all(promises).then(arrays => {
-        arrays = _.flatten(arrays);
-        alertModules = [];
-        arrays.forEach(alert => {
-            if (alert && alert.filePath) {
-                alertModules[alert.name] = alert.filePath;
-            }
-        });
-    });
+const ALERT_MODULES = {
+    "views": require("../alertModules/views.js"),
+    "users": require("../alertModules/users.js"),
+    "sessions": require("../alertModules/sessions.js"),
+    "survey": require("../alertModules/survey.js"),
+    "revenue": require("../alertModules/revenue.js"),
+    "events": require("../alertModules/events.js"),
+    "rating": require("../alertModules/rating.js"),
+    "cohorts": require("../alertModules/cohorts.js"),
+    "dataPoints": require("../alertModules/dataPoints.js"),
+    "crashes": require("../alertModules/crashes.js"),
 };
-
-// load modules
-getAlertModules();
-
 /**
  * @class
  * @classdesc Class MonitorJob is Alert Monitor Job extend from Countly Job
  * @extends Job
  */
-class MonitorJob extends job.Job {
+class MonitorJob extends Job {
     /**
-    * run task
-    * @param {object} db - db object
-    * @param {function} done - callback function
-    */
-    run(db, done) {
+     * run task
+     * @param {object} _db - db object
+     * @param {function} done - callback function
+     */
+    run(_db, done) {
         const alertID = this._json.data.alertID;
+        const scheduledTo = this._json.next;
         const self = this;
-        common.db.collection("alerts").findOne({ _id: common.db.ObjectID(alertID) }, function(err, alertConfigs) {
+        common.db.collection("alerts").findOne({
+            _id: common.db.ObjectID(alertID),
+            // these are being triggered by the event listener in api.js
+            alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
+        }, async function(err, alertConfigs) {
+            if (err) {
+                log.e(err);
+                return;
+            }
+            if (!alertConfigs) {
+                return;
+            }
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
-            if (alertModules[alertConfigs.alertDataType]) {
-                const module = require(alertModules[alertConfigs.alertDataType]);
-                module.check({ db: common.db, alertConfigs, done });
+            const module = ALERT_MODULES[alertConfigs.alertDataType];
+            if (module) {
+                try {
+                    await module.check({ alertConfigs, done, scheduledTo });
+                }
+                catch (error) {
+                    log.e("Error while running " + alertConfigs.alertDataType + " alert check", error);
+                }
+            }
+            else {
+                log.e("Alert module " + alertConfigs.alertDataType + " not found");
             }
         });
     }
