@@ -62,7 +62,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     if (filterValue) {
         filterValue = filterValue
             .split(",")
-            .map(value => parseInt(value))
+            .map(value => parseInt(value, 10))
             .filter(value => value >= 1 && value <= 5);
         if (filterValue.length) {
             ratingsFilter = filterValue;
