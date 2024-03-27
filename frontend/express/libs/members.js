@@ -900,7 +900,7 @@ membersUtility.settings = function(req, callback) {
             callback(false, "user-settings.api-key-length");
             return;
         }
-        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-z]+)[0-9a-zA-Z]+$/)) {
+        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-zA-Z]+)[0-9a-zA-Z]+$/)) {
             callback(false, "user-settings.api-key-restrict");
             return;
         }
