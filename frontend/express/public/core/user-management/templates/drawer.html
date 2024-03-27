@@ -6,6 +6,7 @@
     @close="onClose"
     @submit="onSubmit"
     @open="onOpen"
+    test-id="drawer-create-new-user";
     :requires-async-submit="true"
     :hasCancelButton="$props.settings.hasCancelButton"
     :cancelButtonLabel="$props.settings.cancelButtonLabel"
@@ -18,34 +19,34 @@
           <div class="bu-columns">
             <div class="bu-column">
               <div class="user-management-drawer-content__input-wrapper">
-                <div class="user-management-drawer-content__label">
-                  <div class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
+                <div data-test-id="drawer-create-new-user-full-name-label" class="user-management-drawer-content__label">
+                  <div  class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.full_name" :placeholder="i18n('management-users.enter-full-name')"></el-input>
+                    <el-input test-id="drawer-create-new-user-full-name-input" v-model="drawerScope.editedObject.full_name" :placeholder="i18n('management-users.enter-full-name')"></el-input>
                   </validation-provider>
                 </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
-                <div class="user-management-drawer-content__label">
+                <div data-test-id="drawer-username-label" class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.username') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')"></el-input>
+                    <el-input test-id="drawer-create-new-user-username-input" v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')"></el-input>
                   </validation-provider>
                 </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
-                <div class="user-management-drawer-content__label">
+                <div data-test-id="drawer-create-new-user-password-label" class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.password') }}</div>
                 </div>
                 <div v-if="!$props.settings.editMode" class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
+                    <el-input test-id="drawer-create-new-user-password-input" v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
                   </validation-provider>
-                  <div @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
+                  <div data-test-id="drawer-create-new-user-generate-password-button" @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
                 </div>
                 <div v-if="$props.settings.editMode" class="user-management-drawer-content__input">
                   <validation-provider v-if="changePasswordFlag" rules="required" v-slot="v">
@@ -55,19 +56,19 @@
                 </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
-                <div class="user-management-drawer-content__label">
+                <div data-test-id="drawer-create-new-user-email-box-label" class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.email') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required|email" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.email" oninput="this.value = this.value.toLowerCase();" :placeholder="i18n('management-users.enter-email')"></el-input>
+                    <el-input test-id="drawer-create-new-user-email-input" v-model="drawerScope.editedObject.email" oninput="this.value = this.value.toLowerCase();" :placeholder="i18n('management-users.enter-email')"></el-input>
                   </validation-provider>
                 </div>
               </div>
               <component class="bu-mt-5" v-if="groupsInput.length > 0" :defaultGroups="groups" @group-change="onGroupChange" :is="groupsInput[0].component"></component>
             </div>
             <div class="bu-column user-management-drawer-content__profile-picture-area bu-ml-4">
-              <div class="user-management-drawer-content__label">
+              <div data-test-id="drawer-create-new-user-profile-picture-label" class="user-management-drawer-content__label">
                 <div class="text-small text-heading">{{ i18n('management-users.profile-picture') }}</div>
               </div>
               <div class="bu-is-flex" v-if="!pictureEditMode && $props.settings.editMode">
@@ -90,10 +91,10 @@
                 :options="dropzoneOptions">
                     <div class="dropzone-custom-content">
                       <img v-if="$props.settings.editMode" :src="'/memberimages/' + user._id + '.png?t=' + Date.now()" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"/>
-                      <div v-if="!$props.settings.editMode" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"></div>
+                      <div data-test-id="drawer-create-new-user-profile-img-box" v-if="!$props.settings.editMode" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"></div>
                       <div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">
-                        <p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">{{ i18n('management-users.drag-and-drop-or') }} <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link"> {{ i18n('management-users.browser') }} </span> {{ i18n('management-users.files-to-add-picture') }}</p>
-                        <p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">{{ i18n('management-users.pp-size-warning') }}</p>
+                        <p data-test-id="drawer-create-new-user-picture-upload-description-label" class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">{{ i18n('management-users.drag-and-drop-or') }} <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link"> {{ i18n('management-users.browser') }} </span> {{ i18n('management-users.files-to-add-picture') }}</p>
+                        <p data-test-id="drawer-create-new-user-picture-size-warning-label" class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">{{ i18n('management-users.pp-size-warning') }}</p>
                       </div>
                     </div>
               </cly-dropzone>
@@ -103,7 +104,7 @@
             <div class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4 bu-pb-5">
               <div class="user-management-drawer-content__section-title">
                 <div>
-                  <span class="user-management-drawer-content__section-header">{{ i18n('management-users.role') }}</span>
+                  <span ata-test-id="drawer-create-new-user-content-section-role-header" class="user-management-drawer-content__section-header">{{ i18n('management-users.role') }}</span>
                 </div>
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
@@ -111,20 +112,20 @@
                 <component v-for="roleInput in rolesInput" :is="roleInput.component" :user="drawerScope.editedObject" @role-change="onRoleChange" key="roleInput.key"></component>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__drawer-sub-title bu-mt-2">
+            <div data-test-id="drawer-create-new-user-content-section-sub-title" v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__drawer-sub-title bu-mt-2">
               {{ i18n('management-users.permission-settings') }}
             </div>
             <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4">
               <div class="user-management-drawer-content__section-title">
                 <div>
-                  <span class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
+                  <span data-test-id="drawer-create-new-user-content-section-header" class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
                 </div>
                 <div>
                 </div>
               </div>
               <div class="user-management-drawer-content__section-content">
                 <div class="user-management-drawer-content__label user-management-drawer-content__label--pl-10">
-                  <div class="user-management-drawer-content__help-text">{{ i18n('management-users.grant-admin-access-description') }}</div>
+                  <div data-test-id="drawer-create-new-user-content-help-text" class="user-management-drawer-content__help-text">{{ i18n('management-users.grant-admin-access-description') }}</div>
                 </div>
                 <div class="input" v-if="drawerScope.editedObject.permission">
                   <cly-select-x
@@ -133,6 +134,7 @@
                     mode="multi-check"
                     @input="onAdminAppsChanged"
                     v-model="drawerScope.editedObject.permission._.a"
+                    test-id="as-admin-access-to-app"
                     class="user-management-drawer-content__app-selector bu-mb-5 bu-mt-4"
                     :options="apps">
                   </cly-select-x>
@@ -162,6 +164,7 @@
                     @change="onUserAppsChanged(index)"
                     v-model="drawerScope.editedObject.permission._.u[index]"
                     class="user-management-drawer-content__app-selector bu-mb-5 bu-mt-4"
+                    test-id="as-user-access-to-app"
                     :options="apps">
                   </cly-select-x>
                 </div>
@@ -172,41 +175,41 @@
                   </el-input> 
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="filteredFeatures[index].all.c">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
+                      <el-checkbox test-id="create-all" @change="setPermissionByType(index, 'c')" v-model="filteredFeatures[index].all.c">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="filteredFeatures[index].all.r">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
+                      <el-checkbox test-id="read-all" @change="setPermissionByType(index, 'r')" v-model="filteredFeatures[index].all.r">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="filteredFeatures[index].all.u">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
+                      <el-checkbox test-id="update-all" @change="setPermissionByType(index, 'u')" v-model="filteredFeatures[index].all.u">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="filteredFeatures[index].all.d">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
+                      <el-checkbox test-id="delete-all" @change="setPermissionByType(index, 'd')" v-model="filteredFeatures[index].all.d">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
                     </div>
                   </div>
                 </div>
                 <div class="user-management-drawer-content__permission-table-content bu-px-1">
                   <div class="user-management-drawer-content__permission-row bu-mb-5" v-for="feature in filteredFeatures[index].features">
-                    <div class="user-management-drawer-content__feature-name">{{featureBeautifier(feature)}}</div>
+                    <div :data-test-id="`drawer-create-new-user-${feature}-label`" class="user-management-drawer-content__feature-name">{{featureBeautifier(feature)}}</div>
                     <div class="user-management-drawer-content__feature-permissions">
                       <div class="user-management-drawer-content__permission-box">
-                        <el-checkbox @change="setPermissionByFeature(index, 'c', feature)" v-model="permissionSets[index].c.allowed[feature]"></el-checkbox>
+                        <el-checkbox :test-id="`create-${feature}`" @change="setPermissionByFeature(index, 'c', feature)" v-model="permissionSets[index].c.allowed[feature]"></el-checkbox>
                       </div>
                       <div class="user-management-drawer-content__permission-box">
-                        <el-checkbox :disabled="feature === 'core'" @change="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></el-checkbox>
+                        <el-checkbox :test-id="`read-${feature}`" :disabled="feature === 'core'" @change="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></el-checkbox>
                       </div>
                       <div class="user-management-drawer-content__permission-box">
-                        <el-checkbox @change="setPermissionByFeature(index, 'u', feature)" v-model="permissionSets[index].u.allowed[feature]"></el-checkbox>
+                        <el-checkbox :test-id="`update-${feature}`" @change="setPermissionByFeature(index, 'u', feature)" v-model="permissionSets[index].u.allowed[feature]"></el-checkbox>
                       </div>
                       <div class="user-management-drawer-content__permission-box">
-                        <el-checkbox @change="setPermissionByFeature(index, 'd', feature)" v-model="permissionSets[index].d.allowed[feature]"></el-checkbox>
+                        <el-checkbox :test-id="`delete-${feature}`" @change="setPermissionByFeature(index, 'd', feature)" v-model="permissionSets[index].d.allowed[feature]"></el-checkbox>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
+            <div data-test-id="user-management-drawer-content__add-permission-set" v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
               {{ i18n('management-users.add-permission-set') }}
             </div>
           </div>
