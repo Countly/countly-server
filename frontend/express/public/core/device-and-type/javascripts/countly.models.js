@@ -94,6 +94,7 @@
         },
         fixOSVersion: function(osName) {
             osName = (osName + "").replace(/:/g, ".");
+            osName = osName.replace(/\[|\]/g, '');
 
             for (var i in countlyDeviceDetails.os_mapping) {
                 osName = osName.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].short, "g"), countlyDeviceDetails.os_mapping[i].name + " ");
@@ -189,7 +190,14 @@
                 totals.t += chartData.chartData[k].t || 0;
                 totals.n += chartData.chartData[k].n || 0;
             }
+            chartData.chartData.sort(function(a, b) {
+                let totalDiff = b.t - a.t;
+                if (totalDiff === 0) {
+                    return a.os_.localeCompare(b.os_);
+                }
 
+                return totalDiff;
+            });
             //chartData.chartDP = {};
             //chartData.chartDP.dp = chartData2;
             var stacked_version = [];
