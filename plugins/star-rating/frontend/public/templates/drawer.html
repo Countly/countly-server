@@ -163,7 +163,7 @@
           </div>
         </div>
         <div class="cly-vue-drawer-step__section bu-pt-5 bu-pb-1">
-          <el-checkbox test-id="ratings-drawer-settings-comment-checkbox" class="text-medium text-heading" v-model="drawerScope.editedObject.comment_enable">
+          <el-checkbox test-id="ratings-drawer-settings-comment-checkbox" class="text-smallish" v-model="drawerScope.editedObject.comment_enable">
             <span data-test-id="ratings-drawer-settings-comment-label">{{ i18n('feedback.use-add-comment-option') }}</span>
           </el-checkbox>
           <validation-provider  v-if="drawerScope.editedObject.comment_enable" name="popup_comment_callout" v-slot="v">
@@ -171,7 +171,7 @@
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section bu-py-1">
-          <el-checkbox test-id="ratings-drawer-settings-contact-checkbox" class="text-medium text-heading" v-model="drawerScope.editedObject.contact_enable">
+          <el-checkbox test-id="ratings-drawer-settings-contact-checkbox" class="text-smallish" v-model="drawerScope.editedObject.contact_enable">
             <span data-test-id="ratings-drawer-settings-contact-label">{{ i18n('feedback.use-contact-email-option') }}</span>
           </el-checkbox>
           <validation-provider v-if="drawerScope.editedObject.contact_enable" name="popup_email_callout" v-slot="v">
