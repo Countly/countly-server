@@ -206,7 +206,7 @@
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
+            <div data-test-id="user-management-drawer-content__add-permission-set" v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
               {{ i18n('management-users.add-permission-set') }}
             </div>
           </div>
