@@ -62,7 +62,7 @@ var versionInfo = require('./version.info'),
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
-var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
+var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
@@ -77,7 +77,7 @@ if (versionInfo.footer) {
     }
 }
 else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v" + COUNTLY_VERSION;
+    COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
     COUNTLY_TRACK_TYPE = "Enterprise";
 }
@@ -118,8 +118,18 @@ plugins.setConfigs("frontend", {
     code: true,
     google_maps_api_key: "",
     offline_mode: false,
-    countly_tracking: null,
 });
+
+if (!plugins.isPluginEnabled('tracker')) {
+    plugins.setConfigs('frontend', {
+        countly_tracking: null,
+    });
+}
+else {
+    plugins.setConfigs('frontend', {
+        countly_tracking: true,
+    });
+}
 
 plugins.setUserConfigs("frontend", {
     production: false,
@@ -391,6 +401,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+
+        if (typeof plugins.getConfig('frontend').countly_tracking !== 'boolean' && plugins.isPluginEnabled('tracker')) {
+            plugins.updateConfigs(countlyDb, 'frontend', { countly_tracking: true });
+        }
     });
 
     app.engine('html', require('ejs').renderFile);
@@ -449,22 +463,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(cookieParser());
     //server theme images
     app.use(function(req, res, next) {
-        if (req.url.indexOf(countlyConfig.path + '/images/') === 0) {
-            var urlPath = req.url.replace(countlyConfig.path, "");
-            var theme = req.cookies.theme || curTheme;
-            if (theme && theme.length) {
-                fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
-                    if (exists) {
-                        res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
-                    }
-                    else {
-                        next();
-                    }
-                });
-            }
-            else { //serve default location
-                next();
-            }
+        var urlPath = req.url.replace(countlyConfig.path, "");
+        var theme = req.cookies.theme || curTheme;
+        if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
+            fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
+                if (exists) {
+                    res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
+                }
+                else {
+                    next();
+                }
+            });
         }
         else {
             next();
@@ -891,7 +900,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            countly_tracking = plugins.getConfig('frontend').countly_tracking,
+            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
@@ -962,6 +971,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
+                countlyTypeTrack: COUNTLY_TRACK_TYPE,
                 countly_tracking,
                 countly_domain,
                 frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
@@ -971,7 +981,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
-                }
+                },
             };
 
             var toDashboard = {

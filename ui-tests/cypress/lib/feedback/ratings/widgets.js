@@ -27,6 +27,7 @@ const verifyEmptyPageElements = () => {
 };
 
 const verifySettingsPageElements = ({
+    widgetName,
     question,
     emojiOneText,
     emojiTwoText,
@@ -43,6 +44,17 @@ const verifySettingsPageElements = ({
 
     stepElements.verifyRatingStepElements(FEEDBACK_ADD_STEPS.SETTINGS);
 
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
+        labelText: "surveys.drawer.internal.name",
+        element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
+        value: widgetName,
+        elementPlaceHolder: "Widget Name"
+    });
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_DESC,
+        labelText: "Name survey for internal purposes. It is not going to be shown on survey.",
+    });
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.QUESTION_LABEL,
         labelText: "Question",
@@ -362,6 +374,10 @@ const typeQuestion = (question) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.QUESTION_INPUT, question);
 };
 
+const typeWidgetName = (widgetName) => {
+    cy.typeInput(feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT, widgetName);
+};
+
 const clearQuestion = () => {
     cy.clearInput(feedbackRatingWidgetsPageElements.QUESTION_INPUT);
 };
@@ -504,12 +520,18 @@ const clickSetActiveCheckbox = (page) => {
 const verifyWidgetDataFromTable = ({
     index,
     question,
+    internalName,
     pages,
     isActive
 }) => {
     cy.verifyElement({
         element: widgetsDataTableElements(index).WIDGET_QUESTION,
         elementText: question
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).INTERNAL_NAME,
+        elementText: internalName
     });
 
     cy.verifyElement({
@@ -863,10 +885,9 @@ const verifyWidgetDetailsPageElements = ({
         });
 
         for (var index = 0; index < commentsTable.ratings.length; index++) {
-            var indexOfRatings = commentsTable.ratings.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
-                labelText: commentsTable.ratings[indexOfRatings],
+                labelText: commentsTable.ratings[index],
             });
         }
 
@@ -878,18 +899,16 @@ const verifyWidgetDetailsPageElements = ({
         }
 
         for (var index = 0; index < commentsTable.comments.length; index++) {
-            var indexOfComments = commentsTable.comments.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
-                labelText: commentsTable.comments[indexOfComments],
+                labelText: commentsTable.comments[index],
             });
         }
 
         for (var index = 0; index < commentsTable.emails.length; index++) {
-            var indexOfEmails = commentsTable.emails.length - index - 1;
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
-                labelText: commentsTable.emails[indexOfEmails],
+                labelText: commentsTable.emails[index],
             });
         }
     }
@@ -947,6 +966,7 @@ module.exports = {
     clickSaveButton,
     clearQuestion,
     clearThanksMessage,
+    typeWidgetName,
     typeQuestion,
     typeEmojiOneText,
     typeEmojiTwoText,

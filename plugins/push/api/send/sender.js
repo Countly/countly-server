@@ -2,8 +2,9 @@ const { State } = require('../jobs/util/state'),
     { Batcher } = require('../jobs/util/batcher'),
     { Resultor } = require('../jobs/util/resultor'),
     { StreamWrapper } = require('../jobs/util/stream_wrapper'),
-    { Connector } = require('../jobs//util/connector'),
+    { Connector } = require('../jobs/util/connector'),
     { PushError, ERROR, dbext, pools } = require('./index'),
+    { Message } = require("./data/message"),
     common = require('../../../../api/utils/common');
 
 /**
@@ -120,6 +121,14 @@ class Sender {
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
+            if (plugins.push.message_timeout) {
+                if (typeof plugins.push.message_timeout === "number") {
+                    cfg.message_timeout = plugins.push.message_timeout;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid message timeout configuration: %j', plugins.push.message_timeout);
+                }
+            }
         }
 
         return cfg;
@@ -130,7 +139,10 @@ class Sender {
      */
     async watch() {
         let oid = dbext.oidBlankWithDate(new Date()),
-            count = await common.db.collection('push').count({_id: {$lte: oid}});
+            count = await common.db.collection('push').count({
+                _id: {$lte: oid},
+                m: { $in: await Message.findStreamableMessageIds() }
+            });
         return count > 0;
     }
     // /**
@@ -172,9 +184,14 @@ class Sender {
 
         try {
             // await db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Streaming, status: Status.Sending}});
-
             // stream the pushes
-            let wrapper = new StreamWrapper(common.db.collection('push'), state.cfg.sendAhead, 30000, 20),
+            let wrapper = new StreamWrapper(
+                    common.db.collection('push'),
+                    { m: { $in: await Message.findStreamableMessageIds() } },
+                    state.cfg.sendAhead,
+                    30000,
+                    20
+                ),
                 resolve, reject,
                 promise = new Promise((res, rej) => {
                     resolve = res;

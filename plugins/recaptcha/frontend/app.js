@@ -23,14 +23,19 @@ plugins.setConfigs("recaptcha", {
         });
         app.post(countlyConfig.path + '/login', function(req, res, next) {
             if (req.session.fails && plugins.getConfig("recaptcha").enable && plugins.getConfig("recaptcha").site_key !== "" && plugins.getConfig("recaptcha").secret_key !== "") {
-                recaptcha.verify(req, function(error) {
-                    if (!error) {
-                        next();
-                    }
-                    else {
-                        res.redirect(countlyConfig.path + '/login?message=recaptcha.incorrect');
-                    }
-                });
+                if (req.body && req.body.auth_code && req.body.auth_code === req.session.otp) { //if coming from two-factor and if it is matching the auth code in session skip captcha
+                    next();
+                }
+                else {
+                    recaptcha.verify(req, function(error) {
+                        if (!error) {
+                            next();
+                        }
+                        else {
+                            res.redirect(countlyConfig.path + '/login?message=recaptcha.incorrect');
+                        }
+                    });
+                }
             }
             else {
                 next();

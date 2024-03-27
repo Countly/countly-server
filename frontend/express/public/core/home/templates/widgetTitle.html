@@ -1,9 +1,9 @@
-<div class="bu-level bu-pb-3" >
-	<div class="bu-level-left">
-		<h2>{{i18n(widget.label)}}</h2>
-		<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="widget.description"></span>
-	</div>
-	<div class="bu-level-right">
-		<a v-if="widget.linkTo" class="cly-back-link text-medium" :href="widget.linkTo.href"><span>{{i18n(widget.linkTo.label)}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
-	</div>
+<div class="bu-level bu-pb-3">
+    <div class="bu-level-left" :data-test-id="`widget-label-${widget.label.toLowerCase().replace(/\s/g, '-')}`">
+        <h2>{{i18n(widget.label)}}</h2>
+        <span class="cly-vue-tooltip-icon ion ion-help-circled" :data-test-id="`widget-tooltip-${widget.label.toLowerCase().replace(/\s/g, '-')}`" style="margin-left:10px" v-tooltip.top-center="widget.description"></span>
+    </div>
+    <div class="bu-level-right">
+        <a v-if="widget.linkTo" class="cly-back-link text-medium" :data-test-id="`widget-link-${widget.linkTo.label.toLowerCase().replace(/\s/g, '-')}`" :href="widget.linkTo.href"><span>{{i18n(widget.linkTo.label)}}<i class="fas fa-arrow-right bu-pl-3" :data-test-id="`widget-arrow-${widget.linkTo.label.toLowerCase().replace(/\s/g, '-')}`"></i></span></a>
+    </div>
 </div>

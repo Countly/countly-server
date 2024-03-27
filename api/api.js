@@ -13,6 +13,7 @@ const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
+const moment = require("moment");
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -81,6 +82,7 @@ plugins.connectToAllDatabases().then(function() {
         //batch_read_on_master: false,
         batch_read_ttl: 600,
         batch_read_period: 60,
+        user_merge_paralel: 1,
         trim_trailing_ending_spaces: false
     });
 
@@ -110,7 +112,12 @@ plugins.connectToAllDatabases().then(function() {
         dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
         api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
-        dashboard_rate_limit_requests: 500
+        dashboard_rate_limit_requests: 500,
+        proxy_hostname: "",
+        proxy_port: "",
+        proxy_username: "",
+        proxy_password: "",
+        proxy_type: "https"
     });
 
     /**
@@ -166,7 +173,7 @@ plugins.connectToAllDatabases().then(function() {
     *  Handle exit events for gracefull close
     */
     ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-        'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+        'SIGBUS', 'SIGFPE', 'SIGSEGV', 'SIGTERM',
     ].forEach(function(sig) {
         process.on(sig, async function() {
             storeBatchedData(sig);
@@ -273,7 +280,10 @@ plugins.connectToAllDatabases().then(function() {
             : os.cpus().length;
 
         for (let i = 0; i < workerCount; i++) {
-            const worker = cluster.fork();
+            // there's no way to define inspector port of a worker in the code. So if we don't
+            // pick a unique port for each worker, they conflict with each other.
+            const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
+            const worker = cluster.fork({ NODE_OPTIONS: "--inspect-port=" + inspectorPort });
             workers.push(worker);
         }
 
@@ -298,9 +308,22 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
-            //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
+
+        //Record as restarted
+
+        var utcMoment = moment.utc();
+
+        var incObj = {};
+        incObj.r = 1;
+        incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
+        common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
+            if (err) {
+                log.e(err);
+            }
+        });
     }
     else {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
@@ -337,11 +360,22 @@ plugins.connectToAllDatabases().then(function() {
             };
 
             if (req.method.toLowerCase() === 'post') {
-                const form = new formidable.IncomingForm();
+                const formidableOptions = {};
+                if (countlyConfig.api.maxUploadFileSize) {
+                    formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+                }
+
+                const form = new formidable.IncomingForm(formidableOptions);
                 req.body = '';
                 req.on('data', (data) => {
                     req.body += data;
                 });
+
+                let multiFormData = false;
+                // Check if we have 'multipart/form-data'
+                if (req.headers['content-type']?.startsWith('multipart/form-data')) {
+                    multiFormData = true;
+                }
 
                 form.parse(req, (err, fields, files) => {
                     //handle bakcwards compatability with formiddble v1
@@ -357,8 +391,18 @@ plugins.connectToAllDatabases().then(function() {
                         }
                     }
                     params.files = files;
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
+                    if (multiFormData) {
+                        let formDataUrl = [];
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                            formDataUrl.push(`${i}=${fields[i]}`);
+                        }
+                        params.formDataUrl = formDataUrl.join('&');
+                    }
+                    else {
+                        for (const i in fields) {
+                            params.qstring[i] = fields[i];
+                        }
                     }
                     if (!params.apiPath) {
                         processRequest(params);

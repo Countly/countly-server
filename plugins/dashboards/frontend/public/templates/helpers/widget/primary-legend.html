@@ -1,7 +1,7 @@
 <div class="bu-is-flex bu-is-align-items-center bu-my-2">
     <div class="clyd-legend-app bu-is-flex-shrink-1" v-if="customText" style="min-width: 0;">
         <div class="bu-is-flex">
-            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{customText}}</span>
+            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{unescapeHtml(customText)}}</span>
         </div>
     </div>
 

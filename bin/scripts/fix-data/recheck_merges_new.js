@@ -15,6 +15,8 @@ const drillCommon = require("../../../plugins/drill/api/common.js");
 
 const APP_ID = ""; //leave empty to get all apps
 
+var totalProcessedUsers = {};
+
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
     common.db = countlyDb;
@@ -32,7 +34,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         try {
             //for each app serially process users
             asyncjs.eachSeries(apps, async function(app) {
+                console.log("Timestamp:", new Date());
                 console.log("Processing app: ", app.name);
+                totalProcessedUsers[app._id] = 0;
                 await processCursor(app);
             }, function(err) {
                 return close(err);
@@ -50,7 +54,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         var collections = [];
         try {
             var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});
-            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device"];
+            var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 
             if (events && events.list) {
                 for (var p = 0; p < events.list.length; p++) {
@@ -72,6 +76,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     async function processUser(old_uid, new_uid, collections, app) {
         console.log("Processing user ", old_uid, " -> ", new_uid, "for app ", app.name);
+        var hasError = false;
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
@@ -93,9 +98,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             }
             catch (err) {
                 console.log("Error finding events with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "error: ", err);
+                hasError = true;
+                break;
             }
         }
-        if (dataviews && !DRY_RUN) {
+        if (!hasError && dataviews && !DRY_RUN) {
             await new Promise((resolve, reject) => {
                 dataviews.mergeUserTimes({ uid: old_uid }, { uid: new_uid }, app._id, function(err) {
                     if (err) {
@@ -124,46 +131,65 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
 
     async function processCursor(app) {
-        //get all drill collections for this app
-        var drillCollections = await getDrillCollections(app._id);
-        //start session
-        const session = await countlyDb.client.startSession();
-        //get users collection
-        const usersCollection = session.client.db("countly").collection('app_users' + app._id);
-        //create cursor 
-        var usersCursor = generateCursor(usersCollection);
-        var refreshTimestamp = new Date();
+        var session;
         try {
-            //for each user
-            while (usersCursor && await usersCursor.hasNext()) {
-                //refresh session every 5 minutes
-                if ((new Date() - refreshTimestamp) / 1000 > 300) {
-                    console.log("Refreshing session");
-                    try {
-                        await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
-                        refreshTimestamp = new Date();
+            //start session
+            session = await countlyDb.client.startSession();
+            //get all drill collections for this app
+            var drillCollections = await getDrillCollections(app._id);
+            //get users collection
+            const usersCollection = session.client.db("countly").collection('app_users' + app._id);
+            //create cursor 
+            var usersCursor = generateCursor(usersCollection);
+            var refreshTimestamp = new Date();
+            try {
+                //for each user
+                while (usersCursor && await usersCursor.hasNext()) {
+                    console.log("Timestamp:", new Date());
+                    //refresh session every 5 minutes
+                    if ((new Date() - refreshTimestamp) / 1000 > 300) {
+                        console.log("Refreshing session");
+                        try {
+                            await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                            refreshTimestamp = new Date();
+                        }
+                        catch (err) {
+                            console.log("Error refreshing session: ", err);
+                            break;
+                        }
                     }
-                    catch (err) {
-                        console.log("Error refreshing session: ", err);
-                        break;
+                    //get next user
+                    const user = await usersCursor.next();
+                    //check if old uid still exists in drill collections
+                    if (user && user.merged_uid) {
+                        console.log("Found user ", user.uid, "with old uid ", user.merged_uid);
+                        if (!DRY_RUN) {
+                            await processUser(user.merged_uid, user.uid, drillCollections, app);
+                        }
+                        totalProcessedUsers[app._id]++;
                     }
+                    await addRecheckedFlag(app._id, user.uid);
                 }
-                //get next user
-                const user = await usersCursor.next();
-                //check if old uid still exists in drill collections
-                if (user && user.merged_uid) {
-                    await processUser(user.merged_uid, user.uid, drillCollections, app);
-                }
-                await addRecheckedFlag(app._id, user.uid);
+                console.log("Processed users for app", app.name, ": ", totalProcessedUsers[app._id]);
+            }
+            catch (cursorError) {
+                console.log("Cursor error: ", cursorError);
+                console.log("Restarting cursor process...");
+                usersCursor.close();
+                await processCursor(app);
             }
         }
-        catch (err) {
-            console.log("Cursor error: ", err);
-            console.log("Restarting cursor process...");
-            session.endSession();
-            processCursor(app);
+        catch (sessionError) {
+            console.log("Session error: ", sessionError);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("Restarting session...");
+            await processCursor(app);
         }
-        session.endSession();
+        finally {
+            if (session) {
+                session.endSession();
+            }
+        }
     }
 
     function close(err) {

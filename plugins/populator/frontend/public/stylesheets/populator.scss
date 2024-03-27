@@ -1,8 +1,4 @@
 .populator-template-drawer {
-    &__main-container {
-        background: #F8FAFD;
-        border-radius: 6px;
-    }
 
     &__key {
         flex-basis: 160px;
@@ -13,23 +9,9 @@
         flex-grow: 1;
     }
 
-    &__btn-add {
-        margin-bottom: 32px;
-    }
-
-    &__btn-delete {
-        font-weight: 500 !important;
-        color: #D23F00 !important;
-    }
-
     &__btn-segmentation {
         font-size: 13px;
         margin-bottom: 32px !important;
-    }
-
-    &__text-custom-detail {
-        letter-spacing: 0.5px;
-        font-weight: 500 !important;
     }
 
     &__property-container {
@@ -55,40 +37,6 @@
         padding: unset;
         margin-top: 16px;
         height: 20px;
-    }
-    
-    &__event-container {
-        .event-left-container {
-            display: flex;
-            align-items: normal;
-            flex-direction: column;
-            width: 50%;
-
-            .duration-text {
-                font-family: Inter;
-                font-style: normal;
-                font-weight: normal;
-                font-size: 13px;
-                line-height: 18px;
-                color: #81868D;
-                margin-left: 27px;
-            }
-        }
-
-        .event-right-container {
-            margin-left: 40px !important;
-            padding: unset !important;
-            margin-top: -5px !important;
-        }
-
-        .el-checkbox__label {
-            margin-left: 8px !important;
-            padding-left: unset !important;
-        }
-
-        .event-input {
-            width: 80px !important;
-        }
     }
 }
 
@@ -120,8 +68,49 @@
         }
     }
 
-    &__date-picker {
-        margin-left: 25px
+    &__main-page-form {
+        .cly-vue-section__sub {
+            border-left: 1px solid #ececec;
+            border-right: 1px solid #ececec;
+            border-bottom: 1px solid #ececec;
+
+            padding-left: 0rem !important;
+            padding-right: 0rem !important;
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+        }
+
+        .cly-vue-section__sub:last-child {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: 2rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        .bu-columns {
+            margin-left: 0rem;
+            margin-right: 0rem;
+            margin-top: 0rem;
+        }
+
+        .bu-columns:not(:last-child) {
+            margin-bottom: 0rem;
+        }    
+    }
+
+    .main-page-container {
+        max-width: 232px!important;
+        .selected-environment-input {
+            width: 232px;
+        }
+    }
+    .main-page-inputs {
+        width: 100%;
+    }
+
+    &__save-field {
+        width: 232px;
+        height: 32px;
     }
 
     .cly-vue-section__sub {
@@ -134,10 +123,6 @@
         width: 232px;
         height: 32px;
         margin-left: 13px
-    }
-
-    .el-dialog__headerbtn {
-        visibility: hidden;
     }
 
     .el-dialog__header {
@@ -161,6 +146,10 @@
         .el-table__only-options-fixed-right {
             min-height: 580px !important;
         }
+    }
+
+    .populator-input-area {
+        min-width: 20%;
     }
 }
 
@@ -187,11 +176,19 @@
     } 
 
     &__generate-data-header {
-        margin-top: 20px;
+        // margin-top: 20px;
+        margin-top: 6px;
     }
 
     &__generate-data-bulk {
         margin-top: 4px;
+    }
+
+    &__stop-button {
+        border: none;
+        background-color: #f6f6f6;
+        margin-top: 32px;
+        margin-bottom: 12px;
     }
 }
 
@@ -243,5 +240,294 @@
 
     &__description {
         width: 437px;
+    }
+}
+
+.populator-template {
+    &__left-container {
+        width: 179px;
+        margin-top: 120px;
+
+        .wrapper {
+            position: fixed;
+        }
+    }
+    &__active-bar {
+        width: 3px;
+    }
+
+    &__users, &__events, &__views {
+        &--platform-type {
+            .el-checkbox {
+                margin-right: 0px !important;
+            }
+
+            .el-checkbox__input {
+                line-height: 2.8 !important;
+                vertical-align: sub;
+                margin-left: 6px;
+            }
+
+            .el-checkbox.is-bordered.el-checkbox--medium {
+                height: 50px !important;
+                width: 227px !important;
+            }
+
+            .el-checkbox.is-bordered.el-checkbox--medium .el-checkbox__inner {
+                height: 17px !important;
+                width: 17px !important;
+            }
+
+            .is-error {
+                .is-bordered {
+                    border-color: #D23F00;
+                    background-color: #FBECE5;
+                }
+            }
+        }
+
+        &--property-section {
+            .input {
+                width: 208px;
+            }
+
+            .divider {
+                border-top: 1px dashed #F8FAFD;
+            }
+        }
+
+        &--condition {
+           .condition-label {
+                max-width: 150px;
+           }
+        }
+
+        &--segmentation-section {
+            margin-top: 32px;
+        }
+
+        &--duration-and-sum-container {
+            .left-container {
+                display: flex;
+                align-items: normal;
+                flex-direction: column;
+                width: 50%;
+    
+                .duration-text {
+                    font-family: Inter;
+                    font-style: normal;
+                    font-weight: normal;
+                    font-size: 13px;
+                    line-height: 18px;
+                    color: #81868D;
+                    margin-left: 24px;
+                }
+            }
+    
+            .right-container {
+                margin-left: 57px !important;
+                padding: unset !important;
+                margin-top: -5px !important;
+            }
+    
+            .el-checkbox__label {
+                margin-left: 8px !important;
+                padding-left: unset !important;
+            }
+    
+            .duration-input {
+                width: 80px !important;
+            }
+        }
+    }
+
+    &__sequences {
+        .vertical-hr {
+            border-left: 1px dashed #A7AEB8;
+            height: 20px;
+            display: inline-block;
+            margin-left: 43px;
+       }
+        &--container {
+            width: 385px;
+            margin-top: 7px;
+            margin-left: 16px;
+            .probability-header {
+                margin-left: 109px;
+            }
+        }
+        &--draggable-fields {
+           .drag-handler {
+                margin-top: 7px;
+                margin-right: 6px;
+           } 
+           .step-field {
+                width: 125px;
+           }
+           .probability-field {
+                width: 208px;
+                margin-left: 8px;
+
+                .input, .el-input {
+                    width: 208px;
+                }
+           }
+        }
+    }
+
+    &__behavior {
+        &--main-container {
+            .session-running-header {
+                margin-top: 20px;
+            }
+        }
+        &--session-input-container {
+            width: 140px !important;
+        }
+        &--general-conditions {
+            .condition-label {
+                width: 165px;
+            }
+            .close-button {
+                margin-top: 7px !important
+            }
+        }
+        &--sequences-container {
+            .sequence-text {
+                width: 162px;
+            }
+            .sequence-probability {
+                width: 208px;
+            }
+        }
+        &--sequence-conditions {
+            .condition-label {
+                margin-right: 79px;
+                width: 165px;
+            }
+            .delete-condition {
+                margin-left: 78px;
+            }
+            .condition-values {
+                margin-right: 90px;
+            }
+            .sequence-condition-label {
+                width: 150px;
+            }
+            .sequence-condition-probability {
+                width: 208px;
+            }
+        }
+    }
+
+    .override-buttons {
+        .close-button {
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 14px;
+            margin-left: 12px;
+        }
+
+        .btn-another-value {
+            background-color: transparent !important;
+        }
+
+        .btn-another-value:hover {
+            background-color: transparent !important;
+        }
+
+        // .btn-another-value-wrapper {
+            width: 84%;
+        // }
+    }
+
+    &--text-custom-detail {
+        letter-spacing: 0.5px;
+        font-weight: 500 !important;
+    }
+
+    &--btn-delete {
+        font-weight: 500 !important;
+        color: #D23F00 !important;
+    }
+
+    &--btn-delete:hover {
+        background-color: transparent !important;
+    }
+
+    // &--btn-add {
+    //     margin-bottom: 32px;
+    // }
+
+    &__main-container {
+        background: #F8FAFD;
+        border-radius: 6px;
+        width: 670px;
+    }
+
+    .cly-vue-drawer-step {
+        &__section {
+            margin-bottom: 16px;
+        }
+    }
+
+    .cly-vue-drawer {
+        &__footer {
+            display: flex;
+            width: 670px;
+            margin-left: calc(50% - 266px);
+        }
+    }
+
+    .divider {
+        border-top: 1px dashed #F8FAFD;
+    }
+}
+
+.populator-number-selector {
+    width: 240px;
+    display: flex;
+    justify-content: space-around;
+    
+    &__each-box-wrapper {
+        width: 100%;
+    }
+
+    &__each {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        border: 1px solid #E2E4E8;
+        text-align: center;
+        cursor: pointer;
+        border-right: none !important;
+    }
+
+    &__active {
+        background-color: #0166D6;
+        border: 1px solid #0166D6;
+
+        span:first-child {
+            color: #FFFFFF !important;
+        }
+    }
+
+    &__first {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+
+    }
+
+    &__last {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        border-right: 1px solid #E2E4E8 !important;
+    }
+}
+
+.populator-condition-selector {
+    &__popover {
+        padding: unset !important;
     }
 }

@@ -233,6 +233,16 @@
             globalRange = null,
             inputDisable = false;
 
+        if (instance.type.includes("minute")) {
+            formatter = "YYYY-MM";
+            tableType = "minute";
+            globalRange = null;
+        }
+        if (instance.type.includes("hour")) {
+            formatter = "YYYY-MM";
+            tableType = "hour";
+            globalRange = null;
+        }
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
@@ -277,7 +287,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day"},
+            tableTypeMapper: {years: "year", months: "month", weeks: "week", days: "day", hours: "hour", minutes: "minute"},
             inputDisable: inputDisable,
             leftSideShortcuts: [
                 {label: CV.i18n('common.time-period-select.range'), value: "inBetween"},
@@ -503,13 +513,19 @@
                     inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
+                    if (this.inTheLastInput.raw.level === "minutes") {
+                        this.tableType = "minute";
+                    }
+                    if (this.inTheLastInput.raw.level === "hours") {
+                        this.tableType = "hour";
+                    }
                     if (this.inTheLastInput.raw.level === "months") {
                         this.tableType = "month";
                     }
                     if (this.inTheLastInput.raw.level === "years") {
                         this.tableType = "year";
                     }
-                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || "day";
+                    this.tableType = this.retentionConfiguration ? this.tableTypeMapper[this.retentionConfiguration] : this.inTheLastInput.raw.level.slice(0, -1) || this.tableType;
                     inputObj = this.inTheLastInput.parsed;
                     break;
                 case 'before':
@@ -547,6 +563,14 @@
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
+                }
+                else if (this.tableType === "minute") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = null;
+                }
+                else if (this.tableType === "hour") {
+                    this.formatter = "YYYY-MM";
+                    this.globalRange = null;
                 }
                 else {
                     this.formatter = "YYYY-MM-DD";
@@ -626,6 +650,12 @@
                     this.$emit("update-stringified-value", newVal);
                     var self = this;
                     var parsed = moment().subtract(newVal.text - 1, newVal.level).startOf(newVal.level.slice(0, -1) || "day");
+                    if (newVal.level === "minutes") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("minute");
+                    }
+                    if (newVal.level === "hours") {
+                        parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("hour");
+                    }
                     if (newVal.level === "weeks") {
                         parsed = moment().subtract(newVal.text - 1, newVal.level).startOf("isoWeek");
                     }
@@ -664,6 +694,14 @@
                         setTimeout(function() {
                             self.scrollTo(self.inTheLastInput.parsed[0]);
                         }, 0);
+                    }
+                    else if (newVal.level === "hours") {
+                        this.globalRange = this.globalHoursRange;
+                        this.tableType = "hour";
+                    }
+                    else if (newVal.level === "minutes") {
+                        this.globalRange = this.globalMinutesRange;
+                        this.tableType = "minute";
                     }
                 }
             },
@@ -887,6 +925,9 @@
                     return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
                 }
                 return {};
+            },
+            setMinuteAndHourStyle: function() {
+                return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };
             }
         },
         props: {
@@ -998,6 +1039,16 @@
                 required: false
             },
             isGlobalDatePicker: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            inTheLastMinutes: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            inTheLastHours: {
                 type: Boolean,
                 default: false,
                 required: false
@@ -1134,8 +1185,18 @@
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
-                    state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
-                    state.maxDate = now;
+                    if (meta.level === "hours") {
+                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("hour").toDate();
+                        state.maxDate = now;
+                    }
+                    else if (meta.level === "minutes") {
+                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("minute").toDate();
+                        state.maxDate = now;
+                    }
+                    else {
+                        state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
+                        state.maxDate = now;
+                    }
                     state.inTheLastInput = {
                         raw: {
                             text: meta.value + '',
@@ -1170,7 +1231,7 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
-                if (!this.retentionConfiguration) {
+                if (this.tableType !== ("hour" || "minute") && !this.retentionConfiguration) {
                     this.tableType = "day";
                 }
                 this.abortPicking();
@@ -1210,7 +1271,7 @@
                 if (this.isGlobalDatePicker) {
                     try {
                         var storedDateItems = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
-                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days"};
+                        var inTheLastInputLevelMapper = {"year": "years", "month": "months", "week": "weeks", "day": "days", "hour": "hours", "minute": "minutes"};
                         this.rangeMode = storedDateItems.rangeMode;
                         this.tableType = storedDateItems.tableType;
                         if (this.rangeMode === "inTheLast") {
@@ -1242,6 +1303,10 @@
                     setTimeout(function() {
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
+                }
+                else if (this.tableType === ("hour" || "minute")) {
+                    this.formatter = "YYYY-MM-DD";
+                    this.globalRange = null;
                 }
                 else {
                     this.formatter = "YYYY-MM-DD";
@@ -1332,9 +1397,12 @@
                     var _maxDate = new Date(this.maxDate);
                     var currentDate = new Date(_maxDate.getTime());
                 }
-                if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
+                if (this.rangeMode === 'inBetween' || (this.modelMode === "absolute")) {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
-                    if (this.type === "date" && !this.selectTime) {
+                    if (this.tableType === "minute" || this.tableType === "hour") {
+                        this.maxDate = new Date(); // take current date as max
+                    }
+                    else if (this.type === "date" && !this.selectTime) {
                         effectiveMinDate.setHours(23, 59);
                         this.maxDate.setHours(23, 59);
                     }

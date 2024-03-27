@@ -7,37 +7,60 @@ data:
   tls.key: YOUR_SSL_KEY_IN_BASE64       # cat cert.key | base64
 type: kubernetes.io/tls
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: countly-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  namespace: countly
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - YOUR_HOSTNAME                     # countly.example.com
     secretName: countly-tls
   rules:
-  - http:
+  - host: YOUR_HOSTNAME                 # countly.example.com
+    http:
       paths:
       - path: /i
+        pathType: Prefix
         backend:
-          serviceName: countly-api
-          servicePort: 3001
+          service:
+            name: countly-api
+            port:
+              number: 3001
       - path: /i/*
+        pathType: ImplementationSpecific
         backend:
-          serviceName: countly-api
-          servicePort: 3001
+          service:
+            name: countly-api
+            port:
+              number: 3001
       - path: /o
+        pathType: Prefix
         backend:
-          serviceName: countly-api
-          servicePort: 3001
+          service:
+            name: countly-api
+            port:
+              number: 3001
       - path: /o/*
+        pathType: ImplementationSpecific
         backend:
-          serviceName: countly-api
-          servicePort: 3001
-      - path: /*
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /
+        pathType: Prefix
         backend:
-          serviceName: countly-frontend
-          servicePort: 6001
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /images/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001

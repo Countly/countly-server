@@ -4,7 +4,6 @@
     jQuery(function() {
         if (window.countlyQueryBuilder) {
             var indexedProps = [
-                "app_version",
                 "background",
                 "cpu",
                 "device",
@@ -28,9 +27,6 @@
                             ? row.value.data
                             : [row.value.data]
                         ).forEach(function(v) {
-                            if (row.property.id === "app_version") {
-                                v = (v + "").replace(/\./g, ":");
-                            }
                             subquery[row.property.id + "." + v] = {
                                 $exists: !negateValue,
                             };
@@ -162,9 +158,6 @@
                                 var dotIndex = key.indexOf(".");
                                 var propertyId = key.slice(0, dotIndex);
                                 var value = key.slice(dotIndex + 1, key.length);
-                                if (propertyId === "app_version") {
-                                    value = (value + "").replace(/:/g, ".");
-                                }
                                 return {
                                     propertyId: propertyId,
                                     operatorId: data ? "cly.=" : "cly.!=",

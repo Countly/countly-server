@@ -220,14 +220,6 @@ class Resultor extends DoFinish {
                 });
                 this.log.d('Added %d results', results.length);
             }
-
-            // // in case no more data is expected, we can safely close the stream
-            // if (this.check()) {
-            //     for (let _ in this.state.pushes) {
-            //         return;
-            //     }
-            //     this.do_flush(() => this.end());
-            // }
         }
         else if (frame & FRAME.ERROR) {
             let error = results.messageError(),
@@ -321,6 +313,7 @@ class Resultor extends DoFinish {
             promises = this.data.messages().map(m => {
                 m.result.lastRun.ended = new Date();
 
+                // if (await Message.hasPushRecords(m.id)) {
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
@@ -358,11 +351,13 @@ class Resultor extends DoFinish {
                     else { // shouldn't happen, but possible in some weird cases
                         state = m.state & ~State.Streaming;
                         status = Status.Scheduled;
-                        m.schedule(this.log).then(() => {
-                            this.log.i('Rescheduled %s from resultor', m.id);
-                        }, e => {
-                            this.log.e('Rescheduling error for %s from resultor', m.id, e);
-                        });
+                        // TODO: We're already scheduling the next message on jobs/schedule.js after creating push records.
+                        // It shouldn't matter if all of the queue processed or not.
+                        // m.schedule(this.log).then(() => {
+                        //     this.log.i('Rescheduled %s from resultor', m.id);
+                        // }, e => {
+                        //     this.log.e('Rescheduling error for %s from resultor', m.id, e);
+                        // });
                     }
                 }
                 else {
@@ -514,6 +509,7 @@ class Resultor extends DoFinish {
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
+                        //plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: params.qstring.events});
 
                         try {
                             this.log.d('Recording %d data points', sent);

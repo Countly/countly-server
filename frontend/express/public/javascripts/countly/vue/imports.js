@@ -9,6 +9,7 @@
     window.VTooltip.VTooltip.options.popover.defaultBoundariesElement = 'window';
     window.VTooltip.VTooltip.options.popover.defaultClass = 'cly-vue-popover';
     window.VTooltip.VTooltip.options.popover.defaultInnerClass = 'cly-vue-popover__content';
+    window.VTooltip.VTooltip.options.defaultHtml = false;
 
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
     Vue.use(VueClipboard);

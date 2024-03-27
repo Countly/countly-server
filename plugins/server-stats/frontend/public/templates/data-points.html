@@ -26,7 +26,7 @@
         </cly-section>
 		
 		<cly-section>
-            <cly-datatable-n  :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
+            <cly-datatable-n :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
 						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
@@ -44,6 +44,30 @@
 						{{i18n('sidebar.events')}}
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
 					</template>
+					<div slot-scope="scopeRow">
+						<el-popover
+							trigger="hover"
+							placement="right"
+							offset=50
+							:close-delay=50>
+							<div slot="default">
+								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
+									{{i18n('server-stats.event-breakdown')}}
+								</div>
+								<table class="bu-mt-1">
+									<tr v-for="eventPair in scopeRow.row.sorted_breakdown">
+										<td class="bu-pt-3 bu-is-capitalized bu-has-text-weight-normal popover-key">
+											{{getPopoverKey(eventPair[0])}}
+										</td>
+										<td class="bu-pt-3 bu-pl-5 bu-has-text-right bu-has-text-weight-medium popover-value">
+											{{eventsNumberFormatter(eventPair[1])}}
+										</td>
+									</tr>
+								</table>
+							</div>
+							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
+						</el-popover>
+					</div>
 				</el-table-column>
 				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>

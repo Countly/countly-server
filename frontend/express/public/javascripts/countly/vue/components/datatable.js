@@ -743,7 +743,7 @@
                             else {
                                 property = rows[r][columns[c].property];
                             }
-                            item[columns[c].label.toUpperCase()] = property;
+                            item[columns[c].label.toUpperCase()] = countlyCommon.unescapeHtml(property);
                         }
                         table.push(item);
                     }

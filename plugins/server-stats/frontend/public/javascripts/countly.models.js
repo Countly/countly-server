@@ -15,7 +15,7 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
                 data: {
-                    "period": countlyCommon.getPeriodForAjax(),
+                    "period": countlyCommon.getPeriodAsDateStrings(),
                     "selected_app": options.app_id || "",
                 },
                 dataType: "json",
@@ -31,7 +31,7 @@
 
     countlyDataPoints.punchCard = function(options) {
         var data = {};
-        data.period = countlyCommon.getPeriodForAjax();
+        data.period = countlyCommon.getPeriodAsDateStrings();
 
         if (options.app_id) {
             data.selected_app = options.app_id;
@@ -53,7 +53,7 @@
 
     countlyDataPoints.calculateTop = function(/*options*/) {
         var data = {};
-        data.period = countlyCommon.getPeriodForAjax();
+        data.period = countlyCommon.getPeriodAsDateStrings();
         return $.when(
             $.ajax({
                 type: "GET",
@@ -110,15 +110,45 @@
             if (appId === "all-apps" || appId === "natural-dp") {
                 appId = null;
             }
+            var brokendownEvents = {
+                "crashes": periodData.crash,
+                "views": periodData.views,
+                "actions": periodData.actions,
+                "nps": periodData.nps,
+                "surveys": periodData.surveys,
+                "ratings": periodData.ratings,
+                "apm": periodData.apm,
+                "custom": periodData.custom,
+            };
+            let sortable = [];
+            for (var event in brokendownEvents) {
+                sortable.push([event, brokendownEvents[event]]);
+            }
+
+            sortable.sort(function(a, b) {
+                return b[1] - a[1];
+            });
+
             tableData.push({
                 "appName": getAppName(app),
                 "appId": appId,
                 "sessions": periodData.sessions,
-                "events": periodData.events,
                 "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
-                "approximated": approx
+                "approximated": approx,
+                "events": periodData.events,
+                "events_breakdown": {
+                    "crashes": periodData.crash,
+                    "views": periodData.views,
+                    "actions": periodData.actions,
+                    "nps": periodData.nps,
+                    "surveys": periodData.surveys,
+                    "ratings": periodData.ratings,
+                    "apm": periodData.apm,
+                    "custom": periodData.custom,
+                },
+                "sorted_breakdown": sortable,
             });
         }
 

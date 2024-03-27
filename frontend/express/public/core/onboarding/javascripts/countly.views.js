@@ -1,4 +1,4 @@
-/*globals _,app,Backbone,Countly,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins,moment,store*/
+/*globals _,app,Backbone,CV,countlyCMS,countlyCommon,countlyGlobal,countlyOnboarding,CountlyHelpers,countlyPopulator,countlyPlugins,moment,store*/
 
 (function() {
     var appSetupView = CV.views.create({
@@ -99,23 +99,20 @@
 
                 countlyPopulator.setSelectedTemplate(self.newApp.appTemplate);
                 countlyPopulator.getTemplate(self.newApp.appTemplate, function(template) {
-                    countlyPopulator.generateUsers(self.populatorMaxTime * 4, template);
-                });
-                var startTime = Math.round(Date.now() / 1000);
-                var progressBar = setInterval(function() {
-                    if (parseInt(self.populatorProgress, 10) < 100) {
-                        self.populatorProgress = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.populatorMaxTime) * 100;
-                        if (self.populatorProgress > 100) {
-                            self.populatorProgress = 100;
+                    countlyPopulator.generateUsers(10, template);
+                    self.populatorProgress = 0;
+                    self.progressBar = setInterval(function() {
+                        if (countlyPopulator.isGenerating()) {
+                            self.populatorProgress = countlyPopulator.getCompletedRequestCount() / (template.uniqueUserCount) * 100;
                         }
-                    }
-                    else {
-                        self.populatorProgress = 100;
-                        countlyPopulator.stopGenerating(true);
-                        window.clearInterval(progressBar);
-                        self.isPopulatorFinished = true;
-                    }
-                }, 1000);
+                        else {
+                            self.populatorProgress = 100;
+                            countlyPopulator.stopGenerating(true);
+                            window.clearInterval(self.progressBar);
+                            self.isPopulatorFinished = true;
+                        }
+                    }, 1000);
+                });
             },
             handleSubmit: function(doc) {
                 var self = this;
@@ -203,6 +200,7 @@
                     this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
                         name: countlyGlobal.member.full_name.split(' ')[0],
                         email: countlyGlobal.member.email,
+                        countlyType: countlyGlobal.countlyTypeTrack
                     });
                 }
 
@@ -239,7 +237,7 @@
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
                         app_key: countlyGlobal.frontend_app,
-                        device_id: Countly.device_id || domain,
+                        device_id: (window.Countly && window.Countly.device_id) || domain,
                     },
                     dataType: 'json',
                     complete: function() {
@@ -297,11 +295,13 @@
                     this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
                         name: countlyGlobal.member.full_name.split(' ')[0],
                         email: countlyGlobal.member.email,
+                        countlyType: countlyGlobal.countlyTypeTrack
                     });
                 }
 
                 // go home
-                app.navigate('#/', true);
+                window.location.href = '#/home';
+                window.location.reload();
             },
         }
     });
@@ -342,6 +342,10 @@
                     frontend: doc,
                 };
 
+                if (this.consentItems.length === 0) {
+                    configs.frontend.countly_tracking = false;
+                }
+
                 countlyPlugins.updateConfigs(configs);
                 var domain = countlyGlobal.countly_domain || window.location.origin;
 
@@ -371,7 +375,7 @@
                     data: {
                         consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
                         app_key: countlyGlobal.frontend_app,
-                        device_id: Countly.device_id || domain,
+                        device_id: (window.Countly && window.Countly.device_id) || domain,
                     },
                     dataType: 'json',
                     complete: function() {
@@ -405,17 +409,25 @@
         }));
     });
 
+    var hasNewsLetter = typeof countlyGlobal.newsletter === "undefined" ? true : countlyGlobal.newsletter;
+
     app.route('/not-subscribed-newsletter', 'not-subscribed-newsletter', function() {
-        this.renderWhenReady(new CV.views.BackboneWrapper({
-            component: newsletterView,
-            vuex: [{ clyModel: countlyOnboarding }],
-        }));
+        if (!hasNewsLetter) {
+            window.location.href = '#/home';
+            window.location.reload();
+        }
+        else {
+            this.renderWhenReady(new CV.views.BackboneWrapper({
+                component: newsletterView,
+                vuex: [{ clyModel: countlyOnboarding }],
+            }));
+        }
     });
 
     var sessionCount = countlyGlobal.member.session_count || 0;
     var isGlobalAdmin = countlyGlobal.member.global_admin;
 
-    countlyCMS.fetchEntry('server-quick-start', { populate: true }).then(function(resp) {
+    countlyCMS.fetchEntry('server-quick-start', { populate: true, CMSFirst: true }).then(function(resp) {
         var isConsentPage = /initial-setup|initial-consent|not-responded-consent|not-subscribed-newsletter/.test(window.location.hash);
         if (resp.data && resp.data.length && !isConsentPage) {
             var showForNSessions = resp.data[0].showForNSessions;
@@ -446,7 +458,7 @@
             app.navigate("/not-responded-consent", true);
         }
     }
-    else if (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)) {
+    else if (hasNewsLetter && (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }

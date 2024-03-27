@@ -21,7 +21,20 @@
                 <div class="cly-vue-drawer__header" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                     <div class="cly-vue-drawer__title">
                         <div v-if="currentScreenMode !== 'full'">
-                            <div class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
+                            <div v-if="hasBackLink" class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-p-1 bu-ml-5 bu-mt-5">
+                                    <a style="cursor: pointer;" @click="doClose" :data-test-id="testId + '-drawer-back-link'">
+                                        <span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{i18n('plugins.back')}}</span>
+                                    </a>
+                                </div>
+                                <div class="bu-is-flex" :style="hasBackLink.style" :class="{ 'bu-is-justify-content-flex-start': hasBackLink, 'bu-is-justify-content-center': !hasBackLink }">
+                                    <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
+                                </div>
+                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
+                                    <i class="ion-ios-close-empty"></i>
+                                </span>
+                            </div>
+                            <div v-else class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
                                 <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
                                 <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
                                     <i class="ion-ios-close-empty"></i>

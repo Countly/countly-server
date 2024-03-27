@@ -206,6 +206,14 @@ function transformAppVersion(inpVersion) {
                 dashboard.crtf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
                 dashboard.crtnf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
 
+                // these are added to rebalance the value of session and user
+                if (dashboard.cr_s[prop] < (dashboard.crfses[prop] + dashboard.crnfses[prop])) {
+                    dashboard.cr_s[prop] += dashboard.crfses[prop] + dashboard.crnfses[prop];
+                }
+
+                if (dashboard.cr_u[prop] < (dashboard.crauf[prop] + dashboard.craunf[prop])) {
+                    dashboard.cr_u[prop] += dashboard.crauf[prop] + dashboard.craunf[prop];
+                }
             });
 
             ["cr-session", "crtf", "crtnf"].forEach(function(metric) {
@@ -214,7 +222,7 @@ function transformAppVersion(inpVersion) {
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_u[prop]) / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
@@ -228,11 +236,11 @@ function transformAppVersion(inpVersion) {
                     }
                     else {
                         if (dashboard[name][prop] - dashboard.cr_s[prop] < 0) {
-                            propValue = ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100);
+                            propValue = ((dashboard.cr_s[prop] - dashboard[name][prop]) / dashboard.cr_s[prop] * 100);
                         }
                         else {
                             // Use real total session if cr_s value is too low
-                            propValue = ((dashboard[name][prop] - realTotalSession) / realTotalSession * 100);
+                            propValue = ((realTotalSession - dashboard[name][prop]) / realTotalSession * 100);
                         }
                     }
 

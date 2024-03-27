@@ -64,7 +64,16 @@ class ScheduleJob extends J.Job {
             }
             else {
                 if (plain) {
-                    let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$set: {state: State.Created | State.Streamable, status: Status.Scheduled}});
+                    let res = await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $set: {
+                                state: State.Created | State.Scheduling,
+                                status: Status.Scheduled
+                            }
+                        }
+                    );
+
                     if (!res) {
                         error = 'Failed to update message';
                     }
@@ -90,10 +99,34 @@ class ScheduleJob extends J.Job {
                         await this.message.update(update, () => {});
                         log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
                     }
+                    await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Scheduling,
+                                    or: State.Streamable
+                                }
+                            }
+                        }
+                    );
                 }
 
                 if (resch) {
-                    let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$bit: {state: {or: State.Streamable}}, $set: {status: Status.Scheduled}});
+                    let res = await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Streamable,
+                                    or: State.Scheduling
+                                }
+                            },
+                            $set: {
+                                status: Status.Scheduled
+                            }
+                        }
+                    );
                     if (!res) {
                         error = 'Failed to update message';
                     }
@@ -102,6 +135,18 @@ class ScheduleJob extends J.Job {
                         result = await this.audience.push(resch).setStart(now).run();
 
                     log.i('Rescheduleable message %s scheduling result for %s: %j, full result %j', this.message.id, now, result, this.message.result.json);
+
+                    await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Scheduling,
+                                    or: State.Streamable
+                                }
+                            }
+                        }
+                    );
 
                     await this.message.schedule(log);
                 }

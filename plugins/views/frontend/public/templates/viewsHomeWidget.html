@@ -2,7 +2,7 @@
 	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
 	<cly-section class="views-dashboard-widget">
 		<cly-metric-cards v-loading="isLoading" style="min-height:100px;">
-                <cly-metric-card :number="item.percent" :label="item.name" :color="item.color" :tooltip="item.description" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in dataBlocks">
+                <cly-metric-card :number="item.percent" :test-id="'views-index-' + idx" :label="item.name" :color="item.color" :tooltip="item.description" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in dataBlocks">
 					<!-- <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="item.description"></span> -->
 					<template v-slot:number>{{item.value}}</template>
                 </cly-metric-card>

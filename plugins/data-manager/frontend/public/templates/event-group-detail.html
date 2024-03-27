@@ -6,7 +6,7 @@
             <div>
                 <cly-back-link link="/manage/data-manager/events/event-groups" title="Back to Manage Event Groups"></cly-back-link>
                 <div class="bu-mt-4 bu-is-flex bu-is-align-items-center">
-                    <h3 class="bu-is-capitalized bu-mr-2" v-html="eventGroup.name"></h3>
+                    <h3 class="bu-is-capitalized bu-mr-2">{{unescapeHtml(eventGroup.name)}}</h3>
                     <cly-guide></cly-guide>
                 </div>
                 <div class="bu-mt-4 bu-mr-2">
@@ -41,14 +41,14 @@
                                 <tr>
                                     <td><span>{{ i18n('data-manager.description') }}</span>
                                     </td>
-                                    <td v-html="eventGroup.description"></td>
+                                    <td>{{unescapeHtml(eventGroup.description)}}</td>
                                 </tr>
                                 <tr>
                                     <td>
                                         <span>{{ i18n('data-manager.included-events') }}</span>
                                     </td>
                                     <td>
-                                        <div class="bu-mb-2" v-for="e in eventGroup.source_events"><div v-html="e"></div></div>
+                                        <div class="bu-mb-2" v-for="e in eventGroup.source_events"><div>{{unescapeHtml(e)}}</div></div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -72,7 +72,7 @@
             {{ i18n('data-manager.delete-event-group-permanently') }}<br/> 
             <small class="color-red-100"> {{i18n('data-manager.delete-event-warning')}} </small>
             <ul>
-             <li v-if="deleteElement"><div v-html="deleteElement.name"></div></li>
+                <li v-if="deleteElement"><div>{{unescapeHtml(deleteElement.name)}}</div></li>
             </ul>
         </template>
     </cly-confirm-dialog>
