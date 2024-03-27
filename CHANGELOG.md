@@ -1,3 +1,9 @@
+## Version 23.11.16
+Fixes:
+- [scripts] custom indexes for customers
+- [report-manager] Fix warning on adding report manager submenu
+- [push] Add content-available to apns request payload
+  
 ## Version 23.11.15
 Fixes:
 - [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
