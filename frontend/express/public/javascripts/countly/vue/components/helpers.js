@@ -1013,21 +1013,24 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view">\
+        template: '<div :class="classes">\
                         <slot name="icon">\
-                            <div class="bu-mt-6">\
+                            <div v-if="visual!==\'framed\'" class="bu-mt-6">\
                                 <img :data-test-id="testId + \'-empty-view-icon\'" class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
                             </div>\
                         </slot>\
-                        <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
+                        <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column">\
                             <slot name="title">\
-                                <h3 :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+								<h3 v-if="visual==\'framed\'" :data-test-id="testId + \'-empty-view-title\'" class="bu-ml-5 color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+                                <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
+								<div v-if="visual==\'framed\'" class="bu-mt-4 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
+                                <div v-else class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasCreateRight && hasAction">\
-                                <div :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
+								<div v-if="visual==\'framed\'" style=\'width: 200px\' class="bu-ml-5 bu-pb-4"><el-button   :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc"><i class=\'bu-ml-2 fa fa-stop-circle\'></i> {{actionTitle}}\</el-button></div>\
+                                <div v-else :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
@@ -1041,10 +1044,20 @@
             actionFunc: { default: null, type: Function },
             hasAction: {default: false, type: Boolean},
             hasCreateRight: { default: true, type: Boolean },
-            testId: {type: String, default: "cly-empty-view"}
+            testId: {type: String, default: "cly-empty-view"},
+            visual: {type: String, default: "old"}
         },
         data: function() {
-            return {};
+            var settings = {
+                classes: 'bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view',
+                align: 'center',
+            };
+            if (this.visual === "framed") {
+                settings.classes = 'bu-mt-5 bu-pb-5 bu-pt-4 bu-pl-3 bu-is-flex bu-is-flex-direction-column bu-is-align-items-left cly-vue-empty-view cly-vue-empty-view-framed';
+                settings.align = 'left';
+            }
+
+            return settings;
         },
         methods: {
         }
