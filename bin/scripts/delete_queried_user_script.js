@@ -26,7 +26,7 @@ var QUERY = {
     "hasInfo": { "$ne": true } // anonymous user
 };
 var pluginManager = require("./plugins/pluginManager.js");
-var request = require('countly-request');
+var request = require('countly-request')(pluginManager.getConfig("security"));
 var DB = 'countly';
 var COLLECTION_NAME = "app_users" + APP_ID; // do not change
 /**
