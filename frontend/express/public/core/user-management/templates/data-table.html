@@ -3,6 +3,7 @@
     :rows="filteredRows"
     :force-loading="loading"
     :exportFormat="formatExportFunction"
+    test-id="manage-user-data-table"
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
@@ -27,12 +28,12 @@
                             <div class="bu-m-4">
                                 <div class="bu-level">
                                     <div class="bu-level-left">
-                                        <div class="bu-level-item">
+                                        <div data-test-id="all-roles-dropdown-manage-users-label" class="bu-level-item">
                                             <h4>{{i18n('management-users.view-title')}}</h4>
                                         </div>
                                     </div>
                                     <div class="bu-level-right">
-                                        <div class="bu-level-item">
+                                        <div data-test-id="all-roles-dropdown-reset-filter-button" class="bu-level-item">
                                             <el-button type="text" class="cly-multi-select__reset" @click="handleResetFilterClick">{{i18n('management-users.reset-filters')}}</el-button>
                                         </div>
                                     </div>
