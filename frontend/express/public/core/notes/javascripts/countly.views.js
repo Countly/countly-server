@@ -101,7 +101,8 @@
                         else {
                             CountlyHelpers.notify({
                                 type: 'error',
-                                message: CV.i18n('common.error')
+                                title: CV.i18n('common.error'),
+                                message: res.message
                             });
                         }
                         self.refresh(true);
