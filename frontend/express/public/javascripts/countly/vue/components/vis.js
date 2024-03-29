@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
 // _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
@@ -1862,6 +1862,14 @@
                 },
             };
         },
+        computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate("core");
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate("core");
+            }
+        },
         methods: {
             refresh: function() {
                 this.$emit('refresh');
@@ -1877,9 +1885,9 @@
                         <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
-                        <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
                         <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
