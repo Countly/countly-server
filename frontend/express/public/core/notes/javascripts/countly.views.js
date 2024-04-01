@@ -1,5 +1,6 @@
-/*global CV, countlyVue, app, CountlyHelpers, countlyCommon, countlyGraphNotes, countlyGraphNotesCommon */
+/*global CV, countlyVue, app, CountlyHelpers, countlyCommon, countlyGraphNotes, countlyGraphNotesCommon, countlyAuth */
 (function() {
+    const FEATURE_NAME = "core";
     var GraphNotesComponent = countlyVue.views.create({
         template: CV.T("/core/notes/templates/main.html"),
         data: function() {
@@ -47,7 +48,16 @@
                         self.notes = data;
                     });
                 }
-            }
+            },
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
+            },
         },
         methods: {
             refresh: function(force) {
@@ -117,7 +127,7 @@
             },
             closeDeleteForm: function() {
                 this.showDeleteDialog = false;
-            },
+            }
         },
         created: function() {
             this.refresh(true);
