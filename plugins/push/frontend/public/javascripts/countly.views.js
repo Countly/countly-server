@@ -2784,7 +2784,8 @@
         data: function() {
             return {
                 command: "CREATE_PUSH_NOTIFICATION",
-                label: CV.i18n('push-notification.send-message-to-users')
+                label: CV.i18n('push-notification.send-message-to-users'),
+                tooltipMessage: CV.i18n('push-notification.send-message-to-users-tooltip')
             };
         },
         computed: {
@@ -2801,7 +2802,7 @@
                 return false;
             }
         },
-        template: '<el-dropdown-item :disabled="isDisabled" :command="command">{{label}}</el-dropdown-item>',
+        template: '<div v-tooltip.left="isDisabled && tooltipMessage"><el-dropdown-item :disabled="isDisabled" :command="command">{{label}}</el-dropdown-item></div>',
     });
 
     var PushNotificationDrawerWrapper = countlyVue.views.create({
