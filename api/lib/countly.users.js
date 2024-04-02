@@ -92,6 +92,7 @@ function create() {
             { name: "d" },
             { name: "e" }
         ];
+        options = options || {};
         return countlyCommon.extractData(countlySession.getDb(), countlySession.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
     };
     return countlySession;
