@@ -1025,11 +1025,11 @@
                                 <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-								<div v-if="visual==\'framed\'" class="bu-mt-4 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
+								<div v-if="visual==\'framed\'" class="bu-mt-3 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
                                 <div v-else class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasCreateRight && hasAction">\
-								<div v-if="visual==\'framed\'" style=\'width: 200px\' class="bu-ml-5 bu-pb-4"><el-button   :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc"><i class=\'bu-ml-2 fa fa-stop-circle\'></i> {{actionTitle}}\</el-button></div>\
+								<div v-if="visual==\'framed\'" style=\'width: 200px\' class="bu-ml-5 bu-pb-4"><el-button   :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc"><i class=\'cly-countly-icon-outline cly-countly-icon-outline-plus-circle-16px bu-pr-4 bu-mr-1\'></i> {{actionTitle}}\</el-button></div>\
                                 <div v-else :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
