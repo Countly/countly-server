@@ -131,7 +131,7 @@ exports.renderView = function(options, cb) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
-                            log.d("BLOCK 1 STATUS, URL", response.status(), url);
+                            log.d("waitForRegex - Response Status: " + response.status() + ", URL: " + url);
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 return true;
                             }
@@ -153,7 +153,7 @@ exports.renderView = function(options, cb) {
                         await page.waitForResponse(
                             function(response) {
                                 var url = response.url();
-                                log.d("BLOCK 2 STATUS, URL", response.status(), url);
+                                log.d("waitForRegexAfterCbfn - Response Status: " + response.status() + ", URL: " + url);
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     return true;
                                 }
