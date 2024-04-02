@@ -62,10 +62,7 @@ exports.renderView = function(options, cb) {
 
             var settings = {
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox',
-                    //'--disable-dev-shm-usage',    //TODO:TEST
-                    //'--enable-features=NetworkService'
-                ],
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
@@ -79,18 +76,6 @@ exports.renderView = function(options, cb) {
             try {
                 log.d('Started rendering images');
                 var page = await browser.newPage();
-
-                //TODO:TEST
-                //await page.setRequestInterception(true);
-                // page.on('request', (request) => {
-                //     if (request.url().includes('session_check')) {
-                //         request.abort();
-                //         console.log("------------------------- aborted the session_check call");
-                //     }
-                //     else {
-                //         request.continue();
-                //     }
-                // });
 
                 page.on('console', (msg) => {
                     log.d("Headless chrome page log", msg.text());
@@ -163,8 +148,6 @@ exports.renderView = function(options, cb) {
                     );
                 }
 
-                //TODO:TEST
-                //await timeout(1500);
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
@@ -192,7 +175,6 @@ exports.renderView = function(options, cb) {
                     }
                 }
 
-                //await timeout(2500); //TODO:TEST
                 await timeout(1500);
 
                 await page.setViewport({
@@ -217,12 +199,6 @@ exports.renderView = function(options, cb) {
                 await page.evaluate(beforeScrnCbFn, options);
 
                 await timeout(1500);
-
-                //TODO:TEST
-                // await page.waitForNetworkIdle({
-                //     idleTime: 5000, // Consider the network idle after 5 seconds of no activity
-                //     timeout: 100000, // Timeout after 100 seconds
-                // });
 
                 var image = "";
                 var screenshotOptions = {

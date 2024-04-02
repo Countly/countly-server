@@ -40,7 +40,6 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         else {
             browser = await puppeteer.launch();
         }
-        //TODO:TEST
         const updatedTimeout = 240000;
         const page = await browser.newPage();
 

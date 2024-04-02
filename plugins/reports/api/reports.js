@@ -649,9 +649,7 @@ var metricProps = {
                 if (!html && message.data && message.template) { // report from dashboard
                     const msg = reports.genUnsubscribeCode(report, report.emails[i]);
                     message.data.unsubscribe_link = message.data.host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
-                    let emailFiller = message.data;
-                    emailFiller.host = 'http://localhost';
-                    html = ejs.render(message.template, emailFiller);
+                    html = ejs.render(message.template, message.data);
                 }
                 const msg = {
                     to: report.emails[i],
@@ -673,7 +671,12 @@ var metricProps = {
                 }
 
                 if (report.sendPdf === true) {
-                    pdf.renderPDF(html, function() {
+                    //use localhost for pdf generation instead of domain
+                    //it prevents the issue when one server has local files and loadbalancer sends the request to another server
+                    let emailFiller = message.data;
+                    emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
+                    const htmlForPdf = ejs.render(message.template, emailFiller);
+                    pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
 
                         /**
