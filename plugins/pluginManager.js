@@ -1915,14 +1915,24 @@ var pluginManager = function pluginManager() {
     this.getMaskingSettings = function(appID) {
         if (appID === 'all') {
             if (masking && masking.apps) {
-                return JSON.parse(JSON.stringify(masking.apps));
+                try {
+                    return JSON.parse(JSON.stringify(masking.apps));
+                }
+                catch (ex) {
+                    return {};
+                }
             }
             else {
                 return {};
             }
         }
         else if (masking && masking.apps && masking.apps[appID]) {
-            return JSON.parse(JSON.stringify(masking.apps[appID]));
+            try {
+                return JSON.parse(JSON.stringify(masking.apps[appID]));
+            }
+            catch (ex) {
+                return {};
+            }
         }
         else {
             return {};
@@ -2018,7 +2028,7 @@ var pluginManager = function pluginManager() {
             }
         });
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session"];
+        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
 
         countlyDb._collection_cache = {};
         //overwrite some methods

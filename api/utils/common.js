@@ -2709,6 +2709,15 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 update.$set.tz = params.qstring.tz;
             }
         }
+        if (params.app_user.uid && !(update && update.$set && update.$set.uid)) {
+            update.$setOnInsert = update.$setOnInsert || {};
+            update.$setOnInsert.uid = params.app_user.uid;
+        }
+
+        if (params.app_user.did && !(update && update.$set && update.$set.did)) {
+            update.$setOnInsert = update.$setOnInsert || {};
+            update.$setOnInsert.did = params.app_user.did;
+        }
 
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {

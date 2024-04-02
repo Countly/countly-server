@@ -54,9 +54,20 @@ countlyEvents.processEvents = function(params) {
             }
 
             for (let i = 0; i < params.qstring.events.length; i++) {
+
+                if (typeof params.qstring.events[i].key !== 'string') {
+                    try {
+                        params.qstring.events[i].key = JSON.stringify(params.qstring.events[i].key);
+                    }
+                    catch (error) {
+                        params.qstring.events[i].key += "";
+                    }
+                }
+
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
+
                 if (!currEvent.segmentation) {
                     continue;
                 }
@@ -83,7 +94,6 @@ countlyEvents.processEvents = function(params) {
                     continue;
                 }
                 eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
-
                 if (currEvent.segmentation) {
 
                     for (var segKey in currEvent.segmentation) {

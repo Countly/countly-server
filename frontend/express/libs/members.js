@@ -16,7 +16,7 @@ var { getUserApps } = require('./../../../api/utils/rights.js');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var countlyStats = require('./../../../api/parts/data/stats.js');
-var request = require('countly-request');
+var request = require('countly-request')(plugins.getConfig("security"));
 var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
@@ -900,7 +900,7 @@ membersUtility.settings = function(req, callback) {
             callback(false, "user-settings.api-key-length");
             return;
         }
-        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-z]+)[0-9a-zA-Z]+$/)) {
+        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-zA-Z]+)[0-9a-zA-Z]+$/)) {
             callback(false, "user-settings.api-key-restrict");
             return;
         }
@@ -1103,7 +1103,13 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
         catch (ex) {
             return reject(ex);
         }
-        delete copy._id; // update on the path '_id' would modify the immutable field '_id'
+
+        // _id and api_key are immutable(unique fields. They should not be updated)
+        // created_at is set on user creation and should not be updated)
+        delete copy._id;
+        delete copy.api_key;
+        delete copy.created_at;
+
         this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
             if (err) {
                 reject(err);

@@ -206,6 +206,14 @@ function transformAppVersion(inpVersion) {
                 dashboard.crtf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
                 dashboard.crtnf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
 
+                // these are added to rebalance the value of session and user
+                if (dashboard.cr_s[prop] < (dashboard.crfses[prop] + dashboard.crnfses[prop])) {
+                    dashboard.cr_s[prop] += dashboard.crfses[prop] + dashboard.crnfses[prop];
+                }
+
+                if (dashboard.cr_u[prop] < (dashboard.crauf[prop] + dashboard.craunf[prop])) {
+                    dashboard.cr_u[prop] += dashboard.crauf[prop] + dashboard.craunf[prop];
+                }
             });
 
             ["cr-session", "crtf", "crtnf"].forEach(function(metric) {

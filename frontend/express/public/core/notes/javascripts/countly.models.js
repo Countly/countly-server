@@ -40,9 +40,9 @@
                     callback({result: "success"});
                 }
             },
-            error: function() {
+            error: function(err) {
                 if (callback) {
-                    callback({result: "error"});
+                    callback({result: "error", message: err.responseJSON && err.responseJSON.result ? err.responseJSON.result : ""});
                 }
             }
         });
@@ -61,9 +61,9 @@
                     callback({result: "success"});
                 }
             },
-            error: function() {
+            error: function(err) {
                 if (callback) {
-                    callback({result: "error"});
+                    callback({result: "error", message: err.responseJSON && err.responseJSON.result ? err.responseJSON.result : ""});
                 }
             }
         });

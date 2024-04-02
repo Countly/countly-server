@@ -1,3 +1,67 @@
+## Version 23.11.16
+Fixes:
+- [scripts] custom indexes for customers
+- [report-manager] Fix warning on adding report manager submenu
+- [push] Add content-available to apns request payload
+  
+## Version 23.11.15
+Fixes:
+- [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
+- [core] Script to attempt issues with users having uid as null
+- [core] Fixed TypeError currEvent.key.indexOf is not a function
+- [core] Script to reset merge count in app_users documents
+- [views] job catch error
+- [jobs] log error instead of crashing
+- [core] Added code to ensure uid and did in app_users documents in case of deletion/merging inconsistencies
+- [core] Updates for event omitting script
+- [core] Updates for diagnostic script
+- [core] Additions to diagnostic scripts
+- [core] Script to check user mismatch between app users and drill collections
+
+Enterprise Fixes:
+- [license] Update metrics check timestamp after the metrics are fetched
+- [license] Fix for license metrics calculations
+- [cohorts] Fix return type in getNames to return all cohorts
+- [ab-testing] Skip calculation of ab-tests on listing page
+- [config-transfer] List drill reports in config transfer
+- [views] Added tests in drill module for cases with multiple events in same request for same view
+- [flows] add sytemlogs records for flows operations
+- [data-manager] Fix query run in data manager on setting configs
+- [block] Add check for valid rule in blocks
+
+## Version 23.11.14
+Fixes:
+- [core] Fixes for proxy agent
+- [core] Script to list all indexes
+- [core] Script to set TTL index on timeline collection
+- [core] Ensure persistent _id, api_key, and member creation date
+- [events] Show dropdown with omitted segments even if all segments are omitted
+- [views] Auto omit views segment from aggregated data on document overflow or too many values for a single segment.
+
+Enterprise Fixes:
+- [dashboard] Fixed bug with duplicate graph lines for dill widgets
+- [drill] Record maximum original duration on duration update
+- [ldap] postinstall script to copy config.js
+
+## Version 23.11.13
+Fixes:
+- [star-rating] Changes to add view user button in ratings
+- [star-rating] Fixes to ratings logo in feedback popup
+- [core] Record in diagnostic collection each time server is restarted
+- [core] Added config to allow preventing running jobs on specific servers
+- [reports] unsubscribe decrypt gcm fix
+- [crashes] Update statistics calculation
+- [scripts] Changes in upgrade scripts do do not clear out old collections, but rather have dedicated scripts for it to be run when upgrade is verified.
+- [scripts] Script to remove apm events per app
+- [core] Check correct sdk instance for reporting data
+
+Enterprise Fixes:
+- [geo] UI for geolocations
+- [drill] Fixed drill events when applied new filter
+- [drill] Fix toggle for drill segmentation 
+- [formulas] Fix for formulas graph becomes unresponsive
+- [data-manager] CSV export breaks if there is big_list or array type
+
 ## Version 23.11.12
 Fixes:
   - [core] Added option to run merges in paralel in merging job.

@@ -167,7 +167,7 @@ const ratingWidgetList = {}, npsWidgetList = {}, surveyWidgetList = {};
 
 
 const plugins = require('../../plugins/pluginManager.js'),
-    request = require('countly-request'),
+    request = require('countly-request')(plugins.getConfig("security")),
     Chance = require('../../plugins/populator/frontend/public/javascripts/chance.js');
 
 function writeMsg(msg) {

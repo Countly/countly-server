@@ -1,4 +1,6 @@
-var request = require('countly-request');
+
+var pluginManager = require('../../plugins/pluginManager');
+var request = require('countly-request')(pluginManager.getConfig("security"));
 var should = require('should');
 
 describe('Countly Request', () => {

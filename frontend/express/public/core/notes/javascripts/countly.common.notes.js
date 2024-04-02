@@ -44,12 +44,15 @@
                     if (res.result === "success") {
                         CountlyHelpers.notify({
                             type: 'success',
-                            message: CV.i18n('common.success')
+                            title: CV.i18n('common.success'),
+                            message: CV.i18n('notes.created-message')
                         });
                     }
                     else {
                         CountlyHelpers.notify({
-                            message: CV.i18n('common.error')
+                            type: 'error',
+                            title: CV.i18n('common.error'),
+                            message: res.message
                         });
                     }
                     self.$emit("cly-refresh", true);

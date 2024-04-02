@@ -40,7 +40,6 @@ then
     #run upgrade scripts
     nodejs "$DIR/scripts/loadCitiesInDb.js"
     nodejs "$CUR/scripts/push_all_things.js"
-    nodejs "$CUR/scripts/remove_old_flows_collections.js"
     nodejs "$CUR/scripts/reset_upgraded_custom_dashboards.js"
     
     #change config settings
