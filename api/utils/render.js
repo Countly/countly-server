@@ -74,6 +74,7 @@ exports.renderView = function(options, cb) {
             var browser = await puppeteer.launch(settings);
 
             try {
+                log.d('Started rendering images');
                 var page = await browser.newPage();
 
                 page.on('console', (msg) => {
@@ -130,9 +131,14 @@ exports.renderView = function(options, cb) {
                     await page.waitForResponse(
                         function(response) {
                             var url = response.url();
+                            log.d("waitForRegex - Response Status: " + response.status() + ", URL: " + url);
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 return true;
                             }
+                            else {
+                                return false;
+                            }
+
                         },
                         { timeout: updatedTimeout }
                     );
@@ -147,9 +153,14 @@ exports.renderView = function(options, cb) {
                         await page.waitForResponse(
                             function(response) {
                                 var url = response.url();
+                                log.d("waitForRegexAfterCbfn - Response Status: " + response.status() + ", URL: " + url);
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     return true;
                                 }
+                                else {
+                                    return false;
+                                }
+
                             },
                             { timeout: updatedTimeout }
                         );
@@ -236,7 +247,7 @@ exports.renderView = function(options, cb) {
                     image: image,
                     path: path
                 };
-
+                log.d('Finished rendering images');
                 return cb(null, imageData);
             }
             catch (e) {
