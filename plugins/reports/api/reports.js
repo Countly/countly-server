@@ -673,7 +673,7 @@ var metricProps = {
                 if (report.sendPdf === true) {
                     //use localhost for pdf generation instead of domain
                     //it prevents the issue when one server has local files and loadbalancer sends the request to another server
-                    let emailFiller = message.data;
+                    let emailFiller = Object.assign({}, message.data);
                     emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                     const htmlForPdf = ejs.render(message.template, emailFiller);
                     pdf.renderPDF(htmlForPdf, function() {

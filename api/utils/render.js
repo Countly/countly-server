@@ -135,10 +135,6 @@ exports.renderView = function(options, cb) {
                             if (waitForRegex.test(url) && response.status() === 200) {
                                 return true;
                             }
-                            else if (response.status() === 304) {
-                                log.d("BLOCK 1:  miss me with this 304");
-                                return true; //TODO:TEST
-                            }
                             else {
                                 return false;
                             }
@@ -160,10 +156,6 @@ exports.renderView = function(options, cb) {
                                 log.d("BLOCK 2 STATUS, URL", response.status(), url);
                                 if (waitForRegex.test(url) && response.status() === 200) {
                                     return true;
-                                }
-                                else if (response.status() === 304) {
-                                    log.d("BLOCK 2:  miss me with this 304");
-                                    return true; //TODO:TEST
                                 }
                                 else {
                                     return false;
