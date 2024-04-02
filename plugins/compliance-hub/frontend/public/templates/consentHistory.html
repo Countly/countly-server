@@ -1,13 +1,13 @@
 <cly-main>
     <div class="bu-level bu-my-4">
         <div class="bu-level-left">
-            <span class="text-big font-weight-bold">Consent History for </span>
-            <cly-select-x class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
+            <span class="text-big font-weight-bold" data-test-id="consent-history-for-label">Consent History for </span>
+            <cly-select-x test-id="consent-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
                 :auto-commit="true" :hide-default-tabs="true" :arrow="false" :hide-all-options-tab="true" :options="filter1"
                 v-model="selectedfilterforConsent">
             </cly-select-x>
-            <span class="text-big font-weight-bold"> and </span>
-            <cly-select-x class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :auto-commit="true"
+            <span class="text-big font-weight-bold" data-test-id="and-label"> and </span>
+            <cly-select-x test-id="metrics-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :auto-commit="true"
                 :adaptiveLength="true" :arrow="false" :hide-default-tabs="true" :hide-all-options-tab="true" :options="filter0"
                 v-model="selectedfilterforMetrics">
             </cly-select-x>

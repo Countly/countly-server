@@ -5,12 +5,12 @@
         :tooltip="{description: getTitleTooltip()}"
     >
         <template v-slot:header-bottom>
-            <span class='cly-vue-logger__subtitle text-small'>
+            <span class='cly-vue-logger__subtitle text-small' data-test-id="manage-logger-subtitle">
                 {{collectionInfo}}
             </span>
         </template>
         <template v-slot:header-right>
-            <cly-auto-refresh-toggle ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
+            <cly-auto-refresh-toggle test-id="enable-auto-refresh" ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
         </template>
     </cly-header>
     <cly-main>

@@ -392,7 +392,7 @@
         title: "Event Stats",
         route: "#/analytics/events",
         component: AllEventsView,
-        dataTestId: "tab-event-stats",
+        dataTestId: "event-stats",
         vuex: [{
             clyModel: countlyAllEvents
         }],

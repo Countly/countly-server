@@ -12,78 +12,78 @@
                     <cly-section v-if="currentPopulateTab === 'pop-with-temp'" class="bu-mt-5 populator-wrapper__main-page-form">
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2 populator-input-area">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.data-template') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-template-data-template-label">{{ i18n('populator.data-template') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')" data-test-id="populate-with-template-data-template-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
+                                <el-select test-id="data-populator-template" class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                                    <el-option test-id="data-template" :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
                                 </el-select>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2 populator-input-area">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-template-data-range-label">{{ i18n('populator.date-range') }}</span>
                             </div>
                             <div class="bu-column main-page-container">
-                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs"></cly-date-picker-g>
+                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs" test-id="populate-with-template-date-range"></cly-date-picker-g>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2 populator-input-area">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')"></cly-tooltip-icon>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-template-number-of-runs-label">{{ i18n('populator.number-of-runs') }}</span>
+                                <cly-tooltip-icon data-test-id="populate-with-template-number-of-runs-tooltip" :tooltip="i18n('populator.number-of-runs-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
+                                <cly-populator-number-selector test-id="populate-with-template-select-number-of-runs" :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2 populator-input-area">
-                                <el-switch v-model="isOpen"></el-switch>
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.save-environment') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
+                                <el-switch v-model="isOpen" test-id="save-environment"></el-switch>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-template-save-environment-label">{{ i18n('populator.save-environment') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')" data-test-id="populate-with-template-save-environment-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-input class="populator-wrapper__save-field" v-model="environmentName" :placeholder="i18n('populator.save-as-environment')"></el-input>
+                                <el-input class="populator-wrapper__save-field" v-model="environmentName" :placeholder="i18n('populator.save-as-environment')" data-test-id="populate-with-template-save-environment-input"></el-input>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
-                            <el-button type="success" :disabled="!selectedTemplate.length || (isOpen && !environmentName.length)" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                            <el-button type="success" :disabled="!selectedTemplate.length || (isOpen && !environmentName.length)" @click="openDialog()" data-test-id="populate-with-template-generate-demo-data-button">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
                     </cly-section>
 
                     <cly-section v-else-if="currentPopulateTab === 'pop-with-env'" class="bu-mt-5 populator-wrapper__main-page-form">
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.environment') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-environment-environment-label">{{ i18n('populator.environment') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')" data-test-id="populate-with-environment-environment-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
+                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')" test-id="populate-with-environment-environment">
+                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments" test-id="populate-with-environment-environment"></el-option>
                                 </el-select>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-environment-data-range-label">{{ i18n('populator.date-range') }}</span>
                             </div>
                             <div class="bu-column main-page-container">
-                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs"></cly-date-picker-g>
+                                <cly-date-picker-g class="populator-wrapper__date-picker main-page-inputs" test-id="populate-with-environment-data-range"></cly-date-picker-g>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
                             <div class="bu-column bu-is-2">
-                                <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.number-of-runs') }}</span>
-                                <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-environment-number-of-runs-label">{{ i18n('populator.number-of-runs') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.number-of-runs-tooltip')" icon="ion ion-help-circled" data-test-id="populate-with-environment-number-of-runs-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount"></cly-populator-number-selector>
+                                <cly-populator-number-selector :items="numberOfRuns" v-model="selectedRunCount" test-id="populate-with-environment-select-number-of-runs"></cly-populator-number-selector>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
-                            <el-button type="success" :disabled="!selectedEnvironment.length" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                            <el-button type="success" :disabled="!selectedEnvironment.length" @click="openDialog()" data-test-id="populate-with-environment-generate-demo-data-button">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
                     </cly-section>
                 </div>

@@ -1,11 +1,12 @@
 <div v-bind:class="[componentId]">
   <div class="cly-vue-compare-events__header bu-is-flex">
-    <h2> {{i18n('compare.events.title')}} 
+    <h2 data-test-id="header-title"> {{i18n('compare.events.title')}} 
     </h2>
   </div>
   <cly-main>
     <div class="bu-mb-4 cly-vue-compare-events">
     <el-select
+      test-id="select-events-to-compare"
       style="width:620px"
       v-model="value"
       multiple
@@ -21,15 +22,15 @@
       :value="item.value">
       </el-option>
     </el-select>
-    <el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('compare.events')}}
+    <el-button data-test-id="events-compare-button" :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('compare.events')}}
     </el-button>
     </div>
     <div class="bu-pt-4 bu-mb-4">
     <cly-date-picker-g class="cly-vue-events-all-date-picker"></cly-date-picker-g>
     </div>
     <div class="bu-pt-3 bu-mb-5">
-      <span class="text-big font-weight-bold bu-pr-2" >{{i18n('compare.results.by')}}</span>
-      <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
+      <span class="text-big font-weight-bold bu-pr-2" data-test-id="compare-events-results-by-label">{{i18n('compare.results.by')}}</span>
+      <el-select test-id="compare-events-results-by-button" :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
         <el-option v-for="item in availableMetrics" :key="item.key" :value="item.key" :label="item.label">
         </el-option>
       </el-select>

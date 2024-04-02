@@ -113,6 +113,11 @@
             maxHeight: {
                 type: String,
                 default: null
+            },
+            testId: {
+                type: String,
+                default: "cly-report-manager-table-default-test-id",
+                required: false
             }
         },
         computed: {

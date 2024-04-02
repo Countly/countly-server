@@ -14,10 +14,10 @@
     <cly-main>
 		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
 		<div class="bu-columns bu-is-gapless bu-mt-2">
-			<h4>Stats for </h4>
+			<h4 data-test-id="sdk-stats-for-label">Stats for </h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
-					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+				<el-select test-id="sdk-stats-for-combobox" v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+					<el-option test-id="sdk-stats-for-combobox" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
 				</el-select>
 			</div>
 		</div>
@@ -38,14 +38,14 @@
                         </template>
                     </cly-metric-card>
 					<div v-if="!sdkItems.length && !isLoading" class="technology-analytics-wrapper-sdk__empty-card">
-						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+						<div class="text-medium" data-test-id="sdk-stats-for-table-no-data-label">{{i18n('common.table.no-data')}}</div>
 					</div>
                 </cly-metric-cards>
             </vue-scroll>
         </div>
-		<h4 class="bu-pb-4"> SDK Version Distribution </h4>
+		<h4 class="bu-pb-4" data-test-id="sdk-version-distribution-label"> SDK Version Distribution </h4>
 		<div v-if="!sdkVersions.length && !isLoading" class="technology-analytics-wrapper-sdk__versions-empty-card">
-			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+			<div class="text-medium" data-test-id="sdk-version-distribution-table-no-data-label">{{i18n('common.table.no-data')}}</div>
 		</div>
         <div v-else v-loading="isLoading" class="technology-analytics-wrapper-sdk__versions">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
@@ -59,27 +59,27 @@
 							v-for="(item, idx) in sdkVersions">
 						</cly-metric-breakdown>
 						<div v-if="!sdkItems.length && !isLoading" class="technology-analytics-wrapper-sdk__empty-card">
-							<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+							<div class="text-medium" >{{i18n('common.table.no-data')}}</div>
 						</div>
 					</cly-metric-cards>
             </vue-scroll>
         </div>
 		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
-			<h4 class="bu-pb-4">SDK Version Adoption for </h4>
+			<h4 class="bu-pb-4" data-test-id="stats-sdk-version-adoption-for-label">SDK Version Adoption for </h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedSDK" >
+				<el-select test-id="stats-sdk-version-adoption-for" v-model="selectedSDK" >
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
 				</el-select>
 			</div>
-			<h4>&nbsp;&nbsp;as </h4>
+			<h4 data-test-id="stats-sdk-version-adoption-for-as-label">&nbsp;&nbsp;as </h4>
     		<div class ="selector_wrapper">
-      			<el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+      			<el-select test-id="stats-sdk-version-adoption-for-as-combobox" v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
         			<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
       			</el-select>
     		</div>
 		</div>
 		<cly-section>
-			<cly-chart-bar :option="lineOptions" :valFormatter="lineOptions.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+			<cly-chart-bar test-id="sdk-version-table" :option="lineOptions" :valFormatter="lineOptions.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
 		</cly-section>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>

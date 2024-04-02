@@ -127,7 +127,7 @@
                 </div>
                 <div class="bu-level-item text-smallish">
                     <el-select :test-id="testId + '-items-per-page-count'" :borderless="true" style="margin-top: 2px;" :adaptiveLength="true" v-model="controlParams.perPage" size="mini">
-                        <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>
+                        <el-option :test-id="testId + '-' + pageSize" v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>
                     </el-select>
                 </div>
                 <div class="bu-level-item" style="font-size: 11px">

@@ -270,7 +270,7 @@
                                 <div :class=numberClasses>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1" :data-test-id="\'metric-card-\' + testId + \'-description\'"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1142,17 +1142,17 @@
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
                         <div v-if='autoRefresh' class='bu-level-item'>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled'>{{i18n('auto-refresh.is')}}</span>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color'>{{i18n('auto-refresh.enabled')}}</span>\
-                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
-                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle'></i> {{i18n('auto-refresh.stop')}}\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled' :data-test-id='testId + \"-auto-refresh-toggle-is-label\"'>{{i18n('auto-refresh.is')}}</span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color' :data-test-id='testId + \"-auto-refresh-toggle-enabled-label\"'>{{i18n('auto-refresh.enabled')}}</span>\
+                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-tooltip\"'></span>\
+                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
                         <div v-else-if='!autoRefresh' class='bu-level-item'>\
-                            <el-switch v-model='autoRefresh'>\
+                            <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled'>{{i18n('auto-refresh.enable')}}</span>\
-                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\
+                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-tooltip\"'></span>\
                         </div>\
                     </div>",
         mixins: [countlyVue.mixins.i18n],
@@ -1163,7 +1163,8 @@
         },
         props: {
             feature: { required: true, type: String },
-            defaultValue: { required: false, default: false, type: Boolean}
+            defaultValue: { required: false, default: false, type: Boolean},
+            testId: { required: false, default: 'cly-test-id', type: String}
         },
         methods: {
             getRefreshTooltip: function() {

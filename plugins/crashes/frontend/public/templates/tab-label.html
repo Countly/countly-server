@@ -1,25 +1,25 @@
 <div class="color-cool-gray-100">
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
-        <div class="text-medium">
+        <div class="text-medium" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-title`">
             <span>{{title}}</span>
-            <span v-if="tooltip" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" v-tooltip.top-center="tooltip"></span>
+            <span v-if="tooltip" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-tooltip`" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" v-tooltip.top-center="tooltip"></span>
         </div>
     </div>
     <div class="bu-is-flex bu-is-align-items-center">
-        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate">
+        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-value`">
             ~{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
         </h2>
-        <h2 v-else>
+        <h2 v-else :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-value`">
             {{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
         </h2>
         <div v-if="colorClass == 'up'" :class="'cly-trend-up ' + negatedClass">
-            <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{data && data.change}}</span>
+            <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-arrow`"></i><span :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-change-value`">{{data && data.change}}</span>
         </div>
         <div v-if="colorClass == 'down'" :class="'cly-trend-down ' + negatedClass">
-            <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{data && data.change}}</span>
+            <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-arrow`"></i><span :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-change-value`">{{data && data.change}}</span>
         </div>
         <div v-if="colorClass == 'neutral'" class="cly-trend-neutral">
-            <i class="cly-trend-neutral-icon ion-minus-round bu-ml-2"></i><span>{{data && data.change}}</span>
+            <i class="cly-trend-neutral-icon ion-minus-round bu-ml-2" :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-arrow`"></i><span :data-test-id="`cly-section-${title.toLowerCase().replace(/\s/g, '-').replace('/', 'or')}-change-value`">{{data && data.change}}</span>
         </div>
     </div>
 </div>

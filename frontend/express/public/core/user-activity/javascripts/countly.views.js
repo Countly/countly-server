@@ -188,7 +188,7 @@
         permission: "core",
         title: 'user-activity.title',
         route: "#/analytics/loyalty/user-activity",
-        dataTestId: "tab-user-activity",
+        dataTestId: "user-activity",
         component: UserActivityView,
         vuex: [{
             clyModel: countlyUserActivity

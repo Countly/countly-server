@@ -185,13 +185,13 @@ var AllTabs = countlyVue.views.create({
                 {
                     title: CV.i18n('device_type.devices'),
                     name: "devices-tab",
-                    dataTestId: "tab-devices",
+                    dataTestId: "devices",
                     component: DevicesTabView
                 },
                 {
                     title: CV.i18n('device_type.types'),
                     name: "types-tab",
-                    dataTestId: "tab-type",
+                    dataTestId: "type",
                     component: TypesTabView
                 }
             ]
@@ -268,7 +268,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     name: "devices-and-types",
     permission: "core",
     title: CV.i18n('devices.devices-and-types.title'),
-    dataTestId: "tab-devices-and-types",
+    dataTestId: "devices-and-types",
     component: AllTabs,
     vuex: [{
         clyModel: countlyDevicesAndTypes
