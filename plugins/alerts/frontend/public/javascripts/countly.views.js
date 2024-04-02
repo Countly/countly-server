@@ -805,6 +805,8 @@
                         users: parseInt(settings.compareValue, 10),
                         minutes: parseInt(settings.compareValue2, 10),
                         email: settings.alertValues,
+                        alertBy: settings.alertBy,
+                        allGroups: settings.allGroups,
                         enabled: true,
                     };
                     if (settings._id) {

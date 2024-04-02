@@ -477,19 +477,33 @@
             },
             getAlertOptions: function() {
                 var self = this;
-                var selectedApps = [this.$props.app];
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/alert/list',
                     data: {app_id: this.$props.app},
                     dataType: "json",
                     success: function(data) {
-                        self.alertOptions = data.alertsList
-                            .filter(alert => alert.alertBy === "hook")
-                            .filter(alert => alert.selectedApps.includes(selectedApps[0]))
-                            .map(({ _id, alertName }) => ({ value: _id, label: alertName }));
+                        if (self.alertOptions.length === 0) {
+                            self.alertOptions = data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName }));
+                        } else {
+                            self.alertOptions = self.alertOptions.concat(data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName })));
+                        }
+
                     }
                 });
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    dataType: "json",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: "concurrent_alerts",
+                        preventGlobalAbort: true,
+                    },
+                    success: function(data) {
+                        self.alertOptions = self.alertOptions.concat(data.map(item => ({ value: item._id, label: item.name })));
+                    }
+                })
             },
         }
     });
