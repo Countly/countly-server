@@ -1,13 +1,13 @@
+/* eslint-disable require-jsdoc */
 /***
  * @module api/utils/countly-request
  */
 
 const got = require('got');
 const FormData = require('form-data');
-const plugins = require('../../../plugins/pluginManager.js');
 const {HttpsProxyAgent, HttpProxyAgent} = require('hpagent');
 
-var initParams = function(uri, options, callback) {
+var initParams = function(uri, options, callback, countlyConfig) {
 
     if (typeof options === 'function') {
         callback = options;
@@ -32,7 +32,7 @@ var initParams = function(uri, options, callback) {
 
     params.callback = callback || params.callback;
 
-    var config = plugins.getConfig("security");
+    var config = countlyConfig;
 
     if (config && config.proxy_hostname) {
         if (!params.options) {
@@ -150,39 +150,84 @@ var convertOptionsToGot = function(options) {
 };
 
 
-module.exports = function(uri, options, callback) {
+// Factory function to initialize with config
+module.exports = function(countlyConfig) {
+    // Return the request function
+    // eslint-disable-next-line require-jsdoc
+    function requestFunction(uri, options, callback) {
+        if (typeof uri === 'undefined') {
+            throw new Error('undefined is not a valid uri or options object.');
+        }
 
-    if (typeof uri === 'undefined') {
-        throw new Error('undefined is not a valid uri or options object.');
+        // Initialize params with the provided config
+        const params = initParams(uri, options, callback, countlyConfig);
+
+        // Request logic follows, unchanged from your provided code
+        if (params.options && (params.options.url || params.options.uri)) {
+            got(params.options)
+                .then(response => {
+                    params.callback(null, response, response.body);
+                })
+                .catch(error => {
+                    params.callback(error);
+                });
+        }
+        else {
+            got(params.uri, params.options)
+                .then(response => {
+                    params.callback(null, response, response.body);
+                })
+                .catch(error => {
+                    params.callback(error);
+                });
+        }
+    }
+
+    // eslint-disable-next-line require-jsdoc
+    function post(uri, options, callback, config) {
+        var params = initParams(uri, options, callback, config);
+        if (params.options && (params.options.url || params.options.uri)) {
+            if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
+                // If options include a form, use uploadFormFile
+                const { url, form } = params.options;
+                uploadFormFile(url || params.options.uri, form, params.callback);
+            }
+            else {
+                // Make the request using got
+                got.post(params.options)
+                    .then(response => {
+                        // Call the callback with the response data
+                        params.callback(null, response, response.body);
+                    })
+                    .catch(error => {
+                        // Call the callback with the error
+                        params.callback(error);
+                    });
+            }
+        }
+        else {
+            // Make the request using got
+            got.post(params.uri, params.options)
+                .then(response => {
+                    params.callback(null, response, response.body);
+                })
+                .catch(error => {
+                    // Call the callback with the error
+                    params.callback(error);
+                });
+        }
     }
 
 
-    const params = initParams(uri, options, callback);
-
-    if (params.options && (params.options.url || params.options.uri)) {
-        // Make the request using got
-        got(params.options)
-            .then(response => {
-                // Call the callback with the response data
-                params.callback(null, response, response.body);
-            })
-            .catch(error => {
-                // Call the callback with the error
-                params.callback(error);
-            });
-    }
-    else {
-        // Make the request using got
-        got(params.uri, params.options)
-            .then(response => {
-                params.callback(null, response, response.body);
-            })
-            .catch(error => {
-                // Call the callback with the error
-                params.callback(error);
-            });
+    function get(uri, options, callback, config) {
+        module.exports(uri, options, callback, config);
     }
 
+    requestFunction.post = post;
+    requestFunction.get = get;
+    requestFunction.convertOptionsToGot = convertOptionsToGot;
+
+    return requestFunction;
 
 };
 
@@ -211,44 +256,7 @@ async function uploadFormFile(url, fileData, callback) {
     }
 }
 
-// Add a post method to the request object
-module.exports.post = function(uri, options, callback) {
-    var params = initParams(uri, options, callback);
-    if (params.options && (params.options.url || params.options.uri)) {
-        if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
-            // If options include a form, use uploadFormFile
-            const { url, form } = params.options;
-            uploadFormFile(url || params.options.uri, form, params.callback);
-        }
-        else {
-            // Make the request using got
-            got.post(params.options)
-                .then(response => {
-                    // Call the callback with the response data
-                    params.callback(null, response, response.body);
-                })
-                .catch(error => {
-                    // Call the callback with the error
-                    params.callback(error);
-                });
-        }
-    }
-    else {
-        // Make the request using got
-        got.post(params.uri, params.options)
-            .then(response => {
-                params.callback(null, response, response.body);
-            })
-            .catch(error => {
-                // Call the callback with the error
-                params.callback(error);
-            });
-    }
-};
 
-//Add a get method to the request object
-module.exports.get = function(uri, options, callback) {
-    module.exports(uri, options, callback);
-};
+
 
 module.exports.convertOptionsToGot = convertOptionsToGot;
