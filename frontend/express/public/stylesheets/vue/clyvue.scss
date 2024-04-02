@@ -593,12 +593,15 @@
         background: #FFFFFF;
         border-radius: 4px;
         color: map.get(c.$colors, "text-custom-1-active");
-        display: inline-block;
+        // display: inline-block;
+        display: flex;
+        align-items: stretch;
 
         &__shortcuts-col {
             width: 144px;
             padding: 8px;
             vertical-align: top;
+            flex: 1;
         }
 
         &__calendars-col {
@@ -613,10 +616,10 @@
         }
 
         &__shortcuts-col {
-            + .cly-vue-daterp__calendars-col {
-                border-left: 1px #EBEBEF solid;
-                margin-left:-5px;
-            }
+            border-right: 1px #EBEBEF solid;
+            // + .cly-vue-daterp__calendars-col {
+            //     margin-left:-5px;
+            // }
         }
 
         &__calendars-wrapper {
