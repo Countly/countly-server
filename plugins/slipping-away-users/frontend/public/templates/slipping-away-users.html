@@ -5,7 +5,7 @@
     >
     </cly-header>
     <cly-main>
-        <cly-qb-bar v-if="showDrillFilter" feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}" show-in-the-last-hours></cly-qb-bar>
+        <cly-qb-bar v-if="showDrillFilter" feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}" show-in-the-last-hours show-in-the-last-minutes></cly-qb-bar>
         <cly-section>
             <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
