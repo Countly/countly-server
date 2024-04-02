@@ -225,6 +225,7 @@ module.exports = function(countlyConfig) {
 
     requestFunction.post = post;
     requestFunction.get = get;
+    requestFunction.convertOptionsToGot = convertOptionsToGot;
 
     return requestFunction;
 
