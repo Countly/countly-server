@@ -162,6 +162,8 @@
                 submitted.links.forEach(function(link) {
                     var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
                     link.linkValue = link.linkValue + separator + 'cly_x_int=1';
+                    delete link.text;
+                    delete link.link;
                 });
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
@@ -208,6 +210,21 @@
                     this.controls.initialEditedObject.consent = false;
                 }
                 if (Array.isArray(this.controls.initialEditedObject.links)) {
+                    this.controls.initialEditedObject.links.forEach(function(link) {
+                        if (link.linkValue.indexOf('term')) {
+                            link.text = "Terms and Conditions";
+                            link.link = "https://termsandconditions.com";
+                        }
+                        else if (link.linkValue.indexOf('privacy')) {
+                            link.text = "Privacy Policy";
+                            link.link = "https://privacyPolicy.com";
+                        }
+                        else {
+                            link.text = "Another Link";
+                            link.link = "https://otherlink.com";
+                        }
+                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + 'cly_x_int' + '=[^&]*'), '').replace(/[?&]$/, '');
+                    });
                     this.controls.initialEditedObject.links = {"link": this.controls.initialEditedObject.links, "finalText": this.controls.initialEditedObject.finalText};
                 }
                 if (this.controls.initialEditedObject.logo) {
@@ -1109,6 +1126,21 @@
                     };
                 }
                 if (Array.isArray(this.widget.links)) {
+                    this.widget.links.forEach(function(link) {
+                        if (link.linkValue.indexOf('term')) {
+                            link.text = "Terms and Conditions";
+                            link.link = "https://termsandconditions.com";
+                        }
+                        else if (link.linkValue.indexOf('text')) {
+                            link.text = "Privacy Policy";
+                            link.link = "https://privacyPolicy.com";
+                        }
+                        else {
+                            link.text = "Another Link";
+                            link.link = "https://otherlink.com";
+                        }
+                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + 'cly_x_int' + '=[^&]*'), '').replace(/[?&]$/, '');
+                    });
                     this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
                 if (!this.widget.links) {
