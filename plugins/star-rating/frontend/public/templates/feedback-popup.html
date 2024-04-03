@@ -215,7 +215,7 @@
             "success": function(response) {
                 var consent = false;
                 var links = response.links;
-                var finalText = "";
+                var finalText = response.finalText;
                 var contentEl = $('#consent');
                 $('.rating-loader-wrapper').fadeOut();
                 $('.modal-content').show();
@@ -225,17 +225,17 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+                removeClass(sendButton, 'disabled-send-button');
+                addClass(sendButton, 'send-button');
                 sendButton.removeAttribute('disabled');
-                if(response.consent || response.consent === 'true'){
+                if(response.consent === true || response.consent === 'true'){
                     consent = true;
                 }
                 if(response.links && response.links === 'string'){
                     links = JSON.parse(response.links);
                 }
-                if(consent && links && links.finalText){
-                    finalText = links.finalText;
-
-links.link.forEach(function(link) {
+                if(consent && links && finalText){
+links.forEach(function(link) {
     var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
     finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
 });
@@ -243,8 +243,7 @@ links.link.forEach(function(link) {
                 }
                 if(consent){
                                 contentEl.removeClass("hidden");
-                            }
-                            $(contentEl).find(".text").html(finalText);
+                                $(contentEl).find(".text").html(finalText);
                             var consentChecked = contentEl.find("input").is(":checked");
                             if(consentChecked){
                             $("#cf-submit-button").removeClass("disabled");
@@ -255,6 +254,7 @@ links.link.forEach(function(link) {
                                 removeClass(sendButton, 'send-button');
                             addClass(sendButton, 'disabled-send-button');
                                 $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
+                            }
                             }
                 response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
                 if (response.rating_symbol) {
@@ -405,9 +405,11 @@ links.link.forEach(function(link) {
                 }
               }
             }
-            // removeClass(sendButton, 'disabled-send-button');
-            // addClass(sendButton, 'send-button');
-            // sendButton.removeAttribute('disabled');
+            if($('#consent').hasClass('hidden')){
+            removeClass(sendButton, 'disabled-send-button');
+            addClass(sendButton, 'send-button');
+            removeClass(sendButton, 'disabled');
+            }
         }
 
         function showHideCommentArea() {

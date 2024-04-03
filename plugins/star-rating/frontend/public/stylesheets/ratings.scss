@@ -39,6 +39,18 @@
 }
 
 .ratings-drawer {
+  &__consent {
+    &__basis-text {
+      flex-basis: 35%;
+  }
+  &__basis {
+    flex-basis: 65%;
+}
+  &__close-icon {
+      line-height: 1;
+      font-size: 24px;
+  }
+}
   &__target-page-selector {
     width: 100%;
   }

@@ -181,7 +181,7 @@ const widgetPropertyPreprocessors = {
                 return links;
             }
             else {
-                return null;
+                return [];
             }
         }
     },
