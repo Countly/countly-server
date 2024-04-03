@@ -159,7 +159,10 @@
                 if (!submitted.globalLogo) {
                     submitted.globalLogo = false;
                 }
-
+                submitted.links.forEach(function(link) {
+                    var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                    link.linkValue = link.linkValue + separator + 'cly_x_int=1';
+                });
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
                     var exported = this.$refs.ratingsSegmentation.export();
