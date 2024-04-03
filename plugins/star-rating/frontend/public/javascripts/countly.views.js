@@ -141,7 +141,10 @@
             },
             onSubmit: function(submitted, done) {
                 var self = this;
-
+                if (submitted.links) {
+                    submitted.finalText = submitted.links.finalText;
+                    submitted.links = submitted.links.link;
+                }
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
                 }
@@ -194,12 +197,15 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
-                if(this.controls.initialEditedObject.consent === true || this.controls.initialEditedObject.consent === "true"){
+                if (this.controls.initialEditedObject.consent === true || this.controls.initialEditedObject.consent === "true") {
                     this.controls.initialEditedObject.consent = true;
                     this.consent = true;
                 }
-                else{
+                else {
                     this.controls.initialEditedObject.consent = false;
+                }
+                if (Array.isArray(this.controls.initialEditedObject.links)) {
+                    this.controls.initialEditedObject.links = {"link": this.controls.initialEditedObject.links, "finalText": this.controls.initialEditedObject.finalText};
                 }
                 if (this.controls.initialEditedObject.logo) {
 
@@ -776,7 +782,7 @@
                             }
                         ],
                         "finalText": "I agree to the Terms and Conditions and Privacy Policy."
-    
+
                     },
                     consent: false,
                     popup_header_text: 'What\'s your opinion about this page?',
@@ -1098,6 +1104,9 @@
                         user_segmentation: null,
                         steps: null
                     };
+                }
+                if (Array.isArray(this.widget.links)) {
+                    this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
                 if (!this.widget.rating_symbol) {
                     this.widget.rating_symbol = "emojis";

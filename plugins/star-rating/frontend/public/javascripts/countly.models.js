@@ -34,7 +34,8 @@
         "globalLogo",
         "internalName",
         "consent",
-        "links"
+        "links",
+        "finalText"
     ];
 
     var widgetJSONProperties = [
