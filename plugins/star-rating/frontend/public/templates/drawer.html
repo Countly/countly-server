@@ -103,7 +103,7 @@
             <div class="text-smallish color-cool-gray-50 bu-mb-1" data-test-id="ratings-drawer-settings-widget-name-desc">
               {{i18n('feedback.internalName.description')}}
             </div>
-            <validation-provider name="internalName" rules="required" v-slot="v">
+            <validation-provider name="internalName" v-slot="v">
               <el-input
                 :class="{'is-error': v.errors.length > 0}"
                 v-model="drawerScope.editedObject.internalName"
