@@ -1108,6 +1108,26 @@
                 if (Array.isArray(this.widget.links)) {
                     this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
+                if (!this.widget.links) {
+                    this.widget.links = {
+                        "link": [
+                            {
+                                "text": "Terms and Conditions",
+                                "link": "https://termsandconditions.com",
+                                "textValue": "Terms and Conditions",
+                                "linkValue": "https://termsandconditions.com"
+                            },
+                            {
+                                "text": "Privacy Policy",
+                                "link": "https://privacyPolicy.com",
+                                "textValue": "Privacy Policy",
+                                "linkValue": "https://privacyPolicy.com"
+                            }
+                        ],
+                        "finalText": "I agree to the Terms and Conditions and Privacy Policy."
+
+                    };
+                }
                 if (!this.widget.rating_symbol) {
                     this.widget.rating_symbol = "emojis";
                 }

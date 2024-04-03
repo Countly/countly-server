@@ -1,39 +1,38 @@
-    <div class="bu-py-1 bu-px-4 cly-vue-drawer-step__section-group--filled">
-     <div class="cly-vue-drawer-step__section">
-       <div class="text-small text-heading bu-pb-1">{{i18n('surveys.drawer.consent.text')}}</div>
-      <validation-provider name="value.consent" rules="required|max:93" v-slot="v">
-         <el-input
-           :class="{'is-error': v.errors.length > 0}"
-           :placeholder="i18n('surveys.drawer.consent.placeholder')"
-           v-model="value.finalText"
-           maxlength="94"
-           show-word-limit
-           >
-         </el-input>
-       </validation-provider>
-     <div class="bu-pt-4 text-small text-heading">{{i18n('surveys.drawer.consent.links')}}</div>
-   <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-py-1" :key="idx" v-for="(item, idx) in value.link">
-     <div class="cly-vue-surveys-drawer__consent__basis bu-is-flex-grow-3">
-     <validation-provider :name="item.text" rules="required" v-slot="v">
-       <el-input
-         :class="{'is-error': v.errors.length > 0}"
-         :placeholder=item.text
-         v-model="item.textValue">
-       </el-input>
-     </validation-provider>
-   </div>
-   <div class="cly-vue-surveys-drawer__consent__basis bu-is-flex-grow-5">
-     <validation-provider name="item.link" rules="required" v-slot="v">
-       <el-input
-         class="bu-pl-2"
-         :class="{'is-error': v.errors.length > 0}"
-         :placeholder=item.link
-         v-model="item.linkValue">
-       </el-input>
-     </validation-provider>
-   </div>
-     <div @click="onDelete(idx)" class="cly-vue-surveys-drawer__consent__basis cly-icon-button--gray bu-has-text-right bu-is-flex-grow-1"><i class="ion-ios-close-empty bu-is-clickable cly-vue-surveys-drawer__consent__close-icon"></i></div>
-   </div>
-   <el-button v-if="newLinkAllowed" @click="add" type="text">{{i18n('surveys.drawer.consent.add.link')}}</el-button>
-   </div>
-   </div>
+<div class="bu-py-1 bu-px-4 cly-vue-drawer-step__section-group--filled">
+  <div class="cly-vue-drawer-step__section">
+    <div class="text-small text-heading bu-pb-1">{{i18n('surveys.drawer.consent.text')}}</div>
+    <validation-provider name="value.consent" rules="required|max:93" v-slot="v">
+      <el-input
+        :class="{'is-error': v.errors.length > 0}"
+        :placeholder="i18n('surveys.drawer.consent.placeholder')"
+        v-model="value.finalText"
+        maxlength="94"
+        show-word-limit
+        >
+      </el-input>
+    </validation-provider>
+    <div class="bu-pt-4 text-small text-heading">{{i18n('surveys.drawer.consent.links')}}</div>
+    <div style="gap:8px" class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-py-1" :key="idx" v-for="(item, idx) in value.link">
+      <div class="cly-vue-surveys-drawer__consent__basis-text">
+        <validation-provider :name="item.text" rules="required" v-slot="v">
+          <el-input
+            :class="{'is-error': v.errors.length > 0}"
+            :placeholder=item.text
+            v-model="item.textValue">
+          </el-input>
+        </validation-provider>
+      </div>
+      <div class="cly-vue-surveys-drawer__consent__basis">
+        <validation-provider name="item.link" rules="required" v-slot="v">
+          <el-input
+            :class="{'is-error': v.errors.length > 0}"
+            :placeholder=item.link
+            v-model="item.linkValue">
+          </el-input>
+        </validation-provider>
+      </div>
+      <div @click="onDelete(idx)" class="cly-icon-button--gray bu-has-text-right"><i class="ion-ios-close-empty bu-is-clickable ratings-drawer__consent__close-icon"></i></div>
+    </div>
+    <el-button v-if="newLinkAllowed" @click="add" type="text">{{i18n('surveys.drawer.consent.add.link')}}</el-button>
+  </div>
+</div>
