@@ -51,17 +51,8 @@
 					v-model="selectedSegment"
 					showSearch
 					class="cly-vue-events-all--margin"
+					:disabledOptions="omittedSegments"
 				>
-					<template v-slot:selectList="listScope" v-if="omittedSegments.options.length">
-						<div class="cly-vue-events-omitted-segments bu-ml-1" v-if="listScope.searchQuery == ''">
-							<div class="cly-vue-events-omitted-segments__title">
-								{{omittedSegments.label}}
-							</div>
-							<div class="cly-vue-events-omitted-segments__item" v-for="item in omittedSegments.options">
-								{{item.label}}
-							</div>
-						</div>
-					</template>
 				</cly-select-x>
 			</div>
 			<div class="bu-is-align-items-center bu-is-flex">

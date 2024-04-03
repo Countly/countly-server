@@ -122,7 +122,14 @@
                     @change="handleValueChange"
                     v-model="innerValue">
                 </cly-checklistbox>
-                <slot name="selectList" :searchQuery="searchQuery"></slot>
+                <div class="cly-vue-events-omitted-segments bu-ml-1" v-if="hasDisabledOptions && searchQuery == ''">
+                    <div class="cly-vue-events-omitted-segments__title">
+                        {{disabledOptions.label}}
+                    </div>
+                    <div class="cly-vue-events-omitted-segments__item" v-for="item in disabledOptions.options">
+                        {{item.label}}
+                    </div>
+                </div>
             </el-tab-pane>
         </el-tabs>
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">

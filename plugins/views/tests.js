@@ -1218,7 +1218,7 @@ describe('Testing views plugin', function() {
         });
 
         describe("checking if structures are correct", function() {
-            verifySegments({"segments": {}, "domains": []});
+            verifySegments({"segments": {}, "domains": [], "omit": ["omitMe"]});
             it('checking database structures', function(done) {
                 db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, res) {
                     if (err) {
@@ -1255,7 +1255,7 @@ describe('Testing views plugin', function() {
             });
         });
         describe("checking if structures are correct", function() {
-            verifySegments({"segments": {}, "domains": []});
+            verifySegments({"segments": {}, "domains": [], "omit": ["omitMe"]});
             it('checking database structures', function(done) {
                 db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, res) {
                     if (err) {

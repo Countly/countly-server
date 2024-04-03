@@ -518,7 +518,17 @@
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false},
             onlySelectedOptionsTab: {type: Boolean, default: false},
-            prefixLabelWithTabId: {type: Boolean, default: false}
+            prefixLabelWithTabId: {type: Boolean, default: false},
+            disabledOptions: {
+                type: Object,
+                default: function() {
+                    return {
+                        label: null,
+                        options: {}
+                    };
+                },
+                required: false
+            },
         },
         data: function() {
             return {
@@ -633,6 +643,9 @@
             },
             hasSelectedOptionsTab: function() {
                 return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
+            },
+            hasDisabledOptions: function() {
+                return Object.keys(this.disabledOptions.options).length !== 0;
             },
             showTabs: function() {
                 if (this.onlySelectedOptionsTab) {
