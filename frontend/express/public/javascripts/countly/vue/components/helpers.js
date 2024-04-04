@@ -124,6 +124,11 @@
                 type: Boolean,
                 required: false,
                 default: false
+            },
+            isModal: {
+                type: Boolean,
+                required: false,
+                default: false
             }
         },
         computed: {
@@ -132,6 +137,9 @@
             },
             madeChanges: function() {
                 return this.i18n("common.diff-helper.changes", this.diff.length);
+            },
+            skinToApply: function() {
+                return this.isModal ? 'cly-vue-diff-helper-modal' : 'cly-vue-diff-helper';
             }
         },
         methods: {
@@ -145,7 +153,7 @@
                 this.$emit("discard");
             }
         },
-        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
+        template: '<div :class="skinToApply" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
