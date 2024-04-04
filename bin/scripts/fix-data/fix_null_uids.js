@@ -38,11 +38,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     else {
                         users = users || [];
                         console.log("Users without uid: " + users.length);
-
                         if (users.length > 0) {
                             Promise.each(users, function(user) {
                                 return new Promise(function(resolve) {
-                                    console.log(user._id);
                                     var device_id;
                                     var events = [];
                                     if (user.did) {
@@ -138,6 +136,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                                                 });
                                                                             }
                                                                             else {
+                                                                                console.log("db.app_users" + app._id + ".updateOne({\"_id\":\"" + user._id + "\"}, {\"$set\": {\"uid\": \"" + res.uid + "\"}})");
                                                                                 resolve1();
                                                                             }
 
@@ -232,6 +231,25 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             drillDb.close();
         }).catch(function(error) {
             console.log(error);
+            console.log("Exiting with errors");
+            if (dry_run) {
+                for (var app in results) {
+                    console.log("App: " + app);
+                    for (var key in results[app]) {
+                        if (key === "update") {
+                            console.log("-------------Updates----------------");
+                            for (var i = 0; i < results[app][key].length; i++) {
+                                console.log("db.app_users" + app + ".updateOne(" + JSON.stringify(results[app][key][i][0]) + "," + JSON.stringify(results[app][key][i][1]) + ")");
+                            }
+                        }
+                        else {
+                            console.log("-------------" + key + "----------------");
+                            console.log(JSON.stringify(results[app][key]));
+
+                        }
+                    }
+                }
+            }
             countlyDb.close();
             drillDb.close();
         });
