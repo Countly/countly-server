@@ -117,6 +117,10 @@ var countlyConfig = {
 	* Usable only in case when there are multiple countly instances connected to single database. Has to be set to true for at least one instance.
 	*/
     preventJobs: false,
+    /** 
+     * Share same database connection pool between databases
+     */
+    shared_connection: false,
     /**
      * Simple SMTP mail sender configuration.
      * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
