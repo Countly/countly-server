@@ -198,9 +198,9 @@
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
                     const { templateId, name } = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
                     countlyPopulator.getEnvironment(templateId, self.selectedEnvironment, function(env) {
-                        if (env && env.length) {
+                        if (env && env.aaData && env.aaData.length) {
                             countlyPopulator.getTemplate(templateId, function(template) {
-                                env = env.map(environmentName => {
+                                env = env.aaData.map(environmentName => {
                                     return { ...environmentName, name: name };
                                 });
                                 countlyPopulator.generateUsers(self.selectedRunCount, template, env);
