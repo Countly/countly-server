@@ -340,13 +340,14 @@
             <div class="bu-column bu-is-12">
               <cly-cohort-segmentation
                 test-id="ratings-drawer"
+                :show-in-the-last-minutes="true"
+                :show-in-the-last-hours="true"
                 ref="ratingsSegmentation"
                 :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
                 :behavior-segmentation="drawerScope.editedObject.targeting.steps">
               </cly-cohort-segmentation>
             </div>
           </div>
-          
         </div>
 				<div class="cly-vue-drawer-step__section">
           <el-checkbox test-id="ratings-drawer-selected-pages" v-model="drawerScope.editedObject.target_page">

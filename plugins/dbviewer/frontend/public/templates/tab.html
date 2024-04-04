@@ -94,23 +94,18 @@
                                 class="text-small bu-mt-2">
                                 {{ i18n('dbviewer.projection') }}
                             </label>
-                            <el-select
-                                :popper-append-to-body="false"
-                                multiple
-                                id="dbviewer-tab__projection-selector"
-                                class="bu-mt-1"
-                                :label="i18n('dbviewer.projection')"
-                                v-model="formDialogScope.editedObject.projection"
+                            <cly-select-x
+                                :options="projectionOptions"
                                 :placeholder="i18n('dbviewer.projection')"
-                            >
-                                <el-option
-                                    v-for="item in projectionOptions"
-                                    :key="item"
-                                    :label="item"
-                                    :value="item"
+                                :show-search="true"
+                                :searchable="true"
+                                v-model="formDialogScope.editedObject.projection"
+                                class="bu-mt-1"
+                                :hide-all-options-tab="true"
+                                mode="multi-check"
+                                :popper-append-to-body="false"
                                 >
-                                </el-option>
-                            </el-select>
+                                </cly-select-x>
                         </div>
                     </div>
                     <div class="dbviewer-tab__sort">

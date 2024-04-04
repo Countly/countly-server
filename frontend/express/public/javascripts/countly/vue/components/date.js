@@ -1070,7 +1070,21 @@
             'value': {
                 immediate: true,
                 handler: function(newVal) {
-                    this.loadValue(newVal);
+                    var val = newVal;
+                    if (this.isGlobalDatePicker) {
+                        try {
+                            const latestDateRange = JSON.parse(localStorage.getItem("countly_date_range_mode_" + countlyCommon.ACTIVE_APP_ID));
+                            if (latestDateRange.rangeMode === "inTheLast" && (latestDateRange.tableType === "hour" && !this.inTheLastHours || this.latestDateRange === "minute" && !this.inTheLastMinutes)) {
+                                val = "30days";
+                                this.doCommit(val, true);
+                            }
+                        }
+                        catch (error) {
+                            val = "30days";
+                            this.doCommit(val, true);
+                        }
+                    }
+                    this.loadValue(val);
                 }
             },
             'type': function() {
@@ -1446,7 +1460,9 @@
                 this.commitTooltip = {};
             },
             doClose: function() {
-                this.$refs.dropdown.handleClose();
+                if (this.$refs.dropdown) {
+                    this.$refs.dropdown.handleClose();
+                }
                 this.clearCommitWarning(true);
             },
             doDiscard: function() {
