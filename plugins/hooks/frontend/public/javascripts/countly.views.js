@@ -485,7 +485,8 @@
                     success: function(data) {
                         if (self.alertOptions.length === 0) {
                             self.alertOptions = data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName }));
-                        } else {
+                        }
+                        else {
                             self.alertOptions = self.alertOptions.concat(data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName })));
                         }
 
@@ -503,7 +504,7 @@
                     success: function(data) {
                         self.alertOptions = self.alertOptions.concat(data.map(item => ({ value: item._id, label: item.name })));
                     }
-                })
+                });
             },
         }
     });

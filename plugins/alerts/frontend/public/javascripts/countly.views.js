@@ -5,7 +5,6 @@
     jQuery,
     countlyVue,
     app,
-    countlyCommon,
     countlyAuth,
     CV,
     groupsModel,

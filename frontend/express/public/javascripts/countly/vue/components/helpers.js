@@ -1022,7 +1022,7 @@
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column">\
                             <slot name="title">\
 								<h3 v-if="visual==\'framed\'" :data-test-id="testId + \'-empty-view-title\'" class="bu-ml-5 color-cool-gray-100 bu-mt-4">{{title}}</h3>\
-                                <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+                                <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="bu-has-text-centered color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
 								<div v-if="visual==\'framed\'" class="bu-mt-3 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
