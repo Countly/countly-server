@@ -1615,7 +1615,13 @@ var pluginManager = function pluginManager() {
             dbs.push('countly_drill');
         }
 
-        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        let databases = [];
+        if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
+            databases = await this.dbConnection(dbs);
+        }
+        else {
+            databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
@@ -1640,14 +1646,13 @@ var pluginManager = function pluginManager() {
     this.dbConnection = async function(config) {
         var db, maxPoolSize = 10;
         var mngr = this;
+        var dbList = [];
 
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
         }
-        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
-            maxPoolSize = 3;
-        }
+
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
         if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
@@ -1674,6 +1679,10 @@ var pluginManager = function pluginManager() {
                 config = useConfig;
             }
         }
+        else if (Array.isArray(config)) {
+            dbList = config;
+            config = useConfig;
+        }
         else {
             config = config || useConfig;
         }
@@ -1686,6 +1695,10 @@ var pluginManager = function pluginManager() {
         }
         else {
             maxPoolSize = config.mongodb.max_pool_size || maxPoolSize;
+        }
+
+        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
         }
 
         var dbName;
@@ -1828,10 +1841,12 @@ var pluginManager = function pluginManager() {
             return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
         };
 
-        if (db_name === "countly") {
-            var wrapped = client.db(db_name);
-            //await this.fetchMaskingConf({db: wrapped});
-            return wrapped;
+        if (dbList.length) {
+            var ret = [];
+            for (let i = 0; i < dbList.length; i++) {
+                ret.push(client.db(dbList[i]));
+            }
+            return ret;
         }
         else {
             return client.db(db_name);
