@@ -144,6 +144,12 @@
                 if (submitted.links) {
                     submitted.finalText = submitted.links.finalText;
                     submitted.links = submitted.links.link;
+                    submitted.links.forEach(function(link) {
+                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                        link.linkValue = link.linkValue + separator + 'cly_x_int=1';
+                        delete link.text;
+                        delete link.link;
+                    });
                 }
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
@@ -159,12 +165,6 @@
                 if (!submitted.globalLogo) {
                     submitted.globalLogo = false;
                 }
-                submitted.links.forEach(function(link) {
-                    var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
-                    link.linkValue = link.linkValue + separator + 'cly_x_int=1';
-                    delete link.text;
-                    delete link.link;
-                });
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
                     var exported = this.$refs.ratingsSegmentation.export();
