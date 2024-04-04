@@ -891,9 +891,9 @@
                                 var eventKeyForStorage = {};
                                 var eventKey = res.list[0];
                                 if (res.map && res.map[context.state.selectedEventName]) {
-                                    eventKey = res.list.filter(function(item) {
+                                    eventKey = res.list.find(function(item) {
                                         return !(res.map[item] && res.map[item].is_visible === false);
-                                    })[0];
+                                    });
                                 }
                                 eventKeyForStorage[appId] = eventKey;
                                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
