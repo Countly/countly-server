@@ -153,7 +153,7 @@
                 this.$emit("discard");
             }
         },
-        template: '<div :class="skinToApply" v-if="hasDiff">\n' +
+        template: '<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
