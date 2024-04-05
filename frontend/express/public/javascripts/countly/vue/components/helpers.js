@@ -1061,7 +1061,7 @@
                 align: 'center',
             };
             if (this.visual === "framed") {
-                settings.classes = 'bu-mt-5 bu-pb-5 bu-pt-4 bu-pl-3 bu-is-flex bu-is-flex-direction-column bu-is-align-items-left cly-vue-empty-view cly-vue-empty-view-framed';
+                settings.classes = 'bu-pb-5 bu-pt-4 bu-pl-3 bu-is-flex bu-is-flex-direction-column bu-is-align-items-left cly-vue-empty-view cly-vue-empty-view-framed';
                 settings.align = 'left';
             }
 
