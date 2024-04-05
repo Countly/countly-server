@@ -1041,7 +1041,10 @@ function uploadFile(myfile, id, callback) {
             query.device_id = params.qstring.device_id;
         }
         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+            query.$or = [
+                { comment: {$regex: new RegExp(`.*${params.qstring.sSearch}.*`, 'i')} },
+                { email: {$regex: new RegExp(`.*${params.qstring.sSearch}.*`, 'i')} },
+            ];
         }
         if (params.qstring.iSortCol_0) {
             try {
