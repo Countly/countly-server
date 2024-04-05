@@ -1784,6 +1784,11 @@
                         title: CV.i18n('push-notification-details.errors-tab'),
                         name: "errors",
                         component: countlyPushNotificationComponent.DetailsErrorsTab
+                    },
+                    {
+                        title: CV.i18n('push-notification-details.stats-tab'),
+                        name: "stats",
+                        component: countlyPushNotificationComponent.DetailsStatsTab
                     }
                 ],
                 usersTargetedOptionsXAxis: {

@@ -1109,4 +1109,59 @@
         }
     });
 
+    countlyPushNotificationComponent.DetailsStatsTab = countlyVue.views.create({
+        template: '#details-stats-tab',
+        data: () => {
+            return {
+                selectedPeriod: "30days",
+                periodOptions: [
+                    { label: "30 days", value: "30days" },
+                    { label: "24 weeks", value: "24weeks" },
+                    { label: "12 months", value: "12months" }
+                ]
+            };
+        },
+        mounted() {
+            this.fetchMessageStats();
+        },
+        computed: {
+            chartOpts: function() {
+                return {
+                    xAxis: {
+                        axisLabel: {
+                            formatter: date => moment(date).format("DD MMM")
+                        }
+                    },
+                    tooltip: {
+                        axisPointer: {
+                            label: {
+                                formatter: date => moment(date.value).format("LL")
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: "Sent Messages",
+                            type: "bar",
+                            data: this.$store.state.countlyPushNotificationDetails.messageStats.sent,
+                        },
+                        {
+                            name: "Actioned Messages",
+                            type: "bar",
+                            data: this.$store.state.countlyPushNotificationDetails.messageStats.action,
+                        }
+                    ]
+                };
+            }
+        },
+        methods: {
+            fetchMessageStats() {
+                this.$store.dispatch("countlyPushNotificationDetails/fetchMessageStats", {
+                    messageId: this.$store.state.countlyPushNotificationDetails.pushNotification._id,
+                    period: this.selectedPeriod
+                });
+            }
+        }
+    });
+
 })(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});
