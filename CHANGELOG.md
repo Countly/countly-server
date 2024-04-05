@@ -1,3 +1,24 @@
+## Version 23.11.17
+Fixes:
+- [core] Always read session store from primary
+- [core] Configuration for shard database connection
+- [core] Fixes for Graph notes user messages
+- [core] Fixes for null_id fixing script
+- [core] Signature consistency for countly-request
+- [core] Store last time merge happened
+- [data-masking]Try-catch on data masking setting check.
+- [reports] Bugfix for Email reports timing out
+- [rights] Optimize dbLoadEventsData
+- [star-rating] Enable email search for feedback
+
+Enterprise Fixes:
+- [drill] Nullcheck in cohorts on user merge
+- [performance-monitoring] Error while redirecting to "../performance-monitoring/all-issues"
+- [block] check for crashes in filtering rules
+- [ab-testing] Add indexes for ab-testing queries
+- [flows] Included custom user properties in filtering rules
+- [drill] Make drill graphs and tables correct for byval queries if there are null and '0' keys.
+
 ## Version 23.11.16
 Fixes:
 - [scripts] custom indexes for customers
