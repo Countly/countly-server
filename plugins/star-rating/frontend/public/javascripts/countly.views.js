@@ -461,8 +461,8 @@
                 return table;
 
             },
-            goWidgetDetail: function(id) {
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
+            goWidgetDetail: function(row) {
+                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + row._id;
             },
             parseTargeting: function(widget) {
                 if (widget.targeting) {
