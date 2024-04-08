@@ -17,6 +17,8 @@ const API_KEY = '';
 const DRY_RUN = true;
 // countly instance public url, something like 'https://name.count.ly'
 const SERVER_URL = '';
+// the limit of crashgroups to delete per Countly app
+const BATCH_LIMIT = 1000;
 
 // format 'YYYY-MM-DD', crashes with last occurence older than this will be removed
 const LAST_TIMESTAMP = '';
@@ -39,8 +41,47 @@ catch (err) {
     process.exit(1);
 }
 
-pluginManager.dbConnection().then(async(db) => {
+async function generateRequestOptions(db, {
+    api_key,
+    apps,
+    batchCount,
+    batchLimit,
+    lastUnixTimestamp,
+    uri,
+}) {
     const requestOptions = [];
+
+    for (let idx = 0; idx < apps.length; idx += 1) {
+        const app_id = apps[idx]._id;
+        const crashgroups = await db.collection(`app_crashgroups${app_id}`)
+            .find({ lastTs: { $lt: lastUnixTimestamp } }, { _id: 1 })
+            .skip(batchLimit * batchCount)
+            .limit(batchLimit)
+            .toArray();
+
+        if (crashgroups.length > 0) {
+            const crashgroupIds = crashgroups.map((crash) => crash._id);
+
+            requestOptions.push({
+                uri,
+                method: 'POST',
+                json: {
+                    api_key,
+                    app_id,
+                    args: {
+                        crashes: crashgroupIds,
+                    },
+                },
+            });
+        }
+    }
+
+    return requestOptions;
+}
+
+pluginManager.dbConnection().then(async(db) => {
+    let requestOptions = [];
+    let batchCount = 0;
 
     let urlObj = {};
     try {
@@ -54,51 +95,52 @@ pluginManager.dbConnection().then(async(db) => {
     const lastUnixTimestamp = moment(LAST_TIMESTAMP).unix();
 
     console.log(`Finding crashgroups older than ${LAST_TIMESTAMP}`);
-    const apps = await db.collection('apps').find().toArray();
+    const apps = await db.collection('apps').find({}, {_id: 1}).toArray();
 
-    for (let idx = 0; idx < apps.length; idx += 1) {
-        const app_id = apps[idx]._id;
-        const crashgroups = await db.collection(`app_crashgroups${app_id}`)
-            .find({ lastTs: { $lt: lastUnixTimestamp } }, { _id: 1 })
-            .toArray();
+    requestOptions = requestOptions.concat(await generateRequestOptions(db, {
+        api_key: API_KEY,
+        apps,
+        batchCount,
+        batchLimit: BATCH_LIMIT,
+        lastUnixTimestamp,
+        uri: urlObj.href,
+    }));
 
-        if (crashgroups.length > 0) {
-            const crashgroupIds = crashgroups.map((crash) => crash._id);
+    while (requestOptions.length > 0) {
+        const requestOption = requestOptions.shift();
 
-            requestOptions.push({
-                uri: urlObj.href,
-                method: 'POST',
-                json: {
-                    api_key: API_KEY,
-                    app_id,
-                    args: {
-                        crashes: crashgroupIds,
-                    },
-                },
-            });
+        if (DRY_RUN) {
+            console.log(JSON.stringify(requestOption));
         }
-    }
+        else {
+            console.log('Sending deletion requests');
 
-    if (DRY_RUN) {
-        requestOptions.forEach((option) => {
-            console.log(JSON.stringify(option));
-        });
-    }
-    else {
-        console.log('Sending deletion requests');
-
-        for (let idx = 0; idx < requestOptions.length; idx += 1) {
             await new Promise((resolve) => {
-                request(requestOptions[idx], (err, response, body) => {
+                request(requestOption, (err, response, body) => {
                     if (err) {
-                        console.warn('Request failed ', JSON.stringify(requestOptions[idx].json.app_id), err);
+                        console.warn('Request failed ', JSON.stringify(requestOption.json.app_id), err);
                     }
                     else {
-                        console.warn('Request finished ', JSON.stringify(requestOptions[idx].json.app_id), body);
+                        console.warn('Request finished ', JSON.stringify(requestOption.json.app_id), body);
                     }
                     resolve();
                 });
             });
+        }
+
+        if (requestOptions.length === 0) {
+            if (DRY_RUN) {
+                batchCount += 1;
+            }
+
+            requestOptions = requestOptions.concat(await generateRequestOptions(db, {
+                api_key: API_KEY,
+                apps,
+                batchCount,
+                batchLimit: BATCH_LIMIT,
+                lastUnixTimestamp,
+                uri: urlObj.href,
+            }));
         }
     }
 
