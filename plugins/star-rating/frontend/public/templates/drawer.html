@@ -181,6 +181,7 @@
          <div class="cly-vue-drawer-step__section bu-py-1 cly-vue-surveys-drawer__consent">
           <el-checkbox
             class="text-smallish"
+            @change="onConsentCheckbox(drawerScope.editedObject)"
             size="small"
             v-bind:label="i18n('surveys.drawer.consent')"
             v-model="drawerScope.editedObject.consent"
