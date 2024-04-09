@@ -7,8 +7,9 @@
  */
 
 const moment = require('moment-timezone');
-const request = require('countly-request');
+const _ = require('underscore');
 
+const request = require('countly-request');
 const pluginManager = require('../../../plugins/pluginManager.js');
 
 // API key here with permission to delete crashgroups, crashes, crashusers
@@ -52,7 +53,7 @@ async function generateRequestOptions(db, {
     const requestOptions = [];
 
     for (let idx = 0; idx < apps.length; idx += 1) {
-        const app_id = apps[idx]._id;
+        const app_id = `${apps[idx]._id}`;
         const crashgroups = await db.collection(`app_crashgroups${app_id}`)
             .find({ lastTs: { $lt: lastUnixTimestamp } }, { _id: 1 })
             .skip(batchLimit * batchCount)
@@ -60,7 +61,7 @@ async function generateRequestOptions(db, {
             .toArray();
 
         if (crashgroups.length > 0) {
-            const crashgroupIds = crashgroups.map((crash) => crash._id);
+            const crashgroupIds = crashgroups.map((crashgroup) => crashgroup._id);
 
             requestOptions.push({
                 uri,
@@ -77,6 +78,22 @@ async function generateRequestOptions(db, {
     }
 
     return requestOptions;
+}
+
+function urlFromRequestOption(requestOption) {
+    try {
+        const urlObj = new URL(requestOption.uri);
+
+        for (let key in requestOption.json) {
+            const value = requestOption.json[key];
+            urlObj.searchParams.append(key, _.isObject(value) ? JSON.stringify(value) : value);
+        }
+
+        return urlObj.href;
+    }
+    catch (err) {
+        return JSON.stringify(requestOption);
+    }
 }
 
 pluginManager.dbConnection().then(async(db) => {
@@ -110,7 +127,7 @@ pluginManager.dbConnection().then(async(db) => {
         const requestOption = requestOptions.shift();
 
         if (DRY_RUN) {
-            console.log(JSON.stringify(requestOption));
+            console.log(urlFromRequestOption(requestOption));
         }
         else {
             console.log('Sending deletion requests');
