@@ -1627,7 +1627,8 @@ var pluginManager = function pluginManager() {
         }
 
         let databases = [];
-        if (true) {
+        var shared_connections = true;
+        if (shared_connections) {
             console.log("using shared connection pool");
             databases = await this.dbConnection(dbs);
         }
