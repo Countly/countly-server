@@ -646,6 +646,7 @@ var metricProps = {
             for (let i = 0; i < report.emails.length; i++) {
                 let unsubscribeLink = report.messages && report.messages[i] && report.messages[i].unsubscribeLink;
                 let html = report.messages && report.messages[i] && report.messages[i].html;
+                let pdfHasTemplate = false;
                 if (!html && message.data && message.template) { // report from dashboard
                     const msg = reports.genUnsubscribeCode(report, report.emails[i]);
                     message.data.unsubscribe_link = message.data.host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
