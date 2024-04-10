@@ -4,6 +4,6 @@ root = true
 end_of_line = lf
 insert_final_newline = false
 
-[*.{js,html}]
+[*.{js,html,scss,json}]
 indent_style = space
 indent_size = 4

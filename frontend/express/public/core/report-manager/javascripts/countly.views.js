@@ -333,7 +333,7 @@
                 }
             },
             isReadyForRerun: function(row) {
-                return row.status !== "running" && row.status !== "rerunning" && row.request;
+                return (row.type && row.type !== "profile group") && row.status !== "running" && row.status !== "rerunning" && row.request;
             },
             handleCommand: function(command, row) {
                 var id = row._id,
@@ -393,7 +393,7 @@
                     else if (command === "view-task") {
                         self.$emit("view-task", row);
                         if (!this.disableAutoNavigationToTask) {
-                            if (row.dashboard_report) {
+                            if (row.dashboard_report || row.type === "profile group") {
                                 window.location = row.view;
                             }
                             else {

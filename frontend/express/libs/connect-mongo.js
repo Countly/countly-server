@@ -35,7 +35,7 @@ util.inherits(SkinStore, Store);
  * @param {Function} callback - callback when done
  */
 SkinStore.prototype.get = function(sid, callback) {
-    this.sessions.findOne({_id: sid }, function(err, row) {
+    this.sessions.findOne({_id: sid}, {omitReadPreference: true}, function(err, row) {
         if (err || !row) {
             return callback(err, row);
         }

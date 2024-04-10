@@ -593,12 +593,15 @@
         background: #FFFFFF;
         border-radius: 4px;
         color: map.get(c.$colors, "text-custom-1-active");
-        display: inline-block;
+        // display: inline-block;
+        display: flex;
+        align-items: stretch;
 
         &__shortcuts-col {
             width: 144px;
             padding: 8px;
             vertical-align: top;
+            flex: 1;
         }
 
         &__calendars-col {
@@ -613,10 +616,10 @@
         }
 
         &__shortcuts-col {
-            + .cly-vue-daterp__calendars-col {
-                border-left: 1px #EBEBEF solid;
-                margin-left:-5px;
-            }
+            border-right: 1px #EBEBEF solid;
+            // + .cly-vue-daterp__calendars-col {
+            //     margin-left:-5px;
+            // }
         }
 
         &__calendars-wrapper {
@@ -3738,6 +3741,43 @@
         box-sizing: border-box;
         box-shadow: 0px 7px 14px rgba(0, 0, 0, 0.21539);
         border-radius: 2px;
+
+        .message {
+            float: left;
+            padding: 22px 24px;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 20px;
+            .text-dark {
+                color: #333C48;
+            }
+            .text-light {
+                color: #636363;
+            }
+        }
+        .buttons {
+            float: right;
+            padding: 16px 24px;
+            .cly-vue-button {
+                padding: 8px 14px;
+            }
+        }
+    }
+
+    .cly-vue-diff-helper-modal {
+        position: fixed;
+        left: 50%;
+        margin-left: -150px;
+        bottom: 18px;
+        height: 48px;
+        z-index: 9999;
+
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+        box-sizing: border-box;
+        box-shadow: 0px 7px 14px rgba(0, 0, 0, 0.21539);
+        border-radius: 6px;
 
         .message {
             float: left;

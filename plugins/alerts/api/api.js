@@ -7,6 +7,34 @@ const utils = require('./parts/utils');
 const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
+const commonLib = require("./parts/common-lib.js");
+
+/**
+ * Alerts that can be triggered when an event is received.
+ * see module file for details.
+ *   Module   Event
+ * - nps      [CLY]_nps
+ * - rating   [CLY]_star_rating
+ * - survey   [CLY]_survey
+ * - crashes  HAS CUSTOM REQUEST BODY (no event key)
+ */
+const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => ({
+    module: require("./alertModules/" + name + ".js"),
+    name
+}));
+
+// FIX THIS: workaround for the job.schedule
+const _date = new Date("2024-03-25T23:59:00.000Z");
+const _timeDelta = _date.getTimezoneOffset() / 60;
+const _hours = String((23 + _timeDelta) % 24).padStart(2, "0");
+
+const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
+    "hourly": "every 1 hour on the 59th min",
+    "daily": "at " + _hours + ":59",
+    "monthly": "on the last day of the month at " + _hours + ":59",
+    // "daily": "at 23:59",
+    // "monthly": "on the last day of the month at 23:59",
+};
 
 (function() {
     /**
@@ -31,7 +59,11 @@ const FEATURE_NAME = 'alerts';
 	 */
     function updateJobForAlert(alert) {
         if (alert.enabled) {
-            JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(alert.period);
+            const textExpression = PERIOD_TO_TEXT_EXPRESSION_MAPPER[alert.period];
+            if (textExpression) {
+                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
+                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
+            }
         }
         else {
             deleteJob(alert._id);
@@ -51,6 +83,22 @@ const FEATURE_NAME = 'alerts';
             });
         });
     }
+
+    plugins.register("/i", async function(ob) {
+        const payload = ob?.params?.qstring;
+        if (!payload) {
+            return;
+        }
+
+        for (let { module, name } of TRIGGER_BY_EVENT) {
+            try {
+                await module.triggerByEvent(payload);
+            }
+            catch (err) {
+                log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+            }
+        }
+    });
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -132,7 +180,7 @@ const FEATURE_NAME = 'alerts';
                     'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataSubType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    // 'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'selectedApps': { 'required': alertConfig._id ? false : true, 'type': 'Array', 'min-length': 1 }
 
                 };
@@ -149,7 +197,6 @@ const FEATURE_NAME = 'alerts';
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 

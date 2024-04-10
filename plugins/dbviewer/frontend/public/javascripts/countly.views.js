@@ -80,7 +80,13 @@
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
-                            self.projectionOptions = Object.keys(rows[0]);
+                            self.projectionOptions = Object.keys(rows[0]).sort();
+                            self.projectionOptions = self.projectionOptions.map(function(item) {
+                                return {
+                                    "label": item,
+                                    "value": item
+                                };
+                            });
                         }
                         return rows;
                     }
@@ -96,7 +102,7 @@
                     sortEnabled: false,
                     projection: [],
                     sort: "",
-                    projectionOptions: [],
+                    projectionOptions: {},
                     isDescentSort: false,
                     isIndexRequest: false,
                     searchQuery: "",

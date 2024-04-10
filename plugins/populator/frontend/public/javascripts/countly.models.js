@@ -2370,7 +2370,7 @@
 
             var events = [];
             for (var eventIndex = 0; eventIndex < count; eventIndex++) {
-                var randomEvent = templateEvents[getRandomInt(0, templateEvents.length - 1)]; //eventKeys[getRandomInt(0, eventKeys.length - 1)];
+                var randomEvent = templateEvents[getRandomInt(0, templateEvents.length - 1)];
                 events.push(this.getEvent(randomEvent.key, randomEvent));
             }
 
@@ -2587,9 +2587,9 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
-                        this.getEvents(4, template && template.events)
+                        this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
-                if (template && template.events && Object.keys(template.events).length > 0) {
+                if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
@@ -2601,7 +2601,7 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
-                        this.getEvents(4, template && template.events)
+                        this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
@@ -3756,12 +3756,13 @@
         var template = this.currentTemplate || {};
 
         if (typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
-            if (template && template.events && Object.keys(template.events).length > 0) {
-                var firstEventKey = Object.keys(template.events)[0];
+            if (template && template.events && template.events.length) {
+                var firstEventKey = template.events[getRandomInt(0, template.events.length - 1)].key;
 
-                if (template.users && Object.keys(template.users).length > 0) {
-                    var firstUserProperty = Object.keys(template.users)[0];
-                    var firstUserPropertyValue = JSON.stringify(template.users[firstUserProperty][0]);
+                if (template.users && template.users.length) {
+                    var randomUserPropertyIndex = getRandomInt(0, template.users.length - 1);
+                    var firstUserProperty = template.users[randomUserPropertyIndex].key;
+                    var firstUserPropertyValue = JSON.stringify(template.users[randomUserPropertyIndex].values[getRandomInt(0, template.users[randomUserPropertyIndex].values.length - 1)].key);
 
                     countlyCohorts.add({
                         cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
@@ -3780,9 +3781,10 @@
                 }
 
 
-                if (template.events[firstEventKey].segments && Object.keys(template.events[firstEventKey].segments).length > 0) {
-                    var firstEventSegment = Object.keys(template.events[firstEventKey].segments)[0];
-                    var firstEventSegmentValue = JSON.stringify(template.events[firstEventKey].segments[firstEventSegment][0]);
+                if (template.events.filter(x=>x.key === firstEventKey) && template.events.filter(x=>x.key === firstEventKey).length && template.events.filter(x=>x.key === firstEventKey)[0].segmentations && template.events.filter(x=>x.key === firstEventKey)[0].segmentations.length) {
+                    var randomSegmentIndex = getRandomInt(0, template.events.filter(x=>x.key === firstEventKey)[0].segmentations.length - 1);
+                    var firstEventSegment = template.events.filter(x=>x.key === firstEventKey)[0].segmentations[randomSegmentIndex].key;
+                    var firstEventSegmentValue = JSON.stringify(template.events.filter(x=>x.key === firstEventKey)[0].segmentations[randomSegmentIndex].values[getRandomInt(0, template.events.filter(x=>x.key === firstEventKey)[0].segmentations[randomSegmentIndex].values.length - 1)].key);
 
                     countlyCohorts.add({
                         cohort_name: "Users who performed " + firstEventKey + " with " + firstEventSegment + " = " + firstEventSegmentValue,
@@ -3800,8 +3802,8 @@
                     });
                 }
 
-                if (Object.keys(template.events).length > 1) {
-                    var secondEventKey = Object.keys(template.events)[1];
+                if (template.events.length) {
+                    var secondEventKey = template.events[getRandomInt(0, template.events.length - 1)].key;
 
                     countlyCohorts.add({
                         cohort_name: "Users who performed " + firstEventKey + " but not " + secondEventKey,
@@ -3892,10 +3894,9 @@
                 stepGroups: [{"c": "and", "g": 0}, {"c": "and", "g": 1}],
             });
 
-            if (template && template.events && Object.keys(template.events).length > 0) {
-
-                let firstEvent = Object.keys(template.events)[0];
-                let secondEvent = Object.keys(template.events)[1] || "[CLY]_view";
+            if (template.events && template.events.length) {
+                let firstEvent = template.events[getRandomInt(0, template.events.length - 1)].key;
+                let secondEvent = template.events.length === 1 ? "[CLY]_view" : template.events[getRandomInt(0, template.events.length - 1)].key;
 
                 countlyFunnel.createFunnel({
                     name: firstEvent + " -> " + secondEvent + "",

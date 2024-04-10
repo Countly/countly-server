@@ -313,7 +313,7 @@
                             </div>\
                         </div>\
                     </vue-scroll>\
-                    <div v-else class="cly-vue-listbox__no-data">\
+                    <div v-else class="cly-vue-listbox__no-data color-cool-gray-50 bu-pb-5">\
                         {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
@@ -517,7 +517,17 @@
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false},
             onlySelectedOptionsTab: {type: Boolean, default: false},
-            prefixLabelWithTabId: {type: Boolean, default: false}
+            prefixLabelWithTabId: {type: Boolean, default: false},
+            disabledOptions: {
+                type: Object,
+                default: function() {
+                    return {
+                        label: null,
+                        options: {}
+                    };
+                },
+                required: false
+            },
         },
         data: function() {
             return {
@@ -632,6 +642,9 @@
             },
             hasSelectedOptionsTab: function() {
                 return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
+            },
+            hasDisabledOptions: function() {
+                return Object.keys(this.disabledOptions.options).length !== 0;
             },
             showTabs: function() {
                 if (this.onlySelectedOptionsTab) {

@@ -367,14 +367,6 @@
                 });
             },
             onAddAnotherValue: function(index) {
-                if (this.users[index].values.filter(value => value.key.trim() === "").length) {
-                    CountlyHelpers.notify({
-                        title: CV.i18n("common.error"),
-                        message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                        type: "warning"
-                    });
-                    return;
-                }
                 this.users[index].values.push({key: "", probability: 0});
             },
             checkRemoveValue: function(key, value) {
@@ -462,14 +454,6 @@
             },
             onAddAnotherConditionValue: function(index) {
                 try {
-                    if (this.users[index].condition.values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
                     this.users[index].condition.values.push({key: "", probability: 0});
                 }
                 catch (error) {
@@ -610,14 +594,6 @@
             },
             onAddAnotherValue: function(index, segmentIndex) {
                 try {
-                    if (this.events[index].segmentations[segmentIndex].values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
                     this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
@@ -786,15 +762,6 @@
             },
             onAddAnotherValue: function(index, valueIndex) {
                 try {
-                    if (this.views[index].segmentations[valueIndex].values.filter(item => item.key.trim() === "").length) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-message-when-adding-empty-value"),
-                            type: "warning"
-                        });
-                        return;
-                    }
-
                     this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
@@ -879,6 +846,9 @@
             },
             sequences: {
                 handler: function(newValue) {
+                    if (!newValue.length) {
+                        this.$parent.isSectionActive = false;
+                    }
                     this.$emit('input', newValue);
                 },
                 deep: true
@@ -889,14 +859,6 @@
                 this.sequences.push({steps: [{"key": "session", value: "start", "probability": 100, "fixed": true}, {"key": "session", value: "end", "probability": 100, "fixed": true}]});
             },
             onRemoveSequence(index) {
-                if (this.sequences.length === 1) {
-                    CountlyHelpers.notify({
-                        title: CV.i18n("common.error"),
-                        message: CV.i18n("populator-template.warning-while-removing-condition"),
-                        type: "warning"
-                    });
-                    return;
-                }
                 this.sequences.splice(index, 1);
                 this.$emit('deleted-index', index);
             },
@@ -952,7 +914,7 @@
                 this.sequences = this.value;
             }
             else {
-                this.sequences = [{steps: [{"key": "session", value: "start", "probability": 100, "fixed": true}, {"key": "session", value: "end", "probability": 100, "fixed": true}]}];
+                this.$parent.isSectionActive = false;
             }
             this.sequenceStepValues = this.parentData;
         },
@@ -989,7 +951,7 @@
                 }
                 const index = parseInt(newValue.split("_")[0], 10);
                 this.behavior.sequences.splice(index, 1);
-                if (this.behavior.sequences.length === 2) {
+                if (!this.behavior.sequences.length) {
                     const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
                     if (indexToRemove !== -1) {
                         this.behavior.sequences.splice(indexToRemove, 1);
@@ -1000,7 +962,6 @@
                 deep: true,
                 handler: function(newValue) {
                     const usersUndefinedOrEmpty = typeof newValue.users === 'undefined' || newValue.users.length === 0;
-                    const sequencesUndefinedOrEmpty = typeof newValue.sequences === 'undefined' || newValue.sequences.length === 0;
 
                     if (usersUndefinedOrEmpty) {
                         this.isConditionDisabled = true;
@@ -1008,13 +969,6 @@
                     else {
                         this.isConditionDisabled = false;
                     }
-                    if (sequencesUndefinedOrEmpty) {
-                        this.isSequenceSectionActive = false;
-                    }
-                    else {
-                        this.isSequenceSectionActive = true;
-                    }
-
                     if (newValue.sequences && newValue.sequences.length) {
                         // adding a new sequence
                         if (newValue.sequences.length > this.behavior.sequences.filter(obj => obj.key !== 'random').length) {
@@ -1024,7 +978,7 @@
                             }
                             this.behavior.sequences.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
                         }
-                        if (newValue.sequences.length > 1 && !this.behavior.sequences.find(item => item.key === 'random')) {
+                        if (!this.behavior.sequences.find(item => item.key === 'random')) {
                             this.behavior.sequences.push({key: 'random', probability: 0});
                         }
                     }
@@ -1039,8 +993,7 @@
                     SEQUENCE: "sequence"
                 },
                 conditionPropertyValues: [],
-                isConditionDisabled: false,
-                isSequenceSectionActive: true
+                isConditionDisabled: false
             };
         },
         methods: {
@@ -1102,7 +1055,7 @@
                 this.behavior = {
                     "runningSession": [null, null],
                     "generalConditions": [],
-                    "sequences": [{key: "Sequence_1", probability: 100}],
+                    "sequences": [{key: "random", probability: 100}],
                     "sequenceConditions": []
                 };
             }
