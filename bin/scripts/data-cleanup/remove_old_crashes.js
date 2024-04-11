@@ -6,23 +6,24 @@
  *  Command: node remove_old_crashes.js
  */
 
-const moment = require('moment-timezone');
-const _ = require('underscore');
-
-const request = require('countly-request');
-const pluginManager = require('../../../plugins/pluginManager.js');
-
 // API key here with permission to delete crashgroups, crashes, crashusers
 const API_KEY = '';
+// API key here with permission to delete crashgroups, crashes, crashusers
+const APP_ID = '';
 // if true, nothing will be deleted
 const DRY_RUN = true;
 // countly instance public url, something like 'https://name.count.ly'
 const SERVER_URL = '';
 // the limit of crashgroups to delete per Countly app
 const BATCH_LIMIT = 1000;
-
 // format 'YYYY-MM-DD', crashes with last occurence older than this will be removed
 const LAST_TIMESTAMP = '';
+
+const moment = require('moment-timezone');
+const _ = require('underscore');
+
+const request = require('countly-request');
+const pluginManager = require('../../../plugins/pluginManager.js');
 
 if (API_KEY.length === 0) {
     console.warn('Please provide an API_KEY');
@@ -112,7 +113,8 @@ pluginManager.dbConnection().then(async(db) => {
     const lastUnixTimestamp = moment(LAST_TIMESTAMP).unix();
 
     console.log(`Finding crashgroups older than ${LAST_TIMESTAMP}`);
-    const apps = await db.collection('apps').find({}, {_id: 1}).toArray();
+
+    const apps = (APP_ID.length) ? [{_id: APP_ID}] : await db.collection('apps').find({}, { _id: 1 }).toArray();
 
     requestOptions = requestOptions.concat(await generateRequestOptions(db, {
         api_key: API_KEY,
