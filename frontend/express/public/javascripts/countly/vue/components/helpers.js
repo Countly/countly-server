@@ -924,7 +924,7 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
-                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-py-3" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
                             '<div v-if="closable"  class="bu-mt-2" >\n' +
