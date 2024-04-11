@@ -1298,8 +1298,11 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
-
+            var args = [scriptPath];
+            if (apiCountlyConfig.symlinked === true) {
+                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+            }
+            var m = cp.spawn("nodejs", args);
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
             });
@@ -1367,7 +1370,11 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var args = [scriptPath];
+            if (apiCountlyConfig.symlinked === true) {
+                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+            }
+            var m = cp.spawn("nodejs", args);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1398,7 +1405,11 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
+        var args = [scriptPath];
+        if (apiCountlyConfig.symlinked === true) {
+            args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+        }
+        var m = cp.spawn("nodejs", args);
 
         m.stdout.on('data', (data) => {
             console.log(data.toString());
@@ -1615,7 +1626,13 @@ var pluginManager = function pluginManager() {
             dbs.push('countly_drill');
         }
 
-        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        let databases = [];
+        if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
+            databases = await this.dbConnection(dbs);
+        }
+        else {
+            databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
@@ -1640,14 +1657,13 @@ var pluginManager = function pluginManager() {
     this.dbConnection = async function(config) {
         var db, maxPoolSize = 10;
         var mngr = this;
+        var dbList = [];
 
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
         }
-        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
-            maxPoolSize = 3;
-        }
+
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
         if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
@@ -1674,6 +1690,10 @@ var pluginManager = function pluginManager() {
                 config = useConfig;
             }
         }
+        else if (Array.isArray(config)) {
+            dbList = config;
+            config = useConfig;
+        }
         else {
             config = config || useConfig;
         }
@@ -1686,6 +1706,10 @@ var pluginManager = function pluginManager() {
         }
         else {
             maxPoolSize = config.mongodb.max_pool_size || maxPoolSize;
+        }
+
+        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
         }
 
         var dbName;
@@ -1828,10 +1852,12 @@ var pluginManager = function pluginManager() {
             return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
         };
 
-        if (db_name === "countly") {
-            var wrapped = client.db(db_name);
-            //await this.fetchMaskingConf({db: wrapped});
-            return wrapped;
+        if (dbList.length) {
+            var ret = [];
+            for (let i = 0; i < dbList.length; i++) {
+                ret.push(client.db(dbList[i]));
+            }
+            return ret;
         }
         else {
             return client.db(db_name);
@@ -1911,14 +1937,24 @@ var pluginManager = function pluginManager() {
     this.getMaskingSettings = function(appID) {
         if (appID === 'all') {
             if (masking && masking.apps) {
-                return JSON.parse(JSON.stringify(masking.apps));
+                try {
+                    return JSON.parse(JSON.stringify(masking.apps));
+                }
+                catch (ex) {
+                    return {};
+                }
             }
             else {
                 return {};
             }
         }
         else if (masking && masking.apps && masking.apps[appID]) {
-            return JSON.parse(JSON.stringify(masking.apps[appID]));
+            try {
+                return JSON.parse(JSON.stringify(masking.apps[appID]));
+            }
+            catch (ex) {
+                return {};
+            }
         }
         else {
             return {};
@@ -2014,7 +2050,7 @@ var pluginManager = function pluginManager() {
             }
         });
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session"];
+        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
 
         countlyDb._collection_cache = {};
         //overwrite some methods

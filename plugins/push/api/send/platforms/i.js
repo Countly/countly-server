@@ -505,6 +505,9 @@ const map = {
                 template.result.aps.alert = template.result.aps.alert || {};
                 template.result.aps.alert.subtitle = specific.subtitle;
             }
+            if (specific.setContentAvailable) {
+                template.result.aps["content-available"] = 1;
+            }
         }
     },
 };
@@ -549,6 +552,8 @@ class APN extends Base {
             ':method': 'POST',
             ':scheme': 'https',
             ':authority': authority,
+            // this is being added before the actual request depending on weather message have setContentAvailable
+            // "apns-priority": 5,
             [HTTP2.sensitiveHeaders]: ['authorization', ':path', 'apns-id', 'apns-expiration', 'apns-collapse-id']
         };
         this.headersSecondWithToken = token => {
@@ -706,9 +711,26 @@ class APN extends Base {
 
                 try {
                     let content = self.template(p.m).compile(p),
-                        stream = session.request(self.headersSecondWithToken(p.t)),
+                        reqHeaders = self.headersSecondWithToken(p.t);
+
+                    // find if we need to add the priority header (check if content-available set)
+                    delete reqHeaders["apns-priority"];
+                    const message = self.messages[p.m];
+                    if (message && Array.isArray(message.contents)) {
+                        const contentItem = message.contents.find(i => Array.isArray(i.specific));
+                        if (contentItem) {
+                            const obj = contentItem.specific.find(i => i.setContentAvailable !== undefined);
+                            if (obj && obj.setContentAvailable) {
+                                reqHeaders["apns-priority"] = 5;
+                            }
+                        }
+                    }
+                    // =======0========000=================0========000=================0========0
+
+                    let stream = session.request(reqHeaders),
                         status,
                         data = '';
+
                     stream.on('error', err => {
                         self.log.e('[%s]: stream error %j %j / %j', p._id, session.state, session.closed, session.destroyed, err);
                         if (!nonRecoverableError) {

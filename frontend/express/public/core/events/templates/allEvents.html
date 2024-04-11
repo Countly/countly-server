@@ -42,14 +42,14 @@
           <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description" >{{unescapeHtml(groupData.description)}}</div>
           <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription" >{{unescapeHtml(eventDescription)}}</div>
 		  <div class="bu-is-flex cly-vue-events-all--padding">
-			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments">
+			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments || hasOmittedSegments">
 			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
 			  	<cly-select-x
 					search-placeholder="Search segments"
 					:options="availableSegments"
 					:searchable="true"
 					v-model="selectedSegment"
-					showSearch
+					:showSearch="hasSegments"
 					class="cly-vue-events-all--margin"
 					:disabledOptions="omittedSegments"
 				>

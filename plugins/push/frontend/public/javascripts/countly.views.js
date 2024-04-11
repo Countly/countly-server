@@ -51,6 +51,7 @@
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
             isUserDataEnabled: false,
+            isContentAvailableSet: false,
         },
         android: {
             isMediaURLEnabled: false,
@@ -1141,6 +1142,7 @@
                     this.settings[this.PlatformEnum.IOS].isJsonEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].json);
                     this.settings[this.PlatformEnum.IOS].isUserDataEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].userData.length);
                     this.settings[this.PlatformEnum.IOS].isSubtitleEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].subtitle);
+                    this.settings[this.PlatformEnum.IOS].isContentAvailableSet = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].setContentAvailable);
                 }
             },
             updateAndroidPlatformSettingsStateIfFound: function() {
@@ -2782,7 +2784,8 @@
         data: function() {
             return {
                 command: "CREATE_PUSH_NOTIFICATION",
-                label: CV.i18n('push-notification.send-message-to-users')
+                label: CV.i18n('push-notification.send-message-to-users'),
+                tooltipMessage: CV.i18n('push-notification.send-message-to-users-tooltip')
             };
         },
         computed: {
@@ -2799,7 +2802,7 @@
                 return false;
             }
         },
-        template: '<el-dropdown-item :disabled="isDisabled" :command="command">{{label}}</el-dropdown-item>',
+        template: '<div v-tooltip.left="isDisabled && tooltipMessage"><el-dropdown-item :disabled="isDisabled" :command="command">{{label}}</el-dropdown-item></div>',
     });
 
     var PushNotificationDrawerWrapper = countlyVue.views.create({

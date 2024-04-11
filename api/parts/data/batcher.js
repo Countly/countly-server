@@ -52,6 +52,7 @@ class InsertBatcher {
      */
     async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
+        var notify_fallback_errors = [10334, 17419];
         if (this.data[db][collection].length) {
             var docs = this.data[db][collection];
             this.data[db][collection] = [];
@@ -75,6 +76,13 @@ class InsertBatcher {
                 if (ex.writeErrors && ex.writeErrors.length) {
                     for (let i = 0; i < ex.writeErrors.length; i++) {
                         if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            //dispatch failure
+                            if (notify_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                                var index0 = ex.writeErrors[i].index;
+                                plugins.dispatch("/batcher/fail", {collection: collection, db: db, data: docs[index0], error: ex.writeErrors[i].errmsg});
+                            }
+                            // common.recordCustomMetric(params, "diagnostic", "batcher", metrics, 1, segs);
+                            //we could record in diagnostic data
                             continue;
                         }
                         let index = ex.writeErrors[i].index;
@@ -189,6 +197,7 @@ class WriteBatcher {
      */
     async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
+        var notify_errors = [10334, 17419];
         if (Object.keys(this.data[db][collection]).length) {
             var queries = [];
             for (let key in this.data[db][collection]) {
@@ -222,7 +231,15 @@ class WriteBatcher {
                 //trying to rollback operations to try again on next iteration
                 if (ex.writeErrors && ex.writeErrors.length) {
                     for (let i = 0; i < ex.writeErrors.length; i++) {
+
                         if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            //dispatch failure
+                            if (notify_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                                var index0 = ex.writeErrors[i].index;
+                                plugins.dispatch("/batcher/fail", {collection: collection, db: db, data: queries[index0], error: ex.writeErrors[i].errmsg});
+                            }
+                            // common.recordCustomMetric(params, "diagnostic", "batcher", metrics, 1, segs);
+                            //we could record in diagnostic data
                             continue;
                         }
                         let index = ex.writeErrors[i].index;
