@@ -127,6 +127,11 @@
     }
     &.is-autosized.is-bordered {
         border-color: #CFD6E4;
+        display: flex;
+        align-items: center;
+        .el-radio__input {
+          display: flex;
+        }
     }   
     &.is-autosized-vstack {
         padding: 12px;
