@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon, moment*/
+/* global countlyVue,countlyPlugins,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon, moment*/
 
 (function() {
 
@@ -136,7 +136,7 @@
                 selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
-                settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
+                settings: this.getInitialPushNotificationDrawerSettingsState(),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
                 isAddUserPropertyPopoverOpen: {
@@ -342,6 +342,14 @@
             },
         },
         methods: {
+            getInitialPushNotificationDrawerSettingsState: function() {
+                const _InitialPushNotificationDrawerSettingsState = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                const settings = countlyPlugins.getConfigsData();
+                if (settings.push && settings.push.default_content_available) {
+                    _InitialPushNotificationDrawerSettingsState.ios.isContentAvailableSet = true;
+                }
+                return _InitialPushNotificationDrawerSettingsState;
+            },
             previewCohorts: function(cohorts) {
                 var selectedCohorts = this.cohortOptions.filter(function(cohort) {
                     return cohorts.some(function(selectedCohortId) {
@@ -728,7 +736,7 @@
                     title: false,
                     content: false
                 };
-                this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                this.settings = this.getInitialPushNotificationDrawerSettingsState();
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
