@@ -2675,10 +2675,9 @@
             return new Promise((resolve) => {
                 if (template && template.behavior && template.behavior.sequences && template.behavior.sequences.length) {
                     completedRequestCount++;
-                    template.behavior.runningSession.map(str => parseInt(str, 10)).sort(function(a, b) {
-                        return a - b;
-                    });
-                    this.ts = getRandomInt(startTs, endTs - runCount * parseInt(template.behavior.runningSession[1], 10) * 3600);
+                    const averageRunningSessionTime = (parseInt(template.behavior.runningSession[0], 10) + parseInt(template.behavior.runningSession[1], 10)) / 2;
+                    const randomSelectedTs = getRandomInt(startTs, parseInt(endTs, 10) - parseInt(runCount) * (parseInt(averageRunningSessionTime, 10) + 1) * 3600);
+                    this.ts = randomSelectedTs;
                     var endSessionTs = null;
                     var req = {};
                     let selectedSequence = null;
