@@ -529,7 +529,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="width"\
+                    :width="computedWidth"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -549,7 +549,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String], default: 400},
+            width: { type: [Number, Object, String]},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -566,6 +566,9 @@
             };
         },
         computed: {
+            computedWidth: function() {
+                return this.width || 400;
+            },
             hasTitle: function() {
                 return !!this.title;
             },
