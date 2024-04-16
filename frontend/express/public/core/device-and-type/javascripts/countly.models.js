@@ -614,7 +614,7 @@
                     context.dispatch('onFetchSuccess', "resolution");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
-                }).finally(function() {
+                }).then(function() {
                     context.commit('setResolutionLoading', false);
                 });
             },
@@ -639,7 +639,7 @@
                     context.dispatch('onFetchSuccess', "version");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
-                }).finally(function() {
+                }).then(function() {
                     context.commit('setVersionLoading', false);
                 });
             },
@@ -684,7 +684,7 @@
                     context.dispatch('onFetchSuccess', "density");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
-                }).finally(function() {
+                }).then(function() {
                     context.commit('setDensityLoading', false);
                 });
             },
@@ -699,7 +699,7 @@
                     context.dispatch('onFetchSuccess', "deviceType");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
-                }).finally(function() {
+                }).then(function() {
                     context.commit('setTypeLoading', false);
                 });
             },
@@ -712,7 +712,7 @@
                     context.dispatch('onFetchSuccess', "device");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
-                }).finally(function() {
+                }).then(function() {
                     context.commit('setDeviceTypesLoading', false);
                 });
             },
