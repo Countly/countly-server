@@ -25,6 +25,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     exec = cp.exec,
     spawn = cp.spawn,
     configextender = require('../api/configextender');
+
+const util = require('util');
 var pluginConfig = {};
 
 /**
@@ -1627,8 +1629,7 @@ var pluginManager = function pluginManager() {
         }
 
         let databases = [];
-        var shared_connections = true;
-        if (shared_connections) {
+        if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
             console.log("using shared connection pool");
             databases = await this.dbConnection(dbs);
         }
@@ -1724,7 +1725,7 @@ var pluginManager = function pluginManager() {
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
             serverSelectionTimeoutMS: 999999999,
-            maxIdleTimeMS: 0,
+            maxIdleTimeMS: 300000,
             waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true
@@ -1817,7 +1818,7 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            client.on(eventName, (event) => logObject[logLevel](event, util.inspect(event, { depth: Infinity })));
         }
 
         //connection pool
