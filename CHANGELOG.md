@@ -1,12 +1,15 @@
 ## Version 23.11.18
 Fixes:
 - [scripts] Create script for deleting old crashgroups
+- [scripts] Script to validate based on cd field for which dates data was recorded 
 - [reports] Use localhost only in case of dashboard
 - [push] Added a chart to show number of sent and acted events
 - [push] Added the ability to set content-available by default into push settings
+- [core] Fix members to prevent azure ad errors
 
 Enterprise Fixes:
-- [block] Transform for crash object for crashes to work in blocks 
+- [block] Transform for crash object for crashes to work in block
+- [crash_symbolication] Init countly request correctly
 
 ## Version 23.11.17
 Fixes:
