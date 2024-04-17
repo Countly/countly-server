@@ -4,7 +4,6 @@ const pluginManager = require('./plugins/pluginManager.js');
 
 async function migrateAlertCollection(collectionName, db) {
     console.log('Migrating alert data...');
-    //var result2 = await db.collection(collectionName).find({'alertName': 'dfgdf'});
     await db.collection(collectionName).updateMany(
         {
             'alertDataType': { $ne: 'dataPoint'}
