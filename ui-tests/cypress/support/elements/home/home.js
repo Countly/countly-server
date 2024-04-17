@@ -89,7 +89,7 @@ export default {
         AVG_REQUESTS_RECEIVED_TREND_VALUE: 'tab-box-center-item-trend-value-avg-requests-received',
         AVG_REQUESTS_RECEIVED_CHART: 'tab-box-chart-avg-requests-received',
 
-        CHART_TYPE_SELECT_COMBOBOX: 'total-sessions-select-input',
+        CHART_TYPE_SELECT_COMBOBOX: 'total-sessions-header-select-input',
         CHART_TYPE_SELECT_ICON: 'total-sessions-select-icon',
         CHART_TYPE_SELECT_LABEL: 'total-sessions-chart-type-label',
         CHART_TYPE_SELECT_ITEM_LINE_CHART: 'total-sessions-chart-type-toggle-wrapper-el-option-line',
