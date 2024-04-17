@@ -355,9 +355,9 @@
                                         <el-button class="cly-multi-select__reset" :data-test-id="testId + \'-reset\'" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\

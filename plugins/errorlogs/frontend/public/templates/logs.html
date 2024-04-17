@@ -19,7 +19,7 @@
                     <el-link class="bu-is-underlined bu-is-pulled-right">{{i18n('errorlogs.download')}}</el-link>
                 </a>
             </div>
-            <div class="routename-errorlogs__scroll-down">
+            <div data-test-id="table-logs" class="routename-errorlogs__scroll-down">
                 <pre class="bu-px-5 bu-pb-4">{{cachedLog.data}}</pre>
             </div>
 

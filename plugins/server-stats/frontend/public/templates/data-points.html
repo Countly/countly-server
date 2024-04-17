@@ -9,7 +9,7 @@
     </cly-header>
 	<cly-main>
 		<div v-if="!subPage" class="bu-level-left">
-			<h4>{{i18n('server-stats.data-points-last_hours')}}</h4>
+			<h4 data-test-id="top-applications-by-data-points-in-the-last-two-hours-label">{{i18n('server-stats.data-points-last_hours')}}</h4>
 		</div>
 		<cly-section v-if="!subPage" class="bu-mt-4">
 			<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
@@ -76,5 +76,3 @@
 		</cly-section>
 	</cly-main>
 </div>
-
-
