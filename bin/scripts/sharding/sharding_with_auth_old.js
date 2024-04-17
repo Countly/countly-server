@@ -27,7 +27,8 @@ var COUNTLY_EXCEPTIONS = [
     "logs",
     "members",
     "password_reset",
-    "push_"
+    "push_",
+    "drill_snapshots"
 ];
 
 var conn = new Mongo(),

@@ -190,7 +190,7 @@ class Manager {
             return new Constructor(name, data);
         }
         else {
-            throw new Error('Couldn\'t find job file named ' + name);
+            log.e('Couldn\'t find job file named ' + name);
         }
     }
 

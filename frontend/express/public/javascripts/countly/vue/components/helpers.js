@@ -124,6 +124,11 @@
                 type: Boolean,
                 required: false,
                 default: false
+            },
+            isModal: {
+                type: Boolean,
+                required: false,
+                default: false
             }
         },
         computed: {
@@ -132,6 +137,9 @@
             },
             madeChanges: function() {
                 return this.i18n("common.diff-helper.changes", this.diff.length);
+            },
+            skinToApply: function() {
+                return this.isModal ? 'cly-vue-diff-helper-modal' : 'cly-vue-diff-helper';
             }
         },
         methods: {
@@ -145,7 +153,7 @@
                 this.$emit("discard");
             }
         },
-        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
+        template: '<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
@@ -521,7 +529,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="width"\
+                    :width="computedWidth"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -541,7 +549,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String], default: 400},
+            width: { type: [Number, Object, String]},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -558,6 +566,9 @@
             };
         },
         computed: {
+            computedWidth: function() {
+                return this.width || 400;
+            },
             hasTitle: function() {
                 return !!this.title;
             },
@@ -916,7 +927,7 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
-                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-py-3" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
                             '<div v-if="closable"  class="bu-mt-2" >\n' +
@@ -1022,7 +1033,7 @@
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column">\
                             <slot name="title">\
 								<h3 v-if="visual==\'framed\'" :data-test-id="testId + \'-empty-view-title\'" class="bu-ml-5 color-cool-gray-100 bu-mt-4">{{title}}</h3>\
-                                <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
+                                <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="bu-has-text-centered color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
 								<div v-if="visual==\'framed\'" class="bu-mt-3 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
@@ -1053,7 +1064,7 @@
                 align: 'center',
             };
             if (this.visual === "framed") {
-                settings.classes = 'bu-mt-5 bu-pb-5 bu-pt-4 bu-pl-3 bu-is-flex bu-is-flex-direction-column bu-is-align-items-left cly-vue-empty-view cly-vue-empty-view-framed';
+                settings.classes = 'bu-pb-5 bu-pt-4 bu-pl-3 bu-is-flex bu-is-flex-direction-column bu-is-align-items-left cly-vue-empty-view cly-vue-empty-view-framed';
                 settings.align = 'left';
             }
 

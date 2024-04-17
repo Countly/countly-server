@@ -173,7 +173,7 @@
                     data: {
                         name: payload.name,
                         email: payload.email,
-                        countlyType: payload.countlyTypeTrack
+                        countlyType: payload.countlyType
                     },
                 });
             },
