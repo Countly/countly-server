@@ -4,11 +4,11 @@ var reportsInstance = {},
     ejs = require("ejs"),
     fs = require('fs'),
     path = require('path'),
-    request = require('countly-request'),
+    plugins = require("../../pluginManager"),
+    request = require('countly-request')(plugins.getConfig("security")),
     crypto = require('crypto'),
     mail = require("../../../api/parts/mgmt/mail"),
     fetch = require("../../../api/parts/data/fetch"),
-    plugins = require("../../pluginManager"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
@@ -671,7 +671,12 @@ var metricProps = {
                 }
 
                 if (report.sendPdf === true) {
-                    pdf.renderPDF(html, function() {
+                    //use localhost for pdf generation instead of domain
+                    //it prevents the issue when one server has local files and loadbalancer sends the request to another server
+                    let emailFiller = Object.assign({}, message.data);
+                    emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
+                    const htmlForPdf = ejs.render(message.template, emailFiller);
+                    pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
 
                         /**

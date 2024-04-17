@@ -99,7 +99,7 @@ jobs:
       - name: ESLint
         shell: bash
         run: |
-         npm install eslint
+         npm install eslint@8.57.0
          npx eslint .
 
       - name: NPM install

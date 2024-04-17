@@ -51,7 +51,8 @@ const OVERRIDES = {
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',
-    PREVENTJOBS: 'preventJobs'
+    PREVENTJOBS: 'preventJobs',
+    SHARED_CONNECTION: 'shared_connection'
 };
 
 /**

@@ -2258,10 +2258,10 @@
                 //Subtract the extra delta from the last value
                 deltaFixEl = barData.length - 1;
             }
-
-            barData[deltaFixEl].percent += 100 - totalPercent;
-            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
-
+            if (barData.length > 0) {
+                barData[deltaFixEl].percent += 100 - totalPercent;
+                barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
+            }
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
             }
