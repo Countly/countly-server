@@ -8,7 +8,7 @@
 
 // API key here with permission to delete crashgroups, crashes, crashusers
 const API_KEY = '';
-// API key here with permission to delete crashgroups, crashes, crashusers
+// Countly app id, if not specified will remove crashes from all Countly apps
 const APP_ID = '';
 // if true, nothing will be deleted
 const DRY_RUN = true;
@@ -22,8 +22,8 @@ const LAST_TIMESTAMP = '';
 const moment = require('moment-timezone');
 const _ = require('underscore');
 
-const request = require('countly-request');
 const pluginManager = require('../../../plugins/pluginManager.js');
+const request = require('countly-request')(pluginManager.getConfig('security'));
 
 if (API_KEY.length === 0) {
     console.warn('Please provide an API_KEY');
