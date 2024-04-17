@@ -387,6 +387,8 @@
                 internalEventOptions: [
                     {value: "/cohort/enter", label: "/cohort/enter"},
                     {value: "/cohort/exit", label: "/cohort/exit"},
+                    {value: "/profile-group/enter", label: "/profile-group/enter"},
+                    {value: "/profile-group/exit", label: "/profile-group/exit"},
                     {value: "/i/app_users/create", label: "/i/app_users/create"},
                     {value: "/i/app_users/update", label: "/i/app_users/update"},
                     {value: "/i/app_users/delete", label: "/i/app_users/delete"},
@@ -403,6 +405,7 @@
                     {value: "/alerts/trigger", label: "/alerts/trigger"}
                 ],
                 cohortOptions: [],
+                groupOptions: [],
                 hookOptions: [],
                 alertOptions: []
             };
@@ -448,10 +451,17 @@
                     dataType: "json",
                     success: function(cohorts) {
                         var cohortItems = [];
+                        var groupsItems = [];
                         cohorts.forEach(function(c) {
-                            cohortItems.push({ value: c._id, label: c.name});
+                            if (c.type === 'manual') {
+                                groupsItems.push({ value: c._id, label: c.name});
+                            }
+                            else {
+                                cohortItems.push({ value: c._id, label: c.name});
+                            }
                         });
                         self.cohortOptions = Object.assign([], cohortItems);
+                        self.groupOptions = Object.assign([], groupsItems);
                     }
                 });
             },
