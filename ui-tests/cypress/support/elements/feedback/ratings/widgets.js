@@ -213,8 +213,8 @@ export const feedbackRatingWidgetDetailsPageElements = {
     RATINGS_WIDGET_DETAILS_TIMES_SHOWN_LABEL: 'ratings-detail-metric-card-widget-detail-times-shown-label',
     RATINGS_WIDGET_DETAILS_TIMES_SHOWN_TOOLTIP: 'metric-card-ratings-detail-metric-card-widget-detail-times-shown-column-tooltip',
     RATINGS_WIDGET_DETAILS_TIMES_SHOWN_VALUE: 'metric-card-ratings-detail-metric-card-widget-detail-times-shown-column-number',
-    RATINGS_WIDGET_DETAILS_TAB_RATINGS: 'ratings-detail-table-tab-ratings-title',
-    RATINGS_WIDGET_DETAILS_TAB_COMMENTS: 'ratings-detail-table-tab-comments-title',
+    RATINGS_WIDGET_DETAILS_TAB_RATINGS: 'tab-ratings-detail-table-tab-ratings-title',
+    RATINGS_WIDGET_DETAILS_TAB_COMMENTS: 'tab-ratings-detail-table-tab-comments-title',
 };
 
 const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => {
