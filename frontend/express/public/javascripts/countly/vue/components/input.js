@@ -314,7 +314,7 @@
                             </div>\
                         </div>\
                     </vue-scroll>\
-                    <div v-else class="cly-vue-listbox__no-data" data-test-id="cly-listbox-no-match-found-label">\
+                    <div v-else class="cly-vue-listbox__no-data color-cool-gray-50 bu-pb-5" data-test-id="cly-listbox-no-match-found-label">\
                         {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'

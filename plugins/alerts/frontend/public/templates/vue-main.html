@@ -322,7 +322,7 @@
                                 <!-- Variable selection without online-users data type-->
                                 <option
                                     :data-test-id="'trigger-variable-option-' + variableItem.label"
-                                    v-if="drawerScope.editedObject.alertDataSubType !== '# of online users'"
+                                    v-if="drawerScope.editedObject.alertDataSubType !== 't'"
                                     v-for="(variableItem, index) in defaultAlertVariable.condition"
                                     :key="index"
                                     :value="variableItem.value">
@@ -331,7 +331,7 @@
                                 <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
                                 <option
                                     data-test-id="of-online-users-variable-select"
-                                    v-if="drawerScope.editedObject.alertDataSubType === '# of online users'"
+                                    v-if="drawerScope.editedObject.alertDataSubType === 't'"
                                     v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
                                     :key="index"
                                     :value="variableItem.value">
