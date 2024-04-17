@@ -410,7 +410,7 @@
         props: {
             label: String,
             help: String,
-            testId: {type: String, default: 'cly-inline-form-field-default-test-id', required: false} 
+            testId: {type: String, default: 'cly-inline-form-field-default-test-id', required: false}
         },
         computed: {
             hasRequiredRule: function() {

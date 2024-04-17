@@ -118,7 +118,7 @@
             },
             testId: {
                 type: String,
-                required: false, 
+                required: false,
                 default: 'cly-populator-number-selector-default-test-id'
             }
         },
