@@ -178,6 +178,15 @@ var AppPlatformView = countlyVue.views.create({
             var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
 
             var data = this.appPlatform.chartData || [];
+
+            data.sort(function(a, b) {
+                let totalDiff = b[property] - a[property];
+                if (totalDiff === 0) {
+                    return a.os_.localeCompare(b.os_);
+                }
+                return totalDiff;
+            });
+
             for (var k = 0; k < data.length; k++) {
                 var percent = Math.round((data[k][property] || 0) * 1000 / (this.appPlatform.totals[property] || 1)) / 10;
                 display.push({
