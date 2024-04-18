@@ -349,6 +349,12 @@
       color: #0166d6;
       text-decoration: underline;
   }
+  label {
+    display: flex;
+  }
+  span {
+    padding-left: 15px;
+  }
   input[type=checkbox] {
       margin-right: 8px;
       height: 16px;
@@ -357,6 +363,8 @@
   font-size: 14px;
   color: #424243;
   font-weight: 400;
+  padding: 0px 24px;
+  width: 70%;
   }
 
   &__tp-thanks-message {
