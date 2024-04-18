@@ -1834,11 +1834,11 @@ var pluginManager = function pluginManager() {
 
         //SDAM
         logDriver("serverOpening", logDriverDb);
-        logDriver("serverClosed", logDriverDb);
-        logDriver("serverDescriptionChanged", logDriverDb);
+        logDriver("serverClosed", logDriverDb, "i");
+        logDriver("serverDescriptionChanged", logDriverDb, "i");
         logDriver("topologyOpening", logDriverDb);
         logDriver("topologyClosed", logDriverDb);
-        logDriver("topologyDescriptionChanged", logDriverDb);
+        logDriver("topologyDescriptionChanged", logDriverDb, "i");
         logDriver("serverHeartbeatStarted", logDriverDb);
         logDriver("serverHeartbeatSucceeded", logDriverDb);
         logDriver("serverHeartbeatFailed", logDriverDb, "e");
