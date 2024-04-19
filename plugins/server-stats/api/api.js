@@ -37,7 +37,7 @@ const internalEventsSkipped = ["[CLY]_orientation"];
                 var key = events[i].key + "";
                 var is_internal = false;
                 if (key.indexOf('[CLY]') === 0) {
-                    if (stats.internalEventsEnum[events[i].key]) {
+                    if (key !== "[CLY]_session" && stats.internalEventsEnum[events[i].key]) {
                         eventCountMap[stats.internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[stats.internalEventsEnum[events[i].key]] || 0);
                     }
                     is_internal = true;
@@ -46,7 +46,7 @@ const internalEventsSkipped = ["[CLY]_orientation"];
                     eventCountMap.ce = eventKeyCount + (eventCountMap.ce || 0);
                 }
 
-                if (!is_internal || plugins.internalDrillEvents.indexOf(key) > -1) {
+                if (!is_internal || (plugins.internalDrillEvents.indexOf(key) > -1 && key !== "[CLY]_session")) {
                     eventCountMap.e = eventKeyCount + (eventCountMap.e || 0);
                 }
                 else if (is_internal && plugins.internalDrillEvents.indexOf(key) === -1 && internalEventsSkipped.indexOf(key) === -1) {
@@ -114,12 +114,6 @@ const internalEventsSkipped = ["[CLY]_orientation"];
     **/
     plugins.register("/sdk/data_ingestion", function(ob) {
         sdkDataIngestion(ob);
-    });
-
-    plugins.register("/o/data_ingestion", function(ob) {
-        sdkDataIngestion(ob);
-        common.returnOutput(ob.params, {result: true});
-        return true;
     });
 
     /**
