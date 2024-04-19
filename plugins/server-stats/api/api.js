@@ -10,7 +10,7 @@ var log = common.log('data-points:api');
 
 const FEATURE_NAME = 'server-stats';
 
-
+const internalEventsSkipped = ["[CLY]_orientation"];
 
 (function() {
 
@@ -31,17 +31,28 @@ const FEATURE_NAME = 'server-stats';
      */
     function eventCountMapper(events) {
         const eventCountMap = {};
+        const eventKeyCount = 1;
         for (let i = 0; i < events.length; i++) {
-            const eventKeyCount = 1;
+            if (events[i].key) {
+                var key = events[i].key + "";
+                var is_internal = false;
+                if (key.indexOf('[CLY]') === 0) {
+                    if (key !== "[CLY]_session" && stats.internalEventsEnum[events[i].key]) {
+                        eventCountMap[stats.internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[stats.internalEventsEnum[events[i].key]] || 0);
+                    }
+                    is_internal = true;
+                }
+                else {
+                    eventCountMap.ce = eventKeyCount + (eventCountMap.ce || 0);
+                }
 
-            if (stats.internalEventsEnum[events[i].key]) {
-                eventCountMap[stats.internalEventsEnum[events[i].key]] = eventKeyCount + (eventCountMap[stats.internalEventsEnum[events[i].key]] || 0);
+                if (!is_internal || (plugins.internalDrillEvents.indexOf(key) > -1 && key !== "[CLY]_session")) {
+                    eventCountMap.e = eventKeyCount + (eventCountMap.e || 0);
+                }
+                else if (is_internal && plugins.internalDrillEvents.indexOf(key) === -1 && internalEventsSkipped.indexOf(key) === -1) {
+                    log.d("Unexpected internal event:" + key);
+                }
             }
-            else {
-                eventCountMap.ce = eventKeyCount + (eventCountMap.ce || 0);
-            }
-
-            eventCountMap.e = eventKeyCount + (eventCountMap.e || 0);
         }
         return eventCountMap;
     }
@@ -103,12 +114,6 @@ const FEATURE_NAME = 'server-stats';
     **/
     plugins.register("/sdk/data_ingestion", function(ob) {
         sdkDataIngestion(ob);
-    });
-
-    plugins.register("/o/data_ingestion", function(ob) {
-        sdkDataIngestion(ob);
-        common.returnOutput(ob.params, {result: true});
-        return true;
     });
 
     /**
