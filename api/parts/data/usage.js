@@ -232,7 +232,6 @@ usage.getPredefinedMetrics = function(params, userProps) {
             }
             else {
                 params.qstring.metrics._os = params.qstring.metrics._os.replace(/\[|\]/g, '');
-                params.qstring.metrics._os_version = params.qstring.metrics._os_version.replace(/\[|\]/g, '');
                 params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
                 params.is_os_processed = true;
             }
