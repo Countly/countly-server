@@ -237,6 +237,17 @@ describe('Testing data points plugin', function() {
     });
 
     describe('Test the accuracy of event breakdowns', function() {
+        it('reset current DP values', function(done) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const query = {"_id": APP_ID + "_" + year + ":" + month};
+            testUtils.db.collection("server_stats_data_points").deleteOne(query, function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+        });
         it('setInitial Values', function(done) {
             var plugins = pluginManager.getPlugins();
 
