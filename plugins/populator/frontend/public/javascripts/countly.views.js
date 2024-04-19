@@ -190,12 +190,12 @@
             startPopulate: function() {
                 var self = this;
                 self.percentage = 0;
-                this.generateDataModal = { showDialog: true };
 
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
+                    this.generateDataModal = { showDialog: true };
                     const { templateId, name } = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
                     countlyPopulator.getEnvironment(templateId, self.selectedEnvironment, function(env) {
                         if (env && env.aaData && env.aaData.length) {
@@ -221,6 +221,13 @@
                 else {
                     countlyPopulator.setSelectedTemplate(self.selectedTemplate);
                     countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
+                        const averageTimeBetweenRuns = parseInt(template.behavior.runningSession.reduce((acc, val) => acc + parseInt(val, 10), 0) / template.behavior.runningSession.length, 0) + 1;
+                        const selectedDayCount = parseInt((countlyCommon.periodObj.end / 1000 - countlyCommon.periodObj.start / 1000) / 3600, 10);
+                        if (averageTimeBetweenRuns * self.selectedRunCount > selectedDayCount) {
+                            CountlyHelpers.notify({type: 'warning', message: CV.i18n('populator.warning-generate-users'), sticky: true});
+                            return;
+                        }
+                        self.generateDataModal = { showDialog: true };
                         template.saveEnvironment = self.isOpen;
                         template.environmentName = self.environmentName;
                         countlyPopulator.generateUsers(self.selectedRunCount, template);
