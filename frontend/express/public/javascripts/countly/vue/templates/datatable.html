@@ -25,7 +25,7 @@
                         :options="availableDynamicCols"
                         v-model="controlParams.selectedDynamicCols">
                         <template v-slot:trigger>
-                            <el-button :test-id="testId + '-edit-columns-button'" size="small" icon="ion-navicon-round"></el-button>
+                            <el-button :data-test-id="testId + '-edit-columns-button'" size="small" icon="ion-navicon-round"></el-button>
                         </template>
                     </cly-select-x>
                 </div>
