@@ -249,7 +249,10 @@ describe('Testing data points plugin', function() {
                 delete statInternalEvents["[CLY]_view"];
                 delete statInternalEvents["[CLY]_action"];
             }
-
+            if (plugins.indexOf("performance-monitoring") === -1) {
+                delete statInternalEvents["[CLY]_apm_device"];
+                delete statInternalEvents["[CLY]_apm_network"];
+            }
             for (const internalKey in statInternalEvents) {
                 if (internalKey === "[CLY]_view") {
                     internalEvents.push({key: internalKey, count: 1, segmentation: {'name': 'test', 'visit': 1}});
