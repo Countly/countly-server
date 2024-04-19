@@ -23,7 +23,7 @@
                         <div v-if="currentScreenMode !== 'full'">
                             <div class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
                                 <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
-                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
+                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button" v-on:click="doClose">
                                     <i class="ion-ios-close-empty"></i>
                                 </span>
                             </div>
