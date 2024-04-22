@@ -157,26 +157,26 @@
 				'<div :class="skinToApply" v-if="hasDiff">' +
 					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
 						'<slot name="main">\n' +
-						  '<div class="message">\n' +
-							  '<span class="text-dark">{{madeChanges}}</span>\n' +
-							  '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-						  '</div>\n' +
-						  '<div class="buttons">\n' +
-							  '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-							 '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-						  '</div>\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
 						'</slot>\n' +
 					'</div>' +
 					'<div v-else class="cly-vue-diff-helper bu-pl-2">\n' +
 						'<slot name="main">\n' +
-						  '<div class="message">\n' +
-							  '<span class="text-dark">{{madeChanges}}</span>\n' +
-							  '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-						  '</div>\n' +
-						  '<div class="buttons">\n' +
-							  '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-							 '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-						  '</div>\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
 						'</slot>\n' +
 					'</div>' +
 				'</div>'
