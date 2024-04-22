@@ -139,7 +139,7 @@
                 return this.i18n("common.diff-helper.changes", this.diff.length);
             },
             skinToApply: function() {
-                return this.isModal ? 'cly-vue-diff-helper-modal' : 'cly-vue-diff-helper';
+                return this.isModal ? 'cly-vue-diff-helper-modal-wrapper' : '';
             }
         },
         methods: {
@@ -153,32 +153,33 @@
                 this.$emit("discard");
             }
         },
-        template: '<div v-if="isModal" class="cly-vue-diff-helper-modal-wrapper">' +
-					'<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
-                    '<slot name="main">\n' +
-                      '<div class="message">\n' +
-                          '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                      '</div>\n' +
-                      '<div class="buttons">\n' +
-                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-                      '</div>\n' +
-                    '</slot>\n' +
+        template:
+				'<div :class="skinToApply" v-if="hasDiff">' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
 					'</div>' +
-				'</div>' +
-				'<div v-else :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
-                    '<slot name="main">\n' +
-                      '<div class="message">\n' +
-                          '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                      '</div>\n' +
-                      '<div class="buttons">\n' +
-                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-                      '</div>\n' +
-                    '</slot>\n' +
-                  '</div>'
+					'<div v-else class="cly-vue-diff-helper bu-pl-2">\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
+					'</div>' +
+				'</div>'
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
