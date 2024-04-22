@@ -153,7 +153,21 @@
                 this.$emit("discard");
             }
         },
-        template: '<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
+         template: '<div v-if="isModal" class="cly-vue-diff-helper-modal-wrapper">'+
+					'<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
+                    '<slot name="main">\n' +
+                      '<div class="message">\n' +
+                          '<span class="text-dark">{{madeChanges}}</span>\n' +
+                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                      '</div>\n' +
+                      '<div class="buttons">\n' +
+                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+                      '</div>\n' +
+                    '</slot>\n' +
+                  '</div>'+
+				  '</div>'+
+				  '<div v-else :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
