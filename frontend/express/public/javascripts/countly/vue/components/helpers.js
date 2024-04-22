@@ -153,7 +153,7 @@
                 this.$emit("discard");
             }
         },
-         template: '<div v-if="isModal" class="cly-vue-diff-helper-modal-wrapper">'+
+        template: '<div v-if="isModal" class="cly-vue-diff-helper-modal-wrapper">' +
 					'<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
@@ -165,9 +165,9 @@
                          '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +
-                  '</div>'+
-				  '</div>'+
-				  '<div v-else :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
+					'</div>' +
+				'</div>' +
+				'<div v-else :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
