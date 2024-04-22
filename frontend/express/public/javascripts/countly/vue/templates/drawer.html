@@ -13,7 +13,7 @@
                     <div class="bu-columns bu-is-gapless">
                         <div class="bu-column bu-is-12 bu-is-flex bu-is-justify-content-flex-end">
                             <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button" v-on:click="doClose">
-                                <i class="ion-ios-close-empty"></i>
+                                <i class="ion-ios-close-empty bu-px-2"></i>
                             </span>
                         </div>
                     </div>
@@ -31,13 +31,13 @@
                                     <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
                                 </div>
                                 <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
-                                    <i class="ion-ios-close-empty"></i>
+                                    <i class="ion-ios-close-empty bu-px-2"></i>
                                 </span>
                             </div>
                             <div v-else class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
                                 <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
                                 <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
-                                    <i class="ion-ios-close-empty"></i>
+                                    <i class="ion-ios-close-empty bu-px-2"></i>
                                 </span>
                             </div>
                         </div>
