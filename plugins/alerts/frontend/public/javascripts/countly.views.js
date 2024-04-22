@@ -172,6 +172,14 @@
                             },
                         ],
                     },
+                    profile_groups: {
+                        target: [
+                            {
+                                value: "# of users in the profile group",
+                                label: "# of users in the profile group",
+                            },
+                        ],
+                    },
                     revenue: {
                         target: [
                             { value: "total revenue", label: "total revenue" },
@@ -302,6 +310,10 @@
                         value: "cohorts",
                     },
                     {
+                        label: jQuery.i18n.map["alert.Profile-groups"],
+                        value: "profile_groups",
+                    },
+                    {
                         label: jQuery.i18n.map["alert.Data-points"],
                         value: "dataPoints",
                     },
@@ -396,6 +408,8 @@
                     return "View";
                 case "cohorts":
                     return "Cohort";
+                case "profile_groups":
+                    return "Profile Group";
                 case "survey":
                     return "Widget Name";
                 case "nps":
@@ -449,7 +463,33 @@
                     countlyAlerts.getCohortsForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((c) => {
+                            var filtered = data.filter(function(c) {
+                                if (c.type !== "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: c.name };
+                            });
+                        }
+                    );
+                }
+                if (formData.alertDataType === "profile_groups") {
+                    countlyAlerts.getCohortsForApp(
+                        formData.selectedApps,
+                        (data) => {
+                            var filtered = data.filter(function(c) {
+                                if (c.type === "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
                                 return { value: c._id, label: c.name };
                             });
                         }
@@ -518,6 +558,7 @@
                     "events",
                     "views",
                     "cohorts",
+                    "profile_groups",
                     "survey",
                     "nps",
                     "rating",
