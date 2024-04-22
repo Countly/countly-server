@@ -16,9 +16,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
-                                </el-select>
+                                <cly-select-x class="main-page-inputs" v-model="selectedTemplate" :options="templates.map(template => ({value: template._id,label: template.name}))" :placeholder="i18n('populator.select-template')"></cly-select-x>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
@@ -60,9 +58,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments"></el-option>
-                                </el-select>
+                                <cly-select-x class="selected-environment-input" v-model="selectedEnvironment" :options="environments.map(item => ({value: item._id, label: item.name}))" :placeholder="i18n('populator.select-environment')"></cly-select-x>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
@@ -169,7 +165,7 @@
             </cly-main>
         </el-tab-pane>
     </cly-tabs>
-    <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+    <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :saveButtonVisibility="dialog.saveButtonVisibility" :title="dialog.title" >
         <template slot-scope="scope">
             <div v-html="dialog.text"></div>
         </template>

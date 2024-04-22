@@ -31,6 +31,7 @@
                 isLoading: false,
                 environments: [],
                 selectedEnvironment: '',
+                selectedTemplateInformation: {},
             };
         },
         computed: {
@@ -190,22 +191,20 @@
             startPopulate: function() {
                 var self = this;
                 self.percentage = 0;
+                this.generateDataModal = { showDialog: true };
 
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
-                    this.generateDataModal = { showDialog: true };
                     const { templateId, name } = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
                     countlyPopulator.getEnvironment(templateId, self.selectedEnvironment, function(env) {
                         if (env && env.aaData && env.aaData.length) {
-                            countlyPopulator.getTemplate(templateId, function(template) {
-                                env = env.aaData.map(environmentName => {
-                                    return { ...environmentName, name: name };
-                                });
-                                countlyPopulator.generateUsers(self.selectedRunCount, template, env);
-                                self.moveProgressBar(template);
+                            env = env.aaData.map(environmentName => {
+                                return { ...environmentName, name: name };
                             });
+                            countlyPopulator.generateUsers(self.selectedRunCount, self.selectedTemplateInformation, env);
+                            self.moveProgressBar(self.selectedTemplateInformation);
                         }
                         else {
                             CountlyHelpers.notify({
@@ -220,19 +219,10 @@
                 }
                 else {
                     countlyPopulator.setSelectedTemplate(self.selectedTemplate);
-                    countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
-                        const averageTimeBetweenRuns = parseInt(template.behavior.runningSession.reduce((acc, val) => acc + parseInt(val, 10), 0) / template.behavior.runningSession.length, 0) + 1;
-                        const selectedDayCount = parseInt((countlyCommon.periodObj.end / 1000 - countlyCommon.periodObj.start / 1000) / 3600, 10);
-                        if (averageTimeBetweenRuns * self.selectedRunCount > selectedDayCount) {
-                            CountlyHelpers.notify({type: 'warning', message: CV.i18n('populator.warning-generate-users'), sticky: true});
-                            return;
-                        }
-                        self.generateDataModal = { showDialog: true };
-                        template.saveEnvironment = self.isOpen;
-                        template.environmentName = self.environmentName;
-                        countlyPopulator.generateUsers(self.selectedRunCount, template);
-                        self.moveProgressBar(template);
-                    });
+                    this.selectedTemplateInformation.saveEnvironment = this.isOpen;
+                    this.selectedTemplateInformation.environmentName = this.environmentName;
+                    countlyPopulator.generateUsers(self.selectedRunCount, this.selectedTemplateInformation);
+                    this.moveProgressBar(this.selectedTemplateInformation);
                 }
             },
             stopPopulate: function() {
@@ -252,32 +242,53 @@
                 });
             },
             openDialog: function() {
-                this.description = CV.i18n('populator.warning4');
-                this.dialog = {
-                    type: "check",
-                    showDialog: false,
-                    saveButtonLabel: CV.i18n('populator.yes-populate-data'),
-                    cancelButtonLabel: CV.i18n('populator.no-populate-data'),
-                    title: CV.i18n('populator.warning1', CountlyHelpers.appIdsToNames([countlyCommon.ACTIVE_APP_ID])),
-                    text: CV.i18n('populator.warning2')
-                };
+                var self = this;
+                let selectedTemplateId = this.selectedTemplate;
+                if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
+                    const environment = this.environments.filter(x=>x._id === self.selectedEnvironment)[0];
+                    selectedTemplateId = environment.templateId;
+                }
+                countlyPopulator.getTemplate(selectedTemplateId, function(template) {
+                    self.selectedTemplateInformation = template;
+                    const averageTimeBetweenRuns = parseInt(template.behavior.runningSession.reduce((acc, val) => acc + parseInt(val, 10), 0) / template.behavior.runningSession.length, 0) + 1;
+                    const selectedDayCount = parseInt((countlyCommon.periodObj.end / 1000 - countlyCommon.periodObj.start / 1000) / 3600, 10);
 
-                if (this.isOpen) {
-                    var self = this;
-                    countlyPopulator.checkEnvironment(this.environmentName, function(res) {
-                        if (res.errorMsg) {
-                            CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.errorMsg, sticky: false, clearAll: true});
-                            self.environmentName = '';
-                            self.isOpen = false;
-                        }
-                        else {
-                            self.dialog.showDialog = true;
-                        }
-                    });
-                }
-                else {
-                    this.dialog.showDialog = true;
-                }
+                    self.description = CV.i18n('populator.warning4');
+                    self.dialog = {
+                        type: "check",
+                        showDialog: false,
+                        saveButtonLabel: CV.i18n('populator.yes-populate-data'),
+                        cancelButtonLabel: CV.i18n('populator.no-populate-data'),
+                        title: CV.i18n('populator.warning1', CountlyHelpers.appIdsToNames([countlyCommon.ACTIVE_APP_ID])),
+                        text: CV.i18n('populator.warning2')
+                    };
+
+                    if (averageTimeBetweenRuns * self.selectedRunCount > selectedDayCount) {
+                        self.dialog = {
+                            type: "check",
+                            showDialog: false,
+                            saveButtonVisibility: false,
+                            title: CV.i18n('populator.warning-generate-users-header'),
+                            text: CV.i18n('populator.warning-generate-users')
+                        };
+                    }
+
+                    if (self.isOpen) {
+                        countlyPopulator.checkEnvironment(self.environmentName, function(res) {
+                            if (res.errorMsg) {
+                                CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: res.errorMsg, sticky: false, clearAll: true});
+                                self.environmentName = '';
+                                self.isOpen = false;
+                            }
+                            else {
+                                self.dialog.showDialog = true;
+                            }
+                        });
+                    }
+                    else {
+                        self.dialog.showDialog = true;
+                    }
+                });
             },
             closeGenerateDataModal: function() {
                 this.generateDataModal = { showDialog: false };
