@@ -3765,11 +3765,16 @@
         }
     }
 
+	.cly-vue-diff-helper-modal-wrapper {
+		position: fixed;
+		bottom: 6px;
+		width: calc(100% - 272px);
+		text-align: center;
+		left: 272px;
+		z-index: 99;
+	}
     .cly-vue-diff-helper-modal {
-        position: fixed;
-        left: 50%;
-        margin-left: -150px;
-        bottom: 18px;
+        display:inline-block;
         height: 48px;
         z-index: 9999;
 
