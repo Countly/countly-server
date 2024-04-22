@@ -22,13 +22,6 @@
                     type: String,
                     default: "countly"
                 },
-                collection: {
-                    type: String
-                },
-                db: {
-                    type: String,
-                    default: "countly"
-                },
                 index: {
                     type: Boolean,
                     default: false
@@ -102,6 +95,8 @@
                     sortEnabled: false,
                     projection: [],
                     sort: "",
+                    collection: "",
+                    db: "countly",
                     projectionOptions: {},
                     isDescentSort: false,
                     isIndexRequest: false,
