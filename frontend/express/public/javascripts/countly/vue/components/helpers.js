@@ -139,7 +139,7 @@
                 return this.i18n("common.diff-helper.changes", this.diff.length);
             },
             skinToApply: function() {
-                return this.isModal ? 'cly-vue-diff-helper-modal' : 'cly-vue-diff-helper';
+                return this.isModal ? 'cly-vue-diff-helper-modal-wrapper' : '';
             }
         },
         methods: {
@@ -153,18 +153,33 @@
                 this.$emit("discard");
             }
         },
-        template: '<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
-                    '<slot name="main">\n' +
-                      '<div class="message">\n' +
-                          '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                      '</div>\n' +
-                      '<div class="buttons">\n' +
-                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-                      '</div>\n' +
-                    '</slot>\n' +
-                  '</div>'
+        template:
+				'<div :class="skinToApply" v-if="hasDiff">' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
+					'</div>' +
+					'<div v-else class="cly-vue-diff-helper bu-pl-2">\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
+					'</div>' +
+				'</div>'
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
@@ -529,7 +544,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="width"\
+                    :width="computedWidth"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -549,7 +564,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String], default: 400},
+            width: { type: [Number, Object, String]},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -566,6 +581,9 @@
             };
         },
         computed: {
+            computedWidth: function() {
+                return this.width || 400;
+            },
             hasTitle: function() {
                 return !!this.title;
             },
@@ -921,17 +939,17 @@
     }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
-                        '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
+                        '<div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">\n' +
                             '<div class="bu-is-flex">\n' +
-                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
+                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-3">\n' +
                                 '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
-                            '<div v-if="closable"  class="bu-mt-2" >\n' +
-                                '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
+                            '<div v-if="closable"  class="" >\n' +
+                                '<div v-if="size==\'full\'" @click="closeModal" class=" bu-ml-2" >\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
-                                '<div v-else @click="closeModal" class="bu-mr-2 bu-ml-6">\n' +
+                                '<div v-else @click="closeModal" class="bu-ml-3 bu-pl-3 bu-ml-3" style="cursor:pointer;">\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-modal-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                             '</div>\n' +

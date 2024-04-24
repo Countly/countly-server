@@ -50,6 +50,7 @@
             data: {
                 app_id: appId,
                 method: "get_cohorts",
+                type: "auto"
             },
             dataType: "json",
             success: function(res) {

@@ -2673,12 +2673,14 @@
 
         this.generateAllEventsAndSessions = function(template, runCount, hasEnvironment) {
             return new Promise((resolve) => {
-                completedRequestCount++;
-                this.ts = getRandomInt(startTs, endTs);
-                var endSessionTs = null;
-                var req = {};
-                let selectedSequence = null;
                 if (template && template.behavior && template.behavior.sequences && template.behavior.sequences.length) {
+                    completedRequestCount++;
+                    const averageRunningSessionTime = (parseInt(template.behavior.runningSession[0], 10) + parseInt(template.behavior.runningSession[1], 10)) / 2;
+                    const randomSelectedTs = getRandomInt(startTs, parseInt(endTs, 10) - parseInt(runCount) * (parseInt(averageRunningSessionTime, 10) + 1) * 3600);
+                    this.ts = randomSelectedTs;
+                    var endSessionTs = null;
+                    var req = {};
+                    let selectedSequence = null;
                     // process every sequence
                     while (runCount > 0) {
                         // select random sequence from behavior
