@@ -24,9 +24,9 @@
             <div class="bu-column">
                 <div class="bu-level">
                     <div class="bu-level-left">
-                        <div v-if="db" class="dbviewer-tab__content">
+                        <div v-if="localDb" class="dbviewer-tab__content">
                             <div class="bu-has-text-weight-normal bu-is-size-5">
-                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[db].map[collection]) }}
+                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[localDb].map[localCollection]) }}
                             </div>
                         </div>
                     </div>
