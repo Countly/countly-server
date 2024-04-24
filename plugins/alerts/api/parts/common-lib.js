@@ -205,7 +205,6 @@ async function trigger(result, log) {
     const emailBody = await compileEmail(result);
     const subject = `${alert.alertDataSubType} for ${app.name} has changed`;
 
-    console.log(subject, emailBody);
     for (let i = 0; i < audienceEmails.length; i++) {
         const email = audienceEmails[i];
         try {
