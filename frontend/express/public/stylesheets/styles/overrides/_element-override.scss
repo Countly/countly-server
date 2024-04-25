@@ -154,6 +154,26 @@
 	&.is-bordered {
 		border: 1px solid #CFD6E4;
 	}
+    &:hover {
+		&:not(.is-disabled) {
+			.el-radio__label {
+				color: inherit; 
+			}
+		}
+	}
+    &.is-checked{
+        &:not(.is-disabled) {
+            &:hover {
+                .el-radio__label {
+                    color: inherit;
+                }
+            }
+        }
+    }
+}
+
+.el-radio__input.is-checked+.el-radio__label {
+    color: inherit;
 }
 
 .el-collapse {
