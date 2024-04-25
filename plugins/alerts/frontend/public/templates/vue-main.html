@@ -367,12 +367,12 @@
                         <span class="groupcard-text mediumtextNormal-20px">
                             Send alert if
                         </span>
-                        <select
+                        <el-select
                             @change="handleChange($event.target)"
                             class="alert-drawer-trigger-select-and-input">
                             <option :value="null" hidden>metric</option>
                             <option :value="null"></option>
-                        </select>
+                        </el-select>
                         <span class="groupcard-text mediumtextNormal-14px">
                             is
                         </span>
@@ -413,7 +413,7 @@
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <cly-form-field>
+                    <cly-form-field class="bu-pb-1">
                         <div class="text-big text-heading bu-mb-3">
                             {{i18n('alert.email-header')}}
                         </div>
@@ -434,7 +434,6 @@
                     <cly-form-field
                         v-if="selectedRadioButton === 'specificAddress'"
                         name="alertValues"
-                        :label="i18n('alert.email-to-receive')"
                         rules= "required">
                         <cly-select-email
                             placeholder="Enter email address"
@@ -446,12 +445,12 @@
                     <cly-form-field
                         v-if="selectedRadioButton === 'toGroup'"
                         name="allGroups"
-                        :label="i18n('alert.email-to-receive3')"
                         rules= "required">
                         <el-select
-
+                            :placeholder="i18n('alerts.select-group')"
                             :key="elSelectKey"
                             multiple
+                            :collapse-tags="false"
                             v-model="drawerScope.editedObject.allGroups"
                             style="width: 100%;">
                             <el-option
