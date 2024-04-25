@@ -1818,7 +1818,12 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](event, util.inspect(event, { depth: Infinity })));
+            if (eventName === "serverHeartbeatFailed") {
+                client.on(eventName, (event) => logObject[logLevel](event, util.inspect(event, { depth: Infinity })));
+            }
+            else {
+                client.on(eventName, () => logObject[logLevel](eventName));
+            }
         }
 
         //connection pool
