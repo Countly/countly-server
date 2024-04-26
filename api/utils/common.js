@@ -1120,13 +1120,16 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
-                    if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
+
+                    const allowedTypes = argProperties[arg].type;
+                    const argType = typeof args[arg];
+
+                    if (!allowedTypes[argType.charAt(0).toUpperCase() + argType.slice(1)]) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             argState = false;
-                        }
-                        else {
+                        } else {
                             return false;
                         }
                     }
