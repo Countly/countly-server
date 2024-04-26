@@ -127,7 +127,7 @@
                     <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
                         <el-input
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex"
+                            class="bu-is-flex bu-mt-1"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
@@ -136,7 +136,7 @@
                         <cly-app-select
                             :placeholder="i18n('alerts.select-an-application')"
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                            class="bu-is-flex"
+                            class="bu-is-flex bu-mt-1"
                             @change="appSelected"
                             v-model="drawerScope.editedObject.selectedApps"
                             :allowAll="allowAll"
@@ -147,7 +147,7 @@
                     <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
                         <cly-select-x
                             :searchable="false"
-                            class="bu-is-flex"
+                            class="bu-is-flex bu-mt-1"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"
@@ -266,11 +266,11 @@
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <div class="text-medium text-heading bu-mt-5 bu-has-background-white" style="font-size:13px">
+                    <div class="text-medium text-heading bu-has-background-white" style="font-size:13px; margin-top: 32px">
                         {{i18n('alert.Alert_Trigger')}}
                     </div>
 
-                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">
+                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-py-4 cly-vue-alert-drawer__card alert-trigger">
                         <div class="bu-px-4" v-if="showSubType1">
                             <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable">
                                 Send alert if
@@ -363,7 +363,7 @@
                         </div>
                     </div>
 
-                    <div v-else class="bu-mb-5 bu-py-4 cly-vue-alert-drawer__card alert-trigger">
+                    <div v-else class="bu-py-4 cly-vue-alert-drawer__card alert-trigger">
                         <span class="groupcard-text mediumtextNormal-20px">
                             Send alert if
                         </span>
@@ -405,16 +405,14 @@
                         <span class="groupcard-text mediumtextNormal-14px">.</span>
                     </div>
 
-                    <div class="cly-vue-alert-drawer__line"></div>
-
                     <pre v-if="0">
                         {{drawerScope.editedObject}}
                     </pre>
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <cly-form-field class="bu-pb-1">
-                        <div class="text-big text-heading bu-mb-3">
+                    <cly-form-field>
+                        <div class="text-big text-heading bu-mb-2 cly-alert-email-header">
                             {{i18n('alert.email-header')}}
                         </div>
 
@@ -433,6 +431,7 @@
 
                     <cly-form-field
                         v-if="selectedRadioButton === 'specificAddress'"
+                        class= "first-button-element"
                         name="alertValues"
                         rules= "required">
                         <cly-select-email
@@ -441,13 +440,12 @@
                             :collapse-tags="false">
                         </cly-select-email>
                     </cly-form-field>
-
-                    <cly-form-field
+    
+                    <cly-form-field    
                         v-if="selectedRadioButton === 'toGroup'"
                         name="allGroups"
                         rules= "required">
                         <el-select
-                            :placeholder="i18n('alerts.select-group')"
                             :key="elSelectKey"
                             multiple
                             :collapse-tags="false"
@@ -470,7 +468,7 @@
                             <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
                             {{i18n('alerts.email-icon')}}
                         </div>
-                    </cly-form-field>
+                    </cly-form-field>     
 
                     <pre v-if="0">
                         {{drawerScope.editedObject}}
