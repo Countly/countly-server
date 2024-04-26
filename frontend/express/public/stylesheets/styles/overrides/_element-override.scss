@@ -132,6 +132,10 @@
         .el-radio__input {
           display: flex;
         }
+
+        &.is-multiline {
+            align-items: flex-start;
+        }   
     }   
     &.is-autosized-vstack {
         padding: 12px;
@@ -145,6 +149,22 @@
             display: flex;
             width: 100%;
             align-items: baseline;
+        }
+
+        &.is-bordered {
+            align-items: center;
+
+            .el-radio__input {
+              display: flex;
+            }
+
+            &.is-multiline {
+                align-items: flex-start;
+
+                .el-radio__label {
+                    padding-top: 2px;
+                }
+            }   
         }
     }
     &.is-autosized-vstack.is-bordered + &.is-autosized-vstack.is-bordered {

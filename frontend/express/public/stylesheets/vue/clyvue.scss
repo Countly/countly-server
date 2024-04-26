@@ -1718,7 +1718,7 @@
             //     width: 50%;
             // }
             .cly-vue-drawer__footer {
-                padding: 16px;
+                padding: 16px 32px;
                 display: flex;
                 justify-content: space-between;
                 align-items: baseline;
@@ -1831,9 +1831,10 @@
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            width: 30px;
-            height: 15px;
-            margin-block: auto;
+            height: 30px;
+            line-height: 1;
+            margin: 0.35em 16px 0 0;
+            padding: 0.5em 16px 0.25em;
             &:hover {
                 color: #333;
                 transition: color 1s;
