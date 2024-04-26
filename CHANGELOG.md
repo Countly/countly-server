@@ -1,3 +1,23 @@
+## Version 23.11.19
+Features:
+- [core] Increase log level for specific mongodb driver events
+- [reports] log subscribe/unsubscribe to audit logs
+- [scripts] Additions to checking data per cd in drill
+- [scripts] Additional crash deletion scripts
+  
+Fixes:
+- [core] Date picker fixes
+- [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
+  
+Enterprise Features:
+- [drill] Outputing extra columns in drill byval download with unformatted values.
+  
+Enterprise Fixes:
+- [block] Check for valid rule in block
+- [drill] Added missing columns in byval table download
+- [funnels] Localization value fixes
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
+  
 ## Version 23.11.18
 Fixes:
 - [scripts] Create script for deleting old crashgroups
