@@ -631,6 +631,7 @@ usersApi.deleteUser = async function(params) {
                             await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
                             await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
                             await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
+                            deleteUserPresets(userIds[i]);
                             resolve(true);
                         }
                     });
@@ -761,6 +762,12 @@ function verifyMemberArgon2Hash(username, password, callback) {
     });
 }
 
+function deleteUserPresets(memberId) {
+    common.db.collection("date_presets").remove({owner: memberId + ""}, function(err) {
+        //handle errors
+    });
+}
+
 // END of reused functions 
 
 
@@ -784,6 +791,7 @@ usersApi.deleteOwnAccount = function(params) {
                     try {
                         await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
                         killAllSessionForUser(member._id);
+                        deleteUserPresets(member._id);
                         common.returnMessage(params, 200, 'Success');
                     }
                     catch (err1) {
