@@ -972,7 +972,7 @@
                 },
                 type: Object
             },
-            customWidth: { default: "small", type: String },
+            customWidth: { default: "", type: String },
         },
         data: function() {
             return {
@@ -995,7 +995,7 @@
         computed: {
             dynamicClasses: function() {
                 var classes = ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
-                if (this.customWidth) {
+                if (this.customWidth !== "") {
                     classes.push(`notification-toasts__item--${this.customWidth}`);
                 }
                 return classes;
