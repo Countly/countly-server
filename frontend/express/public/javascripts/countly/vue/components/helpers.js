@@ -971,7 +971,8 @@
                     return { title: '', url: '', from: '' };
                 },
                 type: Object
-            }
+            },
+            customWidth: { default: "small", type: String },
         },
         data: function() {
             return {
@@ -993,7 +994,11 @@
         },
         computed: {
             dynamicClasses: function() {
-                return ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
+                var classes = ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
+                if (this.customWidth) {
+                    classes.push(`notification-toasts__item--${this.customWidth}`);
+                }
+                return classes;
             },
             image: function() {
                 if (this.color === "dark-informational" || this.color === "light-informational") {
