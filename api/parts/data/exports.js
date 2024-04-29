@@ -278,7 +278,7 @@ function transformValuesInObject(doc, mapper) {
     for (var z in doc) {
         doc[z] = transformValue(doc[z], z, mapper, docOrig);
     }
-    if (mapper.calculated_fields) {
+    if (mapper && mapper.calculated_fields) {
         for (var n = 0; n < mapper.calculated_fields.length; n++) {
             doc[mapper.calculated_fields[n]] = transformValue(0, mapper.calculated_fields[n], mapper, docOrig);
         }
