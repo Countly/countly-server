@@ -405,6 +405,11 @@
                         <span class="groupcard-text mediumtextNormal-14px">.</span>
                     </div>
 
+                    <div v-if="drawerScope.editedObject.alertDataType && !isCompareTypeSelectAvailable">
+                        <i class="cly-is cly-is-information-circle"></i>
+                        {{i18n('alerts.survey-icon')}}
+                    </div>
+
                     <div class="cly-vue-alert-drawer__line"></div>
 
                     <pre v-if="0">
