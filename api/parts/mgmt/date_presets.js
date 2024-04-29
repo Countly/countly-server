@@ -38,12 +38,12 @@ presetsApi.getAll = async function(params) {
 
     common.db.collection('date_presets').aggregate([
         { $match: filterCond },
-        {   
+        {
             $addFields: {
                 owner_id_objectId: { $toObjectId: '$owner_id' }
             }
         },
-        { 
+        {
             $lookup: {
                 from: 'members',
                 localField: 'owner_id_objectId',
@@ -52,7 +52,7 @@ presetsApi.getAll = async function(params) {
             }
         },
         { $unwind: '$owner' },
-        { 
+        {
             $project: {
                 _id: 1,
                 name: 1,
@@ -553,7 +553,7 @@ presetsApi.update = function(params) {
                 };
 
                 const update = sort_order_difference > 0 ? { $inc: { sort_order: 1 } } : { $inc: { sort_order: -1 } };
-                
+
                 common.db.collection('date_presets').updateMany(updateQuery, update, {multi: true}, function(err2) {
                     if (err2) {
                         common.returnMessage(params, 500, 'Error updating sort order of other presets');
