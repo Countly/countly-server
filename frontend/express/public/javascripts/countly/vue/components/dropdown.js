@@ -107,6 +107,9 @@
             },
             popClass: {
                 type: String
+            },
+            id: {
+                type: String
             }
         },
         inject: {
@@ -144,6 +147,7 @@
                         </slot>\
                     </trigger-proxy>\
                     <el-select-dropdown\
+                        :id="id"\
                         ref="popper"\
                         :width="width"\
                         :append-to-body="popperAppendToBody"\
