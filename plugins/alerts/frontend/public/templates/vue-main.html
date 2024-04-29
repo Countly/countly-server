@@ -405,8 +405,9 @@
                         <span class="groupcard-text mediumtextNormal-14px">.</span>
                     </div>
 
-                    <div v-if="drawerScope.editedObject.alertDataType && !isCompareTypeSelectAvailable">
-                        <i class="cly-is cly-is-information-circle"></i>
+                    <div v-if="drawerScope.editedObject.alertDataSubType === 'new survey response'" 
+                        class="survey-icon">
+                        <i class="cly-io cly-io-information-circle"></i>
                         {{i18n('alerts.survey-icon')}}
                     </div>
 
