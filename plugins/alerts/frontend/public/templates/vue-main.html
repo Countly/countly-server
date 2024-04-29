@@ -331,7 +331,7 @@
                                 v-if="isCompareTypeSelectAvailable"
                                 />
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
-                                {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
+                                {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "" }}
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px"
                                 v-if="(isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't')">
@@ -411,7 +411,7 @@
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <cly-form-field>
+                    <cly-form-field class="bu-pb-0">
                         <div class="text-big text-heading bu-mb-2 cly-alert-email-header">
                             {{i18n('alert.email-header')}}
                         </div>
@@ -461,12 +461,21 @@
                     </cly-form-field>
 
                     <cly-form-field
+                        class="bu-pt-2 bu-pb-3"
                         v-if="selectedRadioButton === 'dontSend'"
                         name="alertBy"
                         v-model = "drawerScope.editedObject.alertBy='hook'">
-                        <div class="test">
-                            <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
-                            {{i18n('alerts.email-icon')}}
+                        <div>
+                            <span>
+                                <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
+                                <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                    {{i18n('alerts.email-icon1')}}
+                                    <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                        <a class="bu-is-underlined" href="#/manage/hooks" target="_blank">Hooks</a>
+                                        {{i18n('alerts.email-icon2')}}
+                                    </div>
+                                </div>
+                            </span>
                         </div>
                     </cly-form-field>     
 
