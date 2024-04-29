@@ -4,6 +4,7 @@
     countlyAlerts,
     jQuery,
     countlyVue,
+    countlyCommon,
     app,
     countlyAuth,
     CV,
@@ -442,7 +443,7 @@
                         (viewList) => {
                             this.alertDataSubType2Options = viewList.map(
                                 (v) => {
-                                    return { value: v.value, label: v.name };
+                                    return { value: v.value, label: countlyCommon.unescapeHtml(v.name) };
                                 }
                             );
                         }
@@ -453,7 +454,7 @@
                         formData.selectedApps,
                         ({ events, segments }) => {
                             this.alertDataSubType2Options = events.map((e) => {
-                                return { value: e.value, label: e.name };
+                                return { value: e.value, label: countlyCommon.unescapeHtml(e.name) };
                             });
                             this.alertDataFilterObject = segments;
                         }
@@ -472,7 +473,7 @@
                                 }
                             });
                             this.alertDataSubType2Options = filtered.map((c) => {
-                                return { value: c._id, label: c.name };
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
                             });
                         }
                     );
@@ -490,7 +491,7 @@
                                 }
                             });
                             this.alertDataSubType2Options = filtered.map((c) => {
-                                return { value: c._id, label: c.name };
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
                             });
                         }
                     );
@@ -500,7 +501,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((s) => {
-                                return { value: s._id, label: s.name };
+                                return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
                     );
@@ -510,7 +511,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((n) => {
-                                return { value: n._id, label: n.name };
+                                return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
                     );
@@ -522,7 +523,7 @@
                             this.alertDataSubType2Options = data.map((r) => {
                                 return {
                                     value: r._id,
-                                    label: r.popup_header_text,
+                                    label: countlyCommon.unescapeHtml(r.popup_header_text),
                                 };
                             });
                         }
