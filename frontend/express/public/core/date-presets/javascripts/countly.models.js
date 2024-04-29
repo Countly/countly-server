@@ -1,4 +1,4 @@
-/*global countlyVue CV countlyCommon CountlyHelpers */
+/*global countlyVue CV countlyCommon CountlyHelpers $ */
 
 (function(countlyPresets) {
 
@@ -71,7 +71,7 @@
                 },
                 dataType: "json"
             }, {disableAutoCatch: true});
-        },        
+        },
         getAll: function() {
             return CV.$.ajax({
                 type: "GET",
@@ -142,7 +142,7 @@
                     return countlyPresets.service.getAll().then(function(presets) {
                         presets = presets || [];
                         presets = presets.map(function(preset) {
-                            return {...preset, range_label: countlyVue.getPeriodLabel(preset.range, preset.exclude_current_day, 'absolute')}
+                            return {...preset, range_label: countlyVue.getPeriodLabel(preset.range, preset.exclude_current_day, 'absolute')};
                         });
                         context.commit("setPresets", presets);
                         context.commit("setIsLoading", false);

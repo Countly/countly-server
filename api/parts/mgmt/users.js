@@ -762,8 +762,12 @@ function verifyMemberArgon2Hash(username, password, callback) {
     });
 }
 
+/**
+ * Delete user's date presets
+ * @param {string} memberId | User id
+ */
 function deleteUserPresets(memberId) {
-    common.db.collection("date_presets").remove({owner: memberId + ""}, function(err) {
+    common.db.collection("date_presets").remove({owner: memberId + ""}, function() {
         //handle errors
     });
 }

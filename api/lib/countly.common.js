@@ -785,18 +785,18 @@ countlyCommon.isValidPeriodParam = function(period) {
     }
 
     if (typeof period === 'object') {
-        return period.hasOwnProperty('since') || period.hasOwnProperty('period');
+        return Object.prototype.hasOwnProperty.call(period, 'since') || Object.prototype.hasOwnProperty.call(period, 'period');
     }
 
-    return period === 'month' || 
-        period === 'day' || 
-        period === 'yesterday' || 
+    return period === 'month' ||
+        period === 'day' ||
+        period === 'yesterday' ||
         period === 'hour' ||
-        /([1-9][0-9]*)days/.test(period) || 
-        /([1-9][0-9]*)weeks/.test(period) || 
-        /([1-9][0-9]*)months/.test(period) || 
+        /([1-9][0-9]*)days/.test(period) ||
+        /([1-9][0-9]*)weeks/.test(period) ||
+        /([1-9][0-9]*)months/.test(period) ||
         /([1-9][0-9]*)years/.test(period);
-}
+};
 
 // Public Properties
 /**

@@ -1,4 +1,4 @@
-/*global app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets*/
+/*global Vue app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets*/
 
 (function() {
 
@@ -187,10 +187,10 @@
                 this.$emit("close-drawer");
             },
             handleLabelChanged: function(payload, drawerScope) {
-                drawerScope.editedObject.name = payload.label
+                drawerScope.editedObject.name = payload.label;
             },
             showExcludeCurrentDay: function(range) {
-                return !Array.isArray(range) 
+                return !Array.isArray(range);
             }
         }
     });
@@ -206,7 +206,7 @@
         data: function() {
             return {
                 sharingOptions: sharingOptions
-            }
+            };
         },
         computed: {
             rows: function() {
@@ -235,12 +235,12 @@
                     self.refresh();
                 });
             },
-            handleCommand: function(command, preset) {
-                var preset_id = preset._id;
+            handleCommand: function(command, presetObj) {
+                var preset_id = presetObj._id;
                 var self = this;
                 if (command === "delete") {
                     CountlyHelpers.confirm(
-                        CV.i18n("management.preset.delete-preset-confirm", preset.name || CV.i18n("management.preset.delete-preset-confirm-generic")), 
+                        CV.i18n("management.preset.delete-preset-confirm", presetObj.name || CV.i18n("management.preset.delete-preset-confirm-generic")),
                         "red",
                         function(result) {
                             if (!result) {
@@ -250,7 +250,7 @@
                                 self.refresh();
                             });
                         },
-                        [CV.i18n("common.cancel"), CV.i18n("common.delete")], 
+                        [CV.i18n("common.cancel"), CV.i18n("common.delete")],
                         {title: CV.i18n("management.preset.delete-preset"), showClose: false, alignCenter: true}
                     );
                 }
@@ -276,7 +276,7 @@
             },
             hasWritePermissions: function(preset) {
                 return preset.is_owner || AUTHENTIC_GLOBAL_ADMIN || (preset.shared_email_edit && preset.shared_email_edit.length > 0) || (preset.shared_user_groups_edit && preset.shared_user_groups_edit.length > 0);
-            }, 
+            },
             reorderPresets: function({oldIndex, newIndex}) {
                 var self = this;
                 var preset = this.rows[oldIndex];
@@ -285,7 +285,7 @@
                     self.refresh();
                 });
             },
-            onDragStart: function(index) {
+            onDragStart: function() {
                 // We don't need to do anything here
             }
         },
@@ -388,14 +388,19 @@
             },
             onOpenDrawer: function() {
                 let dropdown = document.getElementById("cly-datepicker");
-                if (dropdown) dropdown.style.visibility = "hidden";
-                
+                if (dropdown) {
+                    dropdown.style.visibility = "hidden";
+                }
                 let drawer = document.getElementById("preset-drawer");
-                if (drawer) drawer.style.visibility = "visible";
+                if (drawer) {
+                    drawer.style.visibility = "visible";
+                }
             },
             onCloseDrawer: function() {
                 let dropdown = document.getElementById("cly-datepicker");
-                if (dropdown) dropdown.style.visibility = "visible";
+                if (dropdown) {
+                    dropdown.style.visibility = "visible";
+                }
                 this.refresh();
             },
             onPresetClick: function(preset) {

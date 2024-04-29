@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
 
 (function(countlyVue, $) {
 
@@ -1027,7 +1027,7 @@
                     animation: 150,
                     handle: '.el-table__row',
                     onStart({oldIndex}) {
-                        self.$emit('drag-start', oldIndex); 
+                        self.$emit('drag-start', oldIndex);
                     },
                     onEnd({ newIndex, oldIndex }) {
                         self.$emit('drag-end', { newIndex, oldIndex });

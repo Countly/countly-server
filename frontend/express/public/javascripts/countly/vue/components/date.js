@@ -1125,7 +1125,7 @@
                 this.inTheLastInput.raw.level = newVal;
                 this.tableType = this.tableTypeMapper[newVal];
             },
-            'excludeCurrentDayProp': function () {
+            'excludeCurrentDayProp': function() {
                 this.loadValue(this.value);
             },
             'label': function() {
@@ -1149,7 +1149,7 @@
                 var excludeCurrentDay = this.excludeCurrentDayProp;
                 if (this.allowPresets) {
                     if (this.selectedPreset) {
-                        excludeCurrentDay =  this.selectedPreset.exclude_current_day;
+                        excludeCurrentDay = this.selectedPreset.exclude_current_day;
                     }
                     else if (this.isGlobalDatePicker) {
                         countlyPresets.refreshGlobalDatePreset();
@@ -1287,7 +1287,6 @@
                 }
                 state.minTime = new Date(state.minDate.getTime());
                 state.labelMode = this.labelMode;
-                
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -1398,7 +1397,7 @@
             handlePresetClick: function() {
                 if (this.allowPresets) {
                     this.presetSelection = !this.presetSelection;
-                    if (this.allowCustomRange){
+                    if (this.allowCustomRange) {
                         this.customRangeSelection = !this.presetSelection;
                     }
                     this.refreshCalendarDOM();
@@ -1660,6 +1659,8 @@
     /**
      * Returns the period label for a given period input
      * @param {String|Object|Array} period The period input (string, object, or array of timestamps)
+     * @param {Boolean} excludeCurrentDay Whether to exclude the current day from the period
+     * @param {String} labelMode The label mode (mixed or absolute)
      * @returns {String} Period label
      */
     function getPeriodLabel(period, excludeCurrentDay, labelMode) {
@@ -1673,17 +1674,19 @@
                     rangeMode: "inBetween",
                     minDate: new Date(period[0]),
                     maxDate: new Date(period[1]),
-                }
+                };
             }
-        } else if (typeof period === "object") {
+        }
+        else if (typeof period === "object") {
             if (period.hasOwnProperty("since")) {
                 state = {
                     rangeMode: "since",
                     minDate: new Date(period.since),
                     maxDate: excludeCurrentDay ? moment().subtract(1, 'days').endOf("day").toDate() : now
-                }
+                };
             }
-        } else if (typeof period === "string") {
+        }
+        else if (typeof period === "string") {
             const matches = period.match(/^(\d+)(\D+)$/);
             if (matches && matches.length === 3) {
                 state = {
@@ -1691,13 +1694,13 @@
                     inTheLastInput: { raw: { text: matches[1], level: matches[2] } },
                     minDate: moment().subtract((matches[1] - 1), matches[2]).startOf("day").toDate(),
                     maxDate: excludeCurrentDay ? moment().subtract(1, 'days').endOf("day").toDate() : now
-                }
+                };
             }
         }
         state.labelMode = labelMode;
         return getRangeLabel(state, type);
     }
-    
+
     countlyVue.getPeriodLabel = getPeriodLabel;
 
 }(window.countlyVue = window.countlyVue || {}));

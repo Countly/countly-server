@@ -1129,7 +1129,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             argState = false;
-                        } else {
+                        }
+                        else {
                             return false;
                         }
                     }

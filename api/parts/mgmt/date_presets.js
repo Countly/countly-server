@@ -36,99 +36,104 @@ presetsApi.getAll = async function(params) {
         };
     }
 
-    
     common.db.collection('date_presets').aggregate([
         { $match: filterCond },
-        { $addFields: {
-            owner_id_objectId: { $toObjectId: '$owner_id' }
-        }},
-        { $lookup: {
-            from: 'members',
-            localField: 'owner_id_objectId',
-            foreignField: '_id',
-            as: 'owner'
-        }},
+        {   
+            $addFields: {
+                owner_id_objectId: { $toObjectId: '$owner_id' }
+            }
+        },
+        { 
+            $lookup: {
+                from: 'members',
+                localField: 'owner_id_objectId',
+                foreignField: '_id',
+                as: 'owner'
+            }
+        },
         { $unwind: '$owner' },
-        { $project: {
-            _id: 1,
-            name: 1,
-            range: 1,
-            share_with: 1,
-            shared_email_edit: {
-                $cond: {
-                    if: {
-                        $or: [
-                            member.global_admin,
-                            { $eq: ['$owner_id', memberId] },
-                            { $in: [groups, '$shared_user_groups_edit'] },
-                            { $in: [memberEmail, '$shared_email_edit'] }
-                        ]
-                    },
-                    then: '$shared_email_edit',
-                    else: false
-                }
-            },
-            shared_email_view: {
-                $cond: {
-                    if: {
-                        $or: [
-                            member.global_admin,
-                            { $eq: ['$owner_id', memberId] },
-                            { $in: [groups, '$shared_user_groups_edit'] },
-                            { $in: [memberEmail, '$shared_email_edit'] }
-                        ]
-                    },
-                    then: '$shared_email_view',
-                    else: false
-                }
-            },
-            shared_user_groups_edit: {
-                $cond: {
-                    if: {
-                        $or: [
-                            member.global_admin,
-                            { $eq: ['$owner_id', memberId] },
-                            { $in: [groups, '$shared_user_groups_edit'] },
-                            { $in: [memberEmail, '$shared_email_edit']}
-                        ]
-                    },
-                    then: '$shared_user_groups_edit',
-                    else: false
-                }
-            },
-            shared_user_groups_view: {
-                $cond: {
-                    if: {
-                        $or: [
-                            member.global_admin,
-                            { $eq: ['$owner_id', memberId] },
-                            { $in: [groups, '$shared_user_groups_edit'] },
-                            { $in: [memberEmail, '$shared_email_edit']}
-                        ]
-                    },
-                    then: '$shared_user_groups_view',
-                    else: false
-                }
-            },
-            exclude_current_day: 1,
-            owner_id: 1,
-            owner_name: '$owner.full_name',
-            fav: {
-                $in: [memberId, '$fav']
-            },
-            is_owner: {
-                $cond: {
-                    if: {
-                        $eq: ['$owner_id', memberId]
-                    },
-                    then: true,
-                    else: member.global_admin
-                }
-            },
-            created_at: 1,
-            edited_at: 1,
-            sort_order: 1
-        }},
+        { 
+            $project: {
+                _id: 1,
+                name: 1,
+                range: 1,
+                share_with: 1,
+                shared_email_edit: {
+                    $cond: {
+                        if: {
+                            $or: [
+                                member.global_admin,
+                                { $eq: ['$owner_id', memberId] },
+                                { $in: [groups, '$shared_user_groups_edit'] },
+                                { $in: [memberEmail, '$shared_email_edit'] }
+                            ]
+                        },
+                        then: '$shared_email_edit',
+                        else: false
+                    }
+                },
+                shared_email_view: {
+                    $cond: {
+                        if: {
+                            $or: [
+                                member.global_admin,
+                                { $eq: ['$owner_id', memberId] },
+                                { $in: [groups, '$shared_user_groups_edit'] },
+                                { $in: [memberEmail, '$shared_email_edit'] }
+                            ]
+                        },
+                        then: '$shared_email_view',
+                        else: false
+                    }
+                },
+                shared_user_groups_edit: {
+                    $cond: {
+                        if: {
+                            $or: [
+                                member.global_admin,
+                                { $eq: ['$owner_id', memberId] },
+                                { $in: [groups, '$shared_user_groups_edit'] },
+                                { $in: [memberEmail, '$shared_email_edit']}
+                            ]
+                        },
+                        then: '$shared_user_groups_edit',
+                        else: false
+                    }
+                },
+                shared_user_groups_view: {
+                    $cond: {
+                        if: {
+                            $or: [
+                                member.global_admin,
+                                { $eq: ['$owner_id', memberId] },
+                                { $in: [groups, '$shared_user_groups_edit'] },
+                                { $in: [memberEmail, '$shared_email_edit']}
+                            ]
+                        },
+                        then: '$shared_user_groups_view',
+                        else: false
+                    }
+                },
+                exclude_current_day: 1,
+                owner_id: 1,
+                owner_name: '$owner.full_name',
+                fav: {
+                    $in: [memberId, '$fav']
+                },
+                is_owner: {
+                    $cond: {
+                        if: {
+                            $eq: ['$owner_id', memberId]
+                        },
+                        then: true,
+                        else: member.global_admin
+                    }
+                },
+                created_at: 1,
+                edited_at: 1,
+                sort_order: 1
+            }
+        },
         {
             $sort: {
                 sort_order: 1
@@ -297,8 +302,8 @@ presetsApi.create = function(params) {
         if (!err && preset && preset.ops && preset.ops[0] && preset.ops[0]._id) {
 
             //Update sort order of other presets
-            common.db.collection('date_presets').updateMany({_id: {$ne: preset.ops[0]._id}}, {$inc: {sort_order: 1}}, function(err) {
-                if (err) {
+            common.db.collection('date_presets').updateMany({_id: {$ne: preset.ops[0]._id}}, {$inc: {sort_order: 1}}, function(err1) {
+                if (err1) {
                     common.returnMessage(params, 500, 'Error updating sort order of other presets');
                     return false;
                 }
@@ -516,7 +521,7 @@ presetsApi.update = function(params) {
         }
 
         //Handle fav
-        if (typeof params.qstring.fav !== null) {
+        if (typeof params.qstring.fav !== 'undefined') {
             let fav = presetBefore.fav || [];
             if (params.qstring.fav === true && !fav.includes(params.member._id + "")) {
                 fav.push(params.member._id + "");
@@ -589,7 +594,7 @@ presetsApi.delete = function(params) {
         return false;
     }
 
-    common.db.collection('date_presets').findOne({ _id: common.db.ObjectID(params.qstring.preset_id)}, function(err, presetBefore) {
+    common.db.collection('date_presets').findOne({ _id: common.db.ObjectID(qstring.preset_id)}, function(err, presetBefore) {
         if (err || !presetBefore) {
             common.returnMessage(params, 500, 'Could not find preset');
             return false;
@@ -663,7 +668,7 @@ presetsApi.getById = function(params) {
         return false;
     }
 
-    filterCond._id = common.db.ObjectID(params.qstring.preset_id);
+    filterCond._id = common.db.ObjectID(qstring.preset_id);
 
     common.db.collection('date_presets').findOne(filterCond, function(err, preset) {
         if (err || !preset) {
@@ -676,6 +681,6 @@ presetsApi.getById = function(params) {
         common.returnOutput(params, preset);
         return true;
     });
-}
+};
 
 module.exports = presetsApi;
