@@ -1678,7 +1678,7 @@
             }
         }
         else if (typeof period === "object") {
-            if (period.hasOwnProperty("since")) {
+            if (Object.prototype.hasOwnProperty.call(period, "since")) {
                 state = {
                     rangeMode: "since",
                     minDate: new Date(period.since),
