@@ -205,7 +205,9 @@
                         <span class="bu-mx-3" style="line-height: 30px">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
+                                width="274"
                                 v-if="Array.isArray(alertDataFilterValue)"
+                                :collapse-tags="false"
                                 v-model="alertDataFilterValue"
                                 class="bu-is-flex"
                                 :options="alertDataFilterValueOptions"
@@ -367,12 +369,12 @@
                         <span class="groupcard-text mediumtextNormal-20px">
                             Send alert if
                         </span>
-                        <el-select
+                        <select
                             @change="handleChange($event.target)"
                             class="alert-drawer-trigger-select-and-input">
                             <option :value="null" hidden>metric</option>
                             <option :value="null"></option>
-                        </el-select>
+                        </select>
                         <span class="groupcard-text mediumtextNormal-14px">
                             is
                         </span>
@@ -408,6 +410,17 @@
                     <pre v-if="0">
                         {{drawerScope.editedObject}}
                     </pre>
+
+                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataSubType === 'new rating response' ">
+                        <span>
+                        <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
+                            <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                    <span>{{i18n('alerts.new-rating-info')}}</span>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
