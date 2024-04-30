@@ -124,7 +124,7 @@
             v-bind="$props.controls"  ref="drawerData">>
             <template v-slot:default="drawerScope">
                 <cly-form-step id="alert-drawer-main">
-                    <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true">
+                    <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" rules="required">
                         <el-input
                             v-model="drawerScope.editedObject.alertName"
                             class="bu-is-flex bu-mt-1"
