@@ -291,9 +291,10 @@
             alertTimeOptions() {
                 if (
                     this.$refs.drawerData.editedObject.alertDataType ===
-                    "rating"
+                    "rating" &&
+                    (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)
                 ) {
-                    // Filter out the "hour" option if the alert data type is "rating"
+                    // Filter out the "hour" option if the alert data type is "rating" and filter is applied
                     return this.defaultAlertTime.time.filter(
                         (periodItem) => periodItem.value !== "hourly"
                     );
