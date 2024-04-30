@@ -170,7 +170,8 @@ presetsApi.create = function(params) {
                     'Array',
                     'Object',
                     'String'
-                ]
+                ],
+                'multiple': true
             },
             'share_with': {
                 'required': true,
@@ -343,7 +344,8 @@ presetsApi.update = function(params) {
                     'Array',
                     'Object',
                     'String'
-                ]
+                ],
+                'multiple': true
             },
             'share_with': {
                 'required': false,
@@ -588,13 +590,12 @@ presetsApi.delete = function(params) {
         }
     };
 
-    let qstring = {};
-    if (!(qstring = common.validateArgs(params.qstring, argProps))) {
+    if (!common.validateArgs(params.qstring, argProps)) {
         common.returnMessage(params, 400, 'Not enough args');
         return false;
     }
 
-    common.db.collection('date_presets').findOne({ _id: common.db.ObjectID(qstring.preset_id)}, function(err, presetBefore) {
+    common.db.collection('date_presets').findOne({ _id: common.db.ObjectID(params.qstring.preset_id)}, function(err, presetBefore) {
         if (err || !presetBefore) {
             common.returnMessage(params, 500, 'Could not find preset');
             return false;
@@ -662,13 +663,12 @@ presetsApi.getById = function(params) {
         };
     }
 
-    let qstring = {};
-    if (!(qstring = common.validateArgs(params.qstring, argProps))) {
+    if (!common.validateArgs(params.qstring, argProps)) {
         common.returnMessage(params, 400, 'Not enough args');
         return false;
     }
 
-    filterCond._id = common.db.ObjectID(qstring.preset_id);
+    filterCond._id = common.db.ObjectID(params.qstring.preset_id);
 
     common.db.collection('date_presets').findOne(filterCond, function(err, preset) {
         if (err || !preset) {
