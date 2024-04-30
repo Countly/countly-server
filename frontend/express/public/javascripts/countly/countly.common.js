@@ -4538,8 +4538,12 @@
             var resultStrings = [];
             for (var i = 0; i < dict.length && resultStrings.length < 3; i++) {
                 if (dict[i].k === "second") {
-                    //round to 1 decimal
-                    result[dict[i].k] = Math.round(timeLeft / dict[i].v * 10) / 10;
+                    if (timeLeft < 0.1) {
+                        result.second = 0;
+                    }
+                    else {
+                        result.second = Math.round(timeLeft * 10) / 10;
+                    }
                 }
                 else {
                     result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
