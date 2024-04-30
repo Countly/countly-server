@@ -166,11 +166,11 @@ presetsApi.create = function(params) {
             },
             'range': {
                 'required': true,
-                'type': {
-                    'Array': true,
-                    'Object': true,
-                    'String': true
-                }
+                'type': [
+                    'Array',
+                    'Object',
+                    'String'
+                ]
             },
             'share_with': {
                 'required': true,
@@ -339,11 +339,11 @@ presetsApi.update = function(params) {
             },
             'range': {
                 'required': false,
-                'type': {
-                    'Array': true,
-                    'Object': true,
-                    'String': true
-                }
+                'type': [
+                    'Array',
+                    'Object',
+                    'String'
+                ]
             },
             'share_with': {
                 'required': false,

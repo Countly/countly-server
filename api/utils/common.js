@@ -1119,12 +1119,33 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
-                else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
-
-                    const allowedTypes = argProperties[arg].type;
+                else if(Array.isArray(argProperties[arg].type)) { //ALLOW MULTIPLE TYPES FOR ARGUMENT
                     const argType = typeof args[arg];
+                    const allowedTypes = argProperties[arg].type.map(t => t.toLowerCase());
 
-                    if (!allowedTypes[argType.charAt(0).toUpperCase() + argType.slice(1)]) {
+                    if (!Array.isArray(args[arg]) && !allowedTypes.includes(argType)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (Array.isArray(args[arg]) && !allowedTypes.includes('array')) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
