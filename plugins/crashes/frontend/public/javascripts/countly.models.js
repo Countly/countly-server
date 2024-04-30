@@ -1269,6 +1269,9 @@ function transformAppVersion(inpVersion) {
                 else if (inpQuery[key].rgxbw) {
                     resultQuery[key] = { $regex: '^' + inpQuery[key].rgxbw };
                 }
+                else {
+                    resultQuery[key] = inpQuery[key];
+                }
             }
             else if (key.startsWith('is_hidden')) {
                 Object.keys(inpQuery[key]).forEach(function(innerKey) {
