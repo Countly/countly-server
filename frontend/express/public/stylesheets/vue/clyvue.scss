@@ -4076,6 +4076,10 @@
     outline: none;
     font-size: 13px;
     font-weight: 500;
+	border-radius:4px;
+	&-small {
+		padding:4px;
+	}
     &--gray {
         color: map.get(c.$colors, "text-secondary");
     }
@@ -4085,7 +4089,7 @@
         opacity: 0.7;
     }
     &:hover {
-        background-color: transparent;
+        background-color: #E6F0FB;
     }
 }
 
