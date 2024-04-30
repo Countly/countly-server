@@ -56,7 +56,7 @@
                                 <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center bu-ml-2" v-bind:class="purgeDatalegend.class">
                                     <i v-if="purgeDatalegend.trend === 'u'" class="cly-trend-up-icon ion-android-arrow-up bu-ml-2" data-test-id="user-data-purges-arrow-icon"></i>
                                     <i v-else class="cly-trend-down-icon ion-android-arrow-down bu-ml-2" data-test-id="user-data-purges-arrow-icon"></i>
-                                    <div>{{purgeDatalegend.percentage}}</div>
+                                    <div data-test-id="user-data-purges-percentage">{{purgeDatalegend.percentage}}</div>
                                 </div>
                             </div>
                         </div>
