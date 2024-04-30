@@ -1119,7 +1119,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
-                else if(Array.isArray(argProperties[arg].type)) { //ALLOW MULTIPLE TYPES FOR ARGUMENT
+                else if (Array.isArray(argProperties[arg].type) && argProperties[arg].multiple) { //ALLOW MULTIPLE TYPES FOR ARGUMENT
                     const argType = typeof args[arg];
                     const allowedTypes = argProperties[arg].type.map(t => t.toLowerCase());
 
