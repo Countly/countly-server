@@ -224,9 +224,7 @@
                 else {
                     this.selectedProperty = '';
                 }
-                // if (this.value && typeof this.value.length !== "undefined") { // if it is an array
                 this.$emit('selected-key-change', this.selectedProperty);
-                // }
                 this.selectedValue = '';
             },
             onSelectedKeyChange: function() {
@@ -639,6 +637,15 @@
         },
         created() {
             this.events = this.value;
+            if (this.parentData && this.parentData.length) {
+                this.parentData.forEach((item) => {
+                    item.steps.forEach((step) => {
+                        if (step.key === "events" && step.disabled) {
+                            this.$parent.isSectionActive = false;
+                        }
+                    });
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/events.html")
     });
@@ -807,6 +814,15 @@
         },
         created() {
             this.views = this.value;
+            if (this.parentData && this.parentData.length) {
+                this.parentData.forEach((item) => {
+                    item.steps.forEach((step) => {
+                        if (step.key === "views" && step.disabled) {
+                            this.$parent.isSectionActive = false;
+                        }
+                    });
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/views.html")
     });
@@ -823,6 +839,9 @@
             },
             parentData: {
                 type: [Object, Array],
+            },
+            sectionActivity: {
+                type: Object
             }
         },
         data: function() {
@@ -834,14 +853,129 @@
                     {name: "Event", value: "events"},
                     {name: "View", value: "views"}
                 ],
-                sequenceStepValues: {}
+                sequenceStepValues: {},
+                linkedSectionActivity: false
             };
         },
         watch: {
             "parentData": {
                 deep: true,
                 handler: function(newValue) {
+                    const eventsHasValue = this.sectionActivity.events && newValue.events && newValue.events.length && newValue.events.filter(x => x.name).length;
+                    const viewsHasValue = this.sectionActivity.views && newValue.views && newValue.views.length && newValue.views.filter(x => x.name).length;
+                    if (newValue && eventsHasValue || viewsHasValue) {
+                        this.linkedSectionActivity = true;
+                    }
+                    else {
+                        this.linkedSectionActivity = false;
+                    }
                     this.sequenceStepValues = newValue;
+                }
+            },
+            "sectionActivity": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue.events && !newValue.views) { // if both events and views are disabled
+                        this.linkedSectionActivity = false;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events" || step.key === "views") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+
+                        this.sequenceStepProperties.map((item) => {
+                            item.disabled = true;
+                        });
+                    }
+                    if (newValue.events) {
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                    if (newValue.views) {
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                }
+            },
+            "sectionActivity.events": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled events section
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                item.disabled = true;
+                            }
+                        });
+                    }
+                    if (newValue && this.parentData.events.length) {
+                        this.linkedSectionActivity = true;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events") {
+                                    delete step.disabled;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                }
+            },
+            "sectionActivity.views": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled views section
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "views") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                item.disabled = true;
+                            }
+                        });
+                    }
+                    if (newValue && this.parentData.views.length) {
+                        this.linkedSectionActivity = true;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "views") {
+                                    delete step.disabled;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
                 }
             },
             sequences: {
@@ -912,11 +1046,20 @@
         created: function() {
             if (this.value && Object.keys(this.value).length) {
                 this.sequences = this.value;
+                this.linkedSectionActivity = true;
             }
             else {
                 this.$parent.isSectionActive = false;
+                this.linkedSectionActivity = false;
             }
             this.sequenceStepValues = this.parentData;
+            if (this.parentData && this.parentData.behavior && this.parentData.behavior.sequences && this.parentData.behavior.sequences.length) {
+                this.parentData.behavior.sequences.forEach((item) => {
+                    if (item && item.disabled) {
+                        this.$parent.isSectionActive = false;
+                    }
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/sequences.html")
     });
@@ -937,13 +1080,49 @@
             deletedIndex: {
                 type: String,
             },
+            sectionActivity: {
+                type: [Boolean, Object]
+            }
         },
         watch: {
+            "sectionActivity": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled sequences section
+                        this.behavior.sequences.forEach((item, index) => {
+                            if (item.key !== "random") {
+                                this.behavior.sequences[index].disabled = true;
+                            }
+                        });
+                        this.behavior.sequenceConditions.forEach((item, index) => {
+                            item.values.forEach((valueItem, valueIndex) => {
+                                if (valueItem.key !== "random") {
+                                    this.behavior.sequenceConditions[index].values[valueIndex].disabled = true;
+                                }
+                            });
+                        });
+                    }
+                    else { // if enabled sequences section
+                        this.behavior.sequences.forEach((item, index) => {
+                            if (item.key !== "random") {
+                                delete this.behavior.sequences[index].disabled;
+                            }
+                        });
+                        this.behavior.sequenceConditions.forEach((item, index) => {
+                            item.values.forEach((valueItem, valueIndex) => {
+                                if (valueItem.key !== "random") {
+                                    delete this.behavior.sequenceConditions[index].values[valueIndex].disabled;
+                                }
+                            });
+                        });
+                    }
+                }
+            },
             behavior: {
+                deep: true,
                 handler: function(newValue) {
                     this.$emit('input', newValue);
-                },
-                deep: true
+                }
             },
             deletedIndex: function(newValue) {
                 if (!newValue || !newValue.length) {
@@ -993,7 +1172,7 @@
                     SEQUENCE: "sequence"
                 },
                 conditionPropertyValues: [],
-                isConditionDisabled: false
+                isConditionDisabled: false,
             };
         },
         methods: {
@@ -1007,9 +1186,6 @@
                 if (type === this.behaviourSectionEnum.GENERAL) {
                     this.behavior.generalConditions.splice(index, 1);
                 }
-                // else if (type === this.behaviourSectionEnum.SEQUENCE) { // in case of implemented later
-                //     this.behavior.sequenceConditions.splice(index, 1);
-                // }
                 else {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
@@ -1075,6 +1251,10 @@
                 default: false,
                 required: false
             },
+            sectionActivity: {
+                type: [Object, Boolean],
+                required: false
+            },
             title: {
                 type: String,
                 default: '',
@@ -1088,7 +1268,7 @@
             },
             deletedIndex: {
                 type: String,
-            }
+            },
         },
         data: function() {
             return {
@@ -1102,10 +1282,17 @@
                 },
                 description: '',
                 userProperties: [],
-                disableSwitch: false,
                 sectionIndex: -1,
-                disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message'),
             };
+        },
+        watch: {
+            isSectionActive: {
+                handler: function(newValue) {
+                    if (this.hasSwitch) {
+                        this.$emit('section-activity-change', newValue);
+                    }
+                }
+            }
         },
         methods: {
             setDeletedIndex: function(index) {
@@ -1113,7 +1300,10 @@
             }
         },
         created: function() {
-            this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type]);
+            this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type], '');
+            if (this.descriptionEnum[this.type] === 'sequence') {
+                this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type], CV.i18n('populator-template.select-settings-' + this.descriptionEnum[this.type]));
+            }
             const keys = Object.keys(this.descriptionEnum);
             this.sectionIndex = keys.indexOf(this.type);
         },
@@ -1126,11 +1316,11 @@
         },
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\
-                        <el-switch v-if="hasSwitch" v-tooltip="disableSwitch ? disableSwitchMessage : null" :disabled="disableSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
+                        <el-switch v-if="hasSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
                         <span class="text-big bu-has-text-weight-medium" :id="\'section-\' + sectionIndex + \'-title\'">{{title}}</span>\
                     </div>\
                     <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
-                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" >\
+                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" :section-activity="sectionActivity" >\
                         <template slot="default">\
                             <slot name="default"></slot>\
                         </template>\

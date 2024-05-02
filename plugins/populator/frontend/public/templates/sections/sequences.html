@@ -28,20 +28,25 @@
                             <div v-if="item.key !== 'session'" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>
                             <div class="bu-is-flex bu-is-align-items-center bu-mb-2">
                                 <div class="step-field has-ellipsis" :style="[item.key === 'session' ? {'width': '140px'} : {}]">
-                                    <span class="text-smallish bu-is-capitalized" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}}  -  {{item.value}} </span>
+                                    <span class="text-smallish bu-is-capitalized" :class="{'color-cool-gray-50': item.disabled}" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}}  -  {{item.value}} </span>
                                 </div>
                                 <div class="bu-is-flex probability-field">
                                     <div>
-                                        <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                            <el-input class="input" :disabled="item.key === 'session'" v-model="item.probability" :class="{'is-error': v.errors.length > 0}">
+                                        <validation-provider v-if="item.key !== 'session'"  name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
+                                            <el-input class="input" :disabled="item.disabled" v-model="item.probability" :class="{'is-error': v.errors.length > 0}">
                                                 <template slot="suffix">
                                                     <span class="text-medium color-cool-gray-50">%</span>
                                                 </template>
                                             </el-input>
                                         </validation-provider>
                                     </div>
-                                    <div class="override-buttons">
-                                        <i class="bu-mt-2 el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveStep(index, stepIndex)"></i>
+                                    <div v-if="item.key !== 'session'">
+                                        <div class="override-buttons" v-if="!item.disabled">
+                                            <i class="bu-mt-2 el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveStep(index, stepIndex)"></i>
+                                        </div>
+                                        <div v-else class="override-buttons" style="cursor: not-allowed">
+                                            <i class="bu-mt-2 el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -62,7 +67,7 @@
                                 <div class="text-small bu-has-text-weight-medium bu-mb-2">{{i18n('populator-template.property')}}</div>
                                 <el-select v-model="selectedProperty" class="bu-mb-4" style="width: 100%" :placeholder="i18n('populator.template.select-a-step-property')"> 
                                     <el-option 
-                                        v-for="item in sequenceStepProperties" 
+                                        v-for="item in sequenceStepProperties.filter(x=>!x.disabled)" 
                                         :key="item.value" 
                                         :label="item.name" 
                                         :value="item.value"> 
@@ -84,7 +89,7 @@
                             </div> 
                         </template> 
                         <template v-slot:reference> 
-                            <el-button type="text" :disabled="!parentData.events.length && !parentData.views.length" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddStep()">{{i18n('populator-template.add-step')}}</el-button>
+                            <el-button type="text" :disabled="!linkedSectionActivity" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddStep()">{{i18n('populator-template.add-step')}}</el-button>
                         </template>
                     </el-popover>
             </div>
