@@ -7,7 +7,7 @@
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
     <template v-slot:default="drawerScope">
-        <cly-form-step id="dashboards-drawer">
+        <cly-form-step>
 
             <cly-form-field :label="i18n('management.preset.date-range')" name="range" rules="required" v-slot:default>
                 <cly-date-picker 
@@ -61,32 +61,32 @@
           
             <div v-if="drawerScope.editedObject.share_with === 'selected-users'">
                 <div class="text-big font-weight-bold">
-                    {{i18n('dashboards.user-permissions')}}
+                    {{i18n('management.preset.user-permissions')}}
                     <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
                 </div>
-                <cly-form-field :label="i18n('dashboards.users-edit-permission')" :subheading="i18n('dashboards.users-edit-description')">
-                    <cly-select-email :disabled="!canShare" v-model="sharedEmailEdit" :placeholder="canShare ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                <cly-form-field :label="i18n('management.preset.users-edit-permission')" :subheading="i18n('management.preset.users-edit-description')">
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailEdit" :placeholder="canShare ? i18n('management.preset.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
-                <cly-form-field :label="i18n('dashboards.users-view-permission')" :subheading="i18n('dashboards.users-view-description')">
-                    <cly-select-email :disabled="!canShare" v-model="sharedEmailView" :placeholder="canShare ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                <cly-form-field :label="i18n('management.preset.users-view-permission')" :subheading="i18n('management.preset.users-view-description')">
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailView" :placeholder="canShare ? i18n('management.preset.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
             </div>
 
             <div v-if="(drawerScope.editedObject.share_with === 'selected-users') && groupSharingAllowed">
                 <div class="text-big font-weight-bold">
-                    {{i18n('dashboards.user-group-permission')}}
+                    {{i18n('management.preset.user-group-permission')}}
                     <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
                 </div>
                 <cly-form-field
                     name="shared_user_groups_edit"
-                    :label="i18n('dashboards.users-edit-permission')"
-                    :subheading="i18n('dashboards.users-edit-description')">
+                    :label="i18n('management.preset.users-edit-permission')"
+                    :subheading="i18n('management.preset.users-edit-description')">
                     <el-select
                         :key="elSelectKey"
                         multiple
                         :disabled="!canShare"
                         v-model="sharedGroupEdit"
-                        :placeholder="canShare ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        :placeholder="canShare ? i18n('management.preset.select-user-group') : i18n('management.preset.sharing-disabled')"
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
@@ -98,14 +98,14 @@
                 </cly-form-field>
                 <cly-form-field
                     name="shared_user_groups_view"
-                    :label="i18n('dashboards.users-view-permission')"
-                    :subheading="i18n('dashboards.users-view-description')">
+                    :label="i18n('management.preset.users-view-permission')"
+                    :subheading="i18n('management.preset.users-view-description')">
                     <el-select
                         :key="elSelectKey"
                         multiple
                         :disabled="!canShare"
                         v-model="sharedGroupView"
-                        :placeholder="canShare ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        :placeholder="canShare ? i18n('management.preset.select-user-group') : i18n('management.preset.sharing-disabled')"
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
