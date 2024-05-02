@@ -3509,6 +3509,50 @@
         };
         let environmentUsers = [];
 
+        if (template.sequences && template.sequences.length) {
+            let disabledCounts = {
+                "events": 0,
+                "views": 0
+            };
+            template.sequences.forEach(function(sequence) {
+                sequence.steps.forEach(function(step) {
+                    if (step.disabled) {
+                        if (step.key === "events") {
+                            disabledCounts.events++;
+                        }
+                        else if (step.key === "views") {
+                            disabledCounts.views++;
+                        }
+                    }
+                });
+            });
+            if (disabledCounts.events) {
+                template.events = [];
+            }
+            if (disabledCounts.views) {
+                template.views = [];
+            }
+        }
+        if (template.behavior && template.behavior.sequences && template.behavior.sequences.length) {
+            let disabledCount = 0;
+            template.behavior.sequences.forEach(function(sequence) {
+                if (sequence.disabled) {
+                    disabledCount++;
+                }
+            });
+            if (disabledCount) {
+                template.behavior.sequences = template.behavior.sequences.filter(function(sequence) {
+                    return !sequence.disabled;
+                });
+                if (template.behavior.sequenceConditions && template.behavior.sequenceConditions.length) {
+                    template.behavior.sequenceConditions.forEach(function(sequenceCondition) {
+                        sequenceCondition.values = sequenceCondition.values.filter(function(value) {
+                            return !value.disabled;
+                        });
+                    });
+                }
+            }
+        }
         /**
          * Get users from environment 
         **/
@@ -3710,11 +3754,29 @@
 
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
+            let data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                date_range: moment(startTs * 1000).format("DD.MM.YYYY, HH:mm:ss") + " - " + moment(endTs * 1000).format("DD.MM.YYYY, HH:mm:ss"),
+                selected_template: template.name,
+                number_of_runs: runCount,
+                save_environment: template.saveEnvironment,
+            };
+            if (template.saveEnvironment) {
+                data.environment_name = template.environmentName;
+            }
+            if (environment && environment.length) {
+                data = {
+                    populate_with_environment: true,
+                    selected_environment: environment[0].name,
+                    date_range: moment(startTs * 1000).format("DD.MM.YYYY, HH:mm:ss") + " - " + moment(endTs * 1000).format("DD.MM.YYYY, HH:mm:ss"),
+                    number_of_runs: runCount
+                };
+            }
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/systemlogs",
                 data: {
-                    data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
+                    data: JSON.stringify(data),
                     action: "populator_run",
                     populator: true
                 },
