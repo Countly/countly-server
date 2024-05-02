@@ -51,7 +51,8 @@
             cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
             cancelButtonVisibility: {type: Boolean, required: false, default: true},
             dialogType: {type: String, required: false, default: "success"},
-            testId: {type: String, default: 'cly-vue-confirm-dialog-test-id', required: false}
+            testId: {type: String, default: 'cly-vue-confirm-dialog-test-id', required: false},
+            alignCenter: {type: Boolean, default: true}
         },
         computed: {
             forwardedSlots: function() {
@@ -72,6 +73,9 @@
                     return this.dialogType;
                 }
                 return "success";
+            },
+            customClass: function() {
+                return this.alignCenter ? "el-dialog--centered" : "";
             }
         },
         methods: {
@@ -82,7 +86,7 @@
                 this.$emit("cancel");
             }
         },
-        template: '<el-dialog destroyOnClose class="cly-vue-confirm-dialog" v-on="$listeners" v-bind="$attrs" :title="title">\
+        template: '<el-dialog destroyOnClose class="cly-vue-confirm-dialog" :custom-class="customClass" v-on="$listeners" v-bind="$attrs" :title="title">\
                         <template v-slot:title><h3 :data-test-id="testId + \'-cly-confirm-dialog-title-label\'" class="color-cool-gray-100">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
