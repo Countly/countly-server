@@ -328,6 +328,7 @@
                             </span>
 
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable && drawerScope.editedObject.alertDataType !=='onlineUsers'">
+
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
                             </span>
                             <input
@@ -337,7 +338,7 @@
                                 type="text"
                                 v-model="drawerScope.editedObject.compareValue"
                                 v-if="isCompareTypeSelectAvailable"
-                                />
+                                />   
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "" }}
                             </span>
@@ -411,6 +412,15 @@
                             <option :value="null"></option>
                         </select>
                         <span class="groupcard-text mediumtextNormal-14px">.</span>
+                    </div>
+
+                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataSubType === 'new survey response'">
+                        <span>
+                            <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
+                                <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                    {{i18n('alerts.survey-icon')}}
+                                </div>
+                        </span>
                     </div>
 
                     <pre v-if="0">
