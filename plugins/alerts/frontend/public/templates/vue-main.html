@@ -321,7 +321,13 @@
                                 </option>
                             </select>
 
-                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                            <span class="groupcard-text mediumtextNormal-14px" 
+                                  v-if="isCompareTypeSelectAvailable
+                                  && drawerScope.editedObject.alertDataType ==='onlineUsers'">
+                                than
+                            </span>
+
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable && drawerScope.editedObject.alertDataType !=='onlineUsers'">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
                             </span>
                             <input
