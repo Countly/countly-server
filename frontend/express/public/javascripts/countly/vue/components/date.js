@@ -1252,7 +1252,8 @@
                         state.maxDate = now;
                     }
                     else {
-                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("day").toDate();
+                        let startOf = meta.level === "weeks" ? "isoWeek" : meta.level.slice(0, -1) || "day";
+                        state.minDate = moment().subtract((meta.value - 1), meta.level).startOf(startOf).toDate();
                         state.maxDate = excludeCurrentDay ? moment().subtract(1, 'days').endOf("day").toDate() : now;
                     }
                     state.inTheLastInput = {
