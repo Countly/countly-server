@@ -14,7 +14,7 @@
 		v-bind="$props.controls"
     test-id="ratings-drawer">
     <template v-slot:sidecars="drawerScope">
-			<cly-content id="mainSidecar" role="sidecar" :always-active="true">
+			<cly-content id="mainSidecar" role="sidecar" :always-active="true" style="background:#81868D">
 				<div class="ratings-drawer__sidecar widget-preview cly-vue-ratings-preview">
 					<div class="preview-stage" v-if="drawerScope.currentStepId === 'step1' || drawerScope.currentStepId === 'step2' || drawerScope.currentStepId === 'step3'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label" data-test-id="ratings-drawer-ratingspopup-label">
