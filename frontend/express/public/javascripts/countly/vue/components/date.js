@@ -1252,7 +1252,7 @@
                         state.maxDate = now;
                     }
                     else {
-                        state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
+                        state.minDate = moment().subtract(meta.value - 1, meta.level).startOf("day").toDate();
                         state.maxDate = excludeCurrentDay ? moment().subtract(1, 'days').endOf("day").toDate() : now;
                     }
                     state.inTheLastInput = {
