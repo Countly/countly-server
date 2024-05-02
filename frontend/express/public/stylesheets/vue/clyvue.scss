@@ -593,9 +593,7 @@
         background: #FFFFFF;
         border-radius: 4px;
         color: map.get(c.$colors, "text-custom-1-active");
-        // display: inline-block;
-        display: flex;
-        align-items: stretch;
+        display: inline-block;
 
         &__shortcuts-col {
             width: 144px;
@@ -1831,9 +1829,11 @@
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            width: 30px;
+            //width: 30px;
             height: 15px;
-            margin-block: auto;
+            //margin-block: auto;
+            margin-right: 32px;
+            margin-top: 24px;
             &:hover {
                 color: #333;
                 transition: color 1s;
@@ -2072,16 +2072,26 @@
     {
 		.el-dialog {
 			width: 400px;
+            border-radius: 4px;
 			&__header {
 				padding: 24px 24px 12px 24px;
 			}
 			&__body {
-				padding: 12px 24px 12px 24px;
+				padding: 12px 24px 32px 24px;
 				word-break:normal;
 			}
 			&__footer {
 				padding: 12px 24px 24px 24px;
 			}
+            .el-button {
+                font-weight: 500;
+            }
+            &--centered {
+                margin-top: 0!important;
+                position: relative;
+                top: 50%;
+                transform: translateY(-50%);
+            }
 		}
 
         &__title {
@@ -3765,11 +3775,16 @@
         }
     }
 
+	.cly-vue-diff-helper-modal-wrapper {
+		position: fixed;
+		bottom: 6px;
+		width: calc(100% - 272px);
+		text-align: center;
+		left: 272px;
+		z-index: 99;
+	}
     .cly-vue-diff-helper-modal {
-        position: fixed;
-        left: 50%;
-        margin-left: -150px;
-        bottom: 18px;
+        display:inline-block;
         height: 48px;
         z-index: 9999;
 
@@ -4070,6 +4085,10 @@
     outline: none;
     font-size: 13px;
     font-weight: 500;
+	border-radius:4px;
+	&-small {
+		padding:4px;
+	}
     &--gray {
         color: map.get(c.$colors, "text-secondary");
     }
@@ -4079,7 +4098,7 @@
         opacity: 0.7;
     }
     &:hover {
-        background-color: transparent;
+        background-color: #E6F0FB;
     }
 }
 

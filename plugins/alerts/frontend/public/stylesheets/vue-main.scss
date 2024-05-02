@@ -22,8 +22,10 @@
 
     
         &__line {
-            margin-top: 12px;
+            margin-top: 20px;
             border-top: 1px solid  #ECECEC;
+            margin-left: -32px;
+            margin-right: -32px;
         }
     }
     .alert-data-type-block {
@@ -41,6 +43,16 @@
 #alert-drawer-container {
     .alert-trigger{
         font-size: 14px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .el-radio__label{
+        align-content: center;
+    }
+    
+    .first-button-element{
+        padding-top: 4px;
     }
 
     .alert-drawer-trigger-select-and-input{
@@ -71,6 +83,15 @@
         font-weight: 500;
         opacity: 1;
         color:#0166D6;
+    }
+
+    .cly-alert-email-header{
+        font-size: 13px;
+    }
+    
+    .alert-drawer-inline-icon{
+        display: inline-block;
+        vertical-align: middle;
     }
 }
 

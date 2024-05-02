@@ -4,6 +4,7 @@
     countlyAlerts,
     jQuery,
     countlyVue,
+    countlyCommon,
     app,
     countlyAuth,
     CV,
@@ -172,6 +173,14 @@
                             },
                         ],
                     },
+                    profile_groups: {
+                        target: [
+                            {
+                                value: "# of users in the profile group",
+                                label: "# of users in the profile group",
+                            },
+                        ],
+                    },
                     revenue: {
                         target: [
                             { value: "total revenue", label: "total revenue" },
@@ -304,6 +313,10 @@
                         value: "cohorts",
                     },
                     {
+                        label: jQuery.i18n.map["alert.Profile-groups"],
+                        value: "profile_groups",
+                    },
+                    {
                         label: jQuery.i18n.map["alert.Data-points"],
                         value: "dataPoints",
                     },
@@ -398,6 +411,8 @@
                     return "View";
                 case "cohorts":
                     return "Cohort";
+                case "profile_groups":
+                    return "Profile Group";
                 case "survey":
                     return "Widget Name";
                 case "nps":
@@ -430,7 +445,7 @@
                         (viewList) => {
                             this.alertDataSubType2Options = viewList.map(
                                 (v) => {
-                                    return { value: v.value, label: v.name };
+                                    return { value: v.value, label: countlyCommon.unescapeHtml(v.name) };
                                 }
                             );
                         }
@@ -441,7 +456,7 @@
                         formData.selectedApps,
                         ({ events, segments }) => {
                             this.alertDataSubType2Options = events.map((e) => {
-                                return { value: e.value, label: e.name };
+                                return { value: e.value, label: countlyCommon.unescapeHtml(e.name) };
                             });
                             this.alertDataFilterObject = segments;
                         }
@@ -451,8 +466,34 @@
                     countlyAlerts.getCohortsForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((c) => {
-                                return { value: c._id, label: c.name };
+                            var filtered = data.filter(function(c) {
+                                if (c.type !== "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
+                            });
+                        }
+                    );
+                }
+                if (formData.alertDataType === "profile_groups") {
+                    countlyAlerts.getCohortsForApp(
+                        formData.selectedApps,
+                        (data) => {
+                            var filtered = data.filter(function(c) {
+                                if (c.type === "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
                             });
                         }
                     );
@@ -462,7 +503,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((s) => {
-                                return { value: s._id, label: s.name };
+                                return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
                     );
@@ -472,7 +513,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((n) => {
-                                return { value: n._id, label: n.name };
+                                return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
                     );
@@ -484,7 +525,7 @@
                             this.alertDataSubType2Options = data.map((r) => {
                                 return {
                                     value: r._id,
-                                    label: r.popup_header_text,
+                                    label: countlyCommon.unescapeHtml(r.popup_header_text),
                                 };
                             });
                         }
@@ -520,6 +561,7 @@
                     "events",
                     "views",
                     "cohorts",
+                    "profile_groups",
                     "survey",
                     "nps",
                     "rating",
