@@ -7,7 +7,7 @@
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
     <template v-slot:default="drawerScope">
-        <cly-form-step>
+        <cly-form-step id="preset-drawer-form">
 
             <cly-form-field :label="i18n('management.preset.date-range')" name="range" rules="required" v-slot:default>
                 <cly-date-picker 
