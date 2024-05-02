@@ -42,21 +42,21 @@
             }
         }
 
-        tr:hover {
-            td {
-                border-top: 1px solid #0166D6 !important;
-                border-bottom: 2px solid #0166D6 !important;
-                background-color: #FFF !important;
+        // tr:hover {
+        //     td {
+        //         border-top: 1px solid #0166D6 !important;
+        //         border-bottom: 2px solid #0166D6 !important;
+        //         background-color: #FFF !important;
     
-                &:first-child {
-                    border-left: 1px solid #0166D6 !important;
-                }
+        //         &:first-child {
+        //             border-left: 1px solid #0166D6 !important;
+        //         }
     
-                &:last-child {
-                    border-right: 1px solid #0166D6 !important;
-                }
-            }
-        }     
+        //         &:last-child {
+        //             border-right: 1px solid #0166D6 !important;
+        //         }
+        //     }
+        // }     
         
         // .cly-vue-more-options {
         //     position: absolute;
