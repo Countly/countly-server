@@ -191,6 +191,7 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 if (alertConfig._id) {
                     const id = alertConfig._id;
                     delete alertConfig._id;
+                    alertConfig.createdBy = params.member._id;
                     return common.db.collection("alerts").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},

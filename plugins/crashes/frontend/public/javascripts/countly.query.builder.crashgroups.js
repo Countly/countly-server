@@ -41,7 +41,8 @@
                             "cly.=": "$in",
                             "cly.!=": "$nin",
                             "cly.contains": "$regex",
-                            "cly.beginswith": "$regex",
+                            "cly.notcontain": "rgxntc",
+                            "cly.beginswith": "rgxbw",
                             "cly.between": function(r) {
                                 return {
                                     $gte: r.value.data[0],
@@ -169,6 +170,18 @@
                             $regex: function(data) {
                                 return {
                                     operatorId: "cly.contains",
+                                    valueData: data,
+                                };
+                            },
+                            rgxntc: function(data) {
+                                return {
+                                    operatorId: 'cly.notcontain',
+                                    valueData: data,
+                                };
+                            },
+                            rgxbw: function(data) {
+                                return {
+                                    operatorId: 'cly.beginswith',
                                     valueData: data,
                                 };
                             },
