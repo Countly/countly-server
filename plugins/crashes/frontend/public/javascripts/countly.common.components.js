@@ -8,7 +8,8 @@
             donutColor: {type: String, default: "#ff6120"},
             isVertical: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: 4},
-            tooltip: {type: String}
+            tooltip: {type: String},
+            testId: {type: String, default: "cly-crashes-dashboard-tile-default-test-id"}
         },
         computed: {
             classes: function() {

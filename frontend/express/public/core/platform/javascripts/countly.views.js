@@ -283,6 +283,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     permission: "core",
     route: "#/analytics/technology/platforms",
     title: CV.i18n('platforms.title'),
+    dataTestId: "platforms",
     component: AppPlatformView
 });
 

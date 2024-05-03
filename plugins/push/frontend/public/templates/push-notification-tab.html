@@ -3,24 +3,25 @@
         <cly-main>
             <cly-section>
                 <cly-metric-cards :multiline="false">
-                    <cly-metric-card :number="totalAppUsers" :label="i18n('push-notification.total-app-users')">
+                    <cly-metric-card test-id="total-app-users" :number="totalAppUsers" :label="i18n('push-notification.total-app-users')">
                     </cly-metric-card>
-                    <cly-metric-card :number="enabledUsers" :label="i18n('push-notification.enabled-users')">
+                    <cly-metric-card test-id="notification-enabled-users" :number="enabledUsers" :label="i18n('push-notification.enabled-users')">
                     </cly-metric-card>
-                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')">
+                    <cly-metric-card test-id="enabled-users-percentage" :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')">
                     </cly-metric-card>
                 </cly-metric-cards>
             </cly-section>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
                     <div class="bu-level-item bu-mr-4">
-                        <div class="cly-vue-platform-filter-label"> 
+                        <div class="cly-vue-platform-filter-label" data-test-id="push-notifications-result-for-label"> 
                             {{i18n('push-notification.results-for')}}
                         </div>
                     </div>
                     <div class="bu-level-item">
                         <cly-select-x
                             placeholder="All Notification Types"
+                            test-id="push-notifications-result-for-combobox"
                             mode="multi-check"
                             v-model="selectedNotificationKind"
                             :options="notificationTypes">

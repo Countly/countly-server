@@ -69,12 +69,12 @@
     var OverviewComponent = countlyVue.views.create({
         template: CV.T('/guides/templates/overview-component.html'),
         props: {
-            title: {type: String, required: false},
-            description: {type: String, required: false},
-            link: {type: String, required: false},
-            items: {type: Array, required: false},
-            type: {type: String, required: true, default: 'walkthroughs'},
-            max: {type: Number, required: false, default: 2}
+            title: { type: String, required: false },
+            description: { type: String, required: false },
+            link: { type: String, required: false },
+            items: { type: Array, required: false },
+            type: { type: String, required: true, default: 'walkthroughs' },
+            max: { type: Number, required: false, default: 2 }
         },
         components: {
             'walkthrough-component': WalkthroughComponent,
@@ -125,6 +125,10 @@
                         placement: "bottom-end"
                     };
                 }
+            },
+            testId: {
+                type: String,
+                default: "view-guide-test-id"
             }
         },
         data: function() {
@@ -249,7 +253,7 @@
                         return;
                     }
                     const selectorId = "feedback-survey";
-                    const segmentation = {guide: self.guideData.sectionID || ""};
+                    const segmentation = { guide: self.guideData.sectionID || "" };
                     COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId, null, segmentation);
                 });
             },
@@ -264,7 +268,7 @@
             'walkthrough-component': WalkthroughComponent
         },
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -274,7 +278,7 @@
             'article-component': ArticleComponent
         },
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -473,7 +477,7 @@
     var SearchResultTab = countlyVue.views.create({
         template: CV.T('/guides/templates/search-result-tab.html'),
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -563,31 +567,31 @@
 
     app.route("/guides/overview", "guides-overview", function() {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "overview"};
+        guidesView.params = { primaryTab: "overview" };
         this.renderWhenReady(guidesView);
     });
 
     app.route("/guides/walkthroughs", "guides-walkthroughs", function() {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "walkthroughs"};
+        guidesView.params = { primaryTab: "walkthroughs" };
         this.renderWhenReady(guidesView);
     });
 
     app.route("/guides/walkthroughs/*secondaryTab", "guides-walkthroughs", function(secondaryTab) {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "walkthroughs", secondaryTab};
+        guidesView.params = { primaryTab: "walkthroughs", secondaryTab };
         this.renderWhenReady(guidesView);
     });
 
     app.route("/guides/articles", "guides-articles", function() {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "articles"};
+        guidesView.params = { primaryTab: "articles" };
         this.renderWhenReady(guidesView);
     });
 
     app.route("/guides/articles/*secondaryTab", "guides-articles", function(secondaryTab) {
         var guidesView = getGuidesView();
-        guidesView.params = {primaryTab: "articles", secondaryTab};
+        guidesView.params = { primaryTab: "articles", secondaryTab };
         this.renderWhenReady(guidesView);
     });
 
@@ -599,7 +603,7 @@
 
     app.route("/guides/search/:query", "guides-search-query", function(query) {
         var searchView = getGuidesSearchView();
-        searchView.params = {query: query};
+        searchView.params = { query: query };
         this.renderWhenReady(searchView);
     });
 
