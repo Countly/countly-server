@@ -165,15 +165,15 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
-Cypress.Commands.add("scrollPageToBottom", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToTop", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('top', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToCenter", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
@@ -196,73 +196,73 @@ Cypress.Commands.add('verifyElement', ({
     selectedFontColor,
     attr,
     attrText,
-    shouldNot = false
+    shouldNot = false 
 }) => {
-    if (!shouldNot) {
+
+    if(!shouldNot) {
 
         if (labelElement != null && isElementVisible === true) {
             cy.shouldBeVisible(labelElement);
         }
-
+    
         if (labelText != null) {
             cy.shouldContainText(labelElement, labelText);
         }
-
+        
         if (tooltipElement != null) {
             cy.shouldBeVisible(tooltipElement);
         }
-
+    
         if (tooltipText != null) {
             cy.shouldTooltipContainText(tooltipElement, tooltipText);
         }
-
+    
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);
         }
-
+    
         if (elementText != null) {
             cy.shouldContainText(element, elementText);
         }
-
+    
         if (elementPlaceHolder != null) {
             cy.shouldPlaceholderContainText(element, elementPlaceHolder);
         }
-
+    
         if (hrefContainUrl != null) {
             cy.shouldHrefContainUrl(element, hrefContainUrl);
         }
-
+    
         if (value != null) {
             cy.shouldHaveValue(element, value);
         }
-
+    
         if (isChecked != null) {
             isChecked ? cy.shouldBeVisible(`[data-test-id="${element}"]` + '.is-checked') : cy.shouldNotExist(`[data-test-id="${element}"]` + '.is-checked');
         }
-
+    
         if (isDisabled != null) {
             isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
         }
-
+    
         if (selectedIconColor != null) {
             var selector;
             unVisibleElement != null ? selector = unVisibleElement : selector = element;
             cy.getElement(`[data-test-id="${selector}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedIconColor));
         }
-
+    
         if (selectedFontColor != null) {
             cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedFontColor));
         }
-
+    
         if (selectedMainColor != null) {
             cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedMainColor));
         }
-
+    
         if (attr != null && attrText != null) {
             cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
         }
-    }
-    else {
+    } else {
 
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);
