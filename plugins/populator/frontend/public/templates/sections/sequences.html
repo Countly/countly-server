@@ -89,7 +89,7 @@
                             </div> 
                         </template> 
                         <template v-slot:reference> 
-                            <el-button type="text" :disabled="!linkedSectionActivity" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddStep()">{{i18n('populator-template.add-step')}}</el-button>
+                            <el-button type="text" v-tooltip="!linkedSectionActivity ? i18n('populator-template.add-step-tooltip') : ''" :disabled="!linkedSectionActivity" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddStep()">{{i18n('populator-template.add-step')}}</el-button>
                         </template>
                     </el-popover>
             </div>
