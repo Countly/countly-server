@@ -1,7 +1,7 @@
 import feedbackRatingsPageElements from "../../../../support/elements/dashboard/feedback/ratings/ratings";
 
 const verifyStaticElementsOfPage = () => {
-    
+
     cy.verifyElement({
         element: feedbackRatingsPageElements.TAB_RATINGS,
         elementText: "Ratings",
@@ -43,7 +43,7 @@ const verifyStaticElementsOfPage = () => {
         tooltipElement: feedbackRatingsPageElements.AVERAGE_RATINGS_SCORE_TOOLTIP,
         tooltipText: "Average Ratings received calculated by Sum of Ratings / Ratings Count"
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

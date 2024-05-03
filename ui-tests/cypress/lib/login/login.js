@@ -22,7 +22,7 @@ const verifyUnvalidUsernameOrEmailMessage = () => {
     cy.shouldContainText(loginPageElements.USERNAME_ERROR_MESSAGE, 'Please enter a valid username or email.');
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageDefaultElements = () => {
     cy.shouldBeVisible(loginPageElements.LOGO);
     cy.shouldBeVisible(loginPageElements.LANGUAGE);
     cy.shouldBeVisible(loginPageElements.SIGN_IN_LABEL);
@@ -54,6 +54,6 @@ module.exports = {
     clickLoginButton,
     verifyLoginFailedMessage,
     verifyUnvalidUsernameOrEmailMessage,
-    verifyEmptyPageElements,
+    verifyPageDefaultElements,
     login,
 };
