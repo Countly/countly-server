@@ -7,7 +7,7 @@
         </template>
     </cly-header>
     <cly-main>
-		<cly-section>
+		<cly-section data-test-id="table-plugins">
 			<cly-datatable-n :force-loading="isLoading" :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="switch" fixed="left" width="70" prop="enabled">
