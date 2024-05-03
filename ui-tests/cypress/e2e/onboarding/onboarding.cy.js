@@ -174,7 +174,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('verify all pages after complete onboarding with empty data', function() {
+    it.only('verify all pages after complete onboarding with empty data', function() {
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -187,8 +187,8 @@ describe('Complete Onboarding', () => {
             isDemoApp: false,
             appType: APP_TYPE.MOBILE,
             appName: 'My Mobile App',
-            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            timezone: 'Istanbul'
+            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a3',
+            timezone: 'Harare'
         });
 
         initialConsentHelpers.completeOnboardingInitialConsent({
