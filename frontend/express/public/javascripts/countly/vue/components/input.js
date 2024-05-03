@@ -1033,6 +1033,11 @@
                 skin: { default: "switch", type: String},
                 disabled: {type: Boolean, default: false}
             },
+            data: function() {
+                return {
+                    active: this.value
+                };
+            },
             computed: {
                 topClasses: function() {
                     var classes = [];
@@ -1069,21 +1074,26 @@
                         }
                     }
                     else if (this.skin === "star") {
-                        classes.push("fa fa-star");
-                        if (value) {
-                            classes.push("color-yellow-100");
+                        classes.push("fa");
+                        if (value || this.active) {
+                            classes.push("fa-star color-yellow-100");
                         }
                         else {
-                            classes.push("color-cool-gray-50");
+                            classes.push("fa-star-o color-cool-gray-50");
                         }
                     }
                     return classes;
+                },
+                mouseOver: function() {
+                    if (!this.disabled) {
+                        this.active = !this.active;
+                    }
                 }
             },
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
                             '<div class="check-wrapper text-clickable">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<i v-bind:class="labelClass" @click.stop="setValue(!value)"></i>\n' +
+                                '<i v-bind:class="labelClass" @mouseover="mouseOver" @mouseleave="mouseOver" @click.stop="setValue(!value)"></i>\n' +
                                 '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
                             '</div>\n' +
                         '</div>'

@@ -716,7 +716,9 @@
                             :test-id="dialog.testId"\
                             :saveButtonLabel="dialog.confirmLabel"\
                             :cancelButtonLabel="dialog.cancelLabel"\
-                            :title="dialog.title">\
+                            :title="dialog.title"\
+                            :show-close="dialog.showClose"\
+                            :alignCenter="dialog.alignCenter">\
                                 <template slot-scope="scope">\
                                     <div v-html="dialog.message"></div>\
                                 </template>\

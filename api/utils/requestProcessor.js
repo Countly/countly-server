@@ -41,6 +41,7 @@ const countlyApi = {
         appUsers: require('../parts/mgmt/app_users.js'),
         eventGroups: require('../parts/mgmt/event_groups.js'),
         cms: require('../parts/mgmt/cms.js'),
+        datePresets: require('../parts/mgmt/date_presets.js'),
     }
 };
 
@@ -2980,6 +2981,55 @@ const processRequest = (params) => {
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
+                    }
+                    break;
+                }
+                break;
+            }
+            case '/o/date_presets': {
+                switch (paths[3]) {
+                case 'getAll':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getAll, params);
+                    break;
+                case 'getById':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getById, params);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /getAll /getById');
+                    }
+                    break;
+                }
+                break;
+            }
+            case '/i/date_presets': {
+                switch (paths[3]) {
+                case 'create':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.create);
+                    break;
+                case 'update':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.update);
+                    break;
+                case 'delete':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.delete);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /create /update or /delete');
                     }
                     break;
                 }

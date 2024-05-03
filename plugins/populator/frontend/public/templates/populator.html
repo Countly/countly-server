@@ -168,7 +168,7 @@
             </cly-main>
         </el-tab-pane>
     </cly-tabs>
-    <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+    <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :saveButtonVisibility="dialog.saveButtonVisibility" :title="dialog.title" >
         <template slot-scope="scope">
             <div v-html="dialog.text"></div>
         </template>
