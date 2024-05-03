@@ -187,6 +187,7 @@ describe('Complete Onboarding', () => {
             isDemoApp: false,
             appType: APP_TYPE.MOBILE,
             appName: 'My Mobile App',
+            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
             timezone: 'Istanbul'
         });
 
