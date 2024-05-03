@@ -49,12 +49,12 @@ const clickContinueSubmitButton = () => {
     cy.clickElement(initialSetupPageElements.CONTINUE_SUBMIT_BUTTON);
     cy.wait(100);
     cy //There is a case where the button is not clicked, so we need to check if the button is still there and click it again
-    .elementExists(initialSetupPageElements.CONTINUE_SUBMIT_BUTTON)
-    .then((isExists) => {
-        if (isExists) {
-            cy.clickElement(initialSetupPageElements.CONTINUE_SUBMIT_BUTTON);
-        }
-    });
+        .elementExists(initialSetupPageElements.CONTINUE_SUBMIT_BUTTON)
+        .then((isExists) => {
+            if (isExists) {
+                cy.clickElement(initialSetupPageElements.CONTINUE_SUBMIT_BUTTON);
+            }
+        });
 };
 
 const verifyDefaultPageElements = (isDemoApp) => {
