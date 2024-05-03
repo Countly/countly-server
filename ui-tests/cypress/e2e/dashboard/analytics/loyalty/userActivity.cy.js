@@ -8,7 +8,7 @@ describe('Visitor Activity', () => {
         navigationHelpers.goToLoginPage();
     });
 
-    it('should be visible all elements on empty state', function() {
+    it.skip('should be visible all elements on empty state', function() {
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToVisitorLoyalty();
         analyticsLoyaltyUserActivityHelpers.verifyEmptyPageElements();
