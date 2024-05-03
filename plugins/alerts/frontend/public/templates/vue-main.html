@@ -278,58 +278,61 @@
                             <span class="groupcard-text mediumtextNormal-14px" v-else>
                                 Send alert if there is a
                             </span>
-                            <select
-                                style="width: 70px;"
-                                @change="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input"
-                                v-model="drawerScope.editedObject.alertDataSubType">
-                                <option :value="null" hidden>metric</option>
-                                <option v-for="(metricItem, index) in defaultAlertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
-                                    {{ metricItem.label }}
-                                </option>
-                            </select>
+                            <cly-form-field rules="required" style="display:inline-block">
+                                <select
+                                    style="width: 70px;"
+                                    @change="handleChange($event.target)"
+                                    class="alert-drawer-trigger-select-and-input"
+                                    v-model="drawerScope.editedObject.alertDataSubType">
+                                    <option :value="null" hidden>metric</option>
+                                    <option v-for="(metricItem, index) in defaultAlertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
+                                        {{ metricItem.label }}
+                                    </option>
+                                </select>
+                            </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 is
                             </span>
-
                             <!--Select operation for variable part in the trigger component.
                                 Selected data binding into compareType property which is defifen in model.js file-->
-                            <select
-                                @change="handleChange($event.target)"
-                                v-model="drawerScope.editedObject.compareType"
-                                v-if="isCompareTypeSelectAvailable"
-                                class="alert-drawer-trigger-select-and-input">
-                                <!--Placeholder for variable selection -->
-                                <option :value="null" hidden>variable</option>
-                                <!-- Variable selection without online-users data type-->
-                                <option
-                                    v-if="drawerScope.editedObject.alertDataSubType !== 't'"
-                                    v-for="(variableItem, index) in defaultAlertVariable.condition"
-                                    :key="index"
-                                    :value="variableItem.value">
-                                    {{ variableItem.label }}
-                                </option>
-                                <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
-                                <option
-                                    v-if="drawerScope.editedObject.alertDataSubType === 't'"
-                                    v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
-                                    :key="index"
-                                    :value="variableItem.value">
-                                    {{ variableItem.label }}
-                                </option>
-                            </select>
-
+                            <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">    
+                                <select
+                                    @change="handleChange($event.target)"
+                                    v-model="drawerScope.editedObject.compareType"
+                                    class="alert-drawer-trigger-select-and-input">
+                                    <!--Placeholder for variable selection -->
+                                    <option :value="null" hidden>variable</option>
+                                    <!-- Variable selection without online-users data type-->
+                                    <option
+                                        v-if="drawerScope.editedObject.alertDataSubType !== 't'"
+                                        v-for="(variableItem, index) in defaultAlertVariable.condition"
+                                        :key="index"
+                                        :value="variableItem.value">
+                                        {{ variableItem.label }}
+                                    </option>
+                                    <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
+                                    <option
+                                        v-if="drawerScope.editedObject.alertDataSubType === 't'"
+                                        v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
+                                        :key="index"
+                                        :value="variableItem.value">
+                                        {{ variableItem.label }}
+                                    </option>
+                                </select>
+                            </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
                             </span>
-                            <input
-                                @input="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
-                                placeholder="value"
-                                type="text"
-                                v-model="drawerScope.editedObject.compareValue"
-                                v-if="isCompareTypeSelectAvailable"
-                                />
+                            <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">
+                                <input
+                                    required
+                                    @input="handleChange($event.target)"
+                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
+                                    placeholder="value"
+                                    type="text"
+                                    v-model="drawerScope.editedObject.compareValue"
+                                    />
+                            </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
                             </span>
@@ -337,27 +340,29 @@
                                 v-if="(isPeriodSelectAvailable || drawerScope.editedObject.alertDataSubType === 't')">
                                 in the last
                             </span>
-                            <select
-                                @change="handleChange($event.target)"
-                                v-model="drawerScope.editedObject.period"
-                                v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'"
-                                class="alert-drawer-trigger-select-and-input">
-                                <option :value="null" hidden>time</option>
-                                <option v-for="(periodItem, index) in alertTimeOptions" :key="index" :value="periodItem.value">
-                                    {{ periodItem.label }}
-                                </option>
-                            </select>
-                            <input
-                                @input="handleChange($event.target)"
-                                class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
-                                placeholder="value"
-                                type="text"
-                                v-model="drawerScope.editedObject.compareValue2"
-                                v-if="drawerScope.editedObject.alertDataSubType === 't'"
-                                />
+                            <cly-form-field v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'" rules="required" style="display:inline-block">
+                                <select
+                                    @change="handleChange($event.target)"
+                                    v-model="drawerScope.editedObject.period"
+                                    class="alert-drawer-trigger-select-and-input">
+                                    <option :value="null" hidden>time</option>
+                                    <option v-for="(periodItem, index) in alertTimeOptions" :key="index" :value="periodItem.value">
+                                        {{ periodItem.label }}
+                                    </option>
+                                </select>
+                            </cly-form-field>
+                            <cly-form-field rules="required" style="display:inline-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                                <input
+                                    @input="handleChange($event.target)"
+                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
+                                    placeholder="value"
+                                    type="text"
+                                    v-model="drawerScope.editedObject.compareValue2"
+                                    />
+                            </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px"
-                                    v-if="drawerScope.editedObject.alertDataSubType === 't'">
-                                    minutes
+                                v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                                minutes
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px">.</span>
                         </div>
@@ -404,7 +409,7 @@
                         </select>
                         <span class="groupcard-text mediumtextNormal-14px">.</span>
                     </div>
-
+                    
                     <div class="cly-vue-alert-drawer__line"></div>
 
                     <pre v-if="0">
