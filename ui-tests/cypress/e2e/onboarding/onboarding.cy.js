@@ -174,7 +174,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('verify home page after complete onboarding with empty data', function() {
+    it('verify all pages after complete onboarding with empty data', function() {
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
