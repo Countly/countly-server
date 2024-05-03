@@ -17,9 +17,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.data-template-tooltip')" data-test-id="populate-with-template-data-template-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select test-id="data-populator-template" class="main-page-inputs" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
-                                    <el-option test-id="data-template" :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
-                                </el-select>
+                                <cly-select-x test-id="data-populator-template-select" class="main-page-inputs" v-model="selectedTemplate" :options="templates.map(template => ({value: template._id,label: template.name}))" :placeholder="i18n('populator.select-template')"></cly-select-x>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">
@@ -61,9 +59,7 @@
                                 <cly-tooltip-icon :tooltip="i18n('populator.environment-tooltip')" data-test-id="populate-with-environment-environment-tooltip"></cly-tooltip-icon>
                             </div>
                             <div class="bu-column main-page-container">
-                                <el-select class="selected-environment-input" v-model="selectedEnvironment" :placeholder="i18n('populator.select-environment')" test-id="populate-with-environment-environment">
-                                    <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in environments" test-id="populate-with-environment-environment"></el-option>
-                                </el-select>
+                                <cly-select-x test-id="populate-with-environment-environment-select" class="selected-environment-input" v-model="selectedEnvironment" :options="environments.map(item => ({value: item._id, label: item.name}))" :placeholder="i18n('populator.select-environment')"></cly-select-x>
                             </div>
                         </cly-sub-section>
                         <cly-sub-section class="bu-columns bu-is-vcentered">

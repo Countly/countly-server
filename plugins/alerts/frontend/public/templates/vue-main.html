@@ -128,11 +128,11 @@
             v-bind="$props.controls"  ref="drawerData">>
             <template v-slot:default="drawerScope">
                 <cly-form-step id="alert-drawer-main">
-                    <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" :optional="true" test-id="alert-name">
+                    <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" rules="required" test-id="alert-name">
                         <el-input
                             test-id="alert-name-input"
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex"
+                            class="bu-is-flex bu-mt-1"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
@@ -213,10 +213,12 @@
                                 :disabled="true"
                             />
                         </div>
-                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="ratings-is-label">is</span>
+                        <span class="bu-mx-2" style="line-height: 30px" data-test-id="ratings-is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 test-id="alert-data-filter-key-rating-select"
+                                width="286"
+                                :collapse-tags="false"
                                 v-if="Array.isArray(alertDataFilterValue)"
                                 v-model="alertDataFilterValue"
                                 class="bu-is-flex"
@@ -282,7 +284,7 @@
 
                     <div class="cly-vue-alert-drawer__line"></div>
 
-                    <div class="text-medium text-heading bu-mt-5 bu-has-background-white" style="font-size:13px" data-test-id="trigger-label">
+                    <div class="text-medium text-heading bu-has-background-white" style="font-size:13px; margin-top: 32px" data-test-id="trigger-label">
                         {{i18n('alert.Alert_Trigger')}}
                     </div>
 
