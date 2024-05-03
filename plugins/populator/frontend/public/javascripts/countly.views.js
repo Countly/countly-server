@@ -55,12 +55,13 @@
                 }
             },
             newTemplate: function() {
-                this.titleDescription = {header: CV.i18n('populator.create-new-template'), button: CV.i18n('common.create')};
+                this.titleDescription = {header: CV.i18n('populator.create-new-template'), button: CV.i18n('populator.create-template')};
                 // todo: Get this initial state from model instead of hardcoding it
                 this.openDrawer("populatorTemplate", {
                     name: '',
                     uniqueUserCount: 100,
                     platformType: ["Mobile"],
+                    sectionsActivity: {"events": false, "views": false, "sequences": false, "behavior": false},
                     users: [],
                     events: [],
                     views: [],
@@ -76,7 +77,7 @@
             handleDrawerActions: function(command, template) {
                 switch (command) {
                 case "edit":
-                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.save')};
+                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.drawer-save-template')};
                     this.openDrawer("populatorTemplate", template);
                     break;
                 case "duplicate":
@@ -593,7 +594,8 @@
                     {value: 500, text: 500},
                     {value: 1000, text: 1000}
                 ],
-                deletedIndex: null
+                deletedIndex: null,
+                sectionActivity: {}
             };
         },
         methods: {
@@ -758,7 +760,7 @@
                 }
                 this.$refs.populatorDrawer.disableAutoClose = false;
             },
-            prepareData: function(type, data1, data2) {
+            prepareData: function(type, data1, data2, data3) {
                 if (type === 'behavior') {
                     const users = data1;
                     const sequences = data2;
@@ -779,7 +781,7 @@
                 else if (type === "sequences") {
                     const events = data1;
                     const views = data2;
-                    const preparedData = {events: [], views: []};
+                    const preparedData = {events: [], views: [], behavior: {}};
                     if (events && events.length) {
                         events.forEach(function(item) {
                             preparedData.events.push({name: item.key, value: item.key.toLowerCase()});
@@ -790,8 +792,15 @@
                             preparedData.views.push({name: item.key, value: item.key.toLowerCase()});
                         });
                     }
+                    preparedData.behavior = data3;
                     return preparedData;
                 }
+            },
+            sectionActivityChange: function(value, section) {
+                if (!this.sectionActivity[section]) {
+                    Vue.set(this.sectionActivity, section, false);
+                }
+                Vue.set(this.sectionActivity, section, value);
             }
         },
         components: {

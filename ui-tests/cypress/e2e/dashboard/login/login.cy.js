@@ -1,5 +1,5 @@
 import user from '../../../fixtures/user.json';
-const loginHelpers = require('../../../lib/login');
+const loginHelpers = require('../../../lib/login/login');
 const navigationHelpers = require('../../../support/navigations');
 
 describe('Login', () => {
@@ -8,7 +8,7 @@ describe('Login', () => {
     });
 
     it('should be visible all elements on empty state', function() {
-        loginHelpers.verifyEmptyPageElements();
+        loginHelpers.verifyPageDefaultElements();
     });
 
     it('should successfully log in to with valid username and password', function() {
