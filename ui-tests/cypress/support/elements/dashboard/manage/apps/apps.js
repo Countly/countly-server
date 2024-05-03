@@ -30,4 +30,4 @@ export default {
     AVATAR_APP_ICON: 'avatar-app-icon',
     ADD_ICON_BUTTON: 'add-icon-button',
     ADD_UPLOAD_INSRUCTIONS_LABEL: 'account-upload-instructions-label'
-}
+};

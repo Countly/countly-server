@@ -18,4 +18,4 @@ export default {
     COMPARE_BUTTON: 'events-compare-button',
     RESULTS_BY_LABEL: 'compare-events-results-by-label',
     COUNT_BUTTON: 'compare-events-results-by-button-select-input-pseudo-input-label'
-}
+};

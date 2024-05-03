@@ -45,7 +45,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: analyticsEventsOverviewPageElements.CONFIGURE_EVENTS_LINK_BUTTON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

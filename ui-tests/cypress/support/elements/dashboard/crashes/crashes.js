@@ -1,12 +1,12 @@
 export default {
-	PAGE_TITLE: 'header-title',
-	PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
-	TAB_CRASH_GROUPS: 'tab-crash-groups-label',
-	TAB_CRASH_STATISTICS: 'tab-crash-statistics-label',
-	AUTO_REFRESH_IS_LABEL: 'crash-groups-auto-refresh-toggle-is-label',
-	ENABLED_LABEL: 'crash-groups-auto-refresh-toggle-enabled-label',
-	AUTO_REFRESH_IS_ENABLED_TOOLTIP: 'crash-groups-auto-refresh-toggle-tooltip',
-	STOP_AUTO_REFRESH_BUTTON: 'crash-groups-auto-refresh-toggle-button',
+    PAGE_TITLE: 'header-title',
+    PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
+    TAB_CRASH_GROUPS: 'tab-crash-groups-label',
+    TAB_CRASH_STATISTICS: 'tab-crash-statistics-label',
+    AUTO_REFRESH_IS_LABEL: 'crash-groups-auto-refresh-toggle-is-label',
+    ENABLED_LABEL: 'crash-groups-auto-refresh-toggle-enabled-label',
+    AUTO_REFRESH_IS_ENABLED_TOOLTIP: 'crash-groups-auto-refresh-toggle-tooltip',
+    STOP_AUTO_REFRESH_BUTTON: 'crash-groups-auto-refresh-toggle-button',
     ENABLE_AUTO_REFRESH_TOGGLE: 'crash-groups-auto-refresh-toggle-el-switch-core',
     EDIT_COLUMNS_BUTTON: 'crash-groups-edit-columns-button',
     EXPORT_AS_BUTTON: 'crash-groups-export-as-button',
@@ -88,4 +88,4 @@ export default {
 
     CHART_TYPE_COMBOBOX: 'cly-chart-header-test-id-select-input',
     MORE_OPTION_BUTTON: 'cly-chart-header-test-id-cly-chart-more-dropdown-more-option-button',
-}
+};

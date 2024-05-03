@@ -5,7 +5,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: configurationsPageElements.PAGE_TITLE,
         labelText: "Settings",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

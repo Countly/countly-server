@@ -43,4 +43,4 @@ export default {
     TAB_REQUEST_STATS: 'tab-request-stats-title',
     TAB_HEALTH_CHECK: 'tab-health-check-title',
     TAB_SDK_CONFIGURATION: 'tab-sdk-configuration-title'
-}
+};

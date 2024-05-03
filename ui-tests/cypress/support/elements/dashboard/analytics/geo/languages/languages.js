@@ -10,7 +10,7 @@ export default {
     EMPTY_PIE_NEW_ICON: 'pie-new-empty-logo',
     EMPTY_PIE_NEW_TITLE: 'pie-new-empty-title',
     EMPTY_PIE_NEW_SUBTITLE: 'pie-new-empty-subtitle',
-	EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
+    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle'
-}
+};

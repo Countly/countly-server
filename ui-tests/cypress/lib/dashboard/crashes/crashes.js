@@ -47,7 +47,7 @@ const verifyStaticElementsOfCrashGroupsPage = () => {
         element: crashesPageElements.TAB_CRASH_STATISTICS,
         elementText: "Crash Statistics",
     });
-}
+};
 
 const verifyStaticElementsOfCrashStatisticsPage = () => {
     cy.verifyElement({
@@ -198,7 +198,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
     cy.verifyElement({
         element: crashesPageElements.TOTAL_OCCURENCES_GRAPH,
     });
-}
+};
 
 
 const verifyEmptyPageElements = () => {

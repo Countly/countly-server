@@ -33,7 +33,7 @@ const verifyStaticElementsOfPage = () => {
         element: errorLogsPageElements.TAB_AUDIT_LOGS,
         elementText: "Audit Logs"
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

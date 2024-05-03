@@ -8,7 +8,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: pluginsPageElements.ALL_FEATURES_RADIO_BUTTON,
-        elementText:'All Features',
+        elementText: 'All Features',
     });
 
     cy.verifyElement({
@@ -32,12 +32,12 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: pluginsPageElements.TABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
-    
+
 };
 
 module.exports = {

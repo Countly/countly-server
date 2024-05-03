@@ -5,5 +5,4 @@ export default {
     EMPTY_PAGE_ICON: 'cly-chart-time-default-test-id-empty-logo',
     EMPTY_PAGE_TITLE: 'cly-chart-time-default-test-id-empty-title',
     EMPTY_PAGE_SUBTITLE: 'cly-chart-time-default-test-id-empty-subtitle',
-}
-  
+};

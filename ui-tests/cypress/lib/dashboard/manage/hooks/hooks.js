@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: hooksPageElements.NEW_HOOK_BUTTON,
-        elementText:'New hook',
+        elementText: 'New hook',
     });
 
     cy.verifyElement({
@@ -18,7 +18,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: hooksPageElements.ALL_HOOKS_RADIO_BUTTON,
-        elementText:'All Hooks',
+        elementText: 'All Hooks',
     });
 
     cy.verifyElement({
@@ -43,7 +43,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: hooksPageElements.TABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

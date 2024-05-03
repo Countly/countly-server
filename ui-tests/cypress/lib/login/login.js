@@ -1,4 +1,4 @@
-import loginPageElements from '../../support/elements/login/login'
+import loginPageElements from '../../support/elements/login/login';
 
 const typeUsername = username => {
     cy.typeInput(loginPageElements.USERNAME, username);

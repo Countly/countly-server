@@ -17,12 +17,12 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: jobsPageElements.TABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
-    
+
 };
 
 module.exports = {

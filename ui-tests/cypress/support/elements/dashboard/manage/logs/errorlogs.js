@@ -6,4 +6,4 @@ export default {
     DOWNLOAD_LOG_LINK: 'download-link-button',
     CLEAR_LOG_LINK_BUTTON: 'clear-log-button',
     TABLE_LOGS: 'table-logs'
-}
+};

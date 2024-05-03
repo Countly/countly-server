@@ -17,7 +17,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: analyticsTechnologyGeoCountriesPageElements.TAB_COUNTRIES,
         elementText: "Countries",
@@ -73,7 +73,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: analyticsTechnologyGeoCountriesPageElements.NEW_USERS_LABEL,
         labelText: "New Users",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

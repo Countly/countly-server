@@ -30,7 +30,7 @@ const verifyStaticElementsOfEventStatsPage = () => {
         element: analyticsEventsPageElements.TAB_COMPARE_EVENTS,
         elementText: "Compare Events",
     });
-}
+};
 
 const verifyStaticElementsOfCompareEventsPage = () => {
     cy.verifyElement({
@@ -66,7 +66,7 @@ const verifyStaticElementsOfCompareEventsPage = () => {
         element: analyticsEventsPageElements.TAB_COMPARE_EVENTS,
         elementText: "Compare Events",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

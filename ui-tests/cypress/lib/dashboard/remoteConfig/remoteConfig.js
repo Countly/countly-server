@@ -5,7 +5,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: remoteConfigPageElements.PAGE_TITLE,
         labelText: "Remote Config"
     });
-    
+
     cy.verifyElement({
         element: remoteConfigPageElements.PAGE_TITLE_GUIDE_BUTTON,
     });
@@ -22,7 +22,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: remoteConfigPageElements.DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

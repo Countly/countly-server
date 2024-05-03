@@ -13,7 +13,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: analyticsGeoLanguagesPageElements.TAB_COUNTRIES,
         elementText: "Countries",
@@ -23,7 +23,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsGeoLanguagesPageElements.TAB_LANGUAGES,
         elementText: "Languages",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -74,12 +74,12 @@ const verifyEmptyPageElements = () => {
 
 const clickCountriesTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyGeoCountriesPageElements.TAB_COUNTRIES);
+    cy.clickElement(analyticsGeoLanguagesPageElements.TAB_COUNTRIES);
 };
 
 const clickLanguagesTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyGeoCountriesPageElements.TAB_LANGUAGES);
+    cy.clickElement(analyticsGeoLanguagesPageElements.TAB_LANGUAGES);
 };
 
 module.exports = {

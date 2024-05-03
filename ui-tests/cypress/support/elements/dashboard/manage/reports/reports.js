@@ -6,4 +6,4 @@ export default {
     EMPTY_TABLE_TITLE: 'cly-empty-view-empty-view-title',
     EMPTY_TABLE_SUBTITLE: 'cly-empty-view-empty-view-subtitle',
     EMPTY_TABLE_CREATE_NEW_REPORT_LINK_BUTTON: 'cly-empty-view-empty-view-action-button'
-}
+};

@@ -12,7 +12,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: incomingDataLogsPageElements.PAGE_SUB_TITLE,
         labelText: "Only up to last 1000 incoming data logs are stored"
     });
-    
+
     cy.verifyElement({
         element: incomingDataLogsPageElements.SELECT_FILTER_COMBOBOX,
     });
@@ -24,7 +24,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: incomingDataLogsPageElements.DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

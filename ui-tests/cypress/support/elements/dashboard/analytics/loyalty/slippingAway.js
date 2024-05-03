@@ -5,6 +5,6 @@ export default {
     EMPTY_PAGE_TITLE: 'cly-chart-bar-test-id-empty-title',
     EMPTY_PAGE_SUBTITLE: 'cly-chart-bar-test-id-empty-subtitle',
     TAB_USER_ACTIVITY: 'tab-user-activity-title',
-	TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
-	TAB_TIMES_OF_DAY: 'tab-times-of-day-title'
-}
+    TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
+    TAB_TIMES_OF_DAY: 'tab-times-of-day-title'
+};

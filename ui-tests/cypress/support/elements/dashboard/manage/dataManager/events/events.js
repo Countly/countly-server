@@ -9,4 +9,4 @@ export default {
     EMPTY_DATATABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EMPTY_DATATABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EMPTY_DATATABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle'
-}
+};

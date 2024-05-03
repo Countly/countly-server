@@ -1,7 +1,8 @@
-import { 
-userManagementPageElements, 
-usersDataTableElements } 
-from "../../../../support/elements/dashboard/manage/users/users";
+import {
+    userManagementPageElements,
+    usersDataTableElements
+}
+    from "../../../../support/elements/dashboard/manage/users/users";
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
@@ -18,7 +19,7 @@ const verifyStaticElementsOfPage = () => {
         element: userManagementPageElements.FILTER_USER_TYPE_SELECT,
         elementText: "All roles",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     // cy.verifyElement({
     //     element: analyticsSessionsOverviewPageElements.TAB_SESSION_OVERVIEW,
     //     elementText: "Session Overview",
@@ -29,7 +29,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsSessionsDurationsPageElements.TAB_SESSION_VIEWS_PER_SESSION,
         elementText: "Views per Session",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

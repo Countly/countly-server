@@ -27,7 +27,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: analyticsTechnologyDensitiesPageElements.TAB_PLATFORMS,
         elementText: "Platforms",
@@ -57,7 +57,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsTechnologyDensitiesPageElements.TAB_DENSITIES,
         elementText: "Densities",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

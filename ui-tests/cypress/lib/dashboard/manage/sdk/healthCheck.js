@@ -7,7 +7,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: healthCheckPageElements.TAB_SDK_STATS,
         elementText: "SDK Stats",
@@ -67,7 +67,7 @@ const verifyStaticElementsOfPage = () => {
         element: healthCheckPageElements.HEALTH_CHECK_BREAKDOWN_BY_ERRORS_AS_TYPE_SELECT,
         elementText: "percentage",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

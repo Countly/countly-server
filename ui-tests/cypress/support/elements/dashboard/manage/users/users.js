@@ -2,7 +2,7 @@ export const userManagementPageElements = {
     PAGE_TITLE: 'header-title',
     CREATE_USER_BUTTON: 'create-user-button',
     FILTER_USER_TYPE_SELECT: 'cly-input-dropdown-trigger-pseudo-input-label',
-}
+};
 
 const usersDataTableElements = (index = 0) => {
     return {
@@ -21,7 +21,7 @@ const usersDataTableElements = (index = 0) => {
 
         //Columns' Rows' Datas Elements
         INTERNAL_NAME: 'users-data-table-user-role-' + index,
-    
+
         //PAGINATION ELEMENTS
         ITEMS_PER_PAGE_LABEL: 'cly-datatable-n-test-id-items-per-page-label',
         PER_PAGE_COUNT_SELECT: 'cly-datatable-n-test-id-items-per-page-count-select-input-pseudo-input-label',
@@ -34,9 +34,9 @@ const usersDataTableElements = (index = 0) => {
         NEXT_PAGE_ARROW_BUTTON: 'cly-datatable-n-test-id-next-page-arrow-button',
         LAST_PAGE_ARROW_BUTTON: 'cly-datatable-n-test-id-last-page-arrow-button'
     };
-  };
+};
 
-  module.exports = {
+module.exports = {
     userManagementPageElements,
     usersDataTableElements
-  };
+};

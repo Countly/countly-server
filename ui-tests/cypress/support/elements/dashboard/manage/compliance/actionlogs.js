@@ -10,9 +10,9 @@ export default {
     EXPORT_PURGE_HISTORY_EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EXPORT_PURGE_HISTORY_EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EXPORT_PURGE_HISTORY_EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle',
-    
+
     TAB_METRICS: 'tab-metrics-title',
     TAB_USERS: 'tab-users-title',
     TAB_CONSENT_HISTORY: 'tab-consent-history-title',
     TAB_EXPORT_PURGE_HISTORY: 'tab-export/purge-history-title'
-}
+};

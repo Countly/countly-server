@@ -10,4 +10,4 @@ export default {
     EMPTY_PAGE_SUBTITLE: 'cly-empty-view-empty-subtitle',
 
     APPS_TABLE: 'apps-table',
-}
+};

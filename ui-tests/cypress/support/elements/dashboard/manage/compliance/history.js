@@ -19,4 +19,4 @@ export default {
     TAB_USERS: 'tab-users-title',
     TAB_CONSENT_HISTORY: 'tab-consent-history-title',
     TAB_EXPORT_PURGE_HISTORY: 'tab-export/purge-history-title'
-}
+};

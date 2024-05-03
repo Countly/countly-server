@@ -86,7 +86,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: applicationsPageElements.ADD_UPLOAD_INSRUCTIONS_LABEL,
         labelText: "Only jpg, png and gif image formats are allowed",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

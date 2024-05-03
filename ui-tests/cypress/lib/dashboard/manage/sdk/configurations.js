@@ -32,7 +32,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
         labelText: "Enable or disable networking calls within SDK. If disabled no network requests will come from SDK (except SDK config call), but data would still be recorded and preserved on device up to the SDK limits",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -51,22 +51,22 @@ const verifyEmptyPageElements = () => {
 
 const clickSdkStatsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(healthCheckPageElements.TAB_SDK_STATS);
+    cy.clickElement(sdkConfiguratonsPageElements.TAB_SDK_STATS);
 };
 
 const clickRequestStatsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(healthCheckPageElements.TAB_REQUEST_STATS);
+    cy.clickElement(sdkConfiguratonsPageElements.TAB_REQUEST_STATS);
 };
 
 const clickHealthCheckTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(healthCheckPageElements.TAB_HEALTH_CHECK);
+    cy.clickElement(sdkConfiguratonsPageElements.TAB_HEALTH_CHECK);
 };
 
 const clickSdkConfigurationTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(healthCheckPageElements.TAB_SDK_CONFIGURATION);
+    cy.clickElement(sdkConfiguratonsPageElements.TAB_SDK_CONFIGURATION);
 };
 
 module.exports = {

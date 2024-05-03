@@ -11,4 +11,4 @@ export default {
     TAB_SESSION_DURATIONS: 'tab-session-durations-title',
     TAB_SESSION_FREQUENCY: 'tab-session-frequency-title',
     TAB_SESSION_VIEWS_PER_SESSION: 'tab-session-views-per-session-title'
-}
+};

@@ -13,7 +13,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: analyticsTechnologyDevicesAndTypesPageElements.TAB_DEVICES,
         elementText: "Devices",
@@ -53,7 +53,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsTechnologyDevicesAndTypesPageElements.TAB_DENSITIES,
         elementText: "Densities",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

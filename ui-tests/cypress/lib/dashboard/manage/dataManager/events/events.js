@@ -16,7 +16,7 @@ const verifyStaticElementsOfPage = () => {
         elementText: "Event Groups",
     });
 
- 
+
     cy.verifyElement({
         element: dataManagerEventsPageElements.FILTER_PARAMETERS_SELECT,
     });
@@ -32,7 +32,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: dataManagerEventsPageElements.DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

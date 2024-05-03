@@ -17,4 +17,4 @@ export default {
     EMPTY_MONITOR_EVENTS_TABLE_TITLE: 'events-overview-monitor-events-empty-title',
     EMPTY_MONITOR_EVENTS_TABLE_SUBTITLE: 'events-overview-monitor-events-empty-subtitle',
     CONFIGURE_EVENTS_LINK_BUTTON: 'events-overview-configure-events-link-button'
-}
+};

@@ -17,4 +17,4 @@ export default {
     EMPTY_AUTOMATICALLY_CREATED_DATATABLE_ICON: 'datatable-report-manager-automatically-created-empty-logo',
     EMPTY_AUTOMATICALLY_CREATED_DATATABLE_TITLE: 'datatable-report-manager-automatically-created-empty-title',
     EMPTY_AUTOMATICALLY_CREATED_DATATABLE_SUBTITLE: 'datatable-report-manager-automatically-created-empty-subtitle'
-}
+};

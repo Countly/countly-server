@@ -57,7 +57,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsTechnologyPlatformsPageElements.TAB_DENSITIES,
         elementText: "Densities",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

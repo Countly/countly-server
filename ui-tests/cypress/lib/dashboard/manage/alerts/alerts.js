@@ -12,7 +12,7 @@ const verifyStaticElementsOfPage = () => {
         element: alertsPageElements.ADD_NEW_ALERT_BUTTON,
         elementText: 'Add New Alert'
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

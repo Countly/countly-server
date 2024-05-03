@@ -4,11 +4,11 @@ import {
     feedbackRatingWidgetDetailsPageElements,
     feedbackRatingWidgetDetailsCommentsDataTableElements,
     feedbackRatingWidgetDetailsRatingsDataTableElements
-  } from "../../../../support/elements/dashboard/feedback/ratings/widgets";
-  
-  const stepElements = require("../../../../support/components/addFeedbackSteps");
-  const { FEEDBACK_ADD_STEPS } = require('../../../../support/constants');
-  const helper = require('../../../../support/helper');
+} from "../../../../support/elements/dashboard/feedback/ratings/widgets";
+
+const stepElements = require("../../../../support/components/addFeedbackSteps");
+const { FEEDBACK_ADD_STEPS } = require('../../../../support/constants');
+const helper = require('../../../../support/helper');
 
 const verifyEmptyPageElements = () => {
 

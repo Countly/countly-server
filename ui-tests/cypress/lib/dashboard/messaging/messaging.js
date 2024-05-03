@@ -5,7 +5,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: messagingPageElements.PAGE_TITLE,
         labelText: "Push Notifications"
     });
-    
+
     cy.verifyElement({
         element: messagingPageElements.PAGE_TITLE_GUIDE_BUTTON,
     });
@@ -60,7 +60,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: messagingPageElements.DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -80,7 +80,7 @@ const verifyEmptyPageElements = () => {
         labelElement: messagingPageElements.ENABLED_USERS_PERCENTAGE_NUMBER_LABEL,
         labelText: "0%",
     });
-    
+
     cy.verifyElement({
         element: messagingPageElements.EMPTY_TABLE_ICON,
     });

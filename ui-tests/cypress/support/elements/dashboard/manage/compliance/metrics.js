@@ -7,7 +7,7 @@ export default {
     CONSENT_EMPTY_CHART_ICON: 'consent-dp-chart-empty-logo',
     CONSENT_EMPTY_CHART_TITLE: 'consent-dp-chart-empty-title',
     CONSENT_EMPTY_CHART_SUBTITLE: 'consent-dp-chart-empty-subtitle',
-    
+
     USER_DATA_EXPORTS_LABEL: 'user-data-exports-title-label',
     USER_DATA_EXPORTS_NUMBER: 'user-data-exports-value',
     USER_DATA_EXPORTS_TREND_ICON: 'user-data-exports-arrow-icon',
@@ -30,4 +30,4 @@ export default {
     TAB_USERS: 'tab-users-title',
     TAB_CONSENT_HISTORY: 'tab-consent-history-title',
     TAB_EXPORT_PURGE_HISTORY: 'tab-export/purge-history-title'
-}
+};

@@ -33,7 +33,7 @@ const verifyStaticElementsOfPage = () => {
         element: complianceUsersPageElements.TAB_EXPORT_PURGE_HISTORY,
         elementText: "Export/Purge History",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

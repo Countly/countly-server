@@ -7,7 +7,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: requestStatsPageElements.TAB_SDK_STATS,
         elementText: "SDK Stats",
@@ -67,7 +67,7 @@ const verifyStaticElementsOfPage = () => {
         element: requestStatsPageElements.CANCELED_REQUEST_BREAKDOWN_BY_REASON_AS_TYPE_SELECT,
         elementText: "percentage",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

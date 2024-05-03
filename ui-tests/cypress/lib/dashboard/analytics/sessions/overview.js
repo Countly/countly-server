@@ -29,7 +29,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsSessionsOverviewPageElements.TAB_SESSION_VIEWS_PER_SESSION,
         elementText: "Views per Session",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

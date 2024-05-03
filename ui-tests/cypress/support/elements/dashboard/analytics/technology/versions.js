@@ -9,7 +9,7 @@ export default {
     EMPTY_CHART_PAGE_ICON: 'cly-chart-bar-test-id-empty-logo',
     EMPTY_CHART_PAGE_TITLE: 'cly-chart-bar-test-id-empty-title',
     EMPTY_CHART_PAGE_SUBTITLE: 'cly-chart-bar-test-id-empty-subtitle',
-	EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
+    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle',
     TAB_PLATFORMS: 'tab-platforms-title',
@@ -18,4 +18,4 @@ export default {
     TAB_APP_VERSIONS: 'tab-technology-versions-title',
     TAB_CARRIERS: 'tab-technology-carriers-title',
     TAB_DENSITIES: 'tab-technology-densities-title',
-}
+};

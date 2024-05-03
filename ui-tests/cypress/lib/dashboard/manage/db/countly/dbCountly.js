@@ -54,7 +54,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: dbCountlyPageElements.DATATABLE_SEARCH_BUTTON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

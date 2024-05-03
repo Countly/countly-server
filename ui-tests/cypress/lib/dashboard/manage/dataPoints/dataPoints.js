@@ -12,7 +12,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: dataPointsDataLogsPageElements.TOP_APPLICATIONS_BY_DATA_POINTS_LABEL,
         labelText: "Top applications by data points in the last 2 hours"
     });
-    
+
     cy.verifyElement({
         element: dataPointsDataLogsPageElements.FILTER_DATE_PICKER,
     });
@@ -20,7 +20,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: dataPointsDataLogsPageElements.APPS_TABLE,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

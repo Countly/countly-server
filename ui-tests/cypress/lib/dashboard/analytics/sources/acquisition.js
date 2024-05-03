@@ -11,7 +11,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: analyticsSourcesPageElements.FILTER_DATE_PICKER,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

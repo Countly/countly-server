@@ -8,7 +8,7 @@ export default {
     EMPTY_PIE_TOTAL_ICON: 'pie-total-empty-logo',
     EMPTY_PIE_TOTAL_TITLE: 'pie-total-empty-title',
     EMPTY_PIE_TOTAL_SUBTITLE: 'pie-total-empty-subtitle',
-	EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
+    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle',
     TAB_PLATFORMS: 'tab-platforms-title',
@@ -17,4 +17,4 @@ export default {
     TAB_APP_VERSIONS: 'tab-technology-versions-title',
     TAB_CARRIERS: 'tab-technology-carriers-title',
     TAB_DENSITIES: 'tab-technology-densities-title',
-}
+};

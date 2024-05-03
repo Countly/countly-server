@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToTop();
-    
+
     cy.verifyElement({
         element: analyticsLoyaltySlippingAwayPageElements.TAB_USER_ACTIVITY,
         elementText: "User Activity",
@@ -24,7 +24,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsLoyaltySlippingAwayPageElements.TAB_TIMES_OF_DAY,
         elementText: "Times of Day",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

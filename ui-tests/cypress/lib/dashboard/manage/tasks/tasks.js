@@ -32,7 +32,7 @@ const verifyStaticElementsOfManuallyCreatedPage = () => {
     cy.verifyElement({
         element: reportManagerPageElements.MANUALLY_CREATED_DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyStaticElementsOfAutomaticallyCreatedPage = () => {
     cy.verifyElement({
@@ -66,7 +66,7 @@ const verifyStaticElementsOfAutomaticallyCreatedPage = () => {
     cy.verifyElement({
         element: reportManagerPageElements.AUTOMATICALLY_CREATED_DATATABLE_SEARCH_INPUT,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

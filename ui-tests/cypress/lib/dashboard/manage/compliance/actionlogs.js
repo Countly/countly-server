@@ -44,7 +44,7 @@ const verifyStaticElementsOfPage = () => {
         element: complianceExportPurgePageElements.TAB_EXPORT_PURGE_HISTORY,
         elementText: "Export/Purge History",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

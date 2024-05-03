@@ -2,7 +2,7 @@ export default {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-	EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
+    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
     EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
     EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle',
     TAB_PLATFORMS: 'tab-platforms-title',
@@ -19,4 +19,4 @@ export default {
     DENSITIES_FOR_NO_DATA_LABEL: 'destiny-for-no-data-label',
     DENSITIES_DISTRIBUTION_LABEL: 'density-distribution-label',
     DENSITIES_DISTRIBUTION_NO_DATA_LABEL: 'destiny-distribution-no-data-label',
-}
+};

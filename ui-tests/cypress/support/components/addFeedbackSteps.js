@@ -1,4 +1,4 @@
-import { feedbackRatingWidgetsPageElements } from "../elements/dashboard/feedback/ratings/widgets"
+import { feedbackRatingWidgetsPageElements } from "../elements/dashboard/feedback/ratings/widgets";
 const { FEEDBACK_ADD_STEPS } = require('../constants');
 
 const verifyRatingStepElements = (step) => {

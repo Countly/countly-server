@@ -7,7 +7,7 @@ const verifyStaticElementsOfPage = () => {
         tooltipElement: analyticsViewsPageElements.PAGE_TITLE_TOOLTIP,
         tooltipText: "Overview of the data trends and metrics for the pages or screens viewed on your application, in the selected time period."
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
