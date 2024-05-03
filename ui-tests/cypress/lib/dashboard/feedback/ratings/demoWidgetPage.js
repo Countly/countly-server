@@ -1,6 +1,6 @@
-const getApiKey = require('../../../api/getApiKey');
-const getApps = require('../../../api/getApps');
-const helper = require('../../../support/helper');
+const getApiKey = require('../../../../api/getApiKey');
+const getApps = require('../../../../api/getApps');
+const helper = require('../../../../support/helper');
 
 const demoPageElements = {
     CLOSE_BUTTON: '#close-btn',
