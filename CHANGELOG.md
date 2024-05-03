@@ -1,3 +1,12 @@
+## Version 23.11.20
+Fixes:
+- [core] Nullcheck in data exports
+- [events] changed formatSecond to show decimals
+  
+Enterprise Fixes:
+- [core] missing proxy setting added for  enterprise features
+- [drill] fix for select users correctly when navigating from drill to user
+
 ## Version 23.11.19
 Features:
 - [core] Increase log level for specific mongodb driver events
