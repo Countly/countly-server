@@ -16,7 +16,7 @@ describe('Create New Widget', () => {
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it.skip('Verify default values of page and create a widget with that values and then update the widget data', function() {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -269,7 +269,7 @@ describe('Create New Widget', () => {
         });
     });
 
-    it.skip('Create a widget with updated text then stop the widget from details page', function() {
+    it('Create a widget with updated text then stop the widget from details page', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton(),
@@ -405,7 +405,7 @@ describe('Create New Widget', () => {
         });
     });
 
-    it.skip('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function() {
+    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
@@ -505,7 +505,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.shouldBeWidgetDeleted(widget.question);
     });
 
-    it.skip('Verify widget details comment and rating tab data', function() {
+    it('Verify widget details comment and rating tab data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         const widget = generateWidgetFixture();
 
