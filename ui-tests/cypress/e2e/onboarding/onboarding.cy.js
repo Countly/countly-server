@@ -68,7 +68,7 @@ describe('Complete Onboarding', () => {
         cy.dropMongoDatabase();
     });
 
-    it('should be complete onboarding flow with creating demo application', function() {
+    it('should be complete onboarding flow with creating web type demo application', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -95,7 +95,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating demo application and enable tracking and subscribe to newsletter', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -122,7 +122,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating own application and verify all pages with empty data', function() {
+    it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -261,7 +261,7 @@ describe('Complete Onboarding', () => {
         dbCountlyFsPageHelpers.verifyEmptyPageElements();
     });
 
-    it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
+    it('should be complete onboarding flow with creating own desktop type application with default app key and enable tracking and subscribe to newsletter', function() {
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -285,7 +285,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('verify home page after complete onboarding with Banking data', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Banking data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
