@@ -293,7 +293,9 @@
                     (this.$refs.drawerData.editedObject.alertDataType ===
                     "rating" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) ||
                     (this.$refs.drawerData.editedObject.alertDataType ===
-                    "events" && (this.alertDataFilterValue))
+                    "events" && (this.alertDataFilterValue)) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "nps" && ((typeof this.alertDataFilterValue) === "string"))
                 ) {
                     // The hour option is no longer available when the filter is added.
                     return this.defaultAlertTime.time.filter(
