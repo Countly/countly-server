@@ -183,6 +183,7 @@ describe('Complete Onboarding', () => {
             isDemoApp: false
         });
 
+        initialSetupHelpers.verifyDefaultPageElements(false);
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: false,
             appType: APP_TYPE.MOBILE,
