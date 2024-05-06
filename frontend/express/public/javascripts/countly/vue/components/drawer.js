@@ -40,6 +40,9 @@
                 testId: {
                     type: String,
                     default: "drawer-test-id",
+                },
+                id: {
+                    type: String
                 }
             },
             data: function() {

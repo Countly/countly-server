@@ -178,6 +178,15 @@ var AppPlatformView = countlyVue.views.create({
             var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
 
             var data = this.appPlatform.chartData || [];
+
+            data.sort(function(a, b) {
+                let totalDiff = b[property] - a[property];
+                if (totalDiff === 0) {
+                    return a.os_.localeCompare(b.os_);
+                }
+                return totalDiff;
+            });
+
             for (var k = 0; k < data.length; k++) {
                 var percent = Math.round((data[k][property] || 0) * 1000 / (this.appPlatform.totals[property] || 1)) / 10;
                 display.push({
@@ -224,11 +233,28 @@ var AppPlatformView = countlyVue.views.create({
                 }
                 returnData.push({"values": display, "label": platforms[z].label, itemCn: display.length});
             }
+
+            const indexMap = {};
+            this.platformItems.forEach((element, index) => {
+                indexMap[element.name] = index;
+            });
+            returnData.sort((a, b) => {
+                const nameA = a.label;
+                const nameB = b.label;
+                const indexA = indexMap[nameA];
+                const indexB = indexMap[nameB];
+                return indexA - indexB;
+            });
+
             for (var i = 0; i < returnData.length; i++) {
                 returnData[i].values.sort(function(a, b) {
                     return parseFloat(b.percent) - parseFloat(a.percent);
                 });
                 returnData[i].values = returnData[i].values.slice(0, 12);
+                // color adjustments after sorting platformVersions to match platformItems
+                for (let index = 0; index < returnData[i].values.length; index++) {
+                    returnData[i].values[index].bar[0].color = this.platformItems[i].color;
+                }
             }
             return returnData;
         },
@@ -257,6 +283,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     permission: "core",
     route: "#/analytics/technology/platforms",
     title: CV.i18n('platforms.title'),
+    dataTestId: "platforms",
     component: AppPlatformView
 });
 
