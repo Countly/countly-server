@@ -175,6 +175,7 @@ describe('Complete Onboarding', () => {
     });
 
     it('verify all pages after complete onboarding with empty data', function() {
+        setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
             emailAddress: user.email,
@@ -188,13 +189,16 @@ describe('Complete Onboarding', () => {
             isDemoApp: false,
             appType: APP_TYPE.MOBILE,
             appName: 'My Mobile App',
-            timezone: 'Istanbul'
+            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
+            timezone: 'Harare'
         });
 
+        initialConsentHelpers.verifyDefaultPageElements();
         initialConsentHelpers.completeOnboardingInitialConsent({
             isEnableTacking: false,
             isSubscribeToNewsletter: false
         });
+        
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyEmptyPageElements();
