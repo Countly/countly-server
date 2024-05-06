@@ -244,6 +244,7 @@
                         <span class="bu-mx-3" style="line-height: 30px" data-test-id="nps-is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
+                                width=282
                                 test-id="alert-data-filter-key-nps-select"
                                 v-model="alertDataFilterValue"
                                 class="bu-is-flex"
@@ -438,7 +439,7 @@
                         <span>
                             <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
                                 <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
-                                    {{i18n('alerts.survey-icon')}}
+                                    {{i18n('alerts.common-icon-info')}}
                                 </div>
                         </span>
                     </div>
@@ -451,7 +452,16 @@
                         <span>
                             <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
                                 <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
-                                    {{i18n('alerts.new-rating-info')}}
+                                    {{i18n('alerts.common-icon-info')}}
+                                </div>
+                        </span>
+                    </div>
+
+                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataSubType === 'new NPS response' ">
+                        <span>
+                            <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
+                                <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                    {{i18n('alerts.common-icon-info')}}
                                 </div>
                         </span>
                     </div>
