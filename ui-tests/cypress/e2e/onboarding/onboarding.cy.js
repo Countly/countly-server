@@ -122,7 +122,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating own application', function() {
+    it('should be complete onboarding flow with creating own application and verify all pages with empty data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -146,60 +146,9 @@ describe('Complete Onboarding', () => {
             isEnableTacking: false,
             isSubscribeToNewsletter: false
         });
+
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
-    });
-
-    it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
-        setupHelpers.completeOnboardingSetup({
-            fullName: user.username,
-            emailAddress: user.email,
-            password: user.password,
-            confirmPassword: user.password,
-            isDemoApp: false
-        });
-
-        initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: false,
-            appType: APP_TYPE.DESKTOP,
-            appName: 'My Desktop App',
-            timezone: 'Andorra'
-        });
-
-        initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: true,
-            isSubscribeToNewsletter: true
-        });
-        navigationHelpers.isNavigatedToDashboard();
-        quickstartPopoeverHelpers.verifyDefaultPageElements();
-    });
-
-    it('verify all pages after complete onboarding with empty data', function() {
-        setupHelpers.verifyDefaultPageElements();
-        setupHelpers.completeOnboardingSetup({
-            fullName: user.username,
-            emailAddress: user.email,
-            password: user.password,
-            confirmPassword: user.password,
-            isDemoApp: false
-        });
-
-        initialSetupHelpers.verifyDefaultPageElements(false);
-        initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: false,
-            appType: APP_TYPE.MOBILE,
-            appName: 'My Mobile App',
-            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            timezone: 'Harare'
-        });
-
-        initialConsentHelpers.verifyDefaultPageElements();
-        initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: false,
-            isSubscribeToNewsletter: false
-        });
-        
-        navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsUsersOverview();
@@ -310,6 +259,30 @@ describe('Complete Onboarding', () => {
         dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
         dbCountlyFsPageHelpers.verifyEmptyPageElements();
+    });
+
+    it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
+        setupHelpers.completeOnboardingSetup({
+            fullName: user.username,
+            emailAddress: user.email,
+            password: user.password,
+            confirmPassword: user.password,
+            isDemoApp: false
+        });
+
+        initialSetupHelpers.completeOnboardingInitialSetup({
+            isDemoApp: false,
+            appType: APP_TYPE.DESKTOP,
+            appName: 'My Desktop App',
+            timezone: 'Andorra'
+        });
+
+        initialConsentHelpers.completeOnboardingInitialConsent({
+            isEnableTacking: true,
+            isSubscribeToNewsletter: true
+        });
+        navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
     it('verify home page after complete onboarding with Banking data', function() {
