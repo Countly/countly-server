@@ -133,6 +133,10 @@
         padding: unset;
     }
 
+    .el-dialog--centered {
+        position: absolute !important;
+    }
+
     &__start-dialog {
         display: flex;
         justify-content: center;
