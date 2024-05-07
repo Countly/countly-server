@@ -340,7 +340,7 @@
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
                 ];
-                // disable enterprise plugins if they're not available
+                // disable enterprise plugins if they are not available
                 if (!countlyGlobal.plugins.includes("concurrent_users")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "onlineUsers");
                 }
@@ -904,6 +904,19 @@
                         : !!newState.filterValue;
                     this.alertDataFilterKey = newState.filterKey;
                     this.alertDataFilterValue = newState.filterValue;
+
+                    if (newState.alertBy === "email") {
+                        if (newState?.allGroups?.length) {
+                            this.selectedRadioButton = "toGroup";
+                        }
+                        if (newState?.alertValues?.length) {
+                            this.selectedRadioButton = "specificAddress";
+                        }
+                    }
+                    else if (newState.alertBy === "hook") {
+                        this.selectedRadioButton = "dontSend";
+                    }
+
                     return;
                 }
                 else {
