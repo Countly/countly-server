@@ -9,7 +9,7 @@
     </cly-header>
 	<cly-main>
 		<div v-if="!subPage" class="bu-level-left">
-			<h4>{{i18n('server-stats.data-points-last_hours')}}</h4>
+			<h4 data-test-id="top-applications-by-data-points-in-the-last-two-hours-label">{{i18n('server-stats.data-points-last_hours')}}</h4>
 		</div>
 		<cly-section v-if="!subPage" class="bu-mt-4">
 			<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
@@ -26,7 +26,7 @@
         </cly-section>
 		
 		<cly-section>
-            <cly-datatable-n :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
+            <cly-datatable-n data-test-id="apps-table" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
 						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
@@ -76,5 +76,3 @@
 		</cly-section>
 	</cly-main>
 </div>
-
-

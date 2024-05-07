@@ -395,6 +395,7 @@
         title: "Event Stats",
         route: "#/analytics/events",
         component: AllEventsView,
+        dataTestId: "event-stats",
         vuex: [{
             clyModel: countlyAllEvents
         }],

@@ -165,15 +165,15 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
-Cypress.Commands.add("scrollPageToBottom", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToTop", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('top', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToCenter", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
@@ -198,6 +198,7 @@ Cypress.Commands.add('verifyElement', ({
     attrText,
     shouldNot = false
 }) => {
+
     if (!shouldNot) {
 
         if (labelElement != null && isElementVisible === true) {
