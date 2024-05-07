@@ -132,7 +132,7 @@
                         <el-input
                             test-id="alert-name-input"
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
@@ -142,7 +142,7 @@
                             test-id= "application-select"
                             :placeholder="i18n('alerts.select-an-application')"
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             @change="appSelected"
                             v-model="drawerScope.editedObject.selectedApps"
                             :allowAll="allowAll"
@@ -154,7 +154,7 @@
                         <cly-select-x
                             test-id="data-type-select"
                             :searchable="false"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"
@@ -163,7 +163,7 @@
                         </cly-select-x>
                     </cly-form-field>
 
-                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)" test-id="data-sub-type">
+                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)" rules="required" test-id="data-sub-type">
                         <cly-select-x
                             test-id="data-sub-type-select"
                             :searchable="false"
@@ -181,7 +181,7 @@
                         {{i18n('alerts.filter')}}
                     </div>
 
-                    <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'" data-test-id="alert-data-filter-key-events-label">
+                    <div class="bu-is-flex" v-if="filterButton && drawerScope.editedObject.alertDataType === 'events'" data-test-id="alert-data-filter-key-events-label">
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 test-id="alert-data-filter-key-event-select"
@@ -204,7 +204,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'" data-test-id="alert-data-filter-key-rating-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'rating'" data-test-id="alert-data-filter-key-rating-label">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 test-id="alert-data-filter-key-rating-input"
@@ -231,7 +231,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'" data-test-id="alert-data-filter-key-nps-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'nps'" data-test-id="alert-data-filter-key-nps-label">
                         <div class="bu-is-flex-grow-1">
                         <el-input
                             test-id="alert-data-filter-key-nps-input"
@@ -257,7 +257,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'" data-test-id="alert-data-filter-key-crashes-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'crashes'" data-test-id="alert-data-filter-key-crashes-label">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 test-id="alert-data-filter-key-crashes-input"
