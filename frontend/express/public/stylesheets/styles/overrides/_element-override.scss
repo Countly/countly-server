@@ -439,13 +439,18 @@
         }
     }
 }
-.el-checkbox, .el-checkbox__input{
+.el-checkbox__input .el-checkbox__inner{
 	color:#ffffff;
+	text-align:center;
 }
 .el-checkbox__input.is-checked .el-checkbox__inner::before {
     content: '\e933' !important;
 	font-family:'countly-icons-outline' !important;
     border: none !important;
+	position:absolute;
+	top:0px;
+	width:15px;
+	left:0px;
 }
 
 .el-checkbox__input.is-checked .el-checkbox__inner::after {
