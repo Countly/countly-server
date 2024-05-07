@@ -1576,7 +1576,10 @@
                     return {
                         _id: dto[PlatformDtoEnum.ANDROID]._id || '',
                         firebaseKey: dto[PlatformDtoEnum.ANDROID].key,
-                        type: dto[PlatformDtoEnum.ANDROID].type
+                        serviceAccountFile: dto[PlatformDtoEnum.ANDROID].serviceAccountFile,
+                        type: dto[PlatformDtoEnum.ANDROID].type,
+                        hasServiceAccountFile: !!dto[PlatformDtoEnum.ANDROID].serviceAccountFile,
+                        hasUploadedServiceAccountFile: false
                     };
                 }
                 return null;
@@ -2068,9 +2071,15 @@
             mapAndroidAppLevelConfig: function(model) {
                 if (model[PlatformEnum.ANDROID]) {
                     var result = {
-                        key: model[PlatformEnum.ANDROID].firebaseKey,
-                        type: model[PlatformEnum.ANDROID].type
+                        type: model[PlatformEnum.ANDROID].type,
                     };
+                    if (model[PlatformEnum.ANDROID].hasUploadedServiceAccountFile) {
+                        result.serviceAccountFile = model[PlatformEnum.ANDROID].serviceAccountFile;
+                    }
+                    else {
+                        result.key = model[PlatformEnum.ANDROID].firebaseKey;
+                    }
+
                     if (model[PlatformEnum.ANDROID]._id) {
                         result._id = model[PlatformEnum.ANDROID]._id;
                     }
