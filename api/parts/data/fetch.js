@@ -2022,11 +2022,11 @@ fetch.alljobs = async function(metric, params) {
         {
             $addFields: {
                 sortKey: {
-                    $cond: {
-                        if: { $eq: ["$status", 7] },
-                        then: "-",
-                        else: "$name"
-                    }
+                    $cond: [
+                        { $in: ["$status", [0, 1]] },
+                        { $concat: ["-", { $toString: "$status" }, { $toString: "$name" }] },
+                        "$name"
+                    ]
                 },
                 finished: {
                     $cond: {
