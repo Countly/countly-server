@@ -267,21 +267,26 @@
             }
 
             .el-checkbox__input {
-                line-height: 2.8 !important;
-                vertical-align: sub;
                 margin-left: 6px;
             }
 
             .el-checkbox.is-bordered.el-checkbox--medium {
                 height: 50px !important;
                 width: 227px !important;
+                padding-top: 14px;
             }
 
             .el-checkbox.is-bordered.el-checkbox--medium .el-checkbox__inner {
-                height: 17px !important;
-                width: 17px !important;
+                height: 18px !important;
+                width: 18px !important;
             }
 
+            .el-checkbox__input.is-checked .el-checkbox__inner::before {
+                top: -1px !important;
+                left: -1px !important;
+                font-weight: 700;
+                font-size: 18px;
+            }
             .is-error {
                 .is-bordered {
                     border-color: #D23F00;
