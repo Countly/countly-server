@@ -346,11 +346,10 @@
                             </span>
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">
                                 <input
-                                    required
                                     @input="handleChange($event.target)"
-                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
+                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input no-spinner"
                                     placeholder="value"
-                                    type="text"
+                                    type="number"
                                     v-model="drawerScope.editedObject.compareValue"
                                     />
                             </cly-form-field>
