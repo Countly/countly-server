@@ -127,7 +127,7 @@
                     <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" rules="required">
                         <el-input
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
@@ -136,7 +136,7 @@
                         <cly-app-select
                             :placeholder="i18n('alerts.select-an-application')"
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             @change="appSelected"
                             v-model="drawerScope.editedObject.selectedApps"
                             :allowAll="allowAll"
@@ -147,7 +147,7 @@
                     <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
                         <cly-select-x
                             :searchable="false"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"
@@ -156,7 +156,7 @@
                         </cly-select-x>
                     </cly-form-field>
 
-                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)">
+                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)" rules="required">
                         <cly-select-x
                             :searchable="false"
                             v-model="drawerScope.editedObject.alertDataSubType2"
@@ -173,7 +173,7 @@
                         {{i18n('alerts.filter')}}
                     </div>
 
-                    <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'">
+                    <div class="bu-is-flex" v-if="filterButton && drawerScope.editedObject.alertDataType === 'events'">
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 v-model="alertDataFilterKey"
@@ -194,7 +194,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'rating'">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 v-model="alertDataFilterKey"
@@ -219,7 +219,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'nps'">
                         <div class="bu-is-flex-grow-1">
                         <el-input
                             v-model="alertDataFilterKey"
@@ -242,7 +242,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'crashes'">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 v-model="alertDataFilterKey"
