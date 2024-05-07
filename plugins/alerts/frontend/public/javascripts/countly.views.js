@@ -340,7 +340,7 @@
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
                 ];
-                // disable enterprise plugins if they're not available
+                // disable enterprise plugins if they are not available
                 if (!countlyGlobal.plugins.includes("concurrent_users")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "onlineUsers");
                 }
@@ -916,7 +916,7 @@
                     else if (newState.alertBy === "hook") {
                         this.selectedRadioButton = "dontSend";
                     }
-                    
+
                     return;
                 }
                 else {
