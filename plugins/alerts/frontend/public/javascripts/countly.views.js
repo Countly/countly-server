@@ -904,6 +904,19 @@
                         : !!newState.filterValue;
                     this.alertDataFilterKey = newState.filterKey;
                     this.alertDataFilterValue = newState.filterValue;
+
+                    if (newState.alertBy === "email") {
+                        if (newState?.allGroups?.length) {
+                            this.selectedRadioButton = "toGroup";
+                        }
+                        if (newState?.alertValues?.length) {
+                            this.selectedRadioButton = "specificAddress";
+                        }
+                    }
+                    else if (newState.alertBy === "hook") {
+                        this.selectedRadioButton = "dontSend";
+                    }
+                    
                     return;
                 }
                 else {
