@@ -10,9 +10,12 @@ var common = require("./common.js"),
 
 var authorize = require('./authorizer.js'); //for token validations
 
+var collectionMap = {};//map to know when data about som collections/events was refreshed
+var cachedSchema = {};
+
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
-/**Validate if token exists and is not expired(uzing authorize.js) 
+/**Validate if token exists and is not expired(uzing authorize.js)
 * @param {object} params  params
 * @param {string} params.qstring.auth_token  authentication token
 * @param {string}params.req.headers.countly-token {string} authentication token
@@ -548,7 +551,6 @@ function loadAndCacheEventsData(apps, callback) {
     * @param {function} cb - callback method
     **/
     function getViews(appColl, cb) {
-        var result = {};
         common.db.collection('views').find({'_id': { $in: appColl.appIds }}).toArray(function(err, viewDocs) {
             if (!err && viewDocs) {
                 for (let idx = 0; idx < viewDocs.length; idx++) {
