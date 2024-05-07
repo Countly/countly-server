@@ -1,11 +1,11 @@
-const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'),
+const { ConnectionError, ERROR, SendError, PushError, FCM_SDK_ERRORS } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
     { util } = require('../std'),
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads'),
-    FORGE = require('node-forge');
-
+    FORGE = require('node-forge'),
+    firebaseAdmin = require("firebase-admin");
 
 /**
  * Platform key
@@ -68,20 +68,39 @@ class FCM extends Splitter {
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
+        this.legacyApi = !creds._data.serviceAccountFile;
+        // this.legacyApi = true;
 
         this.log = logger(log).sub(`${threadId}-a`);
-        this.opts = {
-            agent: this.agent,
-            hostname: 'fcm.googleapis.com',
-            port: 443,
-            path: '/fcm/send',
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `key=${creds._data.key}`,
-            },
-        };
+        if (this.legacyApi) {
+            this.opts = {
+                agent: this.agent,
+                hostname: 'fcm.googleapis.com',
+                port: 443,
+                path: '/fcm/send',
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `key=${creds._data.key}`,
+                },
+            };
+        }
+        else {
+            const serviceAccountJSON = FORGE.util.decode64(
+                creds._data.serviceAccountFile.substring(creds._data.serviceAccountFile.indexOf(',') + 1)
+            );
+            const serviceAccountObject = JSON.parse(serviceAccountJSON);
+            const appName = creds._id.toString();
+            const firebaseApp = firebaseAdmin.apps.find(app => app.name === appName)
+                ? firebaseAdmin.app(creds._id.toString())
+                : firebaseAdmin.initializeApp({
+                    credential: firebaseAdmin.credential.cert(serviceAccountObject, this.agent),
+                    agent: this.agent
+                }, creds._id.toString());
+            this.firebaseMessaging = firebaseApp.messaging();
+        }
+
         this.log.i('Initialized');
     }
 
@@ -93,16 +112,191 @@ class FCM extends Splitter {
      * @returns {Promise} sending promise
      */
     send(data, length) {
+        // CONNECTION TEST data (push document)
+        // [
+        //     {
+        //         _id: -0.4490833548652693,
+        //         m: 'test',
+        //         pr: {},
+        //         t: '0.2124088209996502'
+        //     }
+        // ]
+        // NORMAL data (push document)
+        // [
+        //     {
+        //         _id: '663389a807613e6e79349392',
+        //         a: '6600901a71159e99a3434253',
+        //         m: '663389a949c58657a8e625b3',
+        //         p: 'a',
+        //         f: 'p',
+        //         u: '1',
+        //         t: 'dw_CueiXThqYI9owrQC0Pb:APA91bHanJn9RM-ZYnC-3wCMld5Nk3QaVJppS4HOKrpdV8kCXq7pjQlJjcd8_1xq9G6XaceZfrFPxbfehJ4YCEfMsfQVhZW1WKhnY3TbtO7HIQfYfbj35-sx_-BHAhQ5eSDuiCOZWUDP',
+        //         pr: { la: 'en' },
+        //         h: 'a535fbb5d4664c49'
+        //     }
+        // ]
         return this.with_retries(data, length, (pushes, bytes, attempt) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
+            const one = Math.ceil(bytes / pushes.length);
+            let content = this.template(pushes[0].m).compile(pushes[0]);
 
-            let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.ceil(bytes / pushes.length);
+            let printBody = false;
+            const oks = [];
+            const errors = {};
+            /**
+             * Get an error for given code & message, create it if it doesn't exist yet
+             * 
+             * @param {number} code error code
+             * @param {string} message error message
+             * @returns {SendError} error instance
+             */
+            const errorObject = (code, message) => {
+                let err = code + message;
+                if (!(err in errors)) {
+                    errors[err] = new SendError(message, code);
+                }
+                return errors[err];
+            };
+
+            if (!this.legacyApi) {
+                const tokens = pushes.map(p => p.t);
+                const topic = pushes[0].m.toString(); // use message id as topic name
+
+                this.log.d("subscribing all %d tokens to topic %s", tokens.length, topic);
+                return this.firebaseMessaging
+                    // subscribe to the topic
+                    // EXAMPLE RESPONSE OF subscribeToTopic:
+                    // {
+                    //     "successCount": 0,
+                    //     "failureCount": 1,
+                    //     "errors": [
+                    //         {
+                    //             "index": 0,
+                    //             "error": {
+                    //                 "code": "messaging/invalid-registration-token",
+                    //                 "message": "Invalid registration t..."
+                    //             }
+                    //         }
+                    //     ]
+                    // }
+                    .subscribeToTopic(tokens, topic)
+                    // send the message to the topic:
+                    .then(async topicSubResponse => {
+                        // if there's no token to send the message to, return
+                        // early with subscribeToTopic response
+                        if (!topicSubResponse.successCount) {
+                            return topicSubResponse;
+                        }
+                        try {
+                            // EXAMPLE RESPONSE OF sendToTopic:
+                            // { messageId: 3388013900968255000 }
+                            await this.firebaseMessaging.sendToTopic(topic, content);
+                        }
+                        catch (err) {
+                            console.log("====== sendToTopic error", err);
+                            // continue as usual if there's an error while
+                            // sending the message
+
+                            // TODO: properly log the error
+                        }
+                        // we're not really using the response of sendToTopic.
+                        // so just carry subscribeToTopic response to the end
+                        // of the promise chain
+                        return topicSubResponse;
+                    })
+                    // unsubscribe from topic
+                    .then(async topicSubResponse => {
+                        // this should be run in any case (even if there was an
+                        // error in previous step).
+                        await this.firebaseMessaging.unsubscribeFromTopic(tokens, topic);
+                        // we're not using the response of unsubscribe.
+                        return topicSubResponse;
+                    })
+                    // handle and transform results
+                    .then(topicSubResponse => {
+                        let erroredIndexes = [];
+                        // handle errors:
+                        if (topicSubResponse.failureCount) {
+                            for (let i = 0; i < topicSubResponse.failureCount; i++) {
+                                const { error, index } = topicSubResponse.errors[i];
+                                const sdkError = FCM_SDK_ERRORS[error.code];
+                                // check if the sdk error is mapped to an internal error.
+                                // set to default if its not.
+                                let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
+                                let internalErrorMessage = sdkError?.message ?? "Invalid error message";
+                                erroredIndexes.push(index);
+                                errorObject(internalErrorCode, internalErrorMessage)
+                                    .addAffected(pushes[index]._id, one);
+                            }
+                        }
+                        let errored = 0;
+                        for (let k in errors) {
+                            errored += errors[k].affectedBytes;
+                            this.send_push_error(errors[k]);
+                        }
+                        if (pushes.length > topicSubResponse.failureCount) {
+                            this.send_results(
+                                pushes.filter((_v, index) => erroredIndexes.includes(index))
+                                    .map(({ _id }) => _id),
+                                bytes - errored
+                            );
+                        }
+                    })
+                    .catch(err => {
+                        // should never enter here.
+                        console.log("======== == 0===== 0==== 0==== end of the promise chain", err);
+                    });
+            }
 
             content.registration_ids = pushes.map(p => p.t);
-            this.log.d('sending to %j', content.registration_ids);
 
+            // CONNECTION TEST PAYLOAD (invalid registration token)
+            // {
+            //     "data": {
+            //         "c.i": "663389aab53ebbf71a115edb",
+            //         "message": "test"
+            //     },
+            //     "registration_ids": [
+            //         "0.2124088209996502"
+            //     ]
+            // }
+            // NORMAL PAYLOAD
+            // {
+            //     "data": {
+            //         "c.i": "663389a949c58657a8e625b3",
+            //         "title": "qwer",
+            //         "message": "qwer",
+            //         "sound": "default"
+            //     },
+            //     "registration_ids": [
+            //         "dw_CueiXThqYI9owrQC0Pb:APA91bHanJn9RM-ZYnC-3wCMld5Nk3QaVJppS4HOKrpdV8kCXq7pjQlJjcd8_1xq9G6XaceZfrFPxbfehJ4YCEfMsfQVhZW1WKhnY3TbtO7HIQfYfbj35-sx_-BHAhQ5eSDuiCOZWUDP"
+            //     ]
+            // }
             return this.sendRequest(JSON.stringify(content)).then(resp => {
+                // CONNECTION TEST RESPONSE (with error)
+                // {
+                //     "multicast_id": 2829871343601014000,
+                //     "success": 0,
+                //     "failure": 1,
+                //     "canonical_ids": 0,
+                //     "results": [
+                //         {
+                //             "error": "InvalidRegistration"
+                //         }
+                //     ]
+                // }
+                // NORMAL SUCCESSFUL RESPONSE
+                // {
+                //     "multicast_id": 5676989510572196000,
+                //     "success": 1,
+                //     "failure": 0,
+                //     "canonical_ids": 0,
+                //     "results": [
+                //         {
+                //             "message_id": "0:1714653611139550%68dc6e82f9fd7ecd"
+                //         }
+                //     ]
+                // }
                 try {
                     resp = JSON.parse(resp);
                 }
@@ -117,29 +311,11 @@ class FCM extends Splitter {
                 }
 
                 if (resp.results) {
-                    let oks = [],
-                        errors = {},
-                        /**
-                         * Get an error for given code & message, create it if it doesn't exist yet
-                         * 
-                         * @param {number} code error code
-                         * @param {string} message error message
-                         * @returns {SendError} error instance
-                         */
-                        error = (code, message) => {
-                            let err = code + message;
-                            if (!(err in errors)) {
-                                errors[err] = new SendError(message, code);
-                            }
-                            return errors[err];
-                        },
-                        printBody = false;
-
                     resp.results.forEach((r, i) => {
                         if (r.message_id) {
                             if (r.registration_id) {
                                 if (r.registration_id === 'BLACKLISTED') {
-                                    error(ERROR.DATA_TOKEN_INVALID, 'Blacklisted').addAffected(pushes[i]._id, one);
+                                    errorObject(ERROR.DATA_TOKEN_INVALID, 'Blacklisted').addAffected(pushes[i]._id, one);
                                     printBody = true;
                                 }
                                 else {
@@ -153,23 +329,23 @@ class FCM extends Splitter {
                         }
                         else if (r.error === 'NotRegistered') {
                             this.log.d('Token %s expired (%s)', pushes[i].t, r.error);
-                            error(ERROR.DATA_TOKEN_EXPIRED, r.error).addAffected(pushes[i]._id, one);
+                            errorObject(ERROR.DATA_TOKEN_EXPIRED, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'InvalidRegistration' || r.error === 'MismatchSenderId' || r.error === 'InvalidPackageName') {
                             this.log.d('Token %s is invalid (%s)', pushes[i].t, r.error);
-                            error(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
+                            errorObject(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
                             printBody = true;
-                            error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                            errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
                             printBody = true;
-                            error(ERROR.DATA_PROVIDER, '' + r.error).addAffected(pushes[i]._id, one);
+                            errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                         else {
                             printBody = true;
-                            error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                            errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                     });
                     let errored = 0;
@@ -184,9 +360,9 @@ class FCM extends Splitter {
                         this.log.e('Provider returned error %j for %j', resp, content);
                     }
                 }
-
             }, ([code, error]) => {
                 this.log.w('FCM error %d / %j', code, error);
+                console.log("========== MAIN PROMISE ERROR");
                 if (code === 0) {
                     if (error.message === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT' ||
                         error.code === 'ECONNREFUSED' || error.code === 'ECONNABORTED' || error.code === 'EHOSTUNREACH' ||
@@ -425,7 +601,8 @@ const CREDS = {
          */
         static get scheme() {
             return Object.assign(super.scheme, {
-                key: { required: true, type: 'String', 'min-length': 100},
+                serviceAccountFile: { required: false, type: "String" },
+                key: { required: false, type: 'String', 'min-length': 100},
                 hash: { required: false, type: 'String' },
             });
         }
@@ -441,7 +618,36 @@ const CREDS = {
             if (res) {
                 return res;
             }
-            this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
+            if (this._data.serviceAccountFile) {
+                let {serviceAccountFile} = this._data;
+                let mime = serviceAccountFile.indexOf(';base64,') === -1 ? null : serviceAccountFile.substring(0, serviceAccountFile.indexOf(';base64,'));
+                if (mime !== "data:application/json") {
+                    return ["Service account file needs to be valid json file with .json file extension"];
+                }
+                const serviceAccountJSON = FORGE.util.decode64(serviceAccountFile.substring(serviceAccountFile.indexOf(',') + 1));
+                let serviceAccountObject;
+                try {
+                    serviceAccountObject = JSON.parse(serviceAccountJSON);
+                }
+                catch (error) {
+                    return ["Service account file includes an invalid JSON data"];
+                }
+                if (typeof serviceAccountObject !== "object"
+                    || Array.isArray(serviceAccountObject)
+                    || serviceAccountObject === null
+                    || !serviceAccountObject.project_id
+                    || !serviceAccountObject.private_key
+                    || !serviceAccountObject.client_email) {
+                    return ["Service account json doesn't contain project_id, private_key and client_email"];
+                }
+                this._data.hash = FORGE.md.sha256.create().update(serviceAccountJSON).digest().toHex();
+            }
+            else if (this._data.key) {
+                this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
+            }
+            else {
+                return ["Updating FCM credentials requires a service-account.json file"];
+            }
         }
 
         /**
@@ -450,10 +656,14 @@ const CREDS = {
          * @returns {object} json without sensitive information
          */
         get view() {
+            const fcmKey = this?._data?.key
+                ? `FCM server key "${this._data.key.substr(0, 10)} ... ${this._data.key.substr(this._data.key.length - 10)}"`
+                : "";
             return {
                 _id: this._id,
                 type: this._data.type,
-                key: `FCM server key "${this._data.key.substr(0, 10)} ... ${this._data.key.substr(this._data.key.length - 10)}"`,
+                key: fcmKey,
+                serviceAccountFile: "Service account file",
                 hash: this._data.hash,
             };
         }
