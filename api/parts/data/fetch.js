@@ -2007,7 +2007,7 @@ fetch.fetchJobs = async function(metric, params) {
 * @param {params} params - params object with app_id and date
 */
 fetch.alljobs = async function(metric, params) {
-    const columns = ["name", "schedule", "next", "finished", "status", "total"];
+    const columns = ["name", "schedule", "next", "finished", "status", "total", "sortKey"];
     let sort = {};
     let total = await common.db.collection('jobs').aggregate([
         {
@@ -2019,6 +2019,29 @@ fetch.alljobs = async function(metric, params) {
     ]).toArray();
     total = total.length > 0 ? total[0].total : 0;
     const pipeline = [
+        {
+            $addFields: {
+                sortKey: {
+                    $cond: {
+                        if: { $eq: ["$status", 7] },
+                        then: "-",
+                        else: "$name"
+                    }
+                },
+                finished: {
+                    $cond: {
+                        if: {
+                            $and: [
+                                { $eq: ["$finished", null] },
+                                { $ne: ["$status", 3] }
+                            ]
+                        },
+                        then: 9999999999999,
+                        else: "$finished"
+                    }
+                }
+            }
+        },
         {
             $sort: {
                 finished: -1
@@ -2033,7 +2056,8 @@ fetch.alljobs = async function(metric, params) {
                 next: { $first: "$next" },
                 finished: { $first: "$finished" },
                 total: { $sum: 1 },
-                rowId: { $first: "$_id" }
+                rowId: { $first: "$_id" },
+                sortKey: { $first: "$sortKey" }
             }
         }
     ];
