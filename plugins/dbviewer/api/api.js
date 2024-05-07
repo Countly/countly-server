@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
 const { EJSON } = require('bson');
 
@@ -251,7 +251,10 @@ var spawn = require('child_process').spawn,
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(params, apps, function(err, eventList, viewList) {
+            dbLoadEventsData(params, apps, function(err) {
+                if (err) {
+                    log.e(err);
+                }
                 async.map(Object.keys(dbs), getCollections, function(error, results) {
                     if (error) {
                         console.error(error);
@@ -276,7 +279,7 @@ var spawn = require('child_process').spawn,
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
                                     userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
+                                            ob = parseCollectionName(col.collectionName, lookup);
                                             db.collections[ob.pretty] = ob.name;
                                         }
                                         done();
@@ -604,7 +607,7 @@ var spawn = require('child_process').spawn,
 
     }
 
-    var parseCollectionName = function parseCollectionName(name, apps, events, views) {
+    var parseCollectionName = function parseCollectionName(name, apps) {
         var pretty = name;
 
         let isEvent = false;
@@ -619,17 +622,11 @@ var spawn = require('child_process').spawn,
             isEvent = true;
         }
         else if (name.indexOf("app_viewdata") === 0) {
+            isView = true;
 
-            let hash = name.substring(12);
-            if (views["app_viewdata" + hash]) {
-                isView = true;
-            }
         }
         if (isView) {
-            let hash = name.substring(12);
-            if (views["app_viewdata" + hash]) {
-                pretty = name.replace(hash, views["app_viewdata" + hash]);
-            }
+            pretty = "app_viewdata" + getCollectionName(name);
         }
         else if (!isEvent) {
             for (let i in apps) {
@@ -645,7 +642,7 @@ var spawn = require('child_process').spawn,
                 pretty = name;
             }
             else {
-                const targetEntry = events[eventHash];
+                var targetEntry = getCollectionName(eventHash);
                 if (!_.isUndefined(targetEntry)) {
                     pretty = name.replace(eventHash, targetEntry);
                 }
